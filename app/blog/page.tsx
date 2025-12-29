@@ -127,8 +127,6 @@ export default function BlogPage({ searchParams }: BlogPageProps) {
                                                 <BlogPagination
                                                     currentPage={currentPage}
                                                     totalPages={totalPages}
-                                                    hasNextPage={hasNextPage}
-                                                    hasPrevPage={hasPrevPage}
                                                 />
                                             </div>
                                         )}
