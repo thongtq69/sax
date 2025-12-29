@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
+import Image from 'next/image'
 import { Search, ShoppingCart, Menu, Phone } from 'lucide-react'
 import { useCartStore } from '@/lib/store/cart'
 import { Button } from '@/components/ui/button'
@@ -28,18 +29,21 @@ export function Header() {
   return (
     <>
       <header
-        className={`sticky top-0 z-50 w-full border-b bg-white transition-shadow ${
-          isScrolled ? 'shadow-md' : 'shadow-sm'
-        }`}
+        className={`sticky top-0 z-50 w-full border-b bg-white transition-shadow ${isScrolled ? 'shadow-md' : 'shadow-sm'
+          }`}
       >
         <div className="container mx-auto px-4">
-          <div className="flex h-20 items-center justify-between">
-            {/* Logo */}
-            <Link href="/" className="flex items-center space-x-2">
-              <div className="text-2xl font-bold text-primary">🎷</div>
-              <span className="hidden text-xl font-semibold sm:block">
-                Specialty Music Store
-              </span>
+          <div className="flex h-24 items-center justify-between">
+            {/* Logo - Larger and more prominent */}
+            <Link href="/" className="flex items-center">
+              <Image
+                src="/logo.png"
+                alt="James Sax Corner"
+                width={280}
+                height={80}
+                className="h-16 w-auto md:h-20"
+                priority
+              />
             </Link>
 
             {/* Desktop Navigation */}
@@ -56,6 +60,7 @@ export function Header() {
                   size="icon"
                   onClick={() => setIsSearchOpen(true)}
                   aria-label="Search"
+                  className="text-secondary hover:text-primary"
                 >
                   <Search className="h-5 w-5" />
                 </Button>
@@ -66,7 +71,7 @@ export function Header() {
                 variant="ghost"
                 size="icon"
                 onClick={() => setIsCartOpen(true)}
-                className="relative"
+                className="relative text-secondary hover:text-primary"
                 aria-label="Shopping cart"
               >
                 <ShoppingCart className="h-5 w-5" />
@@ -82,9 +87,8 @@ export function Header() {
 
               {/* Call CTA - Desktop */}
               <Button
-                variant="outline"
                 size="sm"
-                className="hidden lg:flex"
+                className="hidden lg:flex bg-secondary hover:bg-secondary/90"
                 asChild
               >
                 <Link href="tel:+17025551234">
@@ -97,7 +101,7 @@ export function Header() {
               <Button
                 variant="ghost"
                 size="icon"
-                className="lg:hidden"
+                className="lg:hidden text-secondary"
                 onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
                 aria-label="Menu"
               >
@@ -123,4 +127,3 @@ export function Header() {
     </>
   )
 }
-
