@@ -4,9 +4,7 @@ import { prisma } from '@/lib/prisma'
 // GET /api/promos - Get all promo banners
 export async function GET(request: NextRequest) {
   try {
-    // Test database connection first
-    await prisma.$connect()
-    
+    // Don't call $connect() explicitly - Prisma will connect on first query
     const promos = await prisma.promoBanner.findMany({
       orderBy: {
         createdAt: 'desc',

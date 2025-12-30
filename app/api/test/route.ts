@@ -21,9 +21,8 @@ export async function GET() {
       )
     }
 
-    // Try to connect
-    await prisma.$connect()
-    
+    // Don't call $connect() explicitly - Prisma will connect on first query
+    // This works better with serverless environments
     // Try a simple query
     const categoryCount = await prisma.category.count()
     const productCount = await prisma.product.count()

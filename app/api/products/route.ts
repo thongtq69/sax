@@ -54,9 +54,8 @@ export async function GET(request: NextRequest) {
       ]
     }
 
-    // Test database connection first
-    await prisma.$connect()
-    
+    // Don't call $connect() explicitly - Prisma will connect on first query
+    // This works better with serverless environments like Vercel
     const [products, total] = await Promise.all([
       prisma.product.findMany({
         where,

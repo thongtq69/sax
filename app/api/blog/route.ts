@@ -28,9 +28,7 @@ export async function GET(request: NextRequest) {
       ]
     }
 
-    // Test database connection first
-    await prisma.$connect()
-    
+    // Don't call $connect() explicitly - Prisma will connect on first query
     const [posts, total] = await Promise.all([
       prisma.blogPost.findMany({
         where,

@@ -53,11 +53,9 @@ export const prisma =
   globalForPrisma.prisma ??
   new PrismaClient({
     log: process.env.NODE_ENV === 'development' ? ['query', 'error', 'warn'] : ['error'],
-    datasources: {
-      db: {
-        url: optimizedDatabaseUrl,
-      },
-    },
   })
 
 if (process.env.NODE_ENV !== 'production') globalForPrisma.prisma = prisma
+
+// For serverless, don't connect eagerly - let Prisma connect on first query
+// This avoids connection issues in cold start scenarios
