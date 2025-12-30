@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import Image from 'next/image'
 import Link from 'next/link'
 import { Product } from '@/lib/data'
@@ -10,7 +10,7 @@ import { Badge } from '@/components/ui/badge'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { ProductCard } from './ProductCard'
 import { useCartStore } from '@/lib/store/cart'
-import { Star, ChevronRight, Heart, Share2, Shield, Truck, CreditCard, Award, Minus, Plus, Check } from 'lucide-react'
+import { Star, ChevronRight, ChevronLeft, Heart, Share2, Shield, Truck, CreditCard, Award, Minus, Plus, Check, X, ZoomIn } from 'lucide-react'
 
 interface ProductDetailClientProps {
   product: Product
@@ -23,7 +23,41 @@ export function ProductDetailClient({ product }: ProductDetailClientProps) {
   const [isAddedToCart, setIsAddedToCart] = useState(false)
   const [isLoaded, setIsLoaded] = useState(false)
   const [relatedProducts, setRelatedProducts] = useState<Product[]>([])
+  const [isLightboxOpen, setIsLightboxOpen] = useState(false)
+  const [lightboxIndex, setLightboxIndex] = useState(0)
   const addItem = useCartStore((state) => state.addItem)
+
+  // Lightbox navigation
+  const openLightbox = (index: number) => {
+    setLightboxIndex(index)
+    setIsLightboxOpen(true)
+    document.body.style.overflow = 'hidden'
+  }
+
+  const closeLightbox = () => {
+    setIsLightboxOpen(false)
+    document.body.style.overflow = 'auto'
+  }
+
+  const goToPrevious = useCallback(() => {
+    setLightboxIndex((prev) => (prev === 0 ? product.images.length - 1 : prev - 1))
+  }, [product.images.length])
+
+  const goToNext = useCallback(() => {
+    setLightboxIndex((prev) => (prev === product.images.length - 1 ? 0 : prev + 1))
+  }, [product.images.length])
+
+  // Keyboard navigation for lightbox
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (!isLightboxOpen) return
+      if (e.key === 'Escape') closeLightbox()
+      if (e.key === 'ArrowLeft') goToPrevious()
+      if (e.key === 'ArrowRight') goToNext()
+    }
+    window.addEventListener('keydown', handleKeyDown)
+    return () => window.removeEventListener('keydown', handleKeyDown)
+  }, [isLightboxOpen, goToPrevious, goToNext])
 
   useEffect(() => {
     setIsLoaded(true)
@@ -86,7 +120,10 @@ export function ProductDetailClient({ product }: ProductDetailClientProps) {
         {/* Image Gallery */}
         <div className="animate-fade-in-left">
           {/* Main Image */}
-          <div className="relative aspect-square overflow-hidden rounded-xl md:rounded-2xl border-2 border-gray-100 bg-gradient-to-br from-gray-50 to-gray-100 group">
+          <div 
+            className="relative aspect-square overflow-hidden rounded-xl md:rounded-2xl border-2 border-gray-100 bg-gradient-to-br from-gray-50 to-gray-100 group cursor-zoom-in"
+            onClick={() => openLightbox(selectedImageIndex)}
+          >
             <Image
               src={product.images[selectedImageIndex] || product.images[0]}
               alt={product.name}
@@ -96,8 +133,9 @@ export function ProductDetailClient({ product }: ProductDetailClientProps) {
             />
             
             {/* Zoom hint */}
-            <div className="absolute bottom-4 right-4 px-3 py-1.5 bg-white/90 backdrop-blur-sm rounded-full text-xs font-medium text-gray-600 opacity-0 group-hover:opacity-100 transition-opacity">
-              Hover to zoom
+            <div className="absolute bottom-4 right-4 px-3 py-1.5 bg-white/90 backdrop-blur-sm rounded-full text-xs font-medium text-gray-600 flex items-center gap-1.5 opacity-0 group-hover:opacity-100 transition-opacity">
+              <ZoomIn className="h-3.5 w-3.5" />
+              Click to zoom
             </div>
 
             {/* Badge */}
@@ -450,6 +488,82 @@ export function ProductDetailClient({ product }: ProductDetailClientProps) {
             {relatedProducts.map((product, index) => (
               <ProductCard key={product.id} product={product} index={index} />
             ))}
+          </div>
+        </div>
+      )}
+
+      {/* Lightbox Modal */}
+      {isLightboxOpen && (
+        <div 
+          className="fixed inset-0 z-50 bg-black flex flex-col"
+          onClick={closeLightbox}
+        >
+          {/* Close button */}
+          <button
+            onClick={closeLightbox}
+            className="absolute top-4 right-4 z-10 p-2 rounded-full bg-white/10 hover:bg-white/20 transition-colors"
+          >
+            <X className="h-6 w-6 text-white" />
+          </button>
+
+          {/* Main image container */}
+          <div 
+            className="flex-1 flex items-center justify-center p-4 relative"
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* Previous button */}
+            <button
+              onClick={(e) => { e.stopPropagation(); goToPrevious(); }}
+              className="absolute left-4 z-10 p-3 rounded-full bg-white/90 hover:bg-white shadow-lg transition-all hover:scale-110"
+            >
+              <ChevronLeft className="h-6 w-6 text-gray-800" />
+            </button>
+
+            {/* Image */}
+            <div className="relative w-full h-full max-w-5xl max-h-[70vh]">
+              <Image
+                src={product.images[lightboxIndex]}
+                alt={`${product.name} - Image ${lightboxIndex + 1}`}
+                fill
+                className="object-contain"
+                quality={100}
+              />
+            </div>
+
+            {/* Next button */}
+            <button
+              onClick={(e) => { e.stopPropagation(); goToNext(); }}
+              className="absolute right-4 z-10 p-3 rounded-full bg-white/90 hover:bg-white shadow-lg transition-all hover:scale-110"
+            >
+              <ChevronRight className="h-6 w-6 text-gray-800" />
+            </button>
+          </div>
+
+          {/* Thumbnails strip */}
+          <div 
+            className="bg-black/80 backdrop-blur-sm py-4 px-4"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="flex gap-2 justify-center overflow-x-auto max-w-full pb-2">
+              {product.images.map((image, index) => (
+                <button
+                  key={index}
+                  onClick={() => setLightboxIndex(index)}
+                  className={`relative h-16 w-16 md:h-20 md:w-20 flex-shrink-0 overflow-hidden rounded-lg transition-all duration-300 ${
+                    lightboxIndex === index
+                      ? 'ring-2 ring-white scale-110 opacity-100'
+                      : 'opacity-50 hover:opacity-80'
+                  }`}
+                >
+                  <Image
+                    src={image}
+                    alt={`Thumbnail ${index + 1}`}
+                    fill
+                    className="object-cover"
+                  />
+                </button>
+              ))}
+            </div>
           </div>
         </div>
       )}

@@ -244,14 +244,8 @@ export default function HomePage() {
                 </Link>
               </Button>
               <Button size="lg" variant="outline" className="border-2 border-secondary text-secondary hover:bg-secondary hover:text-white group" asChild>
-                <Link href="/shop/woodwinds" className="flex items-center">
-                  Shop Woodwinds
-                  <ChevronRight className="ml-1 h-4 w-4 transition-transform group-hover:translate-x-1" />
-                </Link>
-              </Button>
-              <Button size="lg" variant="outline" className="border-2 border-secondary text-secondary hover:bg-secondary hover:text-white group" asChild>
-                <Link href="/shop/brasswinds" className="flex items-center">
-                  Shop Brasswinds
+                <Link href="/shop" className="flex items-center">
+                  Explore Collection
                   <ChevronRight className="ml-1 h-4 w-4 transition-transform group-hover:translate-x-1" />
                 </Link>
               </Button>
@@ -290,48 +284,6 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* Featured Categories */}
-      <section className="container mx-auto px-4 py-16">
-        <div className="mb-10 text-center animate-fade-in-up">
-          <h2 className="text-3xl md:text-4xl font-bold text-secondary">Shop by Category</h2>
-          <div className="mt-3 flex items-center justify-center space-x-4">
-            <div className="h-px w-16 bg-gradient-to-r from-transparent to-primary" />
-            <span className="text-2xl text-primary">🎷</span>
-            <div className="h-px w-16 bg-gradient-to-l from-transparent to-primary" />
-          </div>
-        </div>
-
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6">
-          {[
-            { name: 'Flutes', slug: 'flutes', icon: '🎵', count: 12 },
-            { name: 'Saxophones', slug: 'saxophones', icon: '🎷', count: 2 },
-            { name: 'Clarinets', slug: 'clarinets', icon: '🎼', count: 1 },
-            { name: 'Piccolos', slug: 'piccolos', icon: '🎶', count: 2 },
-          ].map((cat, i) => (
-            <Link 
-              key={cat.slug}
-              href={`/shop?category=${cat.slug}`}
-              className="group relative overflow-hidden rounded-2xl bg-gradient-to-br from-secondary to-secondary/80 p-6 text-center text-white transition-all duration-500 hover:shadow-2xl hover:scale-[1.02] animate-fade-in-up"
-              style={{ animationDelay: `${0.1 * i}s` }}
-            >
-              {/* Decorative background */}
-              <div className="absolute inset-0 bg-gradient-to-br from-primary/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
-              
-              {/* Shine effect */}
-              <div className="absolute inset-0 bg-gradient-to-tr from-transparent via-white/10 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-700" />
-              
-              <div className="relative z-10">
-                <span className="text-5xl block mb-3 group-hover:scale-125 transition-transform duration-300">
-                  {cat.icon}
-                </span>
-                <h3 className="text-xl font-bold mb-1">{cat.name}</h3>
-                <p className="text-sm text-white/70">{cat.count} Products</p>
-              </div>
-            </Link>
-          ))}
-        </div>
-      </section>
-
       {/* Coming Soon Section */}
       {saleProducts.length > 0 && (
         <section className="bg-gradient-to-br from-blue-50 to-indigo-50 py-16 relative overflow-hidden">
@@ -350,21 +302,6 @@ export default function HomePage() {
             
             {/* Auto-scrolling Coming Soon Products Carousel */}
             <InfiniteCarousel products={saleProducts} id="coming-soon" speed={150} />
-            
-            {/* View All Button */}
-            <div className="mt-10 text-center">
-              <Button 
-                variant="outline" 
-                size="lg" 
-                className="border-2 border-secondary bg-white text-secondary hover:bg-secondary hover:text-white group px-8 shadow-lg" 
-                asChild
-              >
-                <Link href="/shop" className="flex items-center">
-                  View All Instruments
-                  <ChevronRight className="ml-2 h-5 w-5 group-hover:translate-x-1 transition-transform" />
-                </Link>
-              </Button>
-            </div>
           </div>
         </section>
       )}
@@ -389,6 +326,65 @@ export default function HomePage() {
         
         {/* Auto-scrolling Product Carousel - CONTINUOUS INFINITE SCROLL */}
         <InfiniteCarousel products={featuredProducts} id="featured" speed={150} />
+        
+        {/* View All Button */}
+        <div className="mt-10 text-center">
+          <Button 
+            variant="outline" 
+            size="lg" 
+            className="border-2 border-secondary bg-white text-secondary hover:bg-secondary hover:text-white group px-8 shadow-lg" 
+            asChild
+          >
+            <Link href="/shop" className="flex items-center">
+              View All Instruments
+              <ChevronRight className="ml-2 h-5 w-5 group-hover:translate-x-1 transition-transform" />
+            </Link>
+          </Button>
+        </div>
+      </section>
+
+      {/* Shop by Category */}
+      <section className="bg-gradient-to-b from-muted/50 to-white py-16">
+        <div className="container mx-auto px-4">
+          <div className="mb-10 text-center animate-fade-in-up">
+            <h2 className="text-3xl md:text-4xl font-bold text-secondary">Shop by Category</h2>
+            <div className="mt-3 flex items-center justify-center space-x-4">
+              <div className="h-px w-16 bg-gradient-to-r from-transparent to-primary" />
+              <span className="text-2xl text-primary">🎷</span>
+              <div className="h-px w-16 bg-gradient-to-l from-transparent to-primary" />
+            </div>
+          </div>
+
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6">
+            {[
+              { name: 'Flutes', slug: 'flutes', icon: '🎵', count: 12 },
+              { name: 'Saxophones', slug: 'saxophones', icon: '🎷', count: 2 },
+              { name: 'Clarinets', slug: 'clarinets', icon: '🎼', count: 1 },
+              { name: 'Piccolos', slug: 'piccolos', icon: '🎶', count: 2 },
+            ].map((cat, i) => (
+              <Link 
+                key={cat.slug}
+                href={`/shop?category=${cat.slug}`}
+                className="group relative overflow-hidden rounded-2xl bg-gradient-to-br from-secondary to-secondary/80 p-6 text-center text-white transition-all duration-500 hover:shadow-2xl hover:scale-[1.02] animate-fade-in-up"
+                style={{ animationDelay: `${0.1 * i}s` }}
+              >
+                {/* Decorative background */}
+                <div className="absolute inset-0 bg-gradient-to-br from-primary/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+                
+                {/* Shine effect */}
+                <div className="absolute inset-0 bg-gradient-to-tr from-transparent via-white/10 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-700" />
+                
+                <div className="relative z-10">
+                  <span className="text-5xl block mb-3 group-hover:scale-125 transition-transform duration-300">
+                    {cat.icon}
+                  </span>
+                  <h3 className="text-xl font-bold mb-1">{cat.name}</h3>
+                  <p className="text-sm text-white/70">{cat.count} Products</p>
+                </div>
+              </Link>
+            ))}
+          </div>
+        </div>
       </section>
 
       {/* Promotional Banners */}
