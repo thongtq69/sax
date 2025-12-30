@@ -13,6 +13,7 @@ import {
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { useCartStore } from '@/lib/store/cart'
+import { Star, Heart, Check, Minus, Plus, ExternalLink, Truck, Shield, Award } from 'lucide-react'
 
 interface QuickViewModalProps {
   product: Product
@@ -26,48 +27,82 @@ export function QuickViewModal({
   onOpenChange,
 }: QuickViewModalProps) {
   const [selectedImageIndex, setSelectedImageIndex] = useState(0)
+  const [quantity, setQuantity] = useState(1)
+  const [isWishlisted, setIsWishlisted] = useState(false)
+  const [isAddedToCart, setIsAddedToCart] = useState(false)
   const addItem = useCartStore((state) => state.addItem)
 
   const handleAddToCart = () => {
-    addItem({
-      id: `${product.id}-default`,
-      productId: product.id,
-      name: product.name,
-      slug: product.slug,
-      price: product.price,
-      image: product.images[0],
-    })
-    // Optionally close modal or show toast
+    for (let i = 0; i < quantity; i++) {
+      addItem({
+        id: `${product.id}-default`,
+        productId: product.id,
+        name: product.name,
+        slug: product.slug,
+        price: product.price,
+        image: product.images[0],
+      })
+    }
+    setIsAddedToCart(true)
+    setTimeout(() => {
+      setIsAddedToCart(false)
+    }, 2000)
   }
+
+  const savings = product.retailPrice ? product.retailPrice - product.price : 0
+  const savingsPercent = product.retailPrice ? Math.round((savings / product.retailPrice) * 100) : 0
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-4xl">
-        <DialogHeader>
-          <DialogTitle>{product.name}</DialogTitle>
-        </DialogHeader>
-
-        <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
+      <DialogContent className="max-w-4xl p-0 overflow-hidden rounded-2xl border-0 shadow-2xl">
+        <div className="grid grid-cols-1 md:grid-cols-2 max-h-[90vh] overflow-auto">
           {/* Image Gallery */}
-          <div>
-            <div className="relative aspect-square overflow-hidden rounded-lg border bg-gray-100">
+          <div className="relative bg-gradient-to-br from-gray-50 to-gray-100 p-6">
+            {/* Badge */}
+            {product.badge && (
+              <div className="absolute top-4 left-4 z-10">
+                <Badge 
+                  variant={product.badge} 
+                  className={`shadow-lg ${product.badge === 'sale' ? 'animate-pulse-soft' : ''}`}
+                >
+                  {product.badge === 'new' && '✨ New'}
+                  {product.badge === 'sale' && `🔥 ${savingsPercent}% OFF`}
+                  {product.badge === 'limited' && '⭐ Limited'}
+                </Badge>
+              </div>
+            )}
+
+            {/* Wishlist */}
+            <button
+              onClick={() => setIsWishlisted(!isWishlisted)}
+              className={`absolute top-4 right-4 z-10 p-2 rounded-full bg-white/90 shadow-lg transition-all duration-300 hover:scale-110 ${
+                isWishlisted ? 'text-red-500' : 'text-gray-400 hover:text-red-400'
+              }`}
+            >
+              <Heart className={`h-5 w-5 transition-all ${isWishlisted ? 'fill-current' : ''}`} />
+            </button>
+
+            {/* Main Image */}
+            <div className="relative aspect-square overflow-hidden rounded-xl bg-white group">
               <Image
                 src={product.images[selectedImageIndex] || product.images[0]}
                 alt={product.name}
                 fill
-                className="object-cover"
+                className="object-cover transition-transform duration-500 group-hover:scale-105"
               />
             </div>
+
+            {/* Thumbnails */}
             {product.images.length > 1 && (
-              <div className="mt-4 flex space-x-2 overflow-x-auto">
+              <div className="mt-4 flex gap-2 justify-center">
                 {product.images.map((image, index) => (
                   <button
                     key={index}
                     onClick={() => setSelectedImageIndex(index)}
-                    className={`relative h-20 w-20 flex-shrink-0 overflow-hidden rounded border-2 ${
+                    className={`relative h-16 w-16 overflow-hidden rounded-lg border-2 transition-all duration-300 ${
                       selectedImageIndex === index
-                        ? 'border-primary'
-                        : 'border-transparent'
+                        ? 'border-primary shadow-lg scale-105'
+                        : 'border-gray-200 hover:border-primary/50'
                     }`}
                   >
                     <Image
@@ -83,83 +118,149 @@ export function QuickViewModal({
           </div>
 
           {/* Product Info */}
-          <div className="space-y-4">
-            <div>
-              <div className="mb-2 flex items-center space-x-2">
-                {product.badge && (
-                  <Badge variant={product.badge}>
-                    {product.badge === 'new' && 'New'}
-                    {product.badge === 'sale' && 'Sale'}
-                    {product.badge === 'limited' && 'Limited'}
-                  </Badge>
-                )}
-                <span className="text-sm text-gray-500">SKU: {product.sku}</span>
-              </div>
-              <h2 className="text-2xl font-bold">{product.name}</h2>
-              <p className="text-gray-600">{product.brand}</p>
-            </div>
-
-            <div>
-              {product.retailPrice && (
-                <span className="mr-2 text-lg text-gray-400 line-through">
-                  ${product.retailPrice.toFixed(2)}
+          <div className="p-6 space-y-5 overflow-auto">
+            <DialogHeader className="space-y-2 text-left">
+              <div className="flex items-center gap-2 text-sm">
+                <span className="font-semibold text-accent uppercase tracking-wider">
+                  {product.brand}
                 </span>
-              )}
-              <span className="text-3xl font-bold text-primary">
-                ${product.price.toFixed(2)}
-              </span>
-            </div>
+                <span className="text-gray-300">•</span>
+                <span className="text-muted-foreground">SKU: {product.sku}</span>
+              </div>
+              <DialogTitle className="text-2xl font-bold text-secondary leading-tight">
+                {product.name}
+              </DialogTitle>
+            </DialogHeader>
 
-            {product.price > 500 && (
-              <div className="rounded-lg border bg-gray-50 p-4">
-                <div className="font-semibold">Financing Available</div>
-                <div className="text-sm text-gray-600">
-                  Starting at ${(product.price / 12).toFixed(2)}/month
-                  <br />
-                  <span className="text-xs">(12 mo @ 0% APR)</span>
+            {/* Rating */}
+            {product.rating && (
+              <div className="flex items-center gap-2">
+                <div className="flex">
+                  {Array.from({ length: 5 }).map((_, i) => (
+                    <Star
+                      key={i}
+                      className={`h-4 w-4 ${
+                        i < Math.floor(product.rating || 0)
+                          ? 'fill-amber-400 text-amber-400'
+                          : 'fill-gray-200 text-gray-200'
+                      }`}
+                    />
+                  ))}
                 </div>
+                <span className="text-sm font-medium">{product.rating}</span>
+                <span className="text-sm text-muted-foreground">
+                  ({product.reviewCount} reviews)
+                </span>
               </div>
             )}
 
-            <div className="text-sm">
-              {product.inStock ? (
-                <span className="text-green-600">In Stock</span>
-              ) : (
-                <span className="text-red-600">Out of Stock</span>
-              )}
-              {product.stock && product.stock < 5 && (
-                <span className="ml-2 text-orange-600">
-                  - Only {product.stock} left
+            {/* Pricing */}
+            <div className="p-4 rounded-xl bg-gradient-to-br from-primary/5 to-primary/10 border border-primary/20">
+              <div className="flex items-baseline gap-3">
+                <span className="text-3xl font-bold text-primary">
+                  ${product.price.toLocaleString()}
                 </span>
+                {product.retailPrice && (
+                  <>
+                    <span className="text-lg text-gray-400 line-through">
+                      ${product.retailPrice.toLocaleString()}
+                    </span>
+                    <Badge variant="destructive" className="text-xs">
+                      Save ${savings.toLocaleString()}
+                    </Badge>
+                  </>
+                )}
+              </div>
+              
+              {/* Financing */}
+              {product.price > 500 && (
+                <p className="text-sm text-gray-600 mt-2">
+                  Or <span className="font-semibold text-accent">${(product.price / 12).toFixed(0)}/mo</span> with 0% APR
+                </p>
               )}
             </div>
 
-            <div className="space-y-2">
+            {/* Stock Status */}
+            <div className={`flex items-center gap-2 text-sm font-medium ${
+              product.inStock ? 'text-green-600' : 'text-red-600'
+            }`}>
+              {product.inStock ? (
+                <>
+                  <Check className="h-4 w-4" />
+                  <span>In Stock</span>
+                </>
+              ) : (
+                <span>Out of Stock</span>
+              )}
+              {product.stock && product.stock <= 5 && product.inStock && (
+                <Badge variant="outline" className="ml-2 text-orange-600 border-orange-300 animate-pulse text-xs">
+                  Only {product.stock} left!
+                </Badge>
+              )}
+            </div>
+
+            {/* Quantity & Add to Cart */}
+            <div className="space-y-3">
+              <div className="flex items-center gap-4">
+                <span className="text-sm font-medium text-gray-600">Qty:</span>
+                <div className="flex items-center border-2 rounded-lg overflow-hidden">
+                  <button
+                    onClick={() => setQuantity(q => Math.max(1, q - 1))}
+                    className="p-2 hover:bg-gray-100 transition-colors"
+                    disabled={quantity <= 1}
+                  >
+                    <Minus className="h-4 w-4" />
+                  </button>
+                  <span className="w-10 text-center font-semibold">{quantity}</span>
+                  <button
+                    onClick={() => setQuantity(q => Math.min(product.stock || 10, q + 1))}
+                    className="p-2 hover:bg-gray-100 transition-colors"
+                  >
+                    <Plus className="h-4 w-4" />
+                  </button>
+                </div>
+              </div>
+
               <Button
-                className="w-full"
+                className={`w-full font-semibold transition-all duration-300 ${
+                  isAddedToCart 
+                    ? 'bg-green-500 hover:bg-green-600' 
+                    : 'hover:shadow-lg hover:scale-[1.02]'
+                }`}
+                size="lg"
                 onClick={handleAddToCart}
                 disabled={!product.inStock}
               >
-                Add to Cart
+                {isAddedToCart ? (
+                  <span className="flex items-center gap-2">
+                    <Check className="h-5 w-5 animate-bounce" />
+                    Added to Cart!
+                  </span>
+                ) : (
+                  'Add to Cart'
+                )}
               </Button>
-              <Button variant="outline" className="w-full" asChild>
-                <Link href={`/product/${product.slug}`}>View Full Details</Link>
+
+              <Button variant="outline" className="w-full group" size="lg" asChild>
+                <Link href={`/product/${product.slug}`}>
+                  <span>View Full Details</span>
+                  <ExternalLink className="ml-2 h-4 w-4 transition-transform group-hover:translate-x-1" />
+                </Link>
               </Button>
             </div>
 
-            <div className="space-y-2 text-sm">
-              <div className="flex items-center space-x-2">
-                <span className="text-green-600">✓</span>
-                <span>Free shipping on orders over $500</span>
-              </div>
-              <div className="flex items-center space-x-2">
-                <span className="text-green-600">✓</span>
-                <span>30-day return policy</span>
-              </div>
-              <div className="flex items-center space-x-2">
-                <span className="text-green-600">✓</span>
-                <span>Professional setup included</span>
-              </div>
+            {/* Trust badges */}
+            <div className="grid grid-cols-3 gap-2 pt-2">
+              {[
+                { icon: Truck, text: 'Free Ship' },
+                { icon: Shield, text: '30-Day Return' },
+                { icon: Award, text: 'Pro Setup' },
+              ].map((item, i) => (
+                <div key={i} className="flex flex-col items-center gap-1 p-2 rounded-lg bg-gray-50 text-center">
+                  <item.icon className="h-4 w-4 text-primary" />
+                  <span className="text-xs text-gray-600">{item.text}</span>
+                </div>
+              ))}
             </div>
           </div>
         </div>
@@ -167,4 +268,3 @@ export function QuickViewModal({
     </Dialog>
   )
 }
-

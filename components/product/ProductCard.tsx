@@ -3,7 +3,7 @@
 import { useState } from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
-import { Eye, Star } from 'lucide-react'
+import { Eye, Star, Heart, ShoppingBag } from 'lucide-react'
 import { Product } from '@/lib/data'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
@@ -13,6 +13,7 @@ import { useCartStore } from '@/lib/store/cart'
 
 interface ProductCardProps {
   product: Product
+  index?: number
 }
 
 // Mock finishes/colors for demo
@@ -27,9 +28,11 @@ const getProductFinishes = (productId: string) => {
   return finishSets[productId] || ['#D4AF37']
 }
 
-export function ProductCard({ product }: ProductCardProps) {
+export function ProductCard({ product, index = 0 }: ProductCardProps) {
   const [isQuickViewOpen, setIsQuickViewOpen] = useState(false)
   const [imageHover, setImageHover] = useState(false)
+  const [isWishlisted, setIsWishlisted] = useState(false)
+  const [isAddingToCart, setIsAddingToCart] = useState(false)
   const addItem = useCartStore((state) => state.addItem)
 
   const finishes = getProductFinishes(product.id)
@@ -37,6 +40,7 @@ export function ProductCard({ product }: ProductCardProps) {
   const savings = product.retailPrice ? product.retailPrice - product.price : 0
 
   const handleAddToCart = () => {
+    setIsAddingToCart(true)
     addItem({
       id: `${product.id}-default`,
       productId: product.id,
@@ -45,149 +49,215 @@ export function ProductCard({ product }: ProductCardProps) {
       price: product.price,
       image: product.images[0],
     })
+    setTimeout(() => setIsAddingToCart(false), 600)
   }
+
+  // Stagger animation delay based on index
+  const staggerDelay = Math.min(index * 0.05, 0.6)
 
   return (
     <>
-      <Card className="group relative overflow-hidden transition-all duration-300 hover:shadow-xl hover:-translate-y-1 border">
+      <Card 
+        className="product-card group relative overflow-hidden border-2 border-transparent hover:border-primary/30 transition-all duration-500 hover:shadow-2xl hover:-translate-y-2 bg-card"
+        style={{ animationDelay: `${staggerDelay}s` }}
+      >
+        {/* Decorative corner accents on hover */}
+        <div className="absolute top-0 left-0 w-8 h-8 border-l-2 border-t-2 border-primary/0 group-hover:border-primary/50 transition-all duration-500 z-10" />
+        <div className="absolute top-0 right-0 w-8 h-8 border-r-2 border-t-2 border-primary/0 group-hover:border-primary/50 transition-all duration-500 z-10" />
+        <div className="absolute bottom-0 left-0 w-8 h-8 border-l-2 border-b-2 border-primary/0 group-hover:border-primary/50 transition-all duration-500 z-10" />
+        <div className="absolute bottom-0 right-0 w-8 h-8 border-r-2 border-b-2 border-primary/0 group-hover:border-primary/50 transition-all duration-500 z-10" />
+
         <div
-          className="relative aspect-square overflow-hidden bg-gray-50"
+          className="product-image-container relative aspect-square overflow-hidden bg-gradient-to-br from-gray-50 to-gray-100"
           onMouseEnter={() => setImageHover(true)}
           onMouseLeave={() => setImageHover(false)}
         >
+          {/* Primary Image */}
           <Image
             src={product.images[0]}
             alt={product.name}
             fill
-            className={`object-cover transition-transform duration-500 ${imageHover ? 'scale-110' : 'scale-100'
-              }`}
+            className={`object-cover transition-all duration-700 ease-out ${
+              imageHover && product.images[1] ? 'opacity-0 scale-105' : 'opacity-100 scale-100'
+            }`}
           />
 
-          {/* Badges */}
-          <div className="absolute left-2 top-2 flex flex-col gap-1">
+          {/* Secondary Image (hover) */}
+          {product.images[1] && (
+            <Image
+              src={product.images[1]}
+              alt={`${product.name} - alternate view`}
+              fill
+              className={`object-cover transition-all duration-700 ease-out absolute inset-0 ${
+                imageHover ? 'opacity-100 scale-100' : 'opacity-0 scale-95'
+              }`}
+            />
+          )}
+
+          {/* Shine effect on hover */}
+          <div className="absolute inset-0 bg-gradient-to-tr from-transparent via-white/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none transform -translate-x-full group-hover:translate-x-full" style={{ transitionDuration: '0.8s' }} />
+
+          {/* Badges with animations */}
+          <div className="absolute left-3 top-3 flex flex-col gap-2 z-20">
             {product.badge && (
               <Badge
                 variant={product.badge}
-                className="shadow-sm"
+                className={`shadow-lg transform transition-all duration-300 hover:scale-105 ${
+                  product.badge === 'sale' ? 'animate-pulse-soft' : ''
+                } ${product.badge === 'limited' ? 'animate-border-glow' : ''}`}
               >
-                {product.badge === 'new' && 'New'}
-                {product.badge === 'sale' && `Save $${savings.toFixed(0)}`}
-                {product.badge === 'limited' && 'Limited'}
-                {product.badge === 'coming-soon' && 'Coming Soon'}
+                {product.badge === 'new' && '✨ New'}
+                {product.badge === 'sale' && `🔥 Save $${savings.toFixed(0)}`}
+                {product.badge === 'limited' && '⭐ Limited'}
+                {product.badge === 'coming-soon' && '🎵 Coming Soon'}
                 {product.badge === 'out-of-stock' && 'Out of Stock'}
+              </Badge>
+            )}
+            {product.stock && product.stock <= 2 && product.inStock && (
+              <Badge variant="destructive" className="stock-warning shadow-lg text-xs">
+                Only {product.stock} left!
               </Badge>
             )}
           </div>
 
-          {/* Quick View Overlay */}
-          <div
-            className={`absolute inset-0 flex items-center justify-center bg-primary/60 opacity-0 transition-opacity group-hover:opacity-100`}
+          {/* Wishlist Button */}
+          <button
+            onClick={() => setIsWishlisted(!isWishlisted)}
+            className={`absolute right-3 top-3 z-20 p-2 rounded-full bg-white/90 backdrop-blur-sm shadow-lg transition-all duration-300 hover:scale-110 ${
+              isWishlisted ? 'text-red-500' : 'text-gray-400 hover:text-red-400'
+            }`}
           >
+            <Heart 
+              className={`h-5 w-5 transition-all duration-300 ${isWishlisted ? 'fill-current scale-110' : ''}`} 
+            />
+          </button>
+
+          {/* Quick View Overlay */}
+          <div className="absolute inset-0 flex items-center justify-center bg-gradient-to-t from-secondary/80 via-secondary/40 to-transparent opacity-0 group-hover:opacity-100 transition-all duration-500">
             <Button
               variant="secondary"
               size="sm"
               onClick={() => setIsQuickViewOpen(true)}
-              className="flex items-center space-x-2 shadow-lg"
+              className="quick-view-btn flex items-center gap-2 shadow-xl bg-white text-secondary hover:bg-primary hover:text-white transform hover:scale-105 transition-all duration-300"
             >
               <Eye className="h-4 w-4" />
-              <span>Quick View</span>
+              <span className="font-semibold">Quick View</span>
             </Button>
+          </div>
+
+          {/* Category tag */}
+          <div className="absolute bottom-3 left-3 z-20 opacity-0 group-hover:opacity-100 transition-all duration-300 transform translate-y-2 group-hover:translate-y-0">
+            <span className="text-xs font-medium px-2 py-1 rounded bg-white/90 backdrop-blur-sm text-secondary capitalize">
+              {product.subcategory?.replace('-', ' ') || product.category}
+            </span>
           </div>
         </div>
 
-        <CardContent className="p-4">
-          {/* Brand */}
-          <p className="mb-1 text-xs font-medium uppercase tracking-wide text-muted-foreground">
-            {product.brand}
-          </p>
+        <CardContent className="p-4 relative">
+          {/* Subtle gradient background on hover */}
+          <div className="absolute inset-0 bg-gradient-to-t from-primary/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
 
-          {/* Title */}
-          <Link
-            href={`/product/${product.slug}`}
-            className="block hover:text-primary transition-colors"
-          >
-            <h3 className="mb-2 line-clamp-2 text-sm font-semibold leading-tight">
-              {product.name}
-            </h3>
-          </Link>
-
-          {/* Rating */}
-          {product.rating && (
-            <div className="mb-2 flex items-center gap-1">
-              <div className="flex">
-                {[...Array(5)].map((_, i) => (
-                  <Star
-                    key={i}
-                    className={`h-3 w-3 ${i < Math.floor(product.rating || 0)
-                        ? 'fill-secondary text-secondary'
-                        : 'fill-gray-200 text-gray-200'
-                      }`}
-                  />
-                ))}
-              </div>
-              {product.reviewCount && (
-                <span className="text-xs text-muted-foreground">
-                  ({product.reviewCount})
-                </span>
-              )}
-            </div>
-          )}
-
-          {/* Finish Options */}
-          {finishes.length > 1 && (
-            <div className="mb-2 flex items-center gap-1">
-              <span className="text-xs text-muted-foreground">Finishes:</span>
-              <div className="flex gap-1">
-                {finishes.map((color, i) => (
-                  <div
-                    key={i}
-                    className="h-4 w-4 rounded-full border border-gray-300 shadow-sm"
-                    style={{ backgroundColor: color }}
-                    title={color === '#D4AF37' ? 'Gold Lacquer' : color === '#C0C0C0' ? 'Silver Plated' : 'Bronze'}
-                  />
-                ))}
-              </div>
-            </div>
-          )}
-
-          {/* Pricing */}
-          <div className="mb-2">
-            <div className="flex items-baseline gap-2">
-              <span className="text-xl font-bold text-primary">
-                ${product.price.toLocaleString()}
-              </span>
-              {product.retailPrice && (
-                <span className="text-sm text-muted-foreground line-through">
-                  ${product.retailPrice.toLocaleString()}
-                </span>
-              )}
-            </div>
-
-            {/* Financing */}
-            {monthlyPayment && (
-              <p className="mt-1 text-xs text-accent font-medium">
-                Or ${monthlyPayment}/mo with 0% APR
-              </p>
-            )}
-          </div>
-
-          {/* Stock Status */}
-          {product.inStock && product.stock && product.stock <= 3 && (
-            <p className="mb-2 text-xs text-destructive font-medium">
-              Only {product.stock} left in stock!
+          <div className="relative z-10">
+            {/* Brand */}
+            <p className="mb-1 text-xs font-semibold uppercase tracking-widest text-accent transition-colors duration-300 group-hover:text-primary">
+              {product.brand}
             </p>
-          )}
 
-          {/* Add to Cart */}
-          <Button
-            className="w-full"
-            onClick={handleAddToCart}
-            disabled={!product.inStock || product.badge === 'out-of-stock'}
-          >
-            {!product.inStock || product.badge === 'out-of-stock'
-              ? 'Out of Stock'
-              : 'Add to Cart'}
-          </Button>
+            {/* Title with hover effect */}
+            <Link
+              href={`/product/${product.slug}`}
+              className="block group/title"
+            >
+              <h3 className="mb-2 line-clamp-2 text-sm font-bold leading-tight text-secondary transition-colors duration-300 group-hover/title:text-primary">
+                {product.name}
+              </h3>
+            </Link>
+
+            {/* Rating with animation */}
+            {product.rating && (
+              <div className="mb-2 flex items-center gap-1.5">
+                <div className="flex">
+                  {[...Array(5)].map((_, i) => (
+                    <Star
+                      key={i}
+                      className={`h-3.5 w-3.5 transition-all duration-200 ${
+                        i < Math.floor(product.rating || 0)
+                          ? 'fill-amber-400 text-amber-400'
+                          : 'fill-gray-200 text-gray-200'
+                      }`}
+                      style={{ animationDelay: `${i * 0.1}s` }}
+                    />
+                  ))}
+                </div>
+                {product.reviewCount && (
+                  <span className="text-xs text-muted-foreground font-medium">
+                    ({product.reviewCount} reviews)
+                  </span>
+                )}
+              </div>
+            )}
+
+            {/* Finish Options with hover effect */}
+            {finishes.length > 1 && (
+              <div className="mb-3 flex items-center gap-2">
+                <span className="text-xs text-muted-foreground">Finishes:</span>
+                <div className="flex gap-1.5">
+                  {finishes.map((color, i) => (
+                    <div
+                      key={i}
+                      className="color-swatch h-5 w-5 rounded-full border-2 border-white shadow-md cursor-pointer hover:ring-2 hover:ring-primary/50 transition-all duration-200"
+                      style={{ backgroundColor: color }}
+                      title={color === '#D4AF37' ? 'Gold Lacquer' : color === '#C0C0C0' ? 'Silver Plated' : 'Bronze'}
+                    />
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Pricing with highlight animation */}
+            <div className="mb-3">
+              <div className="flex items-baseline gap-2">
+                <span className="price-highlight text-xl font-bold text-primary transition-all duration-300 group-hover:text-2xl">
+                  ${product.price.toLocaleString()}
+                </span>
+                {product.retailPrice && (
+                  <span className="text-sm text-muted-foreground line-through decoration-red-400">
+                    ${product.retailPrice.toLocaleString()}
+                  </span>
+                )}
+              </div>
+
+              {/* Financing */}
+              {monthlyPayment && (
+                <p className="mt-1.5 text-xs text-accent font-semibold flex items-center gap-1">
+                  <span className="inline-block w-1.5 h-1.5 rounded-full bg-accent animate-pulse" />
+                  Or ${monthlyPayment}/mo with 0% APR
+                </p>
+              )}
+            </div>
+
+            {/* Add to Cart Button with ripple effect */}
+            <Button
+              className={`add-to-cart-btn w-full btn-ripple font-semibold tracking-wide transition-all duration-300 ${
+                isAddingToCart ? 'scale-95 bg-green-500' : ''
+              }`}
+              onClick={handleAddToCart}
+              disabled={!product.inStock || product.badge === 'out-of-stock'}
+            >
+              {isAddingToCart ? (
+                <span className="flex items-center gap-2">
+                  <span className="animate-bounce">✓</span> Added!
+                </span>
+              ) : !product.inStock || product.badge === 'out-of-stock' ? (
+                'Out of Stock'
+              ) : (
+                <span className="flex items-center gap-2">
+                  <ShoppingBag className="h-4 w-4" />
+                  Add to Cart
+                </span>
+              )}
+            </Button>
+          </div>
         </CardContent>
       </Card>
 

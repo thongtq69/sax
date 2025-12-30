@@ -2,7 +2,7 @@ import { notFound } from 'next/navigation'
 import Link from 'next/link'
 import { getProductBySlug, products } from '@/lib/data'
 import { ProductDetailClient } from '@/components/product/ProductDetailClient'
-import { ChevronRight } from 'lucide-react'
+import { ChevronRight, Home } from 'lucide-react'
 
 export async function generateStaticParams() {
   return products.map((product) => ({
@@ -22,21 +22,28 @@ export default function ProductPage({
   }
 
   return (
-    <div className="container mx-auto px-4 py-8">
+    <div className="min-h-screen">
       {/* Breadcrumbs */}
-      <nav className="mb-6 flex items-center space-x-2 text-sm text-gray-600">
-        <Link href="/" className="hover:text-primary">
-          Home
-        </Link>
-        <ChevronRight className="h-4 w-4" />
-        <Link href="/shop" className="hover:text-primary">
-          Shop
-        </Link>
-        <ChevronRight className="h-4 w-4" />
-        <span className="text-gray-900">{product.name}</span>
-      </nav>
+      <div className="bg-muted/30 border-b">
+        <div className="container mx-auto px-4 py-4">
+          <nav className="flex items-center space-x-2 text-sm">
+            <Link href="/" className="text-muted-foreground hover:text-primary transition-colors flex items-center gap-1">
+              <Home className="h-3.5 w-3.5" />
+              Home
+            </Link>
+            <ChevronRight className="h-4 w-4 text-muted-foreground/50" />
+            <Link href="/shop" className="text-muted-foreground hover:text-primary transition-colors">
+              Products
+            </Link>
+            <ChevronRight className="h-4 w-4 text-muted-foreground/50" />
+            <span className="text-secondary font-medium line-clamp-1">{product.name}</span>
+          </nav>
+        </div>
+      </div>
 
-      <ProductDetailClient product={product} />
+      <div className="container mx-auto px-4 py-10">
+        <ProductDetailClient product={product} />
+      </div>
     </div>
   )
 }

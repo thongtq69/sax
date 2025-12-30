@@ -40,7 +40,6 @@ export interface PromoBanner {
   title: string
   description: string
   image: string
-  validUntil?: string
   ctaText: string
   ctaLink: string
 }
@@ -527,11 +526,10 @@ export const products: Product[] = [
 export const promoBanners: PromoBanner[] = [
   {
     id: '1',
-    title: '0% APR Financing',
-    description: 'Get 0% APR financing on all instruments over $1,000. Apply today!',
+    title: 'Trả góp 0% lãi suất',
+    description: 'Trả góp 0% cho mọi nhạc cụ trên $1,000. Đăng ký ngay!',
     image: '/images/products/altus-1607-main.jpg',
-    validUntil: 'January 31, 2025',
-    ctaText: 'Learn More',
+    ctaText: 'Tìm hiểu thêm',
     ctaLink: '/financing',
   },
   {
@@ -539,44 +537,39 @@ export const promoBanners: PromoBanner[] = [
     title: 'New Altus Flutes',
     description: 'Discover our latest collection of professional Altus flutes.',
     image: '/images/products/altus-5207-gold-main.jpg',
-    validUntil: 'While Supplies Last',
-    ctaText: 'Shop Now',
+    ctaText: 'Mua ngay',
     ctaLink: '/shop/woodwinds/flutes',
   },
   {
     id: '3',
-    title: 'Professional Setup',
-    description: 'Every instrument professionally set up before shipping.',
+    title: 'Setup chuyên nghiệp',
+    description: 'Mọi nhạc cụ được setup chuyên nghiệp trước khi giao hàng.',
     image: '/images/products/selmer-sa80-alto-main.jpg',
-    validUntil: 'Always Included',
-    ctaText: 'Learn More',
+    ctaText: 'Tìm hiểu thêm',
     ctaLink: '/about',
   },
   {
     id: '4',
-    title: 'Saxophone Sale',
-    description: 'Save up to $800 on select Selmer and Antigua saxophones.',
+    title: 'Khuyến mãi Saxophone',
+    description: 'Tiết kiệm đến $800 cho Selmer và Antigua saxophone.',
     image: '/images/products/antigua-tenor-main.jpg',
-    validUntil: 'December 31, 2024',
-    ctaText: 'Shop Saxophones',
+    ctaText: 'Xem Saxophone',
     ctaLink: '/shop/woodwinds/saxophones',
   },
   {
     id: '5',
-    title: 'Buffet Clarinets',
-    description: 'The legendary R13 - now at special pricing.',
+    title: 'Clarinet Buffet',
+    description: 'Dòng R13 huyền thoại - giá ưu đãi đặc biệt.',
     image: '/images/products/buffet-r13-main.jpg',
-    validUntil: 'Limited Time',
-    ctaText: 'View Details',
+    ctaText: 'Xem chi tiết',
     ctaLink: '/shop/woodwinds/clarinets',
   },
   {
     id: '6',
-    title: 'Trade-In Program',
-    description: 'Trade in your old instrument for credit towards a new one.',
+    title: 'Chương trình Thu Cũ Đổi Mới',
+    description: 'Đổi nhạc cụ cũ lấy credit cho nhạc cụ mới.',
     image: '/images/products/haynes-piccolo-a10751-main.jpg',
-    validUntil: 'Ongoing',
-    ctaText: 'Get Quote',
+    ctaText: 'Nhận báo giá',
     ctaLink: '/contact',
   },
 ]
