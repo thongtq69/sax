@@ -332,6 +332,65 @@ export default function HomePage() {
         </div>
       </section>
 
+      {/* Coming Soon Section */}
+      {saleProducts.length > 0 && (
+        <section className="bg-gradient-to-br from-blue-50 to-indigo-50 py-16 relative overflow-hidden">
+          {/* Decorative elements */}
+          <div className="absolute top-0 left-0 w-64 h-64 bg-blue-100 rounded-full -translate-x-1/2 -translate-y-1/2 opacity-50" />
+          <div className="absolute bottom-0 right-0 w-96 h-96 bg-indigo-100 rounded-full translate-x-1/3 translate-y-1/3 opacity-50" />
+          
+          <div className="container mx-auto px-4 relative z-10">
+            <div className="mb-10 text-center animate-fade-in-up">
+              <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-blue-500 text-white text-sm font-medium mb-4 animate-pulse-soft">
+                📦 Arriving Soon
+              </div>
+              <h2 className="text-3xl md:text-4xl font-bold text-secondary">Coming Soon</h2>
+              <p className="mt-3 text-muted-foreground">Premium instruments arriving soon to our store</p>
+            </div>
+            
+            {/* Auto-scrolling Coming Soon Products Carousel */}
+            <InfiniteCarousel products={saleProducts} id="coming-soon" speed={150} />
+            
+            {/* View All Button */}
+            <div className="mt-10 text-center">
+              <Button 
+                variant="outline" 
+                size="lg" 
+                className="border-2 border-secondary bg-white text-secondary hover:bg-secondary hover:text-white group px-8 shadow-lg" 
+                asChild
+              >
+                <Link href="/shop" className="flex items-center">
+                  View All Instruments
+                  <ChevronRight className="ml-2 h-5 w-5 group-hover:translate-x-1 transition-transform" />
+                </Link>
+              </Button>
+            </div>
+          </div>
+        </section>
+      )}
+
+      {/* Featured Products - New Arrivals */}
+      <section className="container mx-auto px-4 py-16">
+        <div className="mb-10 text-center animate-fade-in-up">
+          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary/10 text-primary text-sm font-medium mb-4">
+            <Sparkles className="h-4 w-4" />
+            Just Arrived
+          </div>
+          <h2 className="text-3xl md:text-4xl font-bold text-secondary">Featured Instruments</h2>
+          <div className="mt-3 flex items-center justify-center space-x-4">
+            <div className="h-px w-16 bg-gradient-to-r from-transparent to-primary" />
+            <span className="text-2xl text-primary">♫</span>
+            <div className="h-px w-16 bg-gradient-to-l from-transparent to-primary" />
+          </div>
+          <p className="mt-4 text-muted-foreground max-w-xl mx-auto">
+            Handpicked selection of our finest instruments, each professionally setup and ready to play
+          </p>
+        </div>
+        
+        {/* Auto-scrolling Product Carousel - CONTINUOUS INFINITE SCROLL */}
+        <InfiniteCarousel products={featuredProducts} id="featured" speed={150} />
+      </section>
+
       {/* Promotional Banners */}
       <section className="bg-gradient-to-b from-muted to-white py-16">
         <div className="container mx-auto px-4">
@@ -385,65 +444,6 @@ export default function HomePage() {
           </div>
         </div>
       </section>
-
-      {/* Featured Products - New Arrivals */}
-      <section className="container mx-auto px-4 py-16">
-        <div className="mb-10 text-center animate-fade-in-up">
-          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary/10 text-primary text-sm font-medium mb-4">
-            <Sparkles className="h-4 w-4" />
-            Just Arrived
-          </div>
-          <h2 className="text-3xl md:text-4xl font-bold text-secondary">Featured Instruments</h2>
-          <div className="mt-3 flex items-center justify-center space-x-4">
-            <div className="h-px w-16 bg-gradient-to-r from-transparent to-primary" />
-            <span className="text-2xl text-primary">♫</span>
-            <div className="h-px w-16 bg-gradient-to-l from-transparent to-primary" />
-          </div>
-          <p className="mt-4 text-muted-foreground max-w-xl mx-auto">
-            Handpicked selection of our finest instruments, each professionally setup and ready to play
-          </p>
-        </div>
-        
-        {/* Auto-scrolling Product Carousel - CONTINUOUS INFINITE SCROLL */}
-        <InfiniteCarousel products={featuredProducts} id="featured" speed={150} />
-      </section>
-
-      {/* On Sale Section */}
-      {saleProducts.length > 0 && (
-        <section className="bg-gradient-to-br from-red-50 to-orange-50 py-16 relative overflow-hidden">
-          {/* Decorative elements */}
-          <div className="absolute top-0 left-0 w-64 h-64 bg-red-100 rounded-full -translate-x-1/2 -translate-y-1/2 opacity-50" />
-          <div className="absolute bottom-0 right-0 w-96 h-96 bg-orange-100 rounded-full translate-x-1/3 translate-y-1/3 opacity-50" />
-          
-          <div className="container mx-auto px-4 relative z-10">
-            <div className="mb-10 text-center animate-fade-in-up">
-              <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-red-500 text-white text-sm font-medium mb-4 animate-pulse-soft">
-                🔥 Hot Deals
-              </div>
-              <h2 className="text-3xl md:text-4xl font-bold text-secondary">Special Offers</h2>
-              <p className="mt-3 text-muted-foreground">Save big on these premium instruments</p>
-            </div>
-            
-            {/* Auto-scrolling Sale Products Carousel - CONTINUOUS INFINITE SCROLL */}
-            <InfiniteCarousel products={saleProducts} id="sale" speed={150} />
-            
-            {/* View All Button */}
-            <div className="mt-10 text-center">
-              <Button 
-                variant="outline" 
-                size="lg" 
-                className="border-2 border-secondary bg-white text-secondary hover:bg-secondary hover:text-white group px-8 shadow-lg" 
-                asChild
-              >
-                <Link href="/shop" className="flex items-center">
-                  View All Instruments
-                  <ChevronRight className="ml-2 h-5 w-5 group-hover:translate-x-1 transition-transform" />
-                </Link>
-              </Button>
-            </div>
-          </div>
-        </section>
-      )}
 
       {/* Testimonial / Why Choose Us */}
       <section className="container mx-auto px-4 py-16">
