@@ -97,7 +97,36 @@ Endpoint này sẽ trả về:
    - Phải **Redeploy** để áp dụng changes
    - Vào Deployments → Click "..." → Redeploy
 
-### Bước 3: Kiểm tra MongoDB Atlas
+### Bước 3: Kiểm tra và Update DATABASE_URL trên Vercel
+
+**QUAN TRỌNG:** Connection string trên Vercel phải có đầy đủ SSL/TLS parameters:
+
+1. **Format đúng của DATABASE_URL:**
+   ```
+   mongodb+srv://username:password@cluster.mongodb.net/database?retryWrites=true&w=majority&ssl=true&tls=true&connectTimeoutMS=10000&socketTimeoutMS=45000
+   ```
+
+2. **Kiểm tra trên Vercel:**
+   - Vào Settings → Environment Variables
+   - Click vào `DATABASE_URL`
+   - Đảm bảo connection string có các parameters:
+     - `ssl=true`
+     - `tls=true`
+     - `connectTimeoutMS=10000`
+     - `socketTimeoutMS=45000`
+
+3. **Nếu thiếu, update DATABASE_URL:**
+   - Thêm các parameters vào cuối connection string
+   - Ví dụ: Nếu hiện tại là:
+     ```
+     mongodb+srv://user:pass@cluster.mongodb.net/db?retryWrites=true&w=majority
+     ```
+   - Thì update thành:
+     ```
+     mongodb+srv://user:pass@cluster.mongodb.net/db?retryWrites=true&w=majority&ssl=true&tls=true&connectTimeoutMS=10000&socketTimeoutMS=45000
+     ```
+
+### Bước 4: Kiểm tra MongoDB Atlas
 
 1. **Network Access:**
    - Vào MongoDB Atlas → Network Access
