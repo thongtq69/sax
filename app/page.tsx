@@ -4,41 +4,157 @@ import { useState, useEffect, useRef } from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
 import { Button } from '@/components/ui/button'
-import { Card, CardContent } from '@/components/ui/card'
+import { Card } from '@/components/ui/card'
 import { ProductCard } from '@/components/product/ProductCard'
 import { getProducts, getPromoBanners, transformProduct } from '@/lib/api'
 import type { Product } from '@/lib/data'
-import { Phone, Shield, Truck, CreditCard, Award, Headphones, Music, ChevronRight, Star, Sparkles } from 'lucide-react'
+import { Phone, Shield, Truck, CreditCard, Award, Headphones, Music, ChevronRight, ChevronLeft, Star, Sparkles } from 'lucide-react'
 import { PromoCarousel } from '@/components/site/PromoCarousel'
 
+// ============ INFINITE CAROUSEL COMPONENT ============
+interface InfiniteCarouselProps {
+  products: Product[]
+  id: string
+  speed?: number // pixels per second
+}
+
+function InfiniteCarousel({ products, id, speed = 100 }: InfiniteCarouselProps) {
+  const [isPaused, setIsPaused] = useState(false)
+  const [offset, setOffset] = useState(0)
+  const containerRef = useRef<HTMLDivElement>(null)
+  const animationRef = useRef<number | null>(null)
+  const lastTimeRef = useRef<number>(0)
+  
+  // Card width + gap
+  const cardWidth = 320
+  const gap = 24
+  const itemWidth = cardWidth + gap
+  const totalWidth = products.length * itemWidth
+  
+  // Animation loop using requestAnimationFrame
+  useEffect(() => {
+    if (products.length === 0) return
+    
+    // speed is now passed as prop
+    
+    const animate = (currentTime: number) => {
+      if (!lastTimeRef.current) {
+        lastTimeRef.current = currentTime
+      }
+      
+      const deltaTime = currentTime - lastTimeRef.current
+      lastTimeRef.current = currentTime
+      
+      if (!isPaused) {
+        setOffset(prev => {
+          const newOffset = prev + (speed * deltaTime) / 1000
+          // Reset when we've scrolled one full set
+          if (newOffset >= totalWidth) {
+            return 0
+          }
+          return newOffset
+        })
+      }
+      
+      animationRef.current = requestAnimationFrame(animate)
+    }
+    
+    animationRef.current = requestAnimationFrame(animate)
+    
+    return () => {
+      if (animationRef.current) {
+        cancelAnimationFrame(animationRef.current)
+      }
+    }
+  }, [products.length, isPaused, totalWidth, speed])
+  
+  // Manual scroll functions
+  const scroll = (direction: 'left' | 'right') => {
+    const scrollAmount = cardWidth
+    setOffset(prev => {
+      if (direction === 'right') {
+        const newOffset = prev + scrollAmount
+        return newOffset >= totalWidth ? 0 : newOffset
+      } else {
+        const newOffset = prev - scrollAmount
+        return newOffset < 0 ? totalWidth - scrollAmount : newOffset
+      }
+    })
+  }
+  
+  // Triple the products for seamless loop
+  const tripleProducts = [...products, ...products, ...products]
+  
+  if (products.length === 0) return null
+  
+  return (
+    <div 
+      className="relative"
+      onMouseEnter={() => setIsPaused(true)}
+      onMouseLeave={() => setIsPaused(false)}
+    >
+      {/* Overflow container */}
+      <div className="overflow-hidden" ref={containerRef}>
+        {/* Moving track */}
+        <div 
+          className="flex gap-6"
+          style={{
+            transform: `translateX(-${offset}px)`,
+            width: `${tripleProducts.length * itemWidth}px`
+          }}
+        >
+          {tripleProducts.map((product, index) => (
+            <div 
+              key={`${id}-${product.id}-${index}`}
+              className="flex-shrink-0"
+              style={{ width: `${cardWidth}px` }}
+            >
+              <ProductCard product={product} index={index % products.length} />
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* Navigation arrows */}
+      <button
+        type="button"
+        aria-label="Scroll left"
+        onClick={() => scroll('left')}
+        className="absolute left-0 top-1/2 -translate-y-1/2 -translate-x-1/2 rounded-full bg-white/90 border border-primary/20 shadow-lg p-3 text-primary hover:bg-primary hover:text-white transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-primary z-10"
+      >
+        <ChevronLeft className="h-5 w-5" />
+      </button>
+      <button
+        type="button"
+        aria-label="Scroll right"
+        onClick={() => scroll('right')}
+        className="absolute right-0 top-1/2 -translate-y-1/2 translate-x-1/2 rounded-full bg-white/90 border border-primary/20 shadow-lg p-3 text-primary hover:bg-primary hover:text-white transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-primary z-10"
+      >
+        <ChevronRight className="h-5 w-5" />
+      </button>
+    </div>
+  )
+}
+
+// ============ MAIN PAGE COMPONENT ============
 export default function HomePage() {
   const [featuredProducts, setFeaturedProducts] = useState<Product[]>([])
   const [saleProducts, setSaleProducts] = useState<Product[]>([])
   const [promoBanners, setPromoBanners] = useState<any[]>([])
   const [isLoading, setIsLoading] = useState(true)
-  const [isCarouselPaused, setIsCarouselPaused] = useState(false)
-  const [isSaleCarouselPaused, setIsSaleCarouselPaused] = useState(false)
-  
-  // Refs for drag functionality
-  const featuredCarouselRef = useRef<HTMLDivElement>(null)
-  const saleCarouselRef = useRef<HTMLDivElement>(null)
-  const featuredDragState = useRef({ isDragging: false, startX: 0, scrollLeft: 0 })
-  const saleDragState = useRef({ isDragging: false, startX: 0, scrollLeft: 0 })
 
+  // Fetch data
   useEffect(() => {
     async function fetchData() {
       try {
-        // Fetch featured products (New Arrivals - badge: 'new')
         const featuredResponse = await getProducts({ badge: 'new', limit: 8 })
         const featured = featuredResponse.products.map(transformProduct)
         setFeaturedProducts(featured)
 
-        // Fetch sale products
         const saleResponse = await getProducts({ badge: 'sale', limit: 8 })
         const sale = saleResponse.products.map(transformProduct)
         setSaleProducts(sale)
 
-        // Fetch promo banners
         const promos = await getPromoBanners()
         setPromoBanners(promos)
       } catch (error) {
@@ -49,55 +165,6 @@ export default function HomePage() {
     }
     fetchData()
   }, [])
-
-  // Auto-scroll carousels
-  useEffect(() => {
-    if (!featuredCarouselRef.current || featuredProducts.length === 0) return
-    
-    const carousel = featuredCarouselRef.current
-    let scrollInterval: NodeJS.Timeout
-    
-    const autoScroll = () => {
-      if (isCarouselPaused || featuredDragState.current.isDragging) return
-      
-      const scrollAmount = 1
-      const maxScroll = carousel.scrollWidth - carousel.clientWidth
-      
-      if (carousel.scrollLeft >= maxScroll - 10) {
-        carousel.scrollLeft = 0
-      } else {
-        carousel.scrollLeft += scrollAmount
-      }
-    }
-    
-    scrollInterval = setInterval(autoScroll, 16) // ~60fps
-    
-    return () => clearInterval(scrollInterval)
-  }, [featuredProducts, isCarouselPaused])
-
-  useEffect(() => {
-    if (!saleCarouselRef.current || saleProducts.length === 0) return
-    
-    const carousel = saleCarouselRef.current
-    let scrollInterval: NodeJS.Timeout
-    
-    const autoScroll = () => {
-      if (isSaleCarouselPaused || saleDragState.current.isDragging) return
-      
-      const scrollAmount = 1
-      const maxScroll = carousel.scrollWidth - carousel.clientWidth
-      
-      if (carousel.scrollLeft >= maxScroll - 10) {
-        carousel.scrollLeft = 0
-      } else {
-        carousel.scrollLeft += scrollAmount
-      }
-    }
-    
-    scrollInterval = setInterval(autoScroll, 16) // ~60fps
-    
-    return () => clearInterval(scrollInterval)
-  }, [saleProducts, isSaleCarouselPaused])
   
   if (isLoading) {
     return (
@@ -337,94 +404,8 @@ export default function HomePage() {
           </p>
         </div>
         
-        {/* Auto-scrolling Product Carousel - Shows 4 products at a time */}
-        <div 
-          className="relative overflow-x-auto w-full cursor-grab active:cursor-grabbing scrollbar-hide"
-          ref={featuredCarouselRef}
-          style={{ scrollBehavior: 'smooth' }}
-          onMouseDown={(e) => {
-            if (!featuredCarouselRef.current) return
-            featuredDragState.current.isDragging = true
-            featuredDragState.current.startX = e.pageX - featuredCarouselRef.current.offsetLeft
-            featuredDragState.current.scrollLeft = featuredCarouselRef.current.scrollLeft
-            setIsCarouselPaused(true)
-            e.preventDefault()
-          }}
-          onMouseLeave={() => {
-            featuredDragState.current.isDragging = false
-            setIsCarouselPaused(false)
-          }}
-          onMouseUp={() => {
-            featuredDragState.current.isDragging = false
-            setIsCarouselPaused(false)
-          }}
-          onMouseMove={(e) => {
-            if (!featuredDragState.current.isDragging || !featuredCarouselRef.current) return
-            e.preventDefault()
-            const x = e.pageX - featuredCarouselRef.current.offsetLeft
-            const walk = (x - featuredDragState.current.startX) * 2.5
-            featuredCarouselRef.current.scrollLeft = featuredDragState.current.scrollLeft - walk
-          }}
-          onTouchStart={(e) => {
-            if (!featuredCarouselRef.current) return
-            featuredDragState.current.isDragging = true
-            featuredDragState.current.startX = e.touches[0].pageX - featuredCarouselRef.current.offsetLeft
-            featuredDragState.current.scrollLeft = featuredCarouselRef.current.scrollLeft
-            setIsCarouselPaused(true)
-          }}
-          onTouchEnd={() => {
-            featuredDragState.current.isDragging = false
-            setIsCarouselPaused(false)
-          }}
-          onTouchMove={(e) => {
-            if (!featuredDragState.current.isDragging || !featuredCarouselRef.current) return
-            const x = e.touches[0].pageX - featuredCarouselRef.current.offsetLeft
-            const walk = (x - featuredDragState.current.startX) * 2.5
-            featuredCarouselRef.current.scrollLeft = featuredDragState.current.scrollLeft - walk
-          }}
-        >
-          <div 
-            className="flex gap-4 md:gap-6"
-            style={{
-              width: 'fit-content',
-            }}
-            onMouseEnter={() => setIsCarouselPaused(true)}
-            onMouseLeave={() => {
-              if (!featuredDragState.current.isDragging) {
-                setIsCarouselPaused(false)
-              }
-            }}
-          >
-            {/* Duplicate products for seamless infinite loop */}
-            {[...featuredProducts, ...featuredProducts].map((product, index) => (
-              <div 
-                key={`${product.id}-${index}`} 
-                className="flex-shrink-0" 
-                style={{ 
-                  width: 'clamp(250px, calc((100vw - 64px) / 2), 320px)',
-                  minWidth: '250px',
-                  maxWidth: '320px'
-                }}
-              >
-                <ProductCard product={product} index={index % featuredProducts.length} />
-              </div>
-            ))}
-          </div>
-        </div>
-        
-        <div className="mt-10 text-center">
-          <Button 
-            variant="outline" 
-            size="lg" 
-            className="border-2 border-secondary text-secondary hover:bg-secondary hover:text-white group px-8" 
-            asChild
-          >
-            <Link href="/shop" className="flex items-center">
-              View All Instruments
-              <ChevronRight className="ml-2 h-5 w-5 group-hover:translate-x-1 transition-transform" />
-            </Link>
-          </Button>
-        </div>
+        {/* Auto-scrolling Product Carousel - CONTINUOUS INFINITE SCROLL */}
+        <InfiniteCarousel products={featuredProducts} id="featured" speed={150} />
       </section>
 
       {/* On Sale Section */}
@@ -443,79 +424,22 @@ export default function HomePage() {
               <p className="mt-3 text-muted-foreground">Save big on these premium instruments</p>
             </div>
             
-            {/* Auto-scrolling Sale Products Carousel - Shows 4 products at a time */}
-            <div 
-              className="relative overflow-x-auto w-full cursor-grab active:cursor-grabbing scrollbar-hide"
-              ref={saleCarouselRef}
-              style={{ scrollBehavior: 'smooth' }}
-              onMouseDown={(e) => {
-                if (!saleCarouselRef.current) return
-                saleDragState.current.isDragging = true
-                saleDragState.current.startX = e.pageX - saleCarouselRef.current.offsetLeft
-                saleDragState.current.scrollLeft = saleCarouselRef.current.scrollLeft
-                setIsSaleCarouselPaused(true)
-                e.preventDefault()
-              }}
-              onMouseLeave={() => {
-                saleDragState.current.isDragging = false
-                setIsSaleCarouselPaused(false)
-              }}
-              onMouseUp={() => {
-                saleDragState.current.isDragging = false
-                setIsSaleCarouselPaused(false)
-              }}
-              onMouseMove={(e) => {
-                if (!saleDragState.current.isDragging || !saleCarouselRef.current) return
-                e.preventDefault()
-                const x = e.pageX - saleCarouselRef.current.offsetLeft
-                const walk = (x - saleDragState.current.startX) * 2.5
-                saleCarouselRef.current.scrollLeft = saleDragState.current.scrollLeft - walk
-              }}
-              onTouchStart={(e) => {
-                if (!saleCarouselRef.current) return
-                saleDragState.current.isDragging = true
-                saleDragState.current.startX = e.touches[0].pageX - saleCarouselRef.current.offsetLeft
-                saleDragState.current.scrollLeft = saleCarouselRef.current.scrollLeft
-                setIsSaleCarouselPaused(true)
-              }}
-              onTouchEnd={() => {
-                saleDragState.current.isDragging = false
-                setIsSaleCarouselPaused(false)
-              }}
-              onTouchMove={(e) => {
-                if (!saleDragState.current.isDragging || !saleCarouselRef.current) return
-                const x = e.touches[0].pageX - saleCarouselRef.current.offsetLeft
-                const walk = (x - saleDragState.current.startX) * 2.5
-                saleCarouselRef.current.scrollLeft = saleDragState.current.scrollLeft - walk
-              }}
-            >
-              <div 
-                className="flex gap-4 md:gap-6"
-                style={{
-                  width: 'fit-content',
-                }}
-                onMouseEnter={() => setIsSaleCarouselPaused(true)}
-                onMouseLeave={() => {
-                  if (!saleDragState.current.isDragging) {
-                    setIsSaleCarouselPaused(false)
-                  }
-                }}
+            {/* Auto-scrolling Sale Products Carousel - CONTINUOUS INFINITE SCROLL */}
+            <InfiniteCarousel products={saleProducts} id="sale" speed={150} />
+            
+            {/* View All Button */}
+            <div className="mt-10 text-center">
+              <Button 
+                variant="outline" 
+                size="lg" 
+                className="border-2 border-secondary bg-white text-secondary hover:bg-secondary hover:text-white group px-8 shadow-lg" 
+                asChild
               >
-                {/* Duplicate products for seamless infinite loop */}
-                {[...saleProducts, ...saleProducts].map((product, index) => (
-                  <div 
-                    key={`${product.id}-${index}`} 
-                    className="flex-shrink-0" 
-                    style={{ 
-                      width: 'clamp(250px, calc((100vw - 64px) / 2), 320px)',
-                      minWidth: '250px',
-                      maxWidth: '320px'
-                    }}
-                  >
-                    <ProductCard product={product} index={index % saleProducts.length} />
-                  </div>
-                ))}
-              </div>
+                <Link href="/shop" className="flex items-center">
+                  View All Instruments
+                  <ChevronRight className="ml-2 h-5 w-5 group-hover:translate-x-1 transition-transform" />
+                </Link>
+              </Button>
             </div>
           </div>
         </section>

@@ -23,7 +23,7 @@ export default function ShopPage() {
   const [categories, setCategories] = useState<any[]>([])
   const [selectedBrands, setSelectedBrands] = useState<string[]>([])
   const [selectedCategory, setSelectedCategory] = useState<string>('all')
-  const [priceRange, setPriceRange] = useState<[number, number]>([0, 30000])
+  const [priceRange, setPriceRange] = useState<[number, number]>([0, 50000000])
   const [sortBy, setSortBy] = useState<SortOption>('featured')
   const [currentPage, setCurrentPage] = useState(1)
   const [gridCols, setGridCols] = useState<3 | 4>(3)
