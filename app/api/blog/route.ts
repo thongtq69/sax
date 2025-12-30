@@ -28,6 +28,9 @@ export async function GET(request: NextRequest) {
       ]
     }
 
+    // Test database connection first
+    await prisma.$connect()
+    
     const [posts, total] = await Promise.all([
       prisma.blogPost.findMany({
         where,
@@ -49,10 +52,14 @@ export async function GET(request: NextRequest) {
         totalPages: Math.ceil(total / limit),
       },
     })
-  } catch (error) {
+  } catch (error: any) {
     console.error('Error fetching blog posts:', error)
     return NextResponse.json(
-      { error: 'Failed to fetch blog posts' },
+      { 
+        error: 'Failed to fetch blog posts',
+        message: error?.message || 'Unknown error',
+        code: error?.code || 'UNKNOWN_ERROR',
+      },
       { status: 500 }
     )
   }

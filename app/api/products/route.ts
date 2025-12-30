@@ -54,6 +54,9 @@ export async function GET(request: NextRequest) {
       ]
     }
 
+    // Test database connection first
+    await prisma.$connect()
+    
     const [products, total] = await Promise.all([
       prisma.product.findMany({
         where,
@@ -91,10 +94,14 @@ export async function GET(request: NextRequest) {
         totalPages: Math.ceil(total / limit),
       },
     })
-  } catch (error) {
+  } catch (error: any) {
     console.error('Error fetching products:', error)
     return NextResponse.json(
-      { error: 'Failed to fetch products' },
+      { 
+        error: 'Failed to fetch products',
+        message: error?.message || 'Unknown error',
+        code: error?.code || 'UNKNOWN_ERROR',
+      },
       { status: 500 }
     )
   }

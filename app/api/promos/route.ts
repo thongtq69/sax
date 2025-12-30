@@ -4,6 +4,9 @@ import { prisma } from '@/lib/prisma'
 // GET /api/promos - Get all promo banners
 export async function GET(request: NextRequest) {
   try {
+    // Test database connection first
+    await prisma.$connect()
+    
     const promos = await prisma.promoBanner.findMany({
       orderBy: {
         createdAt: 'desc',
@@ -11,10 +14,14 @@ export async function GET(request: NextRequest) {
     })
 
     return NextResponse.json(promos)
-  } catch (error) {
+  } catch (error: any) {
     console.error('Error fetching promo banners:', error)
     return NextResponse.json(
-      { error: 'Failed to fetch promo banners' },
+      { 
+        error: 'Failed to fetch promo banners',
+        message: error?.message || 'Unknown error',
+        code: error?.code || 'UNKNOWN_ERROR',
+      },
       { status: 500 }
     )
   }
