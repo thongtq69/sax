@@ -17,8 +17,9 @@ import { PromoCarousel } from '@/components/site/PromoCarousel'
 
 export default function HomePage() {
   const featuredProducts = getFeaturedProducts('4') // New Arrivals collection
-  const saleProducts = products.filter(p => p.badge === 'sale').slice(0, 4)
+  const saleProducts = products.filter(p => p.badge === 'sale').slice(0, 8) // Get more for carousel
   const [isCarouselPaused, setIsCarouselPaused] = useState(false)
+  const [isSaleCarouselPaused, setIsSaleCarouselPaused] = useState(false)
   
   return (
     <div className="space-y-0 page-content">
@@ -253,12 +254,12 @@ export default function HomePage() {
           </p>
         </div>
         
-        {/* Auto-scrolling Product Carousel */}
-        <div className="relative overflow-hidden group">
+        {/* Auto-scrolling Product Carousel - Shows 4 products at a time */}
+        <div className="relative overflow-hidden w-full">
           <div 
             className="flex gap-6"
             style={{
-              animation: `productCarousel ${40 + featuredProducts.length * 2}s linear infinite`,
+              animation: `productCarousel ${50 + featuredProducts.length * 3}s linear infinite`,
               animationPlayState: isCarouselPaused ? 'paused' : 'running',
               width: 'fit-content',
             }}
@@ -267,15 +268,11 @@ export default function HomePage() {
           >
             {/* Duplicate products for seamless infinite loop */}
             {[...featuredProducts, ...featuredProducts].map((product, index) => (
-              <div key={`${product.id}-${index}`} className="flex-shrink-0 w-[280px] sm:w-[320px]">
+              <div key={`${product.id}-${index}`} className="flex-shrink-0" style={{ width: 'calc((100vw - 128px) / 4)', minWidth: '280px', maxWidth: '320px' }}>
                 <ProductCard product={product} index={index % featuredProducts.length} />
               </div>
             ))}
           </div>
-          
-          {/* Gradient overlays for fade effect */}
-          <div className="absolute left-0 top-0 bottom-0 w-32 bg-gradient-to-r from-background via-background/80 to-transparent pointer-events-none z-10" />
-          <div className="absolute right-0 top-0 bottom-0 w-32 bg-gradient-to-l from-background via-background/80 to-transparent pointer-events-none z-10" />
         </div>
         
         <div className="mt-10 text-center">
@@ -309,10 +306,25 @@ export default function HomePage() {
               <p className="mt-3 text-muted-foreground">Save big on these premium instruments</p>
             </div>
             
-            <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
-              {saleProducts.map((product, index) => (
-                <ProductCard key={product.id} product={product} index={index} />
-              ))}
+            {/* Auto-scrolling Sale Products Carousel - Shows 4 products at a time */}
+            <div className="relative overflow-hidden w-full">
+              <div 
+                className="flex gap-6"
+                style={{
+                  animation: `productCarousel ${50 + saleProducts.length * 3}s linear infinite`,
+                  animationPlayState: isSaleCarouselPaused ? 'paused' : 'running',
+                  width: 'fit-content',
+                }}
+                onMouseEnter={() => setIsSaleCarouselPaused(true)}
+                onMouseLeave={() => setIsSaleCarouselPaused(false)}
+              >
+                {/* Duplicate products for seamless infinite loop */}
+                {[...saleProducts, ...saleProducts].map((product, index) => (
+                  <div key={`${product.id}-${index}`} className="flex-shrink-0" style={{ width: 'calc((100vw - 128px) / 4)', minWidth: '280px', maxWidth: '320px' }}>
+                    <ProductCard product={product} index={index % saleProducts.length} />
+                  </div>
+                ))}
+              </div>
             </div>
           </div>
         </section>
