@@ -1,7 +1,8 @@
 'use client'
 
 import { useState, useMemo, useEffect } from 'react'
-import { products, categories } from '@/lib/data'
+import { getProducts, getCategories, transformProduct, transformCategory } from '@/lib/api'
+import type { Product } from '@/lib/data'
 import { ProductCard } from '@/components/product/ProductCard'
 import { Filters } from '@/components/product/Filters'
 import {
@@ -17,32 +18,9 @@ import { ChevronLeft, ChevronRight, Grid3X3, LayoutGrid, Music, Sparkles } from 
 
 type SortOption = 'featured' | 'price-low' | 'price-high' | 'newest' | 'name' | 'rating'
 
-// Get all unique subcategories from products
-const getSubcategories = () => {
-  const subcats = new Map<string, { name: string; count: number }>()
-  products.forEach(p => {
-    if (p.subcategory) {
-      const current = subcats.get(p.subcategory)
-      if (current) {
-        subcats.set(p.subcategory, { ...current, count: current.count + 1 })
-      } else {
-        // Find display name from categories
-        let displayName = p.subcategory.replace(/-/g, ' ')
-        categories.forEach(cat => {
-          cat.subcategories?.forEach(sub => {
-            if (sub.slug === p.subcategory) {
-              displayName = sub.name
-            }
-          })
-        })
-        subcats.set(p.subcategory, { name: displayName, count: 1 })
-      }
-    }
-  })
-  return subcats
-}
-
 export default function ShopPage() {
+  const [products, setProducts] = useState<Product[]>([])
+  const [categories, setCategories] = useState<any[]>([])
   const [selectedBrands, setSelectedBrands] = useState<string[]>([])
   const [selectedCategory, setSelectedCategory] = useState<string>('all')
   const [priceRange, setPriceRange] = useState<[number, number]>([0, 30000])
@@ -50,14 +28,59 @@ export default function ShopPage() {
   const [currentPage, setCurrentPage] = useState(1)
   const [gridCols, setGridCols] = useState<3 | 4>(3)
   const [isLoaded, setIsLoaded] = useState(false)
+  const [isLoading, setIsLoading] = useState(true)
   const itemsPerPage = 12
 
-  const brands = Array.from(new Set(products.map((p) => p.brand)))
-  const subcategories = getSubcategories()
-
+  // Fetch initial data
   useEffect(() => {
-    setIsLoaded(true)
+    async function fetchData() {
+      try {
+        const [productsResponse, categoriesData] = await Promise.all([
+          getProducts({ limit: 1000 }), // Get all products for client-side filtering
+          getCategories(),
+        ])
+        
+        const transformedProducts = productsResponse.products.map(transformProduct)
+        const transformedCategories = categoriesData.map(transformCategory)
+        
+        setProducts(transformedProducts)
+        setCategories(transformedCategories)
+      } catch (error) {
+        console.error('Error fetching data:', error)
+      } finally {
+        setIsLoading(false)
+        setIsLoaded(true)
+      }
+    }
+    fetchData()
   }, [])
+
+  const brands = Array.from(new Set(products.map((p) => p.brand)))
+
+  // Get subcategories from categories
+  const subcategories = useMemo(() => {
+    const subcats = new Map<string, { name: string; count: number }>()
+    products.forEach(p => {
+      if (p.subcategory) {
+        const current = subcats.get(p.subcategory)
+        if (current) {
+          subcats.set(p.subcategory, { ...current, count: current.count + 1 })
+        } else {
+          // Find display name from categories
+          let displayName = p.subcategory.replace(/-/g, ' ')
+          categories.forEach(cat => {
+            cat.subcategories?.forEach((sub: any) => {
+              if (sub.slug === p.subcategory) {
+                displayName = sub.name
+              }
+            })
+          })
+          subcats.set(p.subcategory, { name: displayName, count: 1 })
+        }
+      }
+    })
+    return subcats
+  }, [products, categories])
 
   // Reset page when filters change
   useEffect(() => {
@@ -114,7 +137,7 @@ export default function ShopPage() {
     }
 
     return filtered
-  }, [selectedBrands, selectedCategory, priceRange, sortBy])
+  }, [products, selectedBrands, selectedCategory, priceRange, sortBy])
 
   const totalPages = Math.ceil(filteredProducts.length / itemsPerPage)
   const paginatedProducts = filteredProducts.slice(
@@ -126,7 +149,7 @@ export default function ShopPage() {
   const groupedByCategory = useMemo(() => {
     if (selectedCategory !== 'all') return null
     
-    const groups = new Map<string, typeof products>()
+    const groups = new Map<string, Product[]>()
     filteredProducts.forEach(p => {
       const key = p.subcategory || 'other'
       const current = groups.get(key) || []
@@ -134,6 +157,14 @@ export default function ShopPage() {
     })
     return groups
   }, [filteredProducts, selectedCategory])
+
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
+      </div>
+    )
+  }
 
   return (
     <div className={`min-h-screen transition-opacity duration-700 ${isLoaded ? 'opacity-100' : 'opacity-0'}`}>

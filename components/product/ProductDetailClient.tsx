@@ -3,7 +3,8 @@
 import { useState, useEffect } from 'react'
 import Image from 'next/image'
 import Link from 'next/link'
-import { Product, products } from '@/lib/data'
+import { Product } from '@/lib/data'
+import { getProducts, transformProduct } from '@/lib/api'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
@@ -21,11 +22,34 @@ export function ProductDetailClient({ product }: ProductDetailClientProps) {
   const [isWishlisted, setIsWishlisted] = useState(false)
   const [isAddedToCart, setIsAddedToCart] = useState(false)
   const [isLoaded, setIsLoaded] = useState(false)
+  const [relatedProducts, setRelatedProducts] = useState<Product[]>([])
   const addItem = useCartStore((state) => state.addItem)
 
   useEffect(() => {
     setIsLoaded(true)
-  }, [])
+    
+    // Fetch related products
+    async function fetchRelatedProducts() {
+      try {
+        const response = await getProducts({ 
+          category: product.category,
+          inStock: true,
+          limit: 10 
+        })
+        const transformed = response.products
+          .map(transformProduct)
+          .filter((p) => p.id !== product.id && p.inStock)
+          .slice(0, 4)
+        setRelatedProducts(transformed)
+      } catch (error) {
+        console.error('Error fetching related products:', error)
+      }
+    }
+    
+    if (product.category) {
+      fetchRelatedProducts()
+    }
+  }, [product.category, product.id])
 
   const handleAddToCart = () => {
     for (let i = 0; i < quantity; i++) {
@@ -41,16 +65,6 @@ export function ProductDetailClient({ product }: ProductDetailClientProps) {
     setIsAddedToCart(true)
     setTimeout(() => setIsAddedToCart(false), 2000)
   }
-
-  // Related products (same category)
-  const relatedProducts = products
-    .filter(
-      (p) =>
-        p.category === product.category &&
-        p.id !== product.id &&
-        p.inStock
-    )
-    .slice(0, 4)
 
   const savings = product.retailPrice ? product.retailPrice - product.price : 0
   const savingsPercent = product.retailPrice ? Math.round((savings / product.retailPrice) * 100) : 0

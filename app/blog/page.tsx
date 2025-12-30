@@ -1,31 +1,59 @@
-import { Suspense } from 'react';
+'use client'
+
+import { Suspense, useEffect, useState } from 'react';
 import Link from 'next/link';
-import { Metadata } from 'next';
-import { getBlogPosts, paginatePosts, blogCategories } from '@/data/blogPosts';
+import { getBlogPosts, transformBlogPost } from '@/lib/api';
 import { BlogCard } from '@/components/blog/BlogCard';
 import { BlogSidebar } from '@/components/blog/BlogSidebar';
 import { BlogPagination } from '@/components/blog/BlogPagination';
 import { ChevronRight, BookOpen } from 'lucide-react';
-
-export const metadata: Metadata = {
-    title: "James Sax Corner Blog | Expert Insights on Wind Instruments",
-    description: "Read expert articles about saxophones, clarinets, flutes, and more. Tips, reviews, and industry insights from our team of professional musicians.",
-};
 
 interface BlogPageProps {
     searchParams: { page?: string; category?: string };
 }
 
 export default function BlogPage({ searchParams }: BlogPageProps) {
-    const currentPage = parseInt(searchParams.page || '1', 10);
-    const categoryFilter = searchParams.category;
+    const [posts, setPosts] = useState<any[]>([]);
+    const [isLoading, setIsLoading] = useState(true);
+    const currentPage = parseInt(searchParams?.page || '1', 10);
+    const categoryFilter = searchParams?.category;
+    const itemsPerPage = 6;
 
-    const allPosts = getBlogPosts(categoryFilter);
-    const { posts, totalPages, hasNextPage, hasPrevPage } = paginatePosts(allPosts, currentPage, 6);
+    useEffect(() => {
+        async function fetchPosts() {
+            try {
+                const response = await getBlogPosts({
+                    category: categoryFilter,
+                    page: currentPage,
+                    limit: itemsPerPage,
+                });
+                setPosts(response.posts.map(transformBlogPost));
+            } catch (error) {
+                console.error('Error fetching blog posts:', error);
+            } finally {
+                setIsLoading(false);
+            }
+        }
+        fetchPosts();
+    }, [currentPage, categoryFilter]);
+
+    // Calculate pagination
+    const totalPosts = posts.length; // This should come from API pagination
+    const totalPages = Math.ceil(totalPosts / itemsPerPage);
+    const hasNextPage = currentPage < totalPages;
+    const hasPrevPage = currentPage > 1;
 
     const categoryName = categoryFilter
-        ? blogCategories.find(c => c.slug === categoryFilter)?.name || categoryFilter
+        ? categoryFilter.replace(/-/g, ' ').replace(/\b\w/g, l => l.toUpperCase())
         : null;
+
+    if (isLoading) {
+        return (
+            <div className="flex items-center justify-center min-h-screen">
+                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
+            </div>
+        );
+    }
 
     return (
         <div className="min-h-screen bg-background">

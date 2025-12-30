@@ -2,8 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import { Package, FileText, ShoppingCart, DollarSign, TrendingUp, Users } from 'lucide-react'
-import { products } from '@/lib/data'
-import { blogPosts } from '@/data/blogPosts'
+import { getProducts, getBlogPosts } from '@/lib/api'
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
 
@@ -16,20 +15,35 @@ export default function AdminDashboard() {
     lowStockProducts: 0,
     recentOrders: [] as any[],
   })
+  const [isLoading, setIsLoading] = useState(true)
 
   useEffect(() => {
-    // Calculate stats
-    const lowStock = products.filter(p => (p.stock || 0) < 5 && p.inStock).length
-    const revenue = 0 // Placeholder - would come from orders data
-    
-    setStats({
-      totalProducts: products.length,
-      totalBlogPosts: blogPosts.length,
-      totalOrders: 0, // Placeholder
-      totalRevenue: revenue,
-      lowStockProducts: lowStock,
-      recentOrders: [],
-    })
+    async function fetchStats() {
+      try {
+        const [productsResponse, blogResponse] = await Promise.all([
+          getProducts({ limit: 1000 }),
+          getBlogPosts({ limit: 1000 }),
+        ])
+        
+        const products = productsResponse.products
+        const lowStock = products.filter((p: any) => (p.stock || 0) < 5 && p.inStock).length
+        const revenue = 0 // Placeholder - would come from orders data
+        
+        setStats({
+          totalProducts: products.length,
+          totalBlogPosts: blogResponse.posts.length,
+          totalOrders: 0, // Placeholder
+          totalRevenue: revenue,
+          lowStockProducts: lowStock,
+          recentOrders: [],
+        })
+      } catch (error) {
+        console.error('Error fetching stats:', error)
+      } finally {
+        setIsLoading(false)
+      }
+    }
+    fetchStats()
   }, [])
 
   const statCards = [

@@ -2,94 +2,54 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import Link from 'next/link';
-import { ChevronLeft, ChevronRight, CreditCard, Truck, Percent, Gift, Sparkles, Award } from 'lucide-react';
+import { ChevronLeft, ChevronRight } from 'lucide-react';
 
-interface PromoSlide {
+interface PromoBanner {
     id: string;
-    icon: React.ReactNode;
     title: string;
     description: string;
-    link?: string;
-    linkText?: string;
+    image: string;
+    ctaText: string;
+    ctaLink: string;
 }
 
-const promoSlides: PromoSlide[] = [
-    {
-        id: '1',
-        icon: <Percent className="h-5 w-5" />,
-        title: '0% APR Financing Available',
-        description: 'On orders over $500 with approved credit. Apply today!',
-        link: '/financing',
-        linkText: 'Learn More',
-    },
-    {
-        id: '2',
-        icon: <Truck className="h-5 w-5" />,
-        title: 'Free Shipping on Orders $500+',
-        description: 'Fast, insured delivery on all qualifying orders.',
-        link: '/shipping',
-        linkText: 'Details',
-    },
-    {
-        id: '3',
-        icon: <CreditCard className="h-5 w-5" />,
-        title: '12-Month Payment Plans',
-        description: 'Split your purchase into easy monthly payments.',
-        link: '/financing',
-        linkText: 'Apply Now',
-    },
-    {
-        id: '4',
-        icon: <Gift className="h-5 w-5" />,
-        title: 'Special Offer: Extra 5% Off',
-        description: 'Use code WELCOME5 at checkout. Limited time!',
-        link: '/shop',
-        linkText: 'Shop Now',
-    },
-    {
-        id: '5',
-        icon: <Award className="h-5 w-5" />,
-        title: 'Professional Setup Included',
-        description: 'Every instrument tested and adjusted by our experts.',
-        link: '/about',
-        linkText: 'Learn More',
-    },
-    {
-        id: '6',
-        icon: <Sparkles className="h-5 w-5" />,
-        title: '100% Quality Guarantee',
-        description: 'Free returns and exchanges within 30 days.',
-        link: '/returns',
-        linkText: 'Policy',
-    },
-];
+interface PromoCarouselProps {
+    promos?: PromoBanner[];
+}
 
-export function PromoCarousel() {
+export function PromoCarousel({ promos = [] }: PromoCarouselProps) {
     const [currentSlide, setCurrentSlide] = useState(0);
     const [isPaused, setIsPaused] = useState(false);
     const [isAnimating, setIsAnimating] = useState(false);
 
+    // If no promos, show empty state
+    if (promos.length === 0) {
+        return null;
+    }
+
     const nextSlide = useCallback(() => {
-        if (isAnimating) return;
+        if (isAnimating || promos.length === 0) return;
         setIsAnimating(true);
-        setCurrentSlide((prev) => (prev + 1) % promoSlides.length);
+        setCurrentSlide((prev) => (prev + 1) % promos.length);
         setTimeout(() => setIsAnimating(false), 500);
-    }, [isAnimating]);
+    }, [isAnimating, promos.length]);
 
     const prevSlide = () => {
-        if (isAnimating) return;
+        if (isAnimating || promos.length === 0) return;
         setIsAnimating(true);
-        setCurrentSlide((prev) => (prev - 1 + promoSlides.length) % promoSlides.length);
+        setCurrentSlide((prev) => (prev - 1 + promos.length) % promos.length);
         setTimeout(() => setIsAnimating(false), 500);
     };
 
     useEffect(() => {
-        if (isPaused) return;
+        if (isPaused || promos.length === 0) return;
         const interval = setInterval(nextSlide, 4000);
         return () => clearInterval(interval);
-    }, [isPaused, nextSlide]);
+    }, [isPaused, nextSlide, promos.length]);
 
-    const slide = promoSlides[currentSlide];
+    const slide = promos[currentSlide];
+
+    if (!slide) return null;
 
     return (
         <div
@@ -123,19 +83,16 @@ export function PromoCarousel() {
                         className="flex items-center space-x-3 text-sm animate-fade-in-up"
                         style={{ animationDuration: '0.4s' }}
                     >
-                        <span className="hidden sm:flex items-center justify-center w-8 h-8 rounded-full bg-white/10 animate-pulse">
-                            {slide.icon}
-                        </span>
                         <span className="font-semibold font-display tracking-wide">{slide.title}</span>
                         <span className="hidden md:block text-secondary-foreground/80 font-body">
                             {slide.description}
                         </span>
-                        {slide.link && (
+                        {slide.ctaLink && (
                             <Link
-                                href={slide.link}
+                                href={slide.ctaLink}
                                 className="font-medium underline-animate relative after:bg-accent hover:text-accent transition-colors duration-300"
                             >
-                                {slide.linkText} →
+                                {slide.ctaText} →
                             </Link>
                         )}
                     </div>
@@ -151,7 +108,7 @@ export function PromoCarousel() {
 
                     {/* Slide Indicators with animation */}
                     <div className="absolute bottom-1.5 flex space-x-1.5">
-                        {promoSlides.map((_, index) => (
+                        {promos.map((_, index) => (
                             <button
                                 key={index}
                                 onClick={() => !isAnimating && setCurrentSlide(index)}

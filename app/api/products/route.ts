@@ -12,6 +12,7 @@ export async function GET(request: NextRequest) {
     const inStock = searchParams.get('inStock')
     const minPrice = searchParams.get('minPrice')
     const maxPrice = searchParams.get('maxPrice')
+    const badge = searchParams.get('badge')
     const page = parseInt(searchParams.get('page') || '1')
     const limit = parseInt(searchParams.get('limit') || '50')
     const skip = (page - 1) * limit
@@ -28,6 +29,10 @@ export async function GET(request: NextRequest) {
 
     if (brand) {
       where.brand = brand
+    }
+
+    if (badge) {
+      where.badge = badge
     }
 
     if (inStock !== null) {

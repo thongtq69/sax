@@ -1,25 +1,21 @@
 import { notFound } from 'next/navigation'
 import Link from 'next/link'
-import { getProductBySlug, products } from '@/lib/data'
+import { getProductBySlug, transformProduct } from '@/lib/api'
 import { ProductDetailClient } from '@/components/product/ProductDetailClient'
 import { ChevronRight, Home } from 'lucide-react'
 
-export async function generateStaticParams() {
-  return products.map((product) => ({
-    slug: product.slug,
-  }))
-}
-
-export default function ProductPage({
+export default async function ProductPage({
   params,
 }: {
   params: { slug: string }
 }) {
-  const product = getProductBySlug(params.slug)
+  const apiProduct = await getProductBySlug(params.slug)
 
-  if (!product) {
+  if (!apiProduct) {
     notFound()
   }
+
+  const product = transformProduct(apiProduct)
 
   return (
     <div className="min-h-screen">
@@ -47,4 +43,3 @@ export default function ProductPage({
     </div>
   )
 }
-

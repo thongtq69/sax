@@ -1,30 +1,61 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
 import { ProductCard } from '@/components/product/ProductCard'
-import {
-  products,
-  promoBanners,
-  categories,
-} from '@/lib/data'
-import { getFeaturedProducts } from '@/lib/data'
+import { getProducts, getPromoBanners, transformProduct } from '@/lib/api'
+import type { Product } from '@/lib/data'
 import { Phone, Shield, Truck, CreditCard, Award, Headphones, Music, ChevronRight, Star, Sparkles } from 'lucide-react'
 import { PromoCarousel } from '@/components/site/PromoCarousel'
 
 export default function HomePage() {
-  const featuredProducts = getFeaturedProducts('4') // New Arrivals collection
-  const saleProducts = products.filter(p => p.badge === 'sale').slice(0, 8) // Get more for carousel
+  const [featuredProducts, setFeaturedProducts] = useState<Product[]>([])
+  const [saleProducts, setSaleProducts] = useState<Product[]>([])
+  const [promoBanners, setPromoBanners] = useState<any[]>([])
+  const [isLoading, setIsLoading] = useState(true)
   const [isCarouselPaused, setIsCarouselPaused] = useState(false)
   const [isSaleCarouselPaused, setIsSaleCarouselPaused] = useState(false)
+
+  useEffect(() => {
+    async function fetchData() {
+      try {
+        // Fetch featured products (New Arrivals - badge: 'new')
+        const featuredResponse = await getProducts({ badge: 'new', limit: 8 })
+        const featured = featuredResponse.products.map(transformProduct)
+        setFeaturedProducts(featured)
+
+        // Fetch sale products
+        const saleResponse = await getProducts({ badge: 'sale', limit: 8 })
+        const sale = saleResponse.products.map(transformProduct)
+        setSaleProducts(sale)
+
+        // Fetch promo banners
+        const promos = await getPromoBanners()
+        setPromoBanners(promos)
+      } catch (error) {
+        console.error('Error fetching data:', error)
+      } finally {
+        setIsLoading(false)
+      }
+    }
+    fetchData()
+  }, [])
   
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
+      </div>
+    )
+  }
+
   return (
     <div className="space-y-0 page-content">
       {/* Promo Carousel */}
-      <PromoCarousel />
+      <PromoCarousel promos={promoBanners} />
 
       {/* Hero Section - Vintage Classic Style */}
       <section className="relative min-h-[600px] overflow-hidden bg-gradient-to-br from-primary via-primary/95 to-primary/90">

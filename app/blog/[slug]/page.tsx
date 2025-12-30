@@ -1,45 +1,74 @@
-import { Suspense } from 'react';
+'use client'
+
+import { Suspense, useEffect, useState } from 'react';
 import { Metadata } from 'next';
 import Image from 'next/image';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { ChevronRight, Clock, User, Calendar, ArrowLeft, ArrowRight } from 'lucide-react';
-import { blogPosts, getBlogPostBySlug, getRecentPosts, formatBlogDate } from '@/data/blogPosts';
+import { getBlogPostBySlug, getBlogPosts, transformBlogPost } from '@/lib/api';
 import { BlogSidebar } from '@/components/blog/BlogSidebar';
 
 interface BlogPostPageProps {
     params: { slug: string };
 }
 
-export async function generateStaticParams() {
-    return blogPosts.map((post) => ({
-        slug: post.slug,
-    }));
-}
-
-export async function generateMetadata({ params }: BlogPostPageProps): Promise<Metadata> {
-    const post = getBlogPostBySlug(params.slug);
-    if (!post) return { title: 'Post Not Found' };
-
-    return {
-        title: `${post.title} | James Sax Corner Blog`,
-        description: post.excerpt,
-    };
-}
-
 export default function BlogPostPage({ params }: BlogPostPageProps) {
-    const post = getBlogPostBySlug(params.slug);
+    const [post, setPost] = useState<any>(null);
+    const [prevPost, setPrevPost] = useState<any>(null);
+    const [nextPost, setNextPost] = useState<any>(null);
+    const [isLoading, setIsLoading] = useState(true);
+
+    useEffect(() => {
+        async function fetchPost() {
+            try {
+                const postData = await getBlogPostBySlug(params.slug);
+                if (!postData) {
+                    notFound();
+                }
+                const transformedPost = transformBlogPost(postData);
+                setPost(transformedPost);
+
+                // Fetch all posts to find adjacent ones
+                const allPostsResponse = await getBlogPosts({ limit: 1000 });
+                const allPosts = allPostsResponse.posts.map(transformBlogPost);
+                const currentIndex = allPosts.findIndex(p => p.slug === params.slug);
+                
+                if (currentIndex > 0) {
+                    setPrevPost(allPosts[currentIndex - 1]);
+                }
+                if (currentIndex < allPosts.length - 1) {
+                    setNextPost(allPosts[currentIndex + 1]);
+                }
+            } catch (error) {
+                console.error('Error fetching blog post:', error);
+                notFound();
+            } finally {
+                setIsLoading(false);
+            }
+        }
+        fetchPost();
+    }, [params.slug]);
+
+    if (isLoading) {
+        return (
+            <div className="flex items-center justify-center min-h-screen">
+                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
+            </div>
+        );
+    }
 
     if (!post) {
         notFound();
     }
 
-    const dateInfo = formatBlogDate(post.date);
-
-    // Get adjacent posts for navigation
-    const currentIndex = blogPosts.findIndex(p => p.slug === params.slug);
-    const prevPost = currentIndex > 0 ? blogPosts[currentIndex - 1] : null;
-    const nextPost = currentIndex < blogPosts.length - 1 ? blogPosts[currentIndex + 1] : null;
+    const dateInfo = {
+        full: new Date(post.date).toLocaleDateString('en-US', {
+            year: 'numeric',
+            month: 'long',
+            day: 'numeric',
+        }),
+    };
 
     return (
         <div className="min-h-screen bg-background">
@@ -64,7 +93,7 @@ export default function BlogPostPage({ params }: BlogPostPageProps) {
 
                     {/* Categories */}
                     <div className="mb-4 flex flex-wrap gap-2">
-                        {post.categories.map((category) => (
+                        {post.categories?.map((category: string) => (
                             <Link
                                 key={category}
                                 href={`/blog?category=${category.toLowerCase().replace(/\s+/g, '-')}`}
@@ -107,22 +136,26 @@ export default function BlogPostPage({ params }: BlogPostPageProps) {
                         {/* Article Content */}
                         <article className="lg:col-span-2">
                             {/* Featured Image */}
-                            <div className="relative mb-8 aspect-video overflow-hidden rounded-lg border-2 border-primary/20 shadow-lg">
-                                <Image
-                                    src={post.image}
-                                    alt={post.title}
-                                    fill
-                                    className="object-cover"
-                                    priority
-                                />
-                            </div>
+                            {post.image && (
+                                <div className="relative mb-8 aspect-video overflow-hidden rounded-lg border-2 border-primary/20 shadow-lg">
+                                    <Image
+                                        src={post.image}
+                                        alt={post.title}
+                                        fill
+                                        className="object-cover"
+                                        priority
+                                    />
+                                </div>
+                            )}
 
                             {/* Excerpt */}
-                            <div className="mb-8 rounded-lg border-l-4 border-primary bg-primary/5 p-6">
-                                <p className="text-lg italic text-secondary leading-relaxed">
-                                    {post.excerpt}
-                                </p>
-                            </div>
+                            {post.excerpt && (
+                                <div className="mb-8 rounded-lg border-l-4 border-primary bg-primary/5 p-6">
+                                    <p className="text-lg italic text-secondary leading-relaxed">
+                                        {post.excerpt}
+                                    </p>
+                                </div>
+                            )}
 
                             {/* Content */}
                             <div
@@ -141,11 +174,11 @@ export default function BlogPostPage({ params }: BlogPostPageProps) {
                             <div className="mt-12 rounded-lg border-2 border-primary/20 bg-white p-6 shadow-sm">
                                 <div className="flex items-start gap-4">
                                     <div className="flex h-16 w-16 shrink-0 items-center justify-center rounded-full bg-primary text-2xl font-bold text-white font-display">
-                                        {post.author.charAt(0)}
+                                        {post.author?.charAt(0) || 'A'}
                                     </div>
                                     <div>
                                         <h3 className="text-lg font-bold text-secondary font-display">
-                                            {post.author}
+                                            {post.author || 'Author'}
                                         </h3>
                                         <p className="mt-1 text-sm text-muted-foreground">
                                             Wind instrument specialist with over 30 years of experience.
