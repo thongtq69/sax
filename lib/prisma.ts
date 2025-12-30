@@ -46,9 +46,6 @@ function ensureDatabaseUrl(url: string | undefined): string | undefined {
   return url
 }
 
-// Get optimized DATABASE_URL
-const optimizedDatabaseUrl = ensureDatabaseUrl(process.env.DATABASE_URL)
-
 export const prisma =
   globalForPrisma.prisma ??
   new PrismaClient({
