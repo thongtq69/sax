@@ -1,0 +1,13 @@
+services:
+  - type: web
+    name: saxcorner
+    env: node
+    buildCommand: npm install && npm run build && npm run db:generate
+    startCommand: npm start
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: DATABASE_URL
+        sync: false  # Set this manually in Render dashboard
+    healthCheckPath: /api/health
+

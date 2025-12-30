@@ -1,0 +1,140 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mongodb"
+  url      = env("DATABASE_URL")
+}
+
+model Category {
+  id            String        @id @default(auto()) @map("_id") @db.ObjectId
+  name          String
+  slug          String        @unique
+  path          String
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+  subcategories SubCategory[]
+  products      Product[]
+}
+
+model SubCategory {
+  id         String     @id @default(auto()) @map("_id") @db.ObjectId
+  name       String
+  slug       String     @unique
+  path       String
+  categoryId String     @db.ObjectId
+  category   Category   @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+  products   Product[]
+  createdAt  DateTime   @default(now())
+  updatedAt  DateTime   @updatedAt
+
+  @@index([categoryId])
+}
+
+model Product {
+  id          String       @id @default(auto()) @map("_id") @db.ObjectId
+  name        String
+  slug        String       @unique
+  brand       String
+  price       Float
+  retailPrice Float?
+  categoryId  String       @db.ObjectId
+  category    Category     @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+  subcategoryId String?    @db.ObjectId
+  subcategory SubCategory? @relation(fields: [subcategoryId], references: [id], onDelete: SetNull)
+  images      String[]     @default([])
+  badge       String?      // 'new' | 'sale' | 'limited' | 'coming-soon' | 'out-of-stock'
+  inStock     Boolean      @default(true)
+  stock       Int?         @default(0)
+  description String
+  specs       Json?        // Record<string, string>
+  included    String[]     @default([])
+  warranty    String?
+  sku         String       @unique
+  rating      Float?       @default(0)
+  reviewCount Int?         @default(0)
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+
+  @@index([categoryId])
+  @@index([subcategoryId])
+  @@index([brand])
+}
+
+model BlogPost {
+  id         String   @id @default(auto()) @map("_id") @db.ObjectId
+  title      String
+  slug       String   @unique
+  excerpt    String
+  content    String
+  date       DateTime
+  author     String
+  categories String[] @default([])
+  image      String?
+  readTime   Int?
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  @@index([date])
+}
+
+model PromoBanner {
+  id          String   @id @default(auto()) @map("_id") @db.ObjectId
+  title       String
+  description String
+  image       String
+  ctaText     String
+  ctaLink     String
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model FeaturedCollection {
+  id         String   @id @default(auto()) @map("_id") @db.ObjectId
+  name       String
+  slug       String   @unique
+  productIds String[] @default([])
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+}
+
+model User {
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  email     String   @unique
+  name      String?
+  password  String   // hashed
+  role      String   @default("user") // 'user' | 'admin'
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Order {
+  id         String      @id @default(auto()) @map("_id") @db.ObjectId
+  userId     String?     @db.ObjectId
+  status     String      @default("pending") // 'pending' | 'processing' | 'shipped' | 'delivered' | 'cancelled'
+  total      Float
+  items      OrderItem[]
+  shippingAddress Json?
+  billingAddress  Json?
+  createdAt  DateTime    @default(now())
+  updatedAt DateTime    @updatedAt
+
+  @@index([userId])
+  @@index([status])
+}
+
+model OrderItem {
+  id        String  @id @default(auto()) @map("_id") @db.ObjectId
+  orderId   String  @db.ObjectId
+  order     Order   @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  productId String  @db.ObjectId
+  quantity  Int
+  price     Float
+  createdAt DateTime @default(now())
+
+  @@index([orderId])
+}
