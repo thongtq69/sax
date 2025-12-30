@@ -214,10 +214,7 @@ export default function HomePage() {
                     <h3 className="mb-2 text-xl font-bold group-hover:translate-x-1 transition-transform">
                       {promo.title}
                     </h3>
-                    <p className="mb-2 text-sm opacity-90 line-clamp-2">{promo.description}</p>
-                    <div className="mb-4 text-xs opacity-75 flex items-center gap-1">
-                      <span>Valid: {promo.validUntil}</span>
-                    </div>
+                    <p className="mb-4 text-sm opacity-90 line-clamp-2">{promo.description}</p>
                     <Button 
                       size="sm" 
                       className="w-fit bg-primary hover:bg-primary/90 group-hover:shadow-lg transition-all" 
