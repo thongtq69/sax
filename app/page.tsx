@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
 import { Button } from '@/components/ui/button'
@@ -18,6 +18,12 @@ export default function HomePage() {
   const [isLoading, setIsLoading] = useState(true)
   const [isCarouselPaused, setIsCarouselPaused] = useState(false)
   const [isSaleCarouselPaused, setIsSaleCarouselPaused] = useState(false)
+  
+  // Refs for drag functionality
+  const featuredCarouselRef = useRef<HTMLDivElement>(null)
+  const saleCarouselRef = useRef<HTMLDivElement>(null)
+  const featuredDragState = useRef({ isDragging: false, startX: 0, scrollLeft: 0 })
+  const saleDragState = useRef({ isDragging: false, startX: 0, scrollLeft: 0 })
 
   useEffect(() => {
     async function fetchData() {
@@ -43,6 +49,55 @@ export default function HomePage() {
     }
     fetchData()
   }, [])
+
+  // Auto-scroll carousels
+  useEffect(() => {
+    if (!featuredCarouselRef.current || featuredProducts.length === 0) return
+    
+    const carousel = featuredCarouselRef.current
+    let scrollInterval: NodeJS.Timeout
+    
+    const autoScroll = () => {
+      if (isCarouselPaused || featuredDragState.current.isDragging) return
+      
+      const scrollAmount = 1
+      const maxScroll = carousel.scrollWidth - carousel.clientWidth
+      
+      if (carousel.scrollLeft >= maxScroll - 10) {
+        carousel.scrollLeft = 0
+      } else {
+        carousel.scrollLeft += scrollAmount
+      }
+    }
+    
+    scrollInterval = setInterval(autoScroll, 16) // ~60fps
+    
+    return () => clearInterval(scrollInterval)
+  }, [featuredProducts, isCarouselPaused])
+
+  useEffect(() => {
+    if (!saleCarouselRef.current || saleProducts.length === 0) return
+    
+    const carousel = saleCarouselRef.current
+    let scrollInterval: NodeJS.Timeout
+    
+    const autoScroll = () => {
+      if (isSaleCarouselPaused || saleDragState.current.isDragging) return
+      
+      const scrollAmount = 1
+      const maxScroll = carousel.scrollWidth - carousel.clientWidth
+      
+      if (carousel.scrollLeft >= maxScroll - 10) {
+        carousel.scrollLeft = 0
+      } else {
+        carousel.scrollLeft += scrollAmount
+      }
+    }
+    
+    scrollInterval = setInterval(autoScroll, 16) // ~60fps
+    
+    return () => clearInterval(scrollInterval)
+  }, [saleProducts, isSaleCarouselPaused])
   
   if (isLoading) {
     return (
@@ -283,20 +338,74 @@ export default function HomePage() {
         </div>
         
         {/* Auto-scrolling Product Carousel - Shows 4 products at a time */}
-        <div className="relative overflow-hidden w-full">
+        <div 
+          className="relative overflow-x-auto w-full cursor-grab active:cursor-grabbing scrollbar-hide"
+          ref={featuredCarouselRef}
+          style={{ scrollBehavior: 'smooth' }}
+          onMouseDown={(e) => {
+            if (!featuredCarouselRef.current) return
+            featuredDragState.current.isDragging = true
+            featuredDragState.current.startX = e.pageX - featuredCarouselRef.current.offsetLeft
+            featuredDragState.current.scrollLeft = featuredCarouselRef.current.scrollLeft
+            setIsCarouselPaused(true)
+            e.preventDefault()
+          }}
+          onMouseLeave={() => {
+            featuredDragState.current.isDragging = false
+            setIsCarouselPaused(false)
+          }}
+          onMouseUp={() => {
+            featuredDragState.current.isDragging = false
+            setIsCarouselPaused(false)
+          }}
+          onMouseMove={(e) => {
+            if (!featuredDragState.current.isDragging || !featuredCarouselRef.current) return
+            e.preventDefault()
+            const x = e.pageX - featuredCarouselRef.current.offsetLeft
+            const walk = (x - featuredDragState.current.startX) * 2.5
+            featuredCarouselRef.current.scrollLeft = featuredDragState.current.scrollLeft - walk
+          }}
+          onTouchStart={(e) => {
+            if (!featuredCarouselRef.current) return
+            featuredDragState.current.isDragging = true
+            featuredDragState.current.startX = e.touches[0].pageX - featuredCarouselRef.current.offsetLeft
+            featuredDragState.current.scrollLeft = featuredCarouselRef.current.scrollLeft
+            setIsCarouselPaused(true)
+          }}
+          onTouchEnd={() => {
+            featuredDragState.current.isDragging = false
+            setIsCarouselPaused(false)
+          }}
+          onTouchMove={(e) => {
+            if (!featuredDragState.current.isDragging || !featuredCarouselRef.current) return
+            const x = e.touches[0].pageX - featuredCarouselRef.current.offsetLeft
+            const walk = (x - featuredDragState.current.startX) * 2.5
+            featuredCarouselRef.current.scrollLeft = featuredDragState.current.scrollLeft - walk
+          }}
+        >
           <div 
-            className="flex gap-6"
+            className="flex gap-4 md:gap-6"
             style={{
-              animation: `productCarousel ${50 + featuredProducts.length * 3}s linear infinite`,
-              animationPlayState: isCarouselPaused ? 'paused' : 'running',
               width: 'fit-content',
             }}
             onMouseEnter={() => setIsCarouselPaused(true)}
-            onMouseLeave={() => setIsCarouselPaused(false)}
+            onMouseLeave={() => {
+              if (!featuredDragState.current.isDragging) {
+                setIsCarouselPaused(false)
+              }
+            }}
           >
             {/* Duplicate products for seamless infinite loop */}
             {[...featuredProducts, ...featuredProducts].map((product, index) => (
-              <div key={`${product.id}-${index}`} className="flex-shrink-0" style={{ width: 'calc((100vw - 128px) / 4)', minWidth: '280px', maxWidth: '320px' }}>
+              <div 
+                key={`${product.id}-${index}`} 
+                className="flex-shrink-0" 
+                style={{ 
+                  width: 'clamp(250px, calc((100vw - 64px) / 2), 320px)',
+                  minWidth: '250px',
+                  maxWidth: '320px'
+                }}
+              >
                 <ProductCard product={product} index={index % featuredProducts.length} />
               </div>
             ))}
@@ -335,20 +444,74 @@ export default function HomePage() {
             </div>
             
             {/* Auto-scrolling Sale Products Carousel - Shows 4 products at a time */}
-            <div className="relative overflow-hidden w-full">
+            <div 
+              className="relative overflow-x-auto w-full cursor-grab active:cursor-grabbing scrollbar-hide"
+              ref={saleCarouselRef}
+              style={{ scrollBehavior: 'smooth' }}
+              onMouseDown={(e) => {
+                if (!saleCarouselRef.current) return
+                saleDragState.current.isDragging = true
+                saleDragState.current.startX = e.pageX - saleCarouselRef.current.offsetLeft
+                saleDragState.current.scrollLeft = saleCarouselRef.current.scrollLeft
+                setIsSaleCarouselPaused(true)
+                e.preventDefault()
+              }}
+              onMouseLeave={() => {
+                saleDragState.current.isDragging = false
+                setIsSaleCarouselPaused(false)
+              }}
+              onMouseUp={() => {
+                saleDragState.current.isDragging = false
+                setIsSaleCarouselPaused(false)
+              }}
+              onMouseMove={(e) => {
+                if (!saleDragState.current.isDragging || !saleCarouselRef.current) return
+                e.preventDefault()
+                const x = e.pageX - saleCarouselRef.current.offsetLeft
+                const walk = (x - saleDragState.current.startX) * 2.5
+                saleCarouselRef.current.scrollLeft = saleDragState.current.scrollLeft - walk
+              }}
+              onTouchStart={(e) => {
+                if (!saleCarouselRef.current) return
+                saleDragState.current.isDragging = true
+                saleDragState.current.startX = e.touches[0].pageX - saleCarouselRef.current.offsetLeft
+                saleDragState.current.scrollLeft = saleCarouselRef.current.scrollLeft
+                setIsSaleCarouselPaused(true)
+              }}
+              onTouchEnd={() => {
+                saleDragState.current.isDragging = false
+                setIsSaleCarouselPaused(false)
+              }}
+              onTouchMove={(e) => {
+                if (!saleDragState.current.isDragging || !saleCarouselRef.current) return
+                const x = e.touches[0].pageX - saleCarouselRef.current.offsetLeft
+                const walk = (x - saleDragState.current.startX) * 2.5
+                saleCarouselRef.current.scrollLeft = saleDragState.current.scrollLeft - walk
+              }}
+            >
               <div 
-                className="flex gap-6"
+                className="flex gap-4 md:gap-6"
                 style={{
-                  animation: `productCarousel ${50 + saleProducts.length * 3}s linear infinite`,
-                  animationPlayState: isSaleCarouselPaused ? 'paused' : 'running',
                   width: 'fit-content',
                 }}
                 onMouseEnter={() => setIsSaleCarouselPaused(true)}
-                onMouseLeave={() => setIsSaleCarouselPaused(false)}
+                onMouseLeave={() => {
+                  if (!saleDragState.current.isDragging) {
+                    setIsSaleCarouselPaused(false)
+                  }
+                }}
               >
                 {/* Duplicate products for seamless infinite loop */}
                 {[...saleProducts, ...saleProducts].map((product, index) => (
-                  <div key={`${product.id}-${index}`} className="flex-shrink-0" style={{ width: 'calc((100vw - 128px) / 4)', minWidth: '280px', maxWidth: '320px' }}>
+                  <div 
+                    key={`${product.id}-${index}`} 
+                    className="flex-shrink-0" 
+                    style={{ 
+                      width: 'clamp(250px, calc((100vw - 64px) / 2), 320px)',
+                      minWidth: '250px',
+                      maxWidth: '320px'
+                    }}
+                  >
                     <ProductCard product={product} index={index % saleProducts.length} />
                   </div>
                 ))}
