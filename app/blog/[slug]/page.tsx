@@ -137,7 +137,7 @@ export default function BlogPostPage({ params }: BlogPostPageProps) {
                         <article className="lg:col-span-2">
                             {/* Featured Image */}
                             {post.image && (
-                                <div className="relative mb-8 aspect-video overflow-hidden rounded-lg border-2 border-primary/20 shadow-lg">
+                                <div className="relative mb-10 aspect-video overflow-hidden rounded-xl border-2 border-primary/20 shadow-xl">
                                     <Image
                                         src={post.image}
                                         alt={post.title}
@@ -150,8 +150,8 @@ export default function BlogPostPage({ params }: BlogPostPageProps) {
 
                             {/* Excerpt */}
                             {post.excerpt && (
-                                <div className="mb-8 rounded-lg border-l-4 border-primary bg-primary/5 p-6">
-                                    <p className="text-lg italic text-secondary leading-relaxed">
+                                <div className="mb-10 rounded-xl border-l-4 border-primary bg-gradient-to-r from-primary/5 to-transparent p-6 shadow-sm">
+                                    <p className="text-xl italic text-secondary leading-relaxed font-medium">
                                         {post.excerpt}
                                     </p>
                                 </div>
@@ -159,7 +159,7 @@ export default function BlogPostPage({ params }: BlogPostPageProps) {
 
                             {/* Content */}
                             <div
-                                className="prose prose-lg max-w-none prose-headings:font-display prose-headings:text-secondary prose-p:text-muted-foreground prose-a:text-primary prose-a:no-underline hover:prose-a:underline prose-strong:text-secondary prose-blockquote:border-primary prose-blockquote:bg-primary/5 prose-blockquote:py-2 prose-blockquote:not-italic"
+                                className="blog-content bg-white rounded-xl p-8 md:p-10 shadow-sm border border-border/50"
                                 dangerouslySetInnerHTML={{ __html: post.content }}
                             />
 
