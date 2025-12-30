@@ -58,7 +58,7 @@ export default function HomePage() {
       <PromoCarousel promos={promoBanners} />
 
       {/* Hero Section - Vintage Classic Style */}
-      <section className="relative min-h-[600px] overflow-hidden bg-gradient-to-br from-primary via-primary/95 to-primary/90">
+      <section className="relative min-h-[400px] md:min-h-[500px] lg:min-h-[600px] overflow-hidden bg-gradient-to-br from-primary via-primary/95 to-primary/90">
         {/* Animated Vintage Pattern Background */}
         <div className="absolute inset-0 opacity-10">
           <div className="absolute inset-0 animate-pulse-soft" style={{
@@ -76,18 +76,18 @@ export default function HomePage() {
         <div className="absolute top-0 left-0 right-0 h-2 bg-secondary opacity-40" />
         <div className="absolute top-3 left-0 right-0 h-0.5 bg-secondary opacity-20" />
 
-        <div className="container relative mx-auto flex min-h-[600px] items-center px-4 py-16">
-          <div className="max-w-3xl space-y-6">
+        <div className="container relative mx-auto flex min-h-[400px] md:min-h-[500px] lg:min-h-[600px] items-center px-4 py-8 md:py-12 lg:py-16">
+          <div className="max-w-3xl space-y-4 md:space-y-6">
             {/* Vintage Badge with animation */}
-            <div className="hero-title inline-flex items-center space-x-2 rounded border-2 border-secondary/30 bg-secondary/10 px-4 py-2 backdrop-blur-sm">
-              <Music className="h-4 w-4 text-secondary animate-bounce-soft" />
-              <span className="text-sm font-medium tracking-widest uppercase text-secondary">
+            <div className="hero-title inline-flex items-center space-x-1.5 md:space-x-2 rounded border-2 border-secondary/30 bg-secondary/10 px-3 py-1.5 md:px-4 md:py-2 backdrop-blur-sm">
+              <Music className="h-3.5 w-3.5 md:h-4 md:w-4 text-secondary animate-bounce-soft" />
+              <span className="text-xs md:text-sm font-medium tracking-widest uppercase text-secondary">
                 Est. 1985 • Family Owned
               </span>
             </div>
 
             {/* Classic Typography with stagger animation */}
-            <h1 className="hero-subtitle text-5xl font-bold leading-tight text-secondary md:text-6xl lg:text-7xl tracking-tight">
+            <h1 className="hero-subtitle text-3xl md:text-5xl lg:text-6xl xl:text-7xl font-bold leading-tight text-secondary tracking-tight">
               <span className="block">James Sax</span>
               <span className="block text-white/90">Corner</span>
             </h1>

@@ -177,38 +177,38 @@ export default function ShopPage() {
           }} />
         </div>
         
-        <div className="container mx-auto px-4 py-12 relative">
+        <div className="container mx-auto px-4 py-8 md:py-10 lg:py-12 relative">
           <div className="text-center animate-fade-in-up">
             {/* Decorative element */}
-            <div className="flex items-center justify-center gap-3 mb-4">
-              <div className="h-px w-16 bg-gradient-to-r from-transparent to-primary" />
-              <Music className="h-6 w-6 text-primary animate-bounce-soft" />
+            <div className="flex items-center justify-center gap-2 md:gap-3 mb-3 md:mb-4">
+              <div className="h-px w-12 md:w-16 bg-gradient-to-r from-transparent to-primary" />
+              <Music className="h-5 w-5 md:h-6 md:w-6 text-primary animate-bounce-soft" />
               <div className="h-px w-16 bg-gradient-to-l from-transparent to-primary" />
             </div>
             
-            <h1 className="text-4xl md:text-5xl font-bold text-white mb-3 tracking-tight">
+            <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold text-white mb-2 md:mb-3 tracking-tight">
               Shop All Instruments
             </h1>
-            <p className="text-lg text-white/80 max-w-2xl mx-auto">
+            <p className="text-base md:text-lg text-white/80 max-w-2xl mx-auto px-2">
               Discover our curated collection of professional wind instruments, 
               handpicked by experts for musicians who demand excellence.
             </p>
             
             {/* Stats */}
-            <div className="flex justify-center gap-8 mt-8">
+            <div className="flex justify-center gap-4 md:gap-6 lg:gap-8 mt-6 md:mt-8">
               <div className="text-center animate-fade-in stagger-1">
-                <div className="text-3xl font-bold text-primary">{products.length}</div>
-                <div className="text-sm text-white/60">Products</div>
+                <div className="text-2xl md:text-3xl font-bold text-primary">{products.length}</div>
+                <div className="text-xs md:text-sm text-white/60">Products</div>
               </div>
-              <div className="h-12 w-px bg-white/20" />
+              <div className="h-10 md:h-12 w-px bg-white/20" />
               <div className="text-center animate-fade-in stagger-2">
-                <div className="text-3xl font-bold text-primary">{brands.length}</div>
-                <div className="text-sm text-white/60">Brands</div>
+                <div className="text-2xl md:text-3xl font-bold text-primary">{brands.length}</div>
+                <div className="text-xs md:text-sm text-white/60">Brands</div>
               </div>
-              <div className="h-12 w-px bg-white/20" />
+              <div className="h-10 md:h-12 w-px bg-white/20" />
               <div className="text-center animate-fade-in stagger-3">
-                <div className="text-3xl font-bold text-primary">{subcategories.size}</div>
-                <div className="text-sm text-white/60">Categories</div>
+                <div className="text-2xl md:text-3xl font-bold text-primary">{subcategories.size}</div>
+                <div className="text-xs md:text-sm text-white/60">Categories</div>
               </div>
             </div>
           </div>
@@ -247,7 +247,7 @@ export default function ShopPage() {
               <button
                 key={slug}
                 onClick={() => setSelectedCategory(slug)}
-                className={`px-4 py-2 rounded-full font-medium text-sm transition-all duration-300 ${
+                className={`px-3 py-1.5 md:px-4 md:py-2 rounded-full font-medium text-xs md:text-sm transition-all duration-300 ${
                   selectedCategory === slug
                     ? 'bg-primary text-white shadow-lg scale-105'
                     : 'bg-white border-2 border-gray-200 text-gray-600 hover:border-primary hover:text-primary'
@@ -294,7 +294,7 @@ export default function ShopPage() {
             </div>
 
             {/* Sort & Results Count & Grid Toggle */}
-            <div className="mb-6 flex flex-wrap items-center justify-between gap-4 p-4 bg-white rounded-xl shadow-sm border animate-fade-in-down">
+            <div className="mb-4 md:mb-6 flex flex-wrap items-center justify-between gap-2 md:gap-4 p-3 md:p-4 bg-white rounded-lg md:rounded-xl shadow-sm border animate-fade-in-down">
               <div className="flex items-center gap-4">
                 <div className="text-sm text-muted-foreground">
                   Showing <span className="font-semibold text-secondary">{paginatedProducts.length}</span> of{' '}

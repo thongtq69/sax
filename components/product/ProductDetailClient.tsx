@@ -72,21 +72,21 @@ export function ProductDetailClient({ product }: ProductDetailClientProps) {
   return (
     <div className={`transition-opacity duration-700 ${isLoaded ? 'opacity-100' : 'opacity-0'}`}>
       {/* Breadcrumb */}
-      <nav className="mb-6 flex items-center gap-2 text-sm text-muted-foreground animate-fade-in">
-        <Link href="/" className="hover:text-primary transition-colors">Home</Link>
-        <ChevronRight className="h-4 w-4" />
-        <Link href="/shop" className="hover:text-primary transition-colors">Shop</Link>
-        <ChevronRight className="h-4 w-4" />
-        <span className="capitalize">{product.subcategory?.replace('-', ' ')}</span>
-        <ChevronRight className="h-4 w-4" />
-        <span className="text-secondary font-medium truncate max-w-[200px]">{product.name}</span>
+      <nav className="mb-4 md:mb-6 flex items-center gap-1.5 md:gap-2 text-xs md:text-sm text-muted-foreground animate-fade-in overflow-x-auto pb-2">
+        <Link href="/" className="hover:text-primary transition-colors whitespace-nowrap">Home</Link>
+        <ChevronRight className="h-3 w-3 md:h-4 md:w-4 flex-shrink-0" />
+        <Link href="/shop" className="hover:text-primary transition-colors whitespace-nowrap">Shop</Link>
+        <ChevronRight className="h-3 w-3 md:h-4 md:w-4 flex-shrink-0" />
+        <span className="capitalize whitespace-nowrap hidden sm:inline">{product.subcategory?.replace('-', ' ')}</span>
+        <ChevronRight className="h-3 w-3 md:h-4 md:w-4 flex-shrink-0 sm:hidden" />
+        <span className="text-secondary font-medium truncate max-w-[120px] sm:max-w-[200px] whitespace-nowrap">{product.name}</span>
       </nav>
 
-      <div className="grid grid-cols-1 gap-10 lg:grid-cols-2">
+      <div className="grid grid-cols-1 gap-6 md:gap-8 lg:gap-10 lg:grid-cols-2">
         {/* Image Gallery */}
         <div className="animate-fade-in-left">
           {/* Main Image */}
-          <div className="relative aspect-square overflow-hidden rounded-2xl border-2 border-gray-100 bg-gradient-to-br from-gray-50 to-gray-100 group">
+          <div className="relative aspect-square overflow-hidden rounded-xl md:rounded-2xl border-2 border-gray-100 bg-gradient-to-br from-gray-50 to-gray-100 group">
             <Image
               src={product.images[selectedImageIndex] || product.images[0]}
               alt={product.name}
@@ -119,12 +119,12 @@ export function ProductDetailClient({ product }: ProductDetailClientProps) {
 
           {/* Thumbnails */}
           {product.images.length > 1 && (
-            <div className="mt-4 flex gap-3 overflow-x-auto pb-2">
+            <div className="mt-3 md:mt-4 flex gap-2 md:gap-3 overflow-x-auto pb-2">
               {product.images.map((image, index) => (
                 <button
                   key={index}
                   onClick={() => setSelectedImageIndex(index)}
-                  className={`relative h-20 w-20 flex-shrink-0 overflow-hidden rounded-xl border-2 transition-all duration-300 ${
+                  className={`relative h-16 w-16 md:h-20 md:w-20 flex-shrink-0 overflow-hidden rounded-lg md:rounded-xl border-2 transition-all duration-300 ${
                     selectedImageIndex === index
                       ? 'border-primary shadow-lg scale-105 ring-2 ring-primary/30'
                       : 'border-gray-200 hover:border-primary/50 hover:shadow-md'
@@ -143,18 +143,18 @@ export function ProductDetailClient({ product }: ProductDetailClientProps) {
         </div>
 
         {/* Product Info */}
-        <div className="space-y-6 animate-fade-in-right">
+        <div className="space-y-4 md:space-y-6 animate-fade-in-right">
           {/* Header */}
           <div>
-            <div className="flex items-center gap-2 mb-2">
-              <span className="text-sm font-semibold text-accent uppercase tracking-widest">
+            <div className="flex items-center gap-1.5 md:gap-2 mb-2 flex-wrap">
+              <span className="text-xs md:text-sm font-semibold text-accent uppercase tracking-widest">
                 {product.brand}
               </span>
-              <span className="text-gray-300">|</span>
-              <span className="text-sm text-muted-foreground">SKU: {product.sku}</span>
+              <span className="text-gray-300 hidden sm:inline">|</span>
+              <span className="text-xs md:text-sm text-muted-foreground">SKU: {product.sku}</span>
             </div>
 
-            <h1 className="text-3xl md:text-4xl font-bold text-secondary leading-tight mb-4">
+            <h1 className="text-2xl md:text-3xl lg:text-4xl font-bold text-secondary leading-tight mb-3 md:mb-4">
               {product.name}
             </h1>
 
@@ -184,17 +184,17 @@ export function ProductDetailClient({ product }: ProductDetailClientProps) {
           </div>
 
           {/* Pricing */}
-          <div className="p-6 rounded-2xl bg-gradient-to-br from-primary/5 to-primary/10 border border-primary/20">
-            <div className="flex items-baseline gap-3 mb-2">
-              <span className="text-4xl font-bold text-primary">
+          <div className="p-4 md:p-6 rounded-xl md:rounded-2xl bg-gradient-to-br from-primary/5 to-primary/10 border border-primary/20">
+            <div className="flex items-baseline gap-2 md:gap-3 mb-2 flex-wrap">
+              <span className="text-3xl md:text-4xl font-bold text-primary">
                 ${product.price.toLocaleString()}
               </span>
               {product.retailPrice && (
                 <>
-                  <span className="text-xl text-gray-400 line-through">
+                  <span className="text-lg md:text-xl text-gray-400 line-through">
                     ${product.retailPrice.toLocaleString()}
                   </span>
-                  <Badge variant="destructive" className="animate-pulse">
+                  <Badge variant="destructive" className="animate-pulse text-xs md:text-sm">
                     Save ${savings.toLocaleString()}
                   </Badge>
                 </>
@@ -203,8 +203,8 @@ export function ProductDetailClient({ product }: ProductDetailClientProps) {
 
             {/* Financing */}
             {product.price > 500 && (
-              <div className="flex items-center gap-2 mt-3 text-sm">
-                <CreditCard className="h-4 w-4 text-accent" />
+              <div className="flex items-center gap-2 mt-2 md:mt-3 text-xs md:text-sm">
+                <CreditCard className="h-3.5 w-3.5 md:h-4 md:w-4 text-accent flex-shrink-0" />
                 <span className="text-gray-600">
                   Or <span className="font-semibold text-accent">${(product.price / 12).toFixed(0)}/month</span> with 0% APR financing
                 </span>
@@ -213,7 +213,7 @@ export function ProductDetailClient({ product }: ProductDetailClientProps) {
           </div>
 
           {/* Stock Status */}
-          <div className={`flex items-center gap-2 text-sm font-medium ${
+          <div className={`flex items-center gap-2 text-xs md:text-sm font-medium ${
             product.inStock ? 'text-green-600' : 'text-red-600'
           }`}>
             {product.inStock ? (
@@ -255,10 +255,10 @@ export function ProductDetailClient({ product }: ProductDetailClientProps) {
             </div>
 
             {/* Action Buttons */}
-            <div className="flex gap-3">
+            <div className="flex gap-2 md:gap-3">
               <Button
                 size="lg"
-                className={`flex-1 text-lg font-semibold transition-all duration-300 ${
+                className={`flex-1 text-base md:text-lg font-semibold transition-all duration-300 ${
                   isAddedToCart 
                     ? 'bg-green-500 hover:bg-green-600' 
                     : 'hover:shadow-lg hover:scale-[1.02]'
@@ -294,7 +294,7 @@ export function ProductDetailClient({ product }: ProductDetailClientProps) {
           </div>
 
           {/* Trust Badges */}
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-2 gap-2 md:gap-4">
             {[
               { icon: Truck, title: 'Free Shipping', desc: 'On orders over $500' },
               { icon: Shield, title: '30-Day Returns', desc: 'Hassle-free policy' },
@@ -303,15 +303,15 @@ export function ProductDetailClient({ product }: ProductDetailClientProps) {
             ].map((item, i) => (
               <div 
                 key={i} 
-                className="flex items-center gap-3 p-3 rounded-xl bg-gray-50 border transition-all duration-300 hover:shadow-md hover:border-primary/30"
+                className="flex items-center gap-2 md:gap-3 p-2 md:p-3 rounded-lg md:rounded-xl bg-gray-50 border transition-all duration-300 hover:shadow-md hover:border-primary/30"
                 style={{ animationDelay: `${0.1 * i}s` }}
               >
-                <div className="p-2 rounded-lg bg-primary/10">
-                  <item.icon className="h-5 w-5 text-primary" />
+                <div className="p-1.5 md:p-2 rounded-lg bg-primary/10 flex-shrink-0">
+                  <item.icon className="h-4 w-4 md:h-5 md:w-5 text-primary" />
                 </div>
-                <div>
-                  <p className="font-semibold text-sm text-secondary">{item.title}</p>
-                  <p className="text-xs text-muted-foreground">{item.desc}</p>
+                <div className="min-w-0">
+                  <p className="font-semibold text-xs md:text-sm text-secondary truncate">{item.title}</p>
+                  <p className="text-[10px] md:text-xs text-muted-foreground truncate">{item.desc}</p>
                 </div>
               </div>
             ))}
@@ -320,14 +320,14 @@ export function ProductDetailClient({ product }: ProductDetailClientProps) {
       </div>
 
       {/* Tabs Section */}
-      <div className="mt-16 animate-fade-in-up" style={{ animationDelay: '0.3s' }}>
+      <div className="mt-8 md:mt-12 lg:mt-16 animate-fade-in-up" style={{ animationDelay: '0.3s' }}>
         <Tabs defaultValue="description" className="w-full">
-          <TabsList className="w-full justify-start border-b rounded-none bg-transparent h-auto p-0 gap-8">
+          <TabsList className="w-full justify-start border-b rounded-none bg-transparent h-auto p-0 gap-4 md:gap-8 overflow-x-auto">
             {['description', 'specs', 'reviews'].map((tab) => (
               <TabsTrigger 
                 key={tab}
                 value={tab} 
-                className="relative capitalize text-lg pb-4 px-0 rounded-none bg-transparent data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:text-primary font-medium text-gray-500 hover:text-gray-700 transition-colors after:absolute after:bottom-0 after:left-0 after:right-0 after:h-0.5 after:bg-primary after:scale-x-0 data-[state=active]:after:scale-x-100 after:transition-transform after:duration-300"
+                className="relative capitalize text-sm md:text-base lg:text-lg pb-3 md:pb-4 px-2 md:px-0 rounded-none bg-transparent data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:text-primary font-medium text-gray-500 hover:text-gray-700 transition-colors whitespace-nowrap after:absolute after:bottom-0 after:left-0 after:right-0 after:h-0.5 after:bg-primary after:scale-x-0 data-[state=active]:after:scale-x-100 after:transition-transform after:duration-300"
               >
                 {tab === 'description' && '📝 '}
                 {tab === 'specs' && '📋 '}
@@ -337,19 +337,19 @@ export function ProductDetailClient({ product }: ProductDetailClientProps) {
             ))}
           </TabsList>
           
-          <TabsContent value="description" className="mt-8 animate-fade-in">
-            <div className="prose prose-lg max-w-none">
-              <p className="text-gray-700 leading-relaxed text-lg">{product.description}</p>
+          <TabsContent value="description" className="mt-4 md:mt-6 lg:mt-8 animate-fade-in">
+            <div className="prose prose-sm md:prose-lg max-w-none">
+              <p className="text-gray-700 leading-relaxed text-base md:text-lg">{product.description}</p>
               
               {product.included && (
-                <div className="mt-8 p-6 bg-gradient-to-br from-green-50 to-emerald-50 rounded-2xl border border-green-100">
-                  <h3 className="text-xl font-bold text-secondary mb-4 flex items-center gap-2">
-                    <span className="text-2xl">📦</span> What's Included
+                <div className="mt-6 md:mt-8 p-4 md:p-6 bg-gradient-to-br from-green-50 to-emerald-50 rounded-xl md:rounded-2xl border border-green-100">
+                  <h3 className="text-lg md:text-xl font-bold text-secondary mb-3 md:mb-4 flex items-center gap-2">
+                    <span className="text-xl md:text-2xl">📦</span> What's Included
                   </h3>
                   <ul className="space-y-2">
                     {product.included.map((item, index) => (
-                      <li key={index} className="flex items-center gap-3 text-gray-700">
-                        <Check className="h-5 w-5 text-green-500 flex-shrink-0" />
+                      <li key={index} className="flex items-center gap-2 md:gap-3 text-sm md:text-base text-gray-700">
+                        <Check className="h-4 w-4 md:h-5 md:w-5 text-green-500 flex-shrink-0" />
                         {item}
                       </li>
                     ))}
@@ -359,38 +359,38 @@ export function ProductDetailClient({ product }: ProductDetailClientProps) {
             </div>
           </TabsContent>
           
-          <TabsContent value="specs" className="mt-8 animate-fade-in">
+          <TabsContent value="specs" className="mt-4 md:mt-6 lg:mt-8 animate-fade-in">
             {product.specs ? (
-              <div className="grid gap-3">
+              <div className="grid gap-2 md:gap-3">
                 {Object.entries(product.specs).map(([key, value], i) => (
                   <div 
                     key={key} 
-                    className={`flex p-4 rounded-xl transition-all duration-300 hover:shadow-md ${
+                    className={`flex flex-col sm:flex-row p-3 md:p-4 rounded-lg md:rounded-xl transition-all duration-300 hover:shadow-md ${
                       i % 2 === 0 ? 'bg-gray-50' : 'bg-white border'
                     }`}
                     style={{ animationDelay: `${0.05 * i}s` }}
                   >
-                    <span className="w-1/3 font-semibold text-secondary">{key}</span>
-                    <span className="text-gray-600">{value}</span>
+                    <span className="w-full sm:w-1/3 font-semibold text-secondary text-sm md:text-base mb-1 sm:mb-0">{key}</span>
+                    <span className="text-gray-600 text-sm md:text-base">{value}</span>
                   </div>
                 ))}
               </div>
             ) : (
-              <p className="text-gray-500 text-center py-8">No specifications available.</p>
+              <p className="text-gray-500 text-center py-6 md:py-8 text-sm md:text-base">No specifications available.</p>
             )}
           </TabsContent>
           
-          <TabsContent value="reviews" className="mt-8 animate-fade-in">
-            <div className="space-y-6">
+          <TabsContent value="reviews" className="mt-4 md:mt-6 lg:mt-8 animate-fade-in">
+            <div className="space-y-4 md:space-y-6">
               {product.rating && (
-                <div className="flex items-center gap-8 p-6 bg-gradient-to-br from-amber-50 to-orange-50 rounded-2xl border border-amber-100">
+                <div className="flex flex-col sm:flex-row items-center gap-4 md:gap-8 p-4 md:p-6 bg-gradient-to-br from-amber-50 to-orange-50 rounded-xl md:rounded-2xl border border-amber-100">
                   <div className="text-center">
-                    <div className="text-5xl font-bold text-secondary">{product.rating}</div>
-                    <div className="flex mt-2">
+                    <div className="text-4xl md:text-5xl font-bold text-secondary">{product.rating}</div>
+                    <div className="flex mt-2 justify-center">
                       {Array.from({ length: 5 }).map((_, i) => (
                         <Star
                           key={i}
-                          className={`h-5 w-5 ${
+                          className={`h-4 w-4 md:h-5 md:w-5 ${
                             i < Math.floor(product.rating || 0)
                               ? 'fill-amber-400 text-amber-400'
                               : 'fill-gray-300 text-gray-300'
@@ -398,26 +398,26 @@ export function ProductDetailClient({ product }: ProductDetailClientProps) {
                         />
                       ))}
                     </div>
-                    <div className="text-sm text-gray-600 mt-1">
+                    <div className="text-xs md:text-sm text-gray-600 mt-1">
                       {product.reviewCount} reviews
                     </div>
                   </div>
                   
                   {/* Rating bars */}
-                  <div className="flex-1 space-y-2">
+                  <div className="flex-1 w-full sm:w-auto space-y-2">
                     {[5, 4, 3, 2, 1].map((stars) => {
                       const percentage = stars === 5 ? 75 : stars === 4 ? 20 : stars === 3 ? 5 : 0
                       return (
-                        <div key={stars} className="flex items-center gap-3">
-                          <span className="text-sm w-3">{stars}</span>
-                          <Star className="h-4 w-4 fill-amber-400 text-amber-400" />
-                          <div className="flex-1 h-2 bg-gray-200 rounded-full overflow-hidden">
+                        <div key={stars} className="flex items-center gap-2 md:gap-3">
+                          <span className="text-xs md:text-sm w-3">{stars}</span>
+                          <Star className="h-3 w-3 md:h-4 md:w-4 fill-amber-400 text-amber-400" />
+                          <div className="flex-1 h-1.5 md:h-2 bg-gray-200 rounded-full overflow-hidden">
                             <div 
                               className="h-full bg-amber-400 rounded-full transition-all duration-700"
                               style={{ width: `${percentage}%` }}
                             />
                           </div>
-                          <span className="text-sm text-gray-500 w-10">{percentage}%</span>
+                          <span className="text-xs md:text-sm text-gray-500 w-8 md:w-10">{percentage}%</span>
                         </div>
                       )
                     })}
@@ -425,9 +425,9 @@ export function ProductDetailClient({ product }: ProductDetailClientProps) {
                 </div>
               )}
               
-              <div className="text-center py-8 text-gray-500">
-                <p className="mb-4">Be the first to share your experience!</p>
-                <Button variant="outline">Write a Review</Button>
+              <div className="text-center py-6 md:py-8 text-gray-500">
+                <p className="mb-3 md:mb-4 text-sm md:text-base">Be the first to share your experience!</p>
+                <Button variant="outline" size="sm" className="md:size-default">Write a Review</Button>
               </div>
             </div>
           </TabsContent>
@@ -436,17 +436,17 @@ export function ProductDetailClient({ product }: ProductDetailClientProps) {
 
       {/* Related Products */}
       {relatedProducts.length > 0 && (
-        <div className="mt-20 animate-fade-in-up" style={{ animationDelay: '0.4s' }}>
-          <div className="flex items-center justify-between mb-8">
+        <div className="mt-12 md:mt-16 lg:mt-20 animate-fade-in-up" style={{ animationDelay: '0.4s' }}>
+          <div className="flex items-center justify-between mb-6 md:mb-8">
             <div>
-              <h2 className="text-3xl font-bold text-secondary">You May Also Like</h2>
-              <p className="text-muted-foreground mt-1">Similar instruments you might love</p>
+              <h2 className="text-2xl md:text-3xl font-bold text-secondary">You May Also Like</h2>
+              <p className="text-muted-foreground mt-1 text-sm md:text-base">Similar instruments you might love</p>
             </div>
-            <Button variant="outline" asChild className="hidden sm:flex">
+            <Button variant="outline" asChild size="sm" className="hidden sm:flex">
               <Link href="/shop">View All →</Link>
             </Button>
           </div>
-          <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
+          <div className="grid grid-cols-2 gap-3 md:gap-4 lg:gap-6 sm:grid-cols-2 lg:grid-cols-4">
             {relatedProducts.map((product, index) => (
               <ProductCard key={product.id} product={product} index={index} />
             ))}
