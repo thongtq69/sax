@@ -258,7 +258,6 @@ export default function ShopPage() {
                 onBrandChange={setSelectedBrands}
                 priceRange={priceRange}
                 onPriceRangeChange={setPriceRange}
-                maxPrice={30000}
                 mobile
               />
             </div>
