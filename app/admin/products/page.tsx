@@ -1,7 +1,8 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { products, categories, type Product } from '@/lib/data'
+import { getProducts, getCategories, createProduct, updateProduct, deleteProduct, transformProduct, transformCategory } from '@/lib/api'
+import type { Product } from '@/lib/data'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import {
@@ -18,15 +19,18 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
-import { Plus, Edit, Trash2, Search, Package } from 'lucide-react'
+import { Plus, Edit, Trash2, Search, Package, Loader2 } from 'lucide-react'
 import Image from 'next/image'
 
 export default function ProductsManagement() {
   const [productList, setProductList] = useState<Product[]>([])
+  const [categories, setCategories] = useState<any[]>([])
   const [filteredProducts, setFilteredProducts] = useState<Product[]>([])
   const [searchTerm, setSearchTerm] = useState('')
   const [selectedCategory, setSelectedCategory] = useState<string>('all')
   const [isDialogOpen, setIsDialogOpen] = useState(false)
+  const [isLoading, setIsLoading] = useState(true)
+  const [isSaving, setIsSaving] = useState(false)
   const [editingProduct, setEditingProduct] = useState<Product | null>(null)
   const [formData, setFormData] = useState<Partial<Product>>({
     name: '',
@@ -49,10 +53,29 @@ export default function ProductsManagement() {
     reviewCount: 0,
   })
 
+  // Fetch data from API
   useEffect(() => {
-    // Load products (in real app, this would be from API)
-    setProductList(products)
-    setFilteredProducts(products)
+    async function fetchData() {
+      try {
+        setIsLoading(true)
+        const [productsResponse, categoriesData] = await Promise.all([
+          getProducts({ limit: 1000 }),
+          getCategories(),
+        ])
+        
+        const transformedProducts = productsResponse.products.map(transformProduct)
+        const transformedCategories = categoriesData.map(transformCategory)
+        
+        setProductList(transformedProducts)
+        setCategories(transformedCategories)
+      } catch (error) {
+        console.error('Error fetching data:', error)
+        alert('Failed to load data. Please refresh the page.')
+      } finally {
+        setIsLoading(false)
+      }
+    }
+    fetchData()
   }, [])
 
   useEffect(() => {
@@ -105,35 +128,88 @@ export default function ProductsManagement() {
     setIsDialogOpen(true)
   }
 
-  const handleSave = () => {
-    if (editingProduct) {
-      // Update existing product
-      setProductList(
-        productList.map((p) => (p.id === editingProduct.id ? { ...formData, id: editingProduct.id } as Product : p))
-      )
-    } else {
-      // Add new product
-      const newProduct: Product = {
-        ...formData,
-        id: Date.now().toString(),
+  const handleSave = async () => {
+    try {
+      setIsSaving(true)
+      
+      // Find category and subcategory IDs
+      const categoryObj = categories.find(c => c.id === formData.category || c.slug === formData.category)
+      const subcategoryObj = categoryObj?.subcategories?.find((s: any) => s.id === formData.subcategory || s.slug === formData.subcategory)
+      
+      const productData = {
+        name: formData.name,
         slug: formData.slug || formData.name?.toLowerCase().replace(/\s+/g, '-') || '',
-      } as Product
-      setProductList([...productList, newProduct])
+        brand: formData.brand,
+        price: formData.price,
+        retailPrice: formData.retailPrice || null,
+        categoryId: categoryObj?.id || formData.category,
+        subcategoryId: subcategoryObj?.id || formData.subcategory || null,
+        images: formData.images || [],
+        badge: formData.badge || null,
+        inStock: formData.inStock !== undefined ? formData.inStock : true,
+        stock: formData.stock || 0,
+        description: formData.description,
+        specs: formData.specs || null,
+        included: formData.included || [],
+        warranty: formData.warranty || null,
+        sku: formData.sku,
+        rating: formData.rating || 0,
+        reviewCount: formData.reviewCount || 0,
+      }
+
+      if (editingProduct) {
+        // Update existing product
+        await updateProduct(editingProduct.id, productData)
+      } else {
+        // Create new product
+        await createProduct(productData)
+      }
+
+      // Refresh data
+      const productsResponse = await getProducts({ limit: 1000 })
+      const transformedProducts = productsResponse.products.map(transformProduct)
+      setProductList(transformedProducts)
+      
+      setIsDialogOpen(false)
+      setEditingProduct(null)
+    } catch (error: any) {
+      console.error('Error saving product:', error)
+      alert(error.message || 'Failed to save product. Please try again.')
+    } finally {
+      setIsSaving(false)
     }
-    setIsDialogOpen(false)
-    setEditingProduct(null)
   }
 
-  const handleDelete = (id: string) => {
-    if (confirm('Are you sure you want to delete this product?')) {
-      setProductList(productList.filter((p) => p.id !== id))
+  const handleDelete = async (id: string) => {
+    if (!confirm('Are you sure you want to delete this product?')) {
+      return
+    }
+
+    try {
+      await deleteProduct(id)
+      
+      // Refresh data
+      const productsResponse = await getProducts({ limit: 1000 })
+      const transformedProducts = productsResponse.products.map(transformProduct)
+      setProductList(transformedProducts)
+    } catch (error: any) {
+      console.error('Error deleting product:', error)
+      alert(error.message || 'Failed to delete product. Please try again.')
     }
   }
 
   const allCategories = categories.flatMap((cat) => [
     { id: cat.id, name: cat.name },
-    ...(cat.subcategories?.map((sub) => ({ id: sub.id, name: `${cat.name} > ${sub.name}` })) || []),
+    ...(cat.subcategories?.map((sub: any) => ({ id: sub.id, name: `${cat.name} > ${sub.name}` })) || []),
   ])
+
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+      </div>
+    )
+  }
 
   return (
     <div className="space-y-6">
@@ -384,7 +460,7 @@ export default function ProductsManagement() {
                 </label>
                 <Select
                   value={formData.category}
-                  onValueChange={(value) => setFormData({ ...formData, category: value })}
+                  onValueChange={(value) => setFormData({ ...formData, category: value, subcategory: '' })}
                 >
                   <SelectTrigger>
                     <SelectValue placeholder="Select category" />
@@ -445,11 +521,18 @@ export default function ProductsManagement() {
             </div>
           </div>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setIsDialogOpen(false)}>
+            <Button variant="outline" onClick={() => setIsDialogOpen(false)} disabled={isSaving}>
               Cancel
             </Button>
-            <Button onClick={handleSave}>
-              {editingProduct ? 'Update' : 'Create'}
+            <Button onClick={handleSave} disabled={isSaving}>
+              {isSaving ? (
+                <>
+                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                  Saving...
+                </>
+              ) : (
+                editingProduct ? 'Update' : 'Create'
+              )}
             </Button>
           </DialogFooter>
         </DialogContent>
@@ -457,4 +540,3 @@ export default function ProductsManagement() {
     </div>
   )
 }
-

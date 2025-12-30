@@ -163,3 +163,74 @@ export function transformBlogPost(apiPost: any) {
   }
 }
 
+// CRUD Operations for Products
+export async function createProduct(data: any) {
+  return fetchAPI<any>('/api/products', {
+    method: 'POST',
+    body: JSON.stringify(data),
+  })
+}
+
+export async function updateProduct(id: string, data: any) {
+  return fetchAPI<any>(`/api/products/${id}`, {
+    method: 'PUT',
+    body: JSON.stringify(data),
+  })
+}
+
+export async function deleteProduct(id: string) {
+  return fetchAPI<{ message: string }>(`/api/products/${id}`, {
+    method: 'DELETE',
+  })
+}
+
+// CRUD Operations for Blog Posts
+export async function createBlogPost(data: any) {
+  return fetchAPI<any>('/api/blog', {
+    method: 'POST',
+    body: JSON.stringify(data),
+  })
+}
+
+export async function updateBlogPost(id: string, data: any) {
+  return fetchAPI<any>(`/api/blog/${id}`, {
+    method: 'PUT',
+    body: JSON.stringify(data),
+  })
+}
+
+export async function deleteBlogPost(id: string) {
+  return fetchAPI<{ message: string }>(`/api/blog/${id}`, {
+    method: 'DELETE',
+  })
+}
+
+// CRUD Operations for Categories
+export async function createCategory(data: any) {
+  return fetchAPI<any>('/api/categories', {
+    method: 'POST',
+    body: JSON.stringify(data),
+  })
+}
+
+// CRUD Operations for Promos
+export async function createPromo(data: any) {
+  return fetchAPI<any>('/api/promos', {
+    method: 'POST',
+    body: JSON.stringify(data),
+  })
+}
+
+export async function updatePromo(id: string, data: any) {
+  return fetchAPI<any>(`/api/promos/${id}`, {
+    method: 'PUT',
+    body: JSON.stringify(data),
+  })
+}
+
+export async function deletePromo(id: string) {
+  return fetchAPI<{ message: string }>(`/api/promos/${id}`, {
+    method: 'DELETE',
+  })
+}
+

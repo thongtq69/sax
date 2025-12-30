@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { promoBanners, type PromoBanner } from '@/lib/data'
+import { getPromoBanners, createPromo, updatePromo, deletePromo } from '@/lib/api'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import {
@@ -11,14 +11,16 @@ import {
   DialogTitle,
   DialogFooter,
 } from '@/components/ui/dialog'
-import { Plus, Edit, Trash2, Megaphone } from 'lucide-react'
+import { Plus, Edit, Trash2, Megaphone, Loader2 } from 'lucide-react'
 import Image from 'next/image'
 
 export default function PromosManagement() {
-  const [promoList, setPromoList] = useState<PromoBanner[]>([])
+  const [promoList, setPromoList] = useState<any[]>([])
   const [isDialogOpen, setIsDialogOpen] = useState(false)
-  const [editingPromo, setEditingPromo] = useState<PromoBanner | null>(null)
-  const [formData, setFormData] = useState<Partial<PromoBanner>>({
+  const [isLoading, setIsLoading] = useState(true)
+  const [isSaving, setIsSaving] = useState(false)
+  const [editingPromo, setEditingPromo] = useState<any | null>(null)
+  const [formData, setFormData] = useState<any>({
     title: '',
     description: '',
     image: '',
@@ -26,11 +28,24 @@ export default function PromosManagement() {
     ctaLink: '',
   })
 
+  // Fetch data from API
   useEffect(() => {
-    setPromoList(promoBanners)
+    async function fetchData() {
+      try {
+        setIsLoading(true)
+        const promos = await getPromoBanners()
+        setPromoList(promos)
+      } catch (error) {
+        console.error('Error fetching promo banners:', error)
+        alert('Failed to load promo banners. Please refresh the page.')
+      } finally {
+        setIsLoading(false)
+      }
+    }
+    fetchData()
   }, [])
 
-  const handleOpenDialog = (promo?: PromoBanner) => {
+  const handleOpenDialog = (promo?: any) => {
     if (promo) {
       setEditingPromo(promo)
       setFormData(promo)
@@ -47,26 +62,61 @@ export default function PromosManagement() {
     setIsDialogOpen(true)
   }
 
-  const handleSave = () => {
-    if (editingPromo) {
-      setPromoList(
-        promoList.map((p) => (p.id === editingPromo.id ? { ...formData, id: editingPromo.id } as PromoBanner : p))
-      )
-    } else {
-      const newPromo: PromoBanner = {
-        ...formData,
-        id: Date.now().toString(),
-      } as PromoBanner
-      setPromoList([...promoList, newPromo])
+  const handleSave = async () => {
+    try {
+      setIsSaving(true)
+      
+      const promoData = {
+        title: formData.title,
+        description: formData.description,
+        image: formData.image,
+        ctaText: formData.ctaText,
+        ctaLink: formData.ctaLink,
+      }
+
+      if (editingPromo) {
+        await updatePromo(editingPromo.id, promoData)
+      } else {
+        await createPromo(promoData)
+      }
+
+      // Refresh data
+      const promos = await getPromoBanners()
+      setPromoList(promos)
+      
+      setIsDialogOpen(false)
+      setEditingPromo(null)
+    } catch (error: any) {
+      console.error('Error saving promo banner:', error)
+      alert(error.message || 'Failed to save promo banner. Please try again.')
+    } finally {
+      setIsSaving(false)
     }
-    setIsDialogOpen(false)
-    setEditingPromo(null)
   }
 
-  const handleDelete = (id: string) => {
-    if (confirm('Are you sure you want to delete this promo banner?')) {
-      setPromoList(promoList.filter((p) => p.id !== id))
+  const handleDelete = async (id: string) => {
+    if (!confirm('Are you sure you want to delete this promo banner?')) {
+      return
     }
+
+    try {
+      await deletePromo(id)
+      
+      // Refresh data
+      const promos = await getPromoBanners()
+      setPromoList(promos)
+    } catch (error: any) {
+      console.error('Error deleting promo banner:', error)
+      alert(error.message || 'Failed to delete promo banner. Please try again.')
+    }
+  }
+
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+      </div>
+    )
   }
 
   return (
@@ -195,11 +245,18 @@ export default function PromosManagement() {
             </div>
           </div>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setIsDialogOpen(false)}>
+            <Button variant="outline" onClick={() => setIsDialogOpen(false)} disabled={isSaving}>
               Cancel
             </Button>
-            <Button onClick={handleSave}>
-              {editingPromo ? 'Update' : 'Create'}
+            <Button onClick={handleSave} disabled={isSaving}>
+              {isSaving ? (
+                <>
+                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                  Saving...
+                </>
+              ) : (
+                editingPromo ? 'Update' : 'Create'
+              )}
             </Button>
           </DialogFooter>
         </DialogContent>
@@ -207,4 +264,3 @@ export default function PromosManagement() {
     </div>
   )
 }
-

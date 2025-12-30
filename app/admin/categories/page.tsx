@@ -1,7 +1,7 @@
 'use client'
 
-import { useState } from 'react'
-import { categories, type Category, type SubCategory } from '@/lib/data'
+import { useState, useEffect } from 'react'
+import { getCategories, createCategory, transformCategory } from '@/lib/api'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import {
@@ -11,27 +11,47 @@ import {
   DialogTitle,
   DialogFooter,
 } from '@/components/ui/dialog'
-import { Plus, Edit, Trash2, FolderTree } from 'lucide-react'
+import { Plus, Edit, Trash2, FolderTree, Loader2 } from 'lucide-react'
 
 export default function CategoriesManagement() {
-  const [categoryList, setCategoryList] = useState<Category[]>(categories)
+  const [categoryList, setCategoryList] = useState<any[]>([])
   const [isDialogOpen, setIsDialogOpen] = useState(false)
   const [isSubDialogOpen, setIsSubDialogOpen] = useState(false)
-  const [editingCategory, setEditingCategory] = useState<Category | null>(null)
-  const [editingSubcategory, setEditingSubcategory] = useState<{ category: Category; subcategory: SubCategory } | null>(null)
-  const [formData, setFormData] = useState<Partial<Category>>({
+  const [isLoading, setIsLoading] = useState(true)
+  const [isSaving, setIsSaving] = useState(false)
+  const [editingCategory, setEditingCategory] = useState<any | null>(null)
+  const [editingSubcategory, setEditingSubcategory] = useState<{ category: any; subcategory: any } | null>(null)
+  const [formData, setFormData] = useState<any>({
     name: '',
     slug: '',
     path: '',
     subcategories: [],
   })
-  const [subFormData, setSubFormData] = useState<Partial<SubCategory>>({
+  const [subFormData, setSubFormData] = useState<any>({
     name: '',
     slug: '',
     path: '',
   })
 
-  const handleOpenDialog = (category?: Category) => {
+  // Fetch data from API
+  useEffect(() => {
+    async function fetchData() {
+      try {
+        setIsLoading(true)
+        const categoriesData = await getCategories()
+        const transformed = categoriesData.map(transformCategory)
+        setCategoryList(transformed)
+      } catch (error) {
+        console.error('Error fetching categories:', error)
+        alert('Failed to load categories. Please refresh the page.')
+      } finally {
+        setIsLoading(false)
+      }
+    }
+    fetchData()
+  }, [])
+
+  const handleOpenDialog = (category?: any) => {
     if (category) {
       setEditingCategory(category)
       setFormData(category)
@@ -47,7 +67,7 @@ export default function CategoriesManagement() {
     setIsDialogOpen(true)
   }
 
-  const handleOpenSubDialog = (category: Category, subcategory?: SubCategory) => {
+  const handleOpenSubDialog = (category: any, subcategory?: any) => {
     if (subcategory) {
       setEditingSubcategory({ category, subcategory })
       setSubFormData(subcategory)
@@ -62,70 +82,62 @@ export default function CategoriesManagement() {
     setIsSubDialogOpen(true)
   }
 
-  const handleSave = () => {
-    if (editingCategory) {
-      setCategoryList(
-        categoryList.map((c) =>
-          c.id === editingCategory.id ? { ...formData, id: editingCategory.id } as Category : c
-        )
-      )
-    } else {
-      const newCategory: Category = {
-        ...formData,
-        id: formData.slug || formData.name?.toLowerCase().replace(/\s+/g, '-') || '',
-        subcategories: [],
-      } as Category
-      setCategoryList([...categoryList, newCategory])
+  const handleSave = async () => {
+    try {
+      setIsSaving(true)
+      
+      const categoryData = {
+        name: formData.name,
+        slug: formData.slug || formData.name?.toLowerCase().replace(/\s+/g, '-') || '',
+        path: formData.path,
+      }
+
+      if (editingCategory) {
+        // Update - Note: API doesn't support update yet, so we'll just refresh
+        alert('Update functionality will be available soon. For now, please delete and recreate.')
+      } else {
+        await createCategory(categoryData)
+      }
+
+      // Refresh data
+      const categoriesData = await getCategories()
+      const transformed = categoriesData.map(transformCategory)
+      setCategoryList(transformed)
+      
+      setIsDialogOpen(false)
+      setEditingCategory(null)
+    } catch (error: any) {
+      console.error('Error saving category:', error)
+      alert(error.message || 'Failed to save category. Please try again.')
+    } finally {
+      setIsSaving(false)
     }
-    setIsDialogOpen(false)
-    setEditingCategory(null)
   }
 
-  const handleSaveSub = () => {
+  const handleSaveSub = async () => {
     if (!editingSubcategory) return
 
-    const { category } = editingSubcategory
-    const updatedCategory = { ...category }
-    
-    if (editingSubcategory.subcategory.id) {
-      // Update existing subcategory
-      updatedCategory.subcategories = category.subcategories?.map((sub) =>
-        sub.id === editingSubcategory.subcategory.id
-          ? { ...subFormData, id: editingSubcategory.subcategory.id } as SubCategory
-          : sub
-      ) || []
-    } else {
-      // Add new subcategory
-      const newSub: SubCategory = {
-        ...subFormData,
-        id: subFormData.slug || subFormData.name?.toLowerCase().replace(/\s+/g, '-') || '',
-      } as SubCategory
-      updatedCategory.subcategories = [...(category.subcategories || []), newSub]
-    }
-
-    setCategoryList(
-      categoryList.map((c) => (c.id === category.id ? updatedCategory : c))
-    )
+    // Note: Subcategory update/create via API is not yet implemented
+    // This would require updating the parent category with new subcategories
+    alert('Subcategory management via API will be available soon.')
     setIsSubDialogOpen(false)
     setEditingSubcategory(null)
   }
 
   const handleDelete = (id: string) => {
-    if (confirm('Are you sure you want to delete this category?')) {
-      setCategoryList(categoryList.filter((c) => c.id !== id))
-    }
+    alert('Delete functionality will be available soon via API.')
   }
 
   const handleDeleteSub = (categoryId: string, subId: string) => {
-    if (confirm('Are you sure you want to delete this subcategory?')) {
-      setCategoryList(
-        categoryList.map((c) =>
-          c.id === categoryId
-            ? { ...c, subcategories: c.subcategories?.filter((s) => s.id !== subId) || [] }
-            : c
-        )
-      )
-    }
+    alert('Delete subcategory functionality will be available soon via API.')
+  }
+
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+      </div>
+    )
   }
 
   return (
@@ -184,7 +196,7 @@ export default function CategoriesManagement() {
               </div>
               {category.subcategories && category.subcategories.length > 0 && (
                 <div className="pl-4 border-l-2 border-gray-200 space-y-2">
-                  {category.subcategories.map((sub) => (
+                  {category.subcategories.map((sub: any) => (
                     <div key={sub.id} className="flex items-center justify-between py-2">
                       <div>
                         <span className="text-sm font-medium text-gray-900">{sub.name}</span>
@@ -257,11 +269,18 @@ export default function CategoriesManagement() {
             </div>
           </div>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setIsDialogOpen(false)}>
+            <Button variant="outline" onClick={() => setIsDialogOpen(false)} disabled={isSaving}>
               Cancel
             </Button>
-            <Button onClick={handleSave}>
-              {editingCategory ? 'Update' : 'Create'}
+            <Button onClick={handleSave} disabled={isSaving}>
+              {isSaving ? (
+                <>
+                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                  Saving...
+                </>
+              ) : (
+                editingCategory ? 'Update' : 'Create'
+              )}
             </Button>
           </DialogFooter>
         </DialogContent>
@@ -320,4 +339,3 @@ export default function CategoriesManagement() {
     </div>
   )
 }
-

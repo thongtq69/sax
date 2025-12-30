@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { blogPosts, blogCategories, type BlogPost } from '@/data/blogPosts'
+import { getBlogPosts, createBlogPost, updateBlogPost, deleteBlogPost, transformBlogPost } from '@/lib/api'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import {
@@ -11,17 +11,28 @@ import {
   DialogTitle,
   DialogFooter,
 } from '@/components/ui/dialog'
-import { Plus, Edit, Trash2, Search, FileText } from 'lucide-react'
+import { Plus, Edit, Trash2, Search, FileText, Loader2 } from 'lucide-react'
 import Image from 'next/image'
 import { RichTextEditor } from '@/components/admin/RichTextEditor'
 
+const blogCategories = [
+  { slug: 'instruments', name: 'Instruments' },
+  { slug: 'techniques', name: 'Techniques' },
+  { slug: 'reviews', name: 'Reviews' },
+  { slug: 'maintenance', name: 'Maintenance' },
+  { slug: 'history', name: 'History' },
+  { slug: 'news', name: 'News' },
+]
+
 export default function BlogManagement() {
-  const [postList, setPostList] = useState<BlogPost[]>([])
-  const [filteredPosts, setFilteredPosts] = useState<BlogPost[]>([])
+  const [postList, setPostList] = useState<any[]>([])
+  const [filteredPosts, setFilteredPosts] = useState<any[]>([])
   const [searchTerm, setSearchTerm] = useState('')
   const [isDialogOpen, setIsDialogOpen] = useState(false)
-  const [editingPost, setEditingPost] = useState<BlogPost | null>(null)
-  const [formData, setFormData] = useState<Partial<BlogPost>>({
+  const [isLoading, setIsLoading] = useState(true)
+  const [isSaving, setIsSaving] = useState(false)
+  const [editingPost, setEditingPost] = useState<any | null>(null)
+  const [formData, setFormData] = useState<any>({
     title: '',
     slug: '',
     excerpt: '',
@@ -33,9 +44,23 @@ export default function BlogManagement() {
     readTime: 0,
   })
 
+  // Fetch data from API
   useEffect(() => {
-    setPostList(blogPosts)
-    setFilteredPosts(blogPosts)
+    async function fetchData() {
+      try {
+        setIsLoading(true)
+        const response = await getBlogPosts({ limit: 1000 })
+        const transformed = response.posts.map(transformBlogPost)
+        setPostList(transformed)
+        setFilteredPosts(transformed)
+      } catch (error) {
+        console.error('Error fetching blog posts:', error)
+        alert('Failed to load blog posts. Please refresh the page.')
+      } finally {
+        setIsLoading(false)
+      }
+    }
+    fetchData()
   }, [])
 
   useEffect(() => {
@@ -52,10 +77,13 @@ export default function BlogManagement() {
     setFilteredPosts(filtered)
   }, [searchTerm, postList])
 
-  const handleOpenDialog = (post?: BlogPost) => {
+  const handleOpenDialog = (post?: any) => {
     if (post) {
       setEditingPost(post)
-      setFormData(post)
+      setFormData({
+        ...post,
+        date: post.date ? new Date(post.date).toISOString().split('T')[0] : new Date().toISOString().split('T')[0],
+      })
     } else {
       setEditingPost(null)
       setFormData({
@@ -73,36 +101,76 @@ export default function BlogManagement() {
     setIsDialogOpen(true)
   }
 
-  const handleSave = () => {
-    if (editingPost) {
-      setPostList(
-        postList.map((p) => (p.id === editingPost.id ? { ...formData, id: editingPost.id } as BlogPost : p))
-      )
-    } else {
-      const newPost: BlogPost = {
-        ...formData,
-        id: Date.now().toString(),
+  const handleSave = async () => {
+    try {
+      setIsSaving(true)
+      
+      const postData = {
+        title: formData.title,
         slug: formData.slug || formData.title?.toLowerCase().replace(/\s+/g, '-') || '',
-      } as BlogPost
-      setPostList([...postList, newPost])
+        excerpt: formData.excerpt,
+        content: formData.content,
+        date: formData.date,
+        author: formData.author,
+        categories: formData.categories || [],
+        image: formData.image || null,
+        readTime: formData.readTime || null,
+      }
+
+      if (editingPost) {
+        await updateBlogPost(editingPost.id, postData)
+      } else {
+        await createBlogPost(postData)
+      }
+
+      // Refresh data
+      const response = await getBlogPosts({ limit: 1000 })
+      const transformed = response.posts.map(transformBlogPost)
+      setPostList(transformed)
+      
+      setIsDialogOpen(false)
+      setEditingPost(null)
+    } catch (error: any) {
+      console.error('Error saving blog post:', error)
+      alert(error.message || 'Failed to save blog post. Please try again.')
+    } finally {
+      setIsSaving(false)
     }
-    setIsDialogOpen(false)
-    setEditingPost(null)
   }
 
-  const handleDelete = (id: string) => {
-    if (confirm('Are you sure you want to delete this blog post?')) {
-      setPostList(postList.filter((p) => p.id !== id))
+  const handleDelete = async (id: string) => {
+    if (!confirm('Are you sure you want to delete this blog post?')) {
+      return
+    }
+
+    try {
+      await deleteBlogPost(id)
+      
+      // Refresh data
+      const response = await getBlogPosts({ limit: 1000 })
+      const transformed = response.posts.map(transformBlogPost)
+      setPostList(transformed)
+    } catch (error: any) {
+      console.error('Error deleting blog post:', error)
+      alert(error.message || 'Failed to delete blog post. Please try again.')
     }
   }
 
   const toggleCategory = (category: string) => {
     const current = formData.categories || []
     if (current.includes(category)) {
-      setFormData({ ...formData, categories: current.filter((c) => c !== category) })
+      setFormData({ ...formData, categories: current.filter((c: string) => c !== category) })
     } else {
       setFormData({ ...formData, categories: [...current, category] })
     }
+  }
+
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+      </div>
+    )
   }
 
   return (
@@ -156,7 +224,7 @@ export default function BlogManagement() {
                 <p className="text-sm text-gray-600 mb-3 line-clamp-2">{post.excerpt}</p>
                 <div className="flex items-center justify-between text-xs text-gray-500 mb-4">
                   <span>{post.author}</span>
-                  <span>{post.date}</span>
+                  <span>{new Date(post.date).toLocaleDateString()}</span>
                 </div>
                 <div className="flex items-center gap-2">
                   <Button
@@ -307,11 +375,18 @@ export default function BlogManagement() {
             </div>
           </div>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setIsDialogOpen(false)}>
+            <Button variant="outline" onClick={() => setIsDialogOpen(false)} disabled={isSaving}>
               Cancel
             </Button>
-            <Button onClick={handleSave}>
-              {editingPost ? 'Update' : 'Create'}
+            <Button onClick={handleSave} disabled={isSaving}>
+              {isSaving ? (
+                <>
+                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                  Saving...
+                </>
+              ) : (
+                editingPost ? 'Update' : 'Create'
+              )}
             </Button>
           </DialogFooter>
         </DialogContent>
@@ -319,4 +394,3 @@ export default function BlogManagement() {
     </div>
   )
 }
-
