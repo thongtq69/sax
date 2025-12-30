@@ -14,9 +14,6 @@
     "db:seed": "tsx prisma/seed.ts",
     "db:studio": "prisma studio"
   },
-  "prisma": {
-    "seed": "tsx prisma/seed.ts"
-  },
   "dependencies": {
     "@prisma/client": "^6.19.1",
     "@radix-ui/react-accordion": "^1.2.12",
@@ -48,20 +45,20 @@
     "tailwind-merge": "^2.6.0",
     "tailwindcss-animate": "^1.0.7",
     "typescript": "^5.5.4",
-    "zustand": "^4.5.7"
+    "zustand": "^4.5.7",
+    "autoprefixer": "^10.4.19",
+    "postcss": "^8.4.40",
+    "tailwindcss": "^3.4.7"
   },
   "devDependencies": {
     "@types/bcryptjs": "^2.4.6",
     "@types/node": "^20.14.12",
     "@types/react": "^18.3.3",
     "@types/react-dom": "^18.3.0",
-    "autoprefixer": "^10.4.19",
     "bcryptjs": "^3.0.3",
     "eslint": "^8.57.0",
     "eslint-config-next": "14.2.5",
-    "postcss": "^8.4.40",
     "prisma": "^6.19.1",
-    "tailwindcss": "^3.4.7",
     "tsx": "^4.21.0"
   }
 }
