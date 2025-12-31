@@ -20,12 +20,9 @@ export function useNavigationLoading() {
   }, [])
 
   useEffect(() => {
-    // Reset loading when pathname changes (navigation complete)
-    const timer = setTimeout(() => {
-      globalNavigatingState = false
-      globalNavigatingListeners.forEach(listener => listener(false))
-    }, 100)
-    return () => clearTimeout(timer)
+    // Reset loading when pathname changes (navigation complete) - no delay needed
+    globalNavigatingState = false
+    globalNavigatingListeners.forEach(listener => listener(false))
   }, [pathname])
 
   const handleNavigation = (href: string) => {

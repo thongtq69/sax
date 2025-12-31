@@ -38,7 +38,7 @@ export default function ShopPage() {
     async function fetchData() {
       try {
         const [productsResponse, categoriesData] = await Promise.all([
-          getProducts({ limit: 1000 }), // Get all products for client-side filtering
+          getProducts({ limit: 200 }), // Reduced from 1000 - enough for initial display and filtering
           getCategories(),
         ])
         
@@ -173,7 +173,7 @@ export default function ShopPage() {
   }
 
   return (
-    <div className={`min-h-screen transition-opacity duration-700 ${isLoaded ? 'opacity-100' : 'opacity-0'}`}>
+    <div className="min-h-screen">
       {/* Hero Banner */}
       <section className="relative bg-gradient-to-br from-secondary via-secondary/95 to-secondary overflow-hidden">
         {/* Decorative pattern */}

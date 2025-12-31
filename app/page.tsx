@@ -10,6 +10,7 @@ import { getProducts, getPromoBanners, getCategories, transformProduct, transfor
 import type { Product } from '@/lib/data'
 import { Phone, Shield, Truck, CreditCard, Award, Headphones, Music, ChevronRight, ChevronLeft, Star, Sparkles } from 'lucide-react'
 import { PromoCarousel } from '@/components/site/PromoCarousel'
+import { reviews } from '@/lib/reviews'
 
 // ============ INFINITE CAROUSEL COMPONENT ============
 interface InfiniteCarouselProps {
@@ -145,6 +146,7 @@ export default function HomePage() {
   const [categoryCounts, setCategoryCounts] = useState<Record<string, number>>({})
   const [subcategories, setSubcategories] = useState<any[]>([])
   const [isLoading, setIsLoading] = useState(true)
+  const [currentReviewIndex, setCurrentReviewIndex] = useState(0)
 
   // Fetch data
   useEffect(() => {
@@ -165,6 +167,9 @@ export default function HomePage() {
         const transformedCategories = categoriesData.map(transformCategory)
         setCategories(transformedCategories)
         
+        // Set loading to false early so page can render - critical data is loaded
+        setIsLoading(false)
+        
         // Extract all subcategories with products
         const allSubcategories: any[] = []
         transformedCategories.forEach(cat => {
@@ -175,27 +180,56 @@ export default function HomePage() {
           }
         })
         
-        // Fetch product counts for subcategories
-        const subcategoryCounts: Record<string, number> = {}
-        for (const sub of allSubcategories) {
-          const productsResponse = await getProducts({ subcategory: sub.slug, limit: 1000 })
-          subcategoryCounts[sub.slug] = productsResponse.products.length
-        }
-        
-        // Filter subcategories that have products
-        const subcategoriesWithProducts = allSubcategories.filter(sub => (subcategoryCounts[sub.slug] || 0) > 0)
-        setSubcategories(subcategoriesWithProducts)
-        
-        // Fetch product counts for each category
-        const counts: Record<string, number> = {}
-        for (const cat of transformedCategories) {
-          const productsResponse = await getProducts({ category: cat.slug, limit: 1000 })
-          counts[cat.slug] = productsResponse.products.length
-        }
-        setCategoryCounts({ ...counts, ...subcategoryCounts })
+        // Fetch product counts in background (non-blocking) - optimized: fetch in parallel and use count API
+        Promise.all([
+          // Fetch subcategory counts in parallel
+          Promise.all(allSubcategories.map(async (sub) => {
+            try {
+              const response = await fetch(`/api/products/count?subcategory=${sub.slug}&inStock=true`)
+              if (!response.ok) {
+                return { slug: sub.slug, count: 0 }
+              }
+              const data = await response.json()
+              return { slug: sub.slug, count: data.count || 0 }
+            } catch (error) {
+              console.error(`Error counting products for subcategory ${sub.slug}:`, error)
+              return { slug: sub.slug, count: 0 }
+            }
+          })),
+          // Fetch category counts in parallel
+          Promise.all(transformedCategories.map(async (cat) => {
+            try {
+              const response = await fetch(`/api/products/count?category=${cat.slug}&inStock=true`)
+              if (!response.ok) {
+                return { slug: cat.slug, count: 0 }
+              }
+              const data = await response.json()
+              return { slug: cat.slug, count: data.count || 0 }
+            } catch (error) {
+              console.error(`Error counting products for category ${cat.slug}:`, error)
+              return { slug: cat.slug, count: 0 }
+            }
+          }))
+        ]).then(([subcategoryCountResults, categoryCountResults]) => {
+          const subcategoryCounts: Record<string, number> = {}
+          subcategoryCountResults.forEach(result => {
+            subcategoryCounts[result.slug] = result.count
+          })
+          
+          // Filter subcategories that have products
+          const subcategoriesWithProducts = allSubcategories.filter(sub => (subcategoryCounts[sub.slug] || 0) > 0)
+          setSubcategories(subcategoriesWithProducts)
+          
+          const counts: Record<string, number> = {}
+          categoryCountResults.forEach(result => {
+            counts[result.slug] = result.count
+          })
+          setCategoryCounts({ ...counts, ...subcategoryCounts })
+        }).catch(error => {
+          console.error('Error fetching product counts:', error)
+        })
       } catch (error) {
         console.error('Error fetching data:', error)
-      } finally {
         setIsLoading(false)
       }
     }
@@ -323,6 +357,90 @@ export default function HomePage() {
         </div>
       </section>
 
+      {/* Customer Reviews Section - At the Top */}
+      <section className="bg-gradient-to-br from-amber-50 via-white to-blue-50 py-16 md:py-20">
+        <div className="container mx-auto px-4">
+          <div className="mb-10 text-center animate-fade-in-up">
+            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-amber-100 text-amber-800 text-sm font-medium mb-4">
+              <Star className="h-4 w-4 fill-amber-400 text-amber-400" />
+              Trusted by Musicians Worldwide
+            </div>
+            <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold text-secondary mb-4">
+              What Our Customers Say
+            </h2>
+            <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
+              {reviews.length} verified reviews from satisfied customers. All {reviews.length} reviews are 5-star rated!
+            </p>
+            <div className="flex items-center justify-center gap-2 mt-4">
+              <div className="flex">
+                {[...Array(5)].map((_, i) => (
+                  <Star key={i} className="h-6 w-6 fill-amber-400 text-amber-400" />
+                ))}
+              </div>
+              <span className="text-2xl font-bold text-secondary ml-2">5.0</span>
+              <span className="text-muted-foreground ml-2">({reviews.length} reviews)</span>
+            </div>
+          </div>
+
+          {/* Reviews Grid */}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {reviews.slice(0, 9).map((review, index) => (
+              <div
+                key={review.id}
+                className="bg-white rounded-2xl p-6 shadow-lg border border-gray-100 hover:shadow-xl transition-all duration-300 hover:-translate-y-1 animate-fade-in-up"
+                style={{ animationDelay: `${0.1 * index}s` }}
+              >
+                <div className="flex items-center gap-1 mb-3">
+                  {[...Array(5)].map((_, i) => (
+                    <Star
+                      key={i}
+                      className={`h-4 w-4 ${
+                        i < review.rating
+                          ? 'fill-amber-400 text-amber-400'
+                          : 'fill-gray-200 text-gray-200'
+                      }`}
+                    />
+                  ))}
+                </div>
+                <p className="text-gray-700 mb-4 text-sm leading-relaxed line-clamp-4">
+                  "{review.message || 'Great experience!'}"
+                </p>
+                <div className="flex items-center justify-between pt-4 border-t border-gray-100">
+                  <div>
+                    <p className="font-semibold text-secondary text-sm">{review.buyerName}</p>
+                    <p className="text-xs text-muted-foreground">
+                      {new Date(review.date).toLocaleDateString('en-US', { 
+                        year: 'numeric', 
+                        month: 'short', 
+                        day: 'numeric' 
+                      })}
+                    </p>
+                  </div>
+                  <div className="text-2xl">🎷</div>
+                </div>
+              </div>
+            ))}
+          </div>
+
+          {/* View All Reviews Button */}
+          {reviews.length > 9 && (
+            <div className="mt-10 text-center animate-fade-in-up" style={{ animationDelay: '0.9s' }}>
+              <Button
+                size="lg"
+                variant="outline"
+                className="border-2 border-primary text-primary hover:bg-primary hover:text-white font-semibold px-8"
+                asChild
+              >
+                <Link href="#reviews">
+                  View All {reviews.length} Reviews
+                  <ChevronRight className="ml-2 h-5 w-5" />
+                </Link>
+              </Button>
+            </div>
+          )}
+        </div>
+      </section>
+
       {/* Coming Soon Section */}
       {saleProducts.length > 0 && (
         <section className="container mx-auto px-4 py-16">
@@ -399,10 +517,15 @@ export default function HomePage() {
             </p>
           </div>
 
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6">
-            {subcategories
-              .slice(0, 4)
-              .map((sub, i) => {
+          <div className={`grid gap-4 md:gap-6 ${
+            subcategories.length === 1 ? 'grid-cols-1' :
+            subcategories.length === 2 ? 'grid-cols-1 md:grid-cols-2' :
+            subcategories.length === 3 ? 'grid-cols-1 md:grid-cols-3' :
+            subcategories.length === 4 ? 'grid-cols-2 md:grid-cols-4' :
+            subcategories.length <= 6 ? 'grid-cols-2 md:grid-cols-3' :
+            'grid-cols-2 md:grid-cols-3 lg:grid-cols-4'
+          }`}>
+            {subcategories.map((sub, i) => {
               const totalCount = categoryCounts[sub.slug] || 0
               
               // Map subcategory names to icons
@@ -515,8 +638,8 @@ export default function HomePage() {
       </section>
 
       {/* Testimonial / Why Choose Us */}
-      <section className="container mx-auto px-4 py-16">
-        <div className="grid md:grid-cols-2 gap-10 items-center">
+      <section id="reviews" className="container mx-auto px-4 py-16">
+        <div className="grid md:grid-cols-2 gap-10 items-start">
           <div className="animate-fade-in-left">
             <h2 className="text-3xl md:text-4xl font-bold text-secondary mb-6">
               Why Musicians Choose Us
@@ -541,7 +664,7 @@ export default function HomePage() {
             </div>
           </div>
           
-          <div className="animate-fade-in-right">
+          <div className="animate-fade-in-right space-y-6">
             <div className="bg-gradient-to-br from-primary/10 to-primary/5 rounded-3xl p-8 text-center">
               <div className="flex justify-center mb-4">
                 {[...Array(5)].map((_, i) => (
@@ -552,6 +675,127 @@ export default function HomePage() {
                 "The team at James Sax Corner helped me find my dream horn. Their expertise and patience made all the difference in my selection process."
               </blockquote>
               <div className="font-semibold text-secondary">— Michael T., Professional Saxophonist</div>
+            </div>
+
+            {/* Additional Featured Reviews */}
+            <div className="space-y-4">
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="text-xl font-bold text-secondary">More Customer Reviews</h3>
+              </div>
+              {reviews.slice(currentReviewIndex, currentReviewIndex + 3).map((review) => (
+                <div key={review.id} className="bg-white rounded-xl p-5 border border-gray-200 hover:shadow-md transition-shadow">
+                  <div className="flex items-center gap-1 mb-2">
+                    {[...Array(5)].map((_, i) => (
+                      <Star
+                        key={i}
+                        className={`h-3.5 w-3.5 ${
+                          i < review.rating
+                            ? 'fill-amber-400 text-amber-400'
+                            : 'fill-gray-200 text-gray-200'
+                        }`}
+                      />
+                    ))}
+                  </div>
+                  <p className="text-sm text-gray-700 mb-3 line-clamp-2">
+                    "{review.message || 'Great experience!'}"
+                  </p>
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs font-semibold text-secondary">{review.buyerName}</span>
+                    <span className="text-xs text-muted-foreground">
+                      {new Date(review.date).toLocaleDateString('en-US', { month: 'short', year: 'numeric' })}
+                    </span>
+                  </div>
+                </div>
+              ))}
+              
+              {/* Pagination */}
+              {(() => {
+                const totalPages = Math.ceil(reviews.length / 3)
+                const currentPage = Math.floor(currentReviewIndex / 3) + 1
+                
+                // Show max 5 pages around current page
+                const getPageNumbers = () => {
+                  const pages: number[] = []
+                  
+                  if (totalPages <= 5) {
+                    // Show all pages if total is small
+                    for (let i = 1; i <= totalPages; i++) {
+                      pages.push(i)
+                    }
+                  } else {
+                    // Show pages around current (max 5 pages)
+                    let start = Math.max(1, currentPage - 2)
+                    let end = Math.min(totalPages, currentPage + 2)
+                    
+                    // Adjust if near start or end
+                    if (end - start < 4) {
+                      if (start === 1) {
+                        end = Math.min(totalPages, start + 4)
+                      } else if (end === totalPages) {
+                        start = Math.max(1, end - 4)
+                      }
+                    }
+                    
+                    for (let i = start; i <= end; i++) {
+                      pages.push(i)
+                    }
+                  }
+                  
+                  return pages
+                }
+                
+                const pageNumbers = getPageNumbers()
+                const canGoPrev = currentPage > 1
+                const canGoNext = currentPage < totalPages
+                
+                return (
+                  <div className="pt-4 flex items-center justify-center gap-2 flex-wrap">
+                    {/* Previous Button */}
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="h-8 px-3"
+                      onClick={() => setCurrentReviewIndex(Math.max(0, currentReviewIndex - 3))}
+                      disabled={!canGoPrev}
+                    >
+                      <ChevronLeft className="h-4 w-4 mr-1" />
+                      Prev
+                    </Button>
+                    
+                    {/* Page Numbers */}
+                    {pageNumbers.map((page) => {
+                      const isActive = currentPage === page
+                      return (
+                        <Button
+                          key={page}
+                          variant={isActive ? "default" : "outline"}
+                          size="sm"
+                          className={`h-8 min-w-[32px] px-3 ${
+                            isActive 
+                              ? 'bg-primary text-white hover:bg-primary/90' 
+                              : 'hover:bg-primary/5 hover:border-primary/30'
+                          } transition-all`}
+                          onClick={() => setCurrentReviewIndex((page - 1) * 3)}
+                        >
+                          {page}
+                        </Button>
+                      )
+                    })}
+                    
+                    {/* Next Button */}
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="h-8 px-3"
+                      onClick={() => setCurrentReviewIndex(Math.min(reviews.length - 3, currentReviewIndex + 3))}
+                      disabled={!canGoNext}
+                    >
+                      Next
+                      <ChevronRight className="h-4 w-4 ml-1" />
+                    </Button>
+                  </div>
+                )
+              })()}
             </div>
           </div>
         </div>

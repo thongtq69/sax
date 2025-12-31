@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import Link from 'next/link'
+import { useRouter } from 'next/navigation'
 import { Eye, Star, Heart, ShoppingBag, Loader2 } from 'lucide-react'
 import { Product } from '@/lib/data'
 import { Badge } from '@/components/ui/badge'
@@ -36,6 +37,12 @@ export function ProductCard({ product, index = 0 }: ProductCardProps) {
   const [isAddingToCart, setIsAddingToCart] = useState(false)
   const [isImageLoading, setIsImageLoading] = useState(true)
   const addItem = useCartStore((state) => state.addItem)
+  const router = useRouter()
+  
+  // Prefetch product page on hover
+  const handleMouseEnter = () => {
+    router.prefetch(`/product/${product.slug}`)
+  }
 
   // Get rating from hardcoded reviews
   const reviewStats = getProductRatingStats(product.name)
@@ -78,7 +85,10 @@ export function ProductCard({ product, index = 0 }: ProductCardProps) {
 
         <div
           className="product-image-container relative aspect-square overflow-hidden bg-gradient-to-br from-gray-50 to-gray-100"
-          onMouseEnter={() => setImageHover(true)}
+          onMouseEnter={() => {
+            setImageHover(true)
+            handleMouseEnter()
+          }}
           onMouseLeave={() => setImageHover(false)}
         >
           {/* Loading skeleton */}
@@ -184,6 +194,7 @@ export function ProductCard({ product, index = 0 }: ProductCardProps) {
             <Link
               href={`/product/${product.slug}`}
               className="block group/title"
+              prefetch={true}
             >
               <h3 className="mb-2 line-clamp-2 text-sm font-bold leading-tight text-secondary transition-colors duration-300 group-hover/title:text-primary">
                 {product.name}

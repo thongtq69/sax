@@ -1,7 +1,8 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import Link from 'next/link'
+import { useRouter } from 'next/navigation'
 import { Product } from '@/lib/data'
 import {
   Dialog,
@@ -13,7 +14,8 @@ import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { useCartStore } from '@/lib/store/cart'
 import { SmartImage } from '@/components/ui/smart-image'
-import { Star, Heart, Check, Minus, Plus, ExternalLink, Truck, Shield, Award, X, Loader2 } from 'lucide-react'
+import { Star, Heart, Check, Minus, Plus, ExternalLink, Truck, Shield, Award, X, Loader2, ChevronLeft, ChevronRight } from 'lucide-react'
+import { getProductRatingStats } from '@/lib/reviews'
 
 interface QuickViewModalProps {
   product: Product
@@ -32,8 +34,20 @@ export function QuickViewModal({
   const [isWishlisted, setIsWishlisted] = useState(false)
   const [isAddedToCart, setIsAddedToCart] = useState(false)
   const [isAddingToCart, setIsAddingToCart] = useState(false)
-  const [isNavigating, setIsNavigating] = useState(false)
   const addItem = useCartStore((state) => state.addItem)
+  const router = useRouter()
+  
+  // Prefetch product page when modal opens
+  useEffect(() => {
+    if (open) {
+      router.prefetch(`/product/${product.slug}`)
+    }
+  }, [open, product.slug, router])
+  
+  // Get rating from hardcoded reviews
+  const reviewStats = getProductRatingStats(product.name)
+  const displayRating = reviewStats.rating > 0 ? reviewStats.rating : product.rating || 0
+  const displayReviewCount = reviewStats.reviewCount > 0 ? reviewStats.reviewCount : product.reviewCount || 0
   
   // Extract YouTube video ID from URL
   const getYouTubeVideoId = (url: string) => {
@@ -101,7 +115,7 @@ export function QuickViewModal({
             {/* Main Display - Video or Image */}
             <div className="relative aspect-square overflow-hidden rounded-xl bg-white">
               {showVideo && videoId ? (
-                <div className="relative w-full h-full">
+                <div className="relative w-full h-full group">
                   <iframe
                     src={`https://www.youtube.com/embed/${videoId}?autoplay=1&rel=0`}
                     className="absolute inset-0 w-full h-full"
@@ -116,6 +130,20 @@ export function QuickViewModal({
                   >
                     <X className="h-3.5 w-3.5 text-gray-700" />
                   </button>
+                  
+                  {/* Navigation to first image */}
+                  {product.images.length > 0 && (
+                    <button
+                      onClick={() => {
+                        setShowVideo(false)
+                        setSelectedImageIndex(0)
+                      }}
+                      className="absolute right-4 top-1/2 -translate-y-1/2 z-10 p-3 rounded-full bg-white/90 hover:bg-white shadow-lg transition-all hover:scale-110 opacity-0 group-hover:opacity-100"
+                      aria-label="Next to images"
+                    >
+                      <ChevronRight className="h-5 w-5 text-gray-800" />
+                    </button>
+                  )}
                 </div>
               ) : (
                 <div className="relative w-full h-full group">
@@ -125,6 +153,57 @@ export function QuickViewModal({
                     fill
                     className="object-cover transition-transform duration-500 group-hover:scale-105"
                   />
+                  
+                  {/* Navigation Arrows */}
+                  {(product.images.length > 1 || videoId) && (
+                    <>
+                      {/* Previous Button */}
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation()
+                          if (selectedImageIndex === 0 && videoId) {
+                            // If at first image and video exists, go to video
+                            setShowVideo(true)
+                            setSelectedImageIndex(-1)
+                          } else {
+                            // Go to previous image
+                            setSelectedImageIndex((prev) => {
+                              if (prev === 0) return product.images.length - 1
+                              return prev - 1
+                            })
+                            setShowVideo(false)
+                          }
+                        }}
+                        className="absolute left-4 top-1/2 -translate-y-1/2 z-20 p-3 rounded-full bg-white/90 hover:bg-white shadow-lg transition-all hover:scale-110 opacity-0 group-hover:opacity-100"
+                        aria-label="Previous"
+                      >
+                        <ChevronLeft className="h-5 w-5 text-gray-800" />
+                      </button>
+
+                      {/* Next Button */}
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation()
+                          if (selectedImageIndex === product.images.length - 1 && videoId) {
+                            // If at last image and video exists, go to video
+                            setShowVideo(true)
+                            setSelectedImageIndex(-1)
+                          } else {
+                            // Go to next image
+                            setSelectedImageIndex((prev) => {
+                              if (prev === product.images.length - 1) return 0
+                              return prev + 1
+                            })
+                            setShowVideo(false)
+                          }
+                        }}
+                        className="absolute right-4 top-1/2 -translate-y-1/2 z-20 p-3 rounded-full bg-white/90 hover:bg-white shadow-lg transition-all hover:scale-110 opacity-0 group-hover:opacity-100"
+                        aria-label="Next"
+                      >
+                        <ChevronRight className="h-5 w-5 text-gray-800" />
+                      </button>
+                    </>
+                  )}
                 </div>
               )}
             </div>
@@ -202,23 +281,23 @@ export function QuickViewModal({
             </DialogHeader>
 
             {/* Rating */}
-            {product.rating && (
+            {displayRating > 0 && (
               <div className="flex items-center gap-2">
                 <div className="flex">
                   {Array.from({ length: 5 }).map((_, i) => (
                     <Star
                       key={i}
                       className={`h-4 w-4 ${
-                        i < Math.floor(product.rating || 0)
+                        i < Math.floor(displayRating)
                           ? 'fill-amber-400 text-amber-400'
                           : 'fill-gray-200 text-gray-200'
                       }`}
                     />
                   ))}
                 </div>
-                <span className="text-sm font-medium">{product.rating}</span>
+                <span className="text-sm font-medium">{displayRating.toFixed(1)}</span>
                 <span className="text-sm text-muted-foreground">
-                  ({product.reviewCount} reviews)
+                  ({displayReviewCount} {displayReviewCount === 1 ? 'review' : 'reviews'})
                 </span>
               </div>
             )}
@@ -318,26 +397,16 @@ export function QuickViewModal({
               <Button 
                 variant="outline" 
                 className="w-full group relative overflow-hidden" 
-                size="lg" 
-                disabled={isNavigating}
-                asChild
+                size="lg"
+                onClick={() => {
+                  // Close modal immediately for better UX
+                  onOpenChange(false)
+                  // Navigate using router for faster client-side navigation
+                  router.push(`/product/${product.slug}`)
+                }}
               >
-                <Link 
-                  href={`/product/${product.slug}`}
-                  onClick={() => setIsNavigating(true)}
-                >
-                  {isNavigating ? (
-                    <span className="flex items-center gap-2">
-                      <span className="animate-spin rounded-full h-4 w-4 border-2 border-current border-t-transparent" />
-                      Loading...
-                    </span>
-                  ) : (
-                    <>
-                      <span>View Full Details</span>
-                      <ExternalLink className="ml-2 h-4 w-4 transition-transform group-hover:translate-x-1" />
-                    </>
-                  )}
-                </Link>
+                <span>View Full Details</span>
+                <ExternalLink className="ml-2 h-4 w-4 transition-transform group-hover:translate-x-1" />
               </Button>
             </div>
 

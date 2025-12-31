@@ -23,12 +23,11 @@ export function SiteLayout({ children }: { children: React.ReactNode }) {
       <main className="min-h-screen">{children}</main>
       <Footer />
       
-      {/* Global Navigation Loading Overlay */}
+      {/* Global Navigation Loading Indicator - Lightweight progress bar */}
       {isNavigating && (
-        <div className="fixed inset-0 z-[100] bg-black/30 backdrop-blur-sm flex items-center justify-center pointer-events-none">
-          <div className="bg-white rounded-xl p-6 shadow-2xl flex flex-col items-center gap-4 pointer-events-auto">
-            <Loader2 className="h-8 w-8 animate-spin text-primary" />
-            <p className="text-lg font-medium text-secondary">Loading page...</p>
+        <div className="fixed top-0 left-0 right-0 z-[100] pointer-events-none">
+          <div className="h-1 bg-primary/20">
+            <div className="h-full bg-primary animate-pulse" style={{ width: '30%' }} />
           </div>
         </div>
       )}

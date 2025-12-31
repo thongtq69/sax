@@ -23,8 +23,6 @@ export function PromoCarousel({ promos = [] }: PromoCarouselProps) {
     const [currentSlide, setCurrentSlide] = useState(0);
     const [isPaused, setIsPaused] = useState(false);
     const [isAnimating, setIsAnimating] = useState(false);
-    const [clickedLink, setClickedLink] = useState<string | null>(null);
-    const { handleNavigation } = useNavigationLoading();
     const router = useRouter();
 
     // If no promos, show empty state
@@ -93,26 +91,13 @@ export function PromoCarousel({ promos = [] }: PromoCarouselProps) {
                             {slide.description}
                         </span>
                         {slide.ctaLink && (
-                            <button
-                                onClick={(e) => {
-                                    e.preventDefault()
-                                    setClickedLink(slide.ctaLink)
-                                    handleNavigation(slide.ctaLink)
-                                }}
-                                className="font-medium underline-animate relative after:bg-accent hover:text-accent transition-colors duration-300 flex items-center gap-1 disabled:opacity-50"
-                                disabled={clickedLink === slide.ctaLink}
+                            <Link
+                                href={slide.ctaLink}
+                                className="font-medium underline-animate relative after:bg-accent hover:text-accent transition-colors duration-300 flex items-center gap-1"
+                                prefetch={true}
                             >
-                                {clickedLink === slide.ctaLink ? (
-                                    <>
-                                        <Loader2 className="h-3 w-3 animate-spin" />
-                                        Loading...
-                                    </>
-                                ) : (
-                                    <>
-                                        {slide.ctaText} →
-                                    </>
-                                )}
-                            </button>
+                                {slide.ctaText} →
+                            </Link>
                         )}
                     </div>
 

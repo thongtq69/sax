@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { Loader2 } from 'lucide-react'
@@ -33,11 +33,11 @@ export function NavLink({
   }
 
   // Reset loading when pathname changes
-  useState(() => {
-    if (pathname === href) {
+  useEffect(() => {
+    if (pathname === href || pathname.startsWith(href + '/')) {
       setIsNavigating(false)
     }
-  })
+  }, [pathname, href])
 
   return (
     <Link
@@ -45,9 +45,10 @@ export function NavLink({
       onClick={handleClick}
       className={cn(
         'relative inline-flex items-center gap-1.5',
-        isNavigating && 'opacity-70 pointer-events-none',
+        isNavigating && showLoading && 'opacity-70',
         className
       )}
+      prefetch={true}
     >
       {isNavigating && showLoading ? (
         <>

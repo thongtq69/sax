@@ -17,7 +17,7 @@ export function MegaMenu({ mobile = false }: MegaMenuProps) {
   const [hoveredCategory, setHoveredCategory] = useState<string | null>(null)
   const [clickedLink, setClickedLink] = useState<string | null>(null)
   const timeoutRef = useRef<NodeJS.Timeout>()
-  const { handleNavigation, isNavigating, navigatingTo } = useNavigationLoading()
+  const { isNavigating } = useNavigationLoading()
 
   // Fetch categories from API
   useEffect(() => {
@@ -82,7 +82,7 @@ export function MegaMenu({ mobile = false }: MegaMenuProps) {
               }
               className="flex w-full items-center justify-between px-4 py-3 text-left font-medium hover:bg-gray-50"
             >
-              <Link href={`/shop?category=${category.slug}`} className="flex-1">
+              <Link href={`/shop?category=${category.slug}`} className="flex-1" prefetch={true}>
                 {category.name}
               </Link>
               {category.subcategories && (
@@ -101,6 +101,7 @@ export function MegaMenu({ mobile = false }: MegaMenuProps) {
                     key={sub.id}
                     href={`/shop?subcategory=${sub.slug}`}
                     className="block py-2 text-sm text-gray-600 hover:text-primary"
+                    prefetch={true}
                   >
                     {sub.name}
                   </Link>

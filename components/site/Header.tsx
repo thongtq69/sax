@@ -141,7 +141,7 @@ export function Header() {
                   setTimeout(() => {
                     window.location.href = 'tel:+17025551234'
                     setIsCalling(false)
-                  }, 300)
+                  }, 100)
                 }}
                 disabled={isCalling}
               >
@@ -201,7 +201,7 @@ export function Header() {
                     setTimeout(() => {
                       window.location.href = 'tel:+17025551234'
                       setIsCalling(false)
-                    }, 300)
+                    }, 100)
                   }}
                   disabled={isCalling}
                 >

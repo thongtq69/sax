@@ -1,8 +1,9 @@
 'use client'
 
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, useMemo } from 'react'
 import Image from 'next/image'
 import Link from 'next/link'
+import { useRouter } from 'next/navigation'
 import { Product } from '@/lib/data'
 import { getProducts, transformProduct } from '@/lib/api'
 import { getReviewsForProduct, getProductRatingStats } from '@/lib/reviews'
@@ -30,14 +31,29 @@ export function ProductDetailClient({ product }: ProductDetailClientProps) {
   const [isLightboxOpen, setIsLightboxOpen] = useState(false)
   const [lightboxIndex, setLightboxIndex] = useState(0)
   const [navigationProducts, setNavigationProducts] = useState<{prev: Product | null, next: Product | null}>({prev: null, next: null})
-  const [isNavigating, setIsNavigating] = useState(false)
+  const [showAllReviews, setShowAllReviews] = useState(false)
+  const router = useRouter()
   const addItem = useCartStore((state) => state.addItem)
   
-  // Get reviews from hardcoded data
-  const reviews = getReviewsForProduct(product.name)
-  const reviewStats = getProductRatingStats(product.name)
-  const displayRating = reviews.length > 0 ? reviewStats.rating : product.rating || 0
-  const displayReviewCount = reviews.length > 0 ? reviewStats.reviewCount : product.reviewCount || 0
+  // Get reviews from hardcoded data - memoized to avoid recalculation on every render
+  const reviews = useMemo(() => getReviewsForProduct(product.name), [product.name])
+  const reviewStats = useMemo(() => getProductRatingStats(product.name), [product.name])
+  const displayRating = useMemo(() => 
+    reviews.length > 0 ? reviewStats.rating : product.rating || 0,
+    [reviews.length, reviewStats.rating, product.rating]
+  )
+  const displayReviewCount = useMemo(() => 
+    reviews.length > 0 ? reviewStats.reviewCount : product.reviewCount || 0,
+    [reviews.length, reviewStats.reviewCount, product.reviewCount]
+  )
+  
+  // Show first 5 reviews by default, or all if showAllReviews is true
+  const INITIAL_REVIEWS_COUNT = 5
+  const displayedReviews = useMemo(() => 
+    showAllReviews ? reviews : reviews.slice(0, INITIAL_REVIEWS_COUNT),
+    [showAllReviews, reviews]
+  )
+  const hasMoreReviews = useMemo(() => reviews.length > INITIAL_REVIEWS_COUNT, [reviews.length])
   
   // Extract YouTube video ID from URL
   const getYouTubeVideoId = (url: string) => {
@@ -125,16 +141,23 @@ export function ProductDetailClient({ product }: ProductDetailClientProps) {
     return () => window.removeEventListener('keydown', handleKeyDown)
   }, [isLightboxOpen, goToPrevious, goToNext])
 
+  // Set loaded immediately - no delay needed
   useEffect(() => {
     setIsLoaded(true)
+  }, [])
+
+  // Fetch related products and navigation products - deferred to not block initial render
+  useEffect(() => {
+    if (!product.category) return
     
-    // Fetch related products and navigation products
-    async function fetchProducts() {
+    // Defer fetching to after page is interactive
+    const fetchProducts = async () => {
       try {
+        // Only fetch products in the same category, limit to reasonable number
         const response = await getProducts({ 
           category: product.category,
           inStock: true,
-          limit: 1000 // Get all products in category for navigation
+          limit: 50 // Reduced from 1000 - we only need enough for navigation and related
         })
         const transformed = response.products
           .map(transformProduct)
@@ -163,8 +186,12 @@ export function ProductDetailClient({ product }: ProductDetailClientProps) {
       }
     }
     
-    if (product.category) {
-      fetchProducts()
+    // Use requestIdleCallback to defer non-critical data fetching
+    if (typeof window !== 'undefined' && 'requestIdleCallback' in window) {
+      requestIdleCallback(fetchProducts, { timeout: 3000 })
+    } else {
+      // Fallback: delay longer to ensure page is interactive first
+      setTimeout(fetchProducts, 500)
     }
   }, [product.category, product.id])
 
@@ -191,24 +218,12 @@ export function ProductDetailClient({ product }: ProductDetailClientProps) {
   const savingsPercent = product.retailPrice ? Math.round((savings / product.retailPrice) * 100) : 0
 
   const handleNavigation = (slug: string) => {
-    setIsNavigating(true)
-    // Add a small delay to show loading state
-    setTimeout(() => {
-      window.location.href = `/product/${slug}`
-    }, 100)
+    // Use router.push for instant navigation with Next.js prefetching
+    router.push(`/product/${slug}`)
   }
 
   return (
-    <div className={`relative transition-opacity duration-700 ${isLoaded ? 'opacity-100' : 'opacity-0'}`}>
-      {/* Loading Overlay */}
-      {isNavigating && (
-        <div className="fixed inset-0 z-50 bg-black/50 backdrop-blur-sm flex items-center justify-center">
-          <div className="bg-white rounded-xl p-6 shadow-2xl flex flex-col items-center gap-4">
-            <div className="animate-spin rounded-full h-12 w-12 border-4 border-primary border-t-transparent"></div>
-            <p className="text-lg font-medium text-secondary">Loading product...</p>
-          </div>
-        </div>
-      )}
+    <div className="relative">
 
       {/* Navigation Buttons - Next/Previous */}
       {(navigationProducts.prev || navigationProducts.next) && (
@@ -218,18 +233,11 @@ export function ProductDetailClient({ product }: ProductDetailClientProps) {
               variant="outline"
               size="sm"
               onClick={() => handleNavigation(navigationProducts.prev!.slug)}
-              disabled={isNavigating}
               className="group flex items-center gap-2 transition-all hover:scale-105"
             >
-              {isNavigating ? (
-                <span className="animate-spin rounded-full h-4 w-4 border-2 border-current border-t-transparent" />
-              ) : (
-                <>
-                  <ChevronLeft className="h-4 w-4 transition-transform group-hover:-translate-x-1" />
-                  <span className="hidden sm:inline">Previous Product</span>
-                  <span className="sm:hidden">Prev</span>
-                </>
-              )}
+              <ChevronLeft className="h-4 w-4 transition-transform group-hover:-translate-x-1" />
+              <span className="hidden sm:inline">Previous Product</span>
+              <span className="sm:hidden">Prev</span>
             </Button>
           ) : (
             <div></div>
@@ -240,18 +248,11 @@ export function ProductDetailClient({ product }: ProductDetailClientProps) {
               variant="outline"
               size="sm"
               onClick={() => handleNavigation(navigationProducts.next!.slug)}
-              disabled={isNavigating}
               className="group flex items-center gap-2 transition-all hover:scale-105"
             >
-              {isNavigating ? (
-                <span className="animate-spin rounded-full h-4 w-4 border-2 border-current border-t-transparent" />
-              ) : (
-                <>
-                  <span className="hidden sm:inline">Next Product</span>
-                  <span className="sm:hidden">Next</span>
-                  <ChevronRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
-                </>
-              )}
+              <span className="hidden sm:inline">Next Product</span>
+              <span className="sm:hidden">Next</span>
+              <ChevronRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
             </Button>
           )}
         </div>
@@ -746,46 +747,72 @@ export function ProductDetailClient({ product }: ProductDetailClientProps) {
               
               {/* Actual Reviews List */}
               {reviews.length > 0 ? (
-                <div className="space-y-4 md:space-y-6">
-                  {reviews.map((review, index) => (
-                    <div 
-                      key={review.id}
-                      className="p-4 md:p-6 bg-white rounded-xl md:rounded-2xl border border-gray-200 hover:shadow-md transition-shadow animate-fade-in-up"
-                      style={{ animationDelay: `${0.1 * index}s` }}
-                    >
-                      <div className="flex items-start justify-between mb-3">
-                        <div className="flex-1">
-                          <div className="flex items-center gap-2 mb-2">
-                            <span className="font-semibold text-secondary">{review.buyerName}</span>
-                            <span className="text-xs text-gray-400">•</span>
-                            <span className="text-sm text-gray-500">
-                              {new Date(review.date).toLocaleDateString('en-US', { 
-                                year: 'numeric', 
-                                month: 'long', 
-                                day: 'numeric' 
-                              })}
-                            </span>
-                          </div>
-                          <div className="flex items-center gap-1">
-                            {Array.from({ length: 5 }).map((_, i) => (
-                              <Star
-                                key={i}
-                                className={`h-4 w-4 ${
-                                  i < review.rating
-                                    ? 'fill-amber-400 text-amber-400'
-                                    : 'fill-gray-200 text-gray-200'
-                                }`}
-                              />
-                            ))}
+                <>
+                  <div className="space-y-4 md:space-y-6">
+                    {displayedReviews.map((review, index) => (
+                      <div 
+                        key={review.id}
+                        className="p-4 md:p-6 bg-white rounded-xl md:rounded-2xl border border-gray-200 hover:shadow-md transition-shadow animate-fade-in-up"
+                        style={{ animationDelay: `${0.1 * index}s` }}
+                      >
+                        <div className="flex items-start justify-between mb-3">
+                          <div className="flex-1">
+                            <div className="flex items-center gap-2 mb-2">
+                              <span className="font-semibold text-secondary">{review.buyerName}</span>
+                              <span className="text-xs text-gray-400">•</span>
+                              <span className="text-sm text-gray-500">
+                                {new Date(review.date).toLocaleDateString('en-US', { 
+                                  year: 'numeric', 
+                                  month: 'long', 
+                                  day: 'numeric' 
+                                })}
+                              </span>
+                            </div>
+                            <div className="flex items-center gap-1">
+                              {Array.from({ length: 5 }).map((_, i) => (
+                                <Star
+                                  key={i}
+                                  className={`h-4 w-4 ${
+                                    i < review.rating
+                                      ? 'fill-amber-400 text-amber-400'
+                                      : 'fill-gray-200 text-gray-200'
+                                  }`}
+                                />
+                              ))}
+                            </div>
                           </div>
                         </div>
+                        <p className="text-gray-700 leading-relaxed text-sm md:text-base mt-3 whitespace-pre-line">
+                          {review.message}
+                        </p>
                       </div>
-                      <p className="text-gray-700 leading-relaxed text-sm md:text-base mt-3 whitespace-pre-line">
-                        {review.message}
-                      </p>
+                    ))}
+                  </div>
+                  
+                  {/* View All / Show Less Button */}
+                  {hasMoreReviews && (
+                    <div className="flex justify-center pt-4">
+                      <Button
+                        variant="outline"
+                        size="lg"
+                        onClick={() => setShowAllReviews(!showAllReviews)}
+                        className="group"
+                      >
+                        {showAllReviews ? (
+                          <>
+                            <ChevronLeft className="h-4 w-4 mr-2 group-hover:-translate-x-1 transition-transform" />
+                            Show Less Reviews
+                          </>
+                        ) : (
+                          <>
+                            View All {reviews.length} Reviews
+                            <ChevronRight className="h-4 w-4 ml-2 group-hover:translate-x-1 transition-transform" />
+                          </>
+                        )}
+                      </Button>
                     </div>
-                  ))}
-                </div>
+                  )}
+                </>
               ) : (
                 <div className="text-center py-6 md:py-8 text-gray-500">
                   <p className="mb-3 md:mb-4 text-sm md:text-base">Be the first to share your experience!</p>
