@@ -10,6 +10,7 @@ import { Badge } from '@/components/ui/badge'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { ProductCard } from './ProductCard'
 import { useCartStore } from '@/lib/store/cart'
+import { SmartImage } from '@/components/ui/smart-image'
 import { Star, ChevronRight, ChevronLeft, Heart, Share2, Shield, Truck, CreditCard, Award, Minus, Plus, Check, X, ZoomIn } from 'lucide-react'
 
 interface ProductDetailClientProps {
@@ -124,8 +125,8 @@ export function ProductDetailClient({ product }: ProductDetailClientProps) {
             className="relative aspect-square overflow-hidden rounded-xl md:rounded-2xl border-2 border-gray-100 bg-gradient-to-br from-gray-50 to-gray-100 group cursor-zoom-in"
             onClick={() => openLightbox(selectedImageIndex)}
           >
-            <Image
-              src={product.images[selectedImageIndex] || product.images[0]}
+            <SmartImage
+              src={product.images[selectedImageIndex] || product.images[0] || ''}
               alt={product.name}
               fill
               className="object-cover transition-transform duration-700 group-hover:scale-105"
@@ -168,7 +169,7 @@ export function ProductDetailClient({ product }: ProductDetailClientProps) {
                       : 'border-gray-200 hover:border-primary/50 hover:shadow-md'
                   }`}
                 >
-                  <Image
+                  <SmartImage
                     src={image}
                     alt={`${product.name} ${index + 1}`}
                     fill
@@ -521,12 +522,11 @@ export function ProductDetailClient({ product }: ProductDetailClientProps) {
 
             {/* Image */}
             <div className="relative w-full h-full max-w-5xl max-h-[70vh]">
-              <Image
-                src={product.images[lightboxIndex]}
+              <SmartImage
+                src={product.images[lightboxIndex] || ''}
                 alt={`${product.name} - Image ${lightboxIndex + 1}`}
                 fill
                 className="object-contain"
-                quality={100}
               />
             </div>
 
@@ -555,7 +555,7 @@ export function ProductDetailClient({ product }: ProductDetailClientProps) {
                       : 'opacity-50 hover:opacity-80'
                   }`}
                 >
-                  <Image
+                  <SmartImage
                     src={image}
                     alt={`Thumbnail ${index + 1}`}
                     fill

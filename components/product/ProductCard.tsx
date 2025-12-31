@@ -2,7 +2,6 @@
 
 import { useState } from 'react'
 import Link from 'next/link'
-import Image from 'next/image'
 import { Eye, Star, Heart, ShoppingBag } from 'lucide-react'
 import { Product } from '@/lib/data'
 import { Badge } from '@/components/ui/badge'
@@ -10,6 +9,7 @@ import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
 import { QuickViewModal } from './QuickViewModal'
 import { useCartStore } from '@/lib/store/cart'
+import { SmartImage } from '@/components/ui/smart-image'
 
 interface ProductCardProps {
   product: Product
@@ -73,8 +73,8 @@ export function ProductCard({ product, index = 0 }: ProductCardProps) {
           onMouseLeave={() => setImageHover(false)}
         >
           {/* Primary Image */}
-          <Image
-            src={product.images[0]}
+          <SmartImage
+            src={product.images[0] || ''}
             alt={product.name}
             fill
             className={`object-cover transition-all duration-700 ease-out ${
@@ -84,7 +84,7 @@ export function ProductCard({ product, index = 0 }: ProductCardProps) {
 
           {/* Secondary Image (hover) */}
           {product.images[1] && (
-            <Image
+            <SmartImage
               src={product.images[1]}
               alt={`${product.name} - alternate view`}
               fill
