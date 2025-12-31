@@ -14,6 +14,7 @@ interface SmartImageProps {
   priority?: boolean
   sizes?: string
   onError?: () => void
+  onLoad?: () => void
 }
 
 /**
@@ -29,7 +30,8 @@ export function SmartImage({
   className,
   priority,
   sizes,
-  onError
+  onError,
+  onLoad
 }: SmartImageProps) {
   const [error, setError] = useState(false)
   const [fallbackUrl, setFallbackUrl] = useState<string | null>(null)
@@ -88,6 +90,7 @@ export function SmartImage({
           alt={alt}
           className={className}
           onError={handleImageError}
+          onLoad={onLoad}
           style={{ objectFit: 'cover', width: '100%', height: '100%' }}
         />
       )
@@ -101,6 +104,7 @@ export function SmartImage({
         height={height}
         className={className}
         onError={handleImageError}
+        onLoad={onLoad}
       />
     )
   }
@@ -119,6 +123,7 @@ export function SmartImage({
           setError(true)
           onError?.()
         }}
+        onLoadingComplete={onLoad}
       />
     )
   }
@@ -136,6 +141,7 @@ export function SmartImage({
         setError(true)
         onError?.()
       }}
+      onLoadingComplete={onLoad}
     />
   )
 }
