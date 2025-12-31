@@ -13,7 +13,7 @@ import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { useCartStore } from '@/lib/store/cart'
 import { SmartImage } from '@/components/ui/smart-image'
-import { Star, Heart, Check, Minus, Plus, ExternalLink, Truck, Shield, Award, X } from 'lucide-react'
+import { Star, Heart, Check, Minus, Plus, ExternalLink, Truck, Shield, Award, X, Loader2 } from 'lucide-react'
 
 interface QuickViewModalProps {
   product: Product
@@ -31,6 +31,7 @@ export function QuickViewModal({
   const [quantity, setQuantity] = useState(1)
   const [isWishlisted, setIsWishlisted] = useState(false)
   const [isAddedToCart, setIsAddedToCart] = useState(false)
+  const [isAddingToCart, setIsAddingToCart] = useState(false)
   const [isNavigating, setIsNavigating] = useState(false)
   const addItem = useCartStore((state) => state.addItem)
   
@@ -43,7 +44,10 @@ export function QuickViewModal({
   
   const videoId = product.videoUrl ? getYouTubeVideoId(product.videoUrl) : null
 
-  const handleAddToCart = () => {
+  const handleAddToCart = async () => {
+    setIsAddingToCart(true)
+    // Simulate async operation
+    await new Promise(resolve => setTimeout(resolve, 500))
     for (let i = 0; i < quantity; i++) {
       addItem({
         id: `${product.id}-default`,
@@ -54,6 +58,7 @@ export function QuickViewModal({
         image: product.images[0],
       })
     }
+    setIsAddingToCart(false)
     setIsAddedToCart(true)
     setTimeout(() => {
       setIsAddedToCart(false)
@@ -293,9 +298,14 @@ export function QuickViewModal({
                 }`}
                 size="lg"
                 onClick={handleAddToCart}
-                disabled={!product.inStock}
+                disabled={!product.inStock || isAddingToCart}
               >
-                {isAddedToCart ? (
+                {isAddingToCart ? (
+                  <span className="flex items-center gap-2">
+                    <Loader2 className="h-5 w-5 animate-spin" />
+                    Adding...
+                  </span>
+                ) : isAddedToCart ? (
                   <span className="flex items-center gap-2">
                     <Check className="h-5 w-5 animate-bounce" />
                     Added to Cart!

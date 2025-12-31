@@ -11,7 +11,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { ProductCard } from './ProductCard'
 import { useCartStore } from '@/lib/store/cart'
 import { SmartImage } from '@/components/ui/smart-image'
-import { Star, ChevronRight, ChevronLeft, Heart, Share2, Shield, Truck, CreditCard, Award, Minus, Plus, Check, X, ZoomIn } from 'lucide-react'
+import { Star, ChevronRight, ChevronLeft, Heart, Share2, Shield, Truck, CreditCard, Award, Minus, Plus, Check, X, ZoomIn, Loader2 } from 'lucide-react'
 
 interface ProductDetailClientProps {
   product: Product
@@ -23,6 +23,7 @@ export function ProductDetailClient({ product }: ProductDetailClientProps) {
   const [quantity, setQuantity] = useState(1)
   const [isWishlisted, setIsWishlisted] = useState(false)
   const [isAddedToCart, setIsAddedToCart] = useState(false)
+  const [isAddingToCart, setIsAddingToCart] = useState(false)
   const [isLoaded, setIsLoaded] = useState(false)
   const [relatedProducts, setRelatedProducts] = useState<Product[]>([])
   const [isLightboxOpen, setIsLightboxOpen] = useState(false)
@@ -160,7 +161,10 @@ export function ProductDetailClient({ product }: ProductDetailClientProps) {
     }
   }, [product.category, product.id])
 
-  const handleAddToCart = () => {
+  const handleAddToCart = async () => {
+    setIsAddingToCart(true)
+    // Simulate async operation
+    await new Promise(resolve => setTimeout(resolve, 500))
     for (let i = 0; i < quantity; i++) {
       addItem({
         id: `${product.id}-default`,
@@ -171,6 +175,7 @@ export function ProductDetailClient({ product }: ProductDetailClientProps) {
         image: product.images[0],
       })
     }
+    setIsAddingToCart(false)
     setIsAddedToCart(true)
     setTimeout(() => setIsAddedToCart(false), 2000)
   }
@@ -563,9 +568,14 @@ export function ProductDetailClient({ product }: ProductDetailClientProps) {
                     : 'hover:shadow-lg hover:scale-[1.02]'
                 }`}
                 onClick={handleAddToCart}
-                disabled={!product.inStock}
+                disabled={!product.inStock || isAddingToCart}
               >
-                {isAddedToCart ? (
+                {isAddingToCart ? (
+                  <span className="flex items-center gap-2">
+                    <Loader2 className="h-5 w-5 animate-spin" />
+                    Adding...
+                  </span>
+                ) : isAddedToCart ? (
                   <span className="flex items-center gap-2">
                     <Check className="h-5 w-5 animate-bounce" />
                     Added to Cart!

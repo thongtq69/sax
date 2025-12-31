@@ -1,7 +1,13 @@
+'use client'
+
 import Link from 'next/link';
-import { Clock, User, MapPin, Phone, Mail } from 'lucide-react';
+import { Clock, User, MapPin, Phone, Mail, Loader2 } from 'lucide-react';
+import { useNavigationLoading } from '@/hooks/use-navigation-loading';
+import { useState } from 'react';
 
 export function TopBar() {
+  const { handleNavigation } = useNavigationLoading();
+  const [clickedLink, setClickedLink] = useState<string | null>(null);
     return (
         <div className="bg-secondary text-secondary-foreground">
             <div className="container mx-auto px-4">
@@ -31,29 +37,94 @@ export function TopBar() {
 
                     {/* Right: Quick Links */}
                     <nav className="flex items-center space-x-4">
-                        <Link
-                            href="/account"
-                            className="hidden items-center space-x-1 hover:underline sm:flex"
+                        <button
+                            onClick={(e) => {
+                                e.preventDefault()
+                                setClickedLink('/account')
+                                handleNavigation('/account')
+                            }}
+                            className="hidden items-center space-x-1 hover:underline sm:flex disabled:opacity-50"
+                            disabled={clickedLink === '/account'}
                         >
-                            <User className="h-3.5 w-3.5" />
+                            {clickedLink === '/account' ? (
+                                <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                            ) : (
+                                <User className="h-3.5 w-3.5" />
+                            )}
                             <span>My Account</span>
-                        </Link>
-                        <Link href="/about" className="hidden hover:underline lg:block">
-                            About Us
-                        </Link>
-                        <Link href="/contact" className="hidden hover:underline lg:block">
-                            Contact
-                        </Link>
-                        <Link href="/blog" className="hover:underline">
-                            Blog
-                        </Link>
-                        <Link
-                            href="/locations"
-                            className="flex items-center space-x-1 hover:underline"
+                        </button>
+                        <button
+                            onClick={(e) => {
+                                e.preventDefault()
+                                setClickedLink('/about')
+                                handleNavigation('/about')
+                            }}
+                            className="hidden hover:underline lg:block disabled:opacity-50"
+                            disabled={clickedLink === '/about'}
                         >
-                            <MapPin className="h-3.5 w-3.5" />
-                            <span className="hidden sm:inline">Locations</span>
-                        </Link>
+                            {clickedLink === '/about' ? (
+                                <span className="flex items-center gap-1">
+                                    <Loader2 className="h-3 w-3 animate-spin" />
+                                    Loading...
+                                </span>
+                            ) : (
+                                'About Us'
+                            )}
+                        </button>
+                        <button
+                            onClick={(e) => {
+                                e.preventDefault()
+                                setClickedLink('/contact')
+                                handleNavigation('/contact')
+                            }}
+                            className="hidden hover:underline lg:block disabled:opacity-50"
+                            disabled={clickedLink === '/contact'}
+                        >
+                            {clickedLink === '/contact' ? (
+                                <span className="flex items-center gap-1">
+                                    <Loader2 className="h-3 w-3 animate-spin" />
+                                    Loading...
+                                </span>
+                            ) : (
+                                'Contact'
+                            )}
+                        </button>
+                        <button
+                            onClick={(e) => {
+                                e.preventDefault()
+                                setClickedLink('/blog')
+                                handleNavigation('/blog')
+                            }}
+                            className="hover:underline disabled:opacity-50"
+                            disabled={clickedLink === '/blog'}
+                        >
+                            {clickedLink === '/blog' ? (
+                                <span className="flex items-center gap-1">
+                                    <Loader2 className="h-3 w-3 animate-spin" />
+                                    Loading...
+                                </span>
+                            ) : (
+                                'Blog'
+                            )}
+                        </button>
+                        <button
+                            onClick={(e) => {
+                                e.preventDefault()
+                                setClickedLink('/locations')
+                                handleNavigation('/locations')
+                            }}
+                            className="flex items-center space-x-1 hover:underline disabled:opacity-50"
+                            disabled={clickedLink === '/locations'}
+                        >
+                            {clickedLink === '/locations' ? (
+                                <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                            ) : (
+                                <MapPin className="h-3.5 w-3.5" />
+                            )}
+                            <span className="hidden sm:inline">
+                                {clickedLink === '/locations' ? 'Loading...' : 'Locations'}
+                            </span>
+                        </button>
                     </nav>
                 </div>
             </div>

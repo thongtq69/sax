@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 import Link from 'next/link'
-import { Eye, Star, Heart, ShoppingBag } from 'lucide-react'
+import { Eye, Star, Heart, ShoppingBag, Loader2 } from 'lucide-react'
 import { Product } from '@/lib/data'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
@@ -33,14 +33,17 @@ export function ProductCard({ product, index = 0 }: ProductCardProps) {
   const [imageHover, setImageHover] = useState(false)
   const [isWishlisted, setIsWishlisted] = useState(false)
   const [isAddingToCart, setIsAddingToCart] = useState(false)
+  const [isImageLoading, setIsImageLoading] = useState(true)
   const addItem = useCartStore((state) => state.addItem)
 
   const finishes = getProductFinishes(product.id)
   const monthlyPayment = product.price > 500 ? (product.price / 12).toFixed(0) : null
   const savings = product.retailPrice ? product.retailPrice - product.price : 0
 
-  const handleAddToCart = () => {
+  const handleAddToCart = async () => {
     setIsAddingToCart(true)
+    // Simulate async operation
+    await new Promise(resolve => setTimeout(resolve, 500))
     addItem({
       id: `${product.id}-default`,
       productId: product.id,
@@ -49,7 +52,7 @@ export function ProductCard({ product, index = 0 }: ProductCardProps) {
       price: product.price,
       image: product.images[0],
     })
-    setTimeout(() => setIsAddingToCart(false), 600)
+    setTimeout(() => setIsAddingToCart(false), 1000)
   }
 
   // Stagger animation delay based on index
@@ -72,6 +75,13 @@ export function ProductCard({ product, index = 0 }: ProductCardProps) {
           onMouseEnter={() => setImageHover(true)}
           onMouseLeave={() => setImageHover(false)}
         >
+          {/* Loading skeleton */}
+          {isImageLoading && (
+            <div className="absolute inset-0 bg-gradient-to-br from-gray-200 to-gray-300 animate-pulse flex items-center justify-center">
+              <Loader2 className="h-8 w-8 text-gray-400 animate-spin" />
+            </div>
+          )}
+
           {/* Primary Image */}
           <SmartImage
             src={product.images[0] || ''}
@@ -79,7 +89,8 @@ export function ProductCard({ product, index = 0 }: ProductCardProps) {
             fill
             className={`object-cover transition-all duration-700 ease-out ${
               imageHover && product.images[1] ? 'opacity-0 scale-105' : 'opacity-100 scale-100'
-            }`}
+            } ${isImageLoading ? 'opacity-0' : 'opacity-100'}`}
+            onLoad={() => setIsImageLoading(false)}
           />
 
           {/* Secondary Image (hover) */}
@@ -242,11 +253,12 @@ export function ProductCard({ product, index = 0 }: ProductCardProps) {
                 isAddingToCart ? 'scale-95 bg-green-500' : ''
               }`}
               onClick={handleAddToCart}
-              disabled={!product.inStock || product.badge === 'out-of-stock'}
+              disabled={!product.inStock || product.badge === 'out-of-stock' || isAddingToCart}
             >
               {isAddingToCart ? (
                 <span className="flex items-center gap-2">
-                  <span className="animate-bounce">✓</span> Added!
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                  Adding...
                 </span>
               ) : !product.inStock || product.badge === 'out-of-stock' ? (
                 'Out of Stock'

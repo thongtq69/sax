@@ -14,6 +14,7 @@ import {
 } from '@/components/ui/select'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
+import { LoadingSpinner } from '@/components/ui/loading'
 import { ChevronLeft, ChevronRight, Grid3X3, LayoutGrid, Music, Sparkles } from 'lucide-react'
 
 type SortOption = 'featured' | 'price-low' | 'price-high' | 'newest' | 'name' | 'rating'
@@ -29,6 +30,7 @@ export default function ShopPage() {
   const [gridCols, setGridCols] = useState<3 | 4>(3)
   const [isLoaded, setIsLoaded] = useState(false)
   const [isLoading, setIsLoading] = useState(true)
+  const [isFiltering, setIsFiltering] = useState(false)
   const itemsPerPage = 12
 
   // Fetch initial data
@@ -85,6 +87,10 @@ export default function ShopPage() {
   // Reset page when filters change
   useEffect(() => {
     setCurrentPage(1)
+    setIsFiltering(true)
+    // Simulate filtering delay
+    const timer = setTimeout(() => setIsFiltering(false), 300)
+    return () => clearTimeout(timer)
   }, [selectedBrands, selectedCategory, priceRange, sortBy])
 
   const filteredProducts = useMemo(() => {
@@ -161,7 +167,7 @@ export default function ShopPage() {
   if (isLoading) {
     return (
       <div className="flex items-center justify-center min-h-screen">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
+        <LoadingSpinner size="xl" text="Loading products..." />
       </div>
     )
   }
@@ -356,14 +362,21 @@ export default function ShopPage() {
             )}
 
             {/* Product Grid */}
-            <div className={`grid gap-6 ${
-              gridCols === 4 
-                ? 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4' 
-                : 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-3'
-            }`}>
-              {paginatedProducts.map((product, index) => (
-                <ProductCard key={product.id} product={product} index={index} />
-              ))}
+            <div className="relative">
+              {isFiltering && (
+                <div className="absolute inset-0 z-10 bg-white/80 backdrop-blur-sm flex items-center justify-center rounded-lg min-h-[400px]">
+                  <LoadingSpinner text="Filtering products..." />
+                </div>
+              )}
+              <div className={`grid gap-6 ${
+                gridCols === 4 
+                  ? 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4' 
+                  : 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-3'
+              } ${isFiltering ? 'opacity-50' : 'opacity-100'} transition-opacity duration-300`}>
+                {paginatedProducts.map((product, index) => (
+                  <ProductCard key={product.id} product={product} index={index} />
+                ))}
+              </div>
             </div>
 
             {/* Pagination */}

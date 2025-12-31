@@ -143,6 +143,7 @@ export default function HomePage() {
   const [promoBanners, setPromoBanners] = useState<any[]>([])
   const [categories, setCategories] = useState<any[]>([])
   const [categoryCounts, setCategoryCounts] = useState<Record<string, number>>({})
+  const [subcategories, setSubcategories] = useState<any[]>([])
   const [isLoading, setIsLoading] = useState(true)
 
   // Fetch data
@@ -164,13 +165,34 @@ export default function HomePage() {
         const transformedCategories = categoriesData.map(transformCategory)
         setCategories(transformedCategories)
         
+        // Extract all subcategories with products
+        const allSubcategories: any[] = []
+        transformedCategories.forEach(cat => {
+          if (cat.subcategories) {
+            cat.subcategories.forEach((sub: any) => {
+              allSubcategories.push({ ...sub, categoryName: cat.name, categorySlug: cat.slug })
+            })
+          }
+        })
+        
+        // Fetch product counts for subcategories
+        const subcategoryCounts: Record<string, number> = {}
+        for (const sub of allSubcategories) {
+          const productsResponse = await getProducts({ subcategory: sub.slug, limit: 1000 })
+          subcategoryCounts[sub.slug] = productsResponse.products.length
+        }
+        
+        // Filter subcategories that have products
+        const subcategoriesWithProducts = allSubcategories.filter(sub => (subcategoryCounts[sub.slug] || 0) > 0)
+        setSubcategories(subcategoriesWithProducts)
+        
         // Fetch product counts for each category
         const counts: Record<string, number> = {}
         for (const cat of transformedCategories) {
           const productsResponse = await getProducts({ category: cat.slug, limit: 1000 })
           counts[cat.slug] = productsResponse.products.length
         }
-        setCategoryCounts(counts)
+        setCategoryCounts({ ...counts, ...subcategoryCounts })
       } catch (error) {
         console.error('Error fetching data:', error)
       } finally {
@@ -183,7 +205,10 @@ export default function HomePage() {
   if (isLoading) {
     return (
       <div className="flex items-center justify-center min-h-screen">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-4 border-primary border-t-transparent mx-auto"></div>
+          <p className="mt-4 text-muted-foreground">Loading products...</p>
+        </div>
       </div>
     )
   }
@@ -240,9 +265,9 @@ export default function HomePage() {
             </p>
 
             <p className="hero-cta text-lg leading-relaxed text-secondary/80 max-w-2xl">
-              For nearly four decades, we've been the trusted destination for saxophonists,
-              clarinetists, and wind musicians of all kinds. From vintage horns to the latest
-              professional models – our expertise is your advantage.
+              Specializing in premium saxophones from Yamaha, Yanagisawa, and Selmer. 
+              We offer 28 carefully selected instruments, each professionally set up and ready to play. 
+              From vintage classics to modern professional models – find your perfect horn with us.
             </p>
 
             <p className="hero-cta text-base font-medium text-accent flex items-center gap-2" style={{ animationDelay: '0.7s' }}>
@@ -312,7 +337,7 @@ export default function HomePage() {
               <div className="h-px w-16 bg-gradient-to-l from-transparent to-primary" />
             </div>
             <p className="mt-4 text-muted-foreground max-w-xl mx-auto">
-              Premium instruments arriving soon to our store
+              6 premium instruments arriving soon. Reserve yours today!
             </p>
           </div>
           
@@ -335,7 +360,8 @@ export default function HomePage() {
             <div className="h-px w-16 bg-gradient-to-l from-transparent to-primary" />
           </div>
           <p className="mt-4 text-muted-foreground max-w-xl mx-auto">
-            Handpicked selection of our finest instruments, each professionally setup and ready to play
+            Explore our collection of 22 premium saxophones from Yamaha, Yanagisawa, and Selmer. 
+            Each instrument is professionally set up and ready to play.
           </p>
         </div>
         
@@ -368,25 +394,33 @@ export default function HomePage() {
               <span className="text-2xl text-primary">🎷</span>
               <div className="h-px w-16 bg-gradient-to-l from-transparent to-primary" />
             </div>
+            <p className="mt-4 text-muted-foreground max-w-xl mx-auto">
+              Browse our collection by instrument type
+            </p>
           </div>
 
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6">
-            {categories.slice(0, 4).map((cat, i) => {
-              const totalCount = categoryCounts[cat.slug] || 0
+            {subcategories
+              .slice(0, 4)
+              .map((sub, i) => {
+              const totalCount = categoryCounts[sub.slug] || 0
               
-              // Map category names to icons
+              // Map subcategory names to icons
               const iconMap: Record<string, string> = {
-                'Woodwinds': '🎷',
-                'Brasswinds': '🎺',
+                'Alto Saxophones': '🎷',
+                'Tenor Saxophones': '🎷',
+                'Soprano Saxophones': '🎷',
+                'Baritone Saxophones': '🎷',
                 'Accessories': '🎵',
-                'Strings': '🎻',
-                'Percussion': '🥁',
+                'Flutes': '🎵',
+                'Clarinets': '🎼',
+                'Piccolos': '🎶',
               }
               
               return (
               <Link 
-                key={cat.slug}
-                href={`/shop?category=${cat.slug}`}
+                key={sub.slug}
+                href={`/shop?subcategory=${sub.slug}`}
                 className="group relative overflow-hidden rounded-2xl bg-gradient-to-br from-secondary to-secondary/80 p-6 text-center text-white transition-all duration-500 hover:shadow-2xl hover:scale-[1.02] animate-fade-in-up"
                 style={{ animationDelay: `${0.1 * i}s` }}
               >
@@ -398,13 +432,30 @@ export default function HomePage() {
                 
                 <div className="relative z-10">
                   <span className="text-5xl block mb-3 group-hover:scale-125 transition-transform duration-300">
-                    {iconMap[cat.name] || '🎵'}
+                    {iconMap[sub.name] || '🎷'}
                   </span>
-                  <h3 className="text-xl font-bold mb-1">{cat.name}</h3>
+                  <h3 className="text-xl font-bold mb-1">{sub.name}</h3>
                   <p className="text-sm text-white/70">{totalCount} {totalCount === 1 ? 'Product' : 'Products'}</p>
                 </div>
               </Link>
             )})}
+            
+            {/* Show Accessories if available */}
+            {categories.find(cat => cat.slug === 'accessories') && categoryCounts['accessories'] > 0 && subcategories.length < 4 && (
+              <Link 
+                href="/shop?category=accessories"
+                className="group relative overflow-hidden rounded-2xl bg-gradient-to-br from-secondary to-secondary/80 p-6 text-center text-white transition-all duration-500 hover:shadow-2xl hover:scale-[1.02] animate-fade-in-up"
+                style={{ animationDelay: `${0.1 * subcategories.length}s` }}
+              >
+                <div className="absolute inset-0 bg-gradient-to-br from-primary/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+                <div className="absolute inset-0 bg-gradient-to-tr from-transparent via-white/10 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-700" />
+                <div className="relative z-10">
+                  <span className="text-5xl block mb-3 group-hover:scale-125 transition-transform duration-300">🎵</span>
+                  <h3 className="text-xl font-bold mb-1">Accessories</h3>
+                  <p className="text-sm text-white/70">{categoryCounts['accessories']} {categoryCounts['accessories'] === 1 ? 'Product' : 'Products'}</p>
+                </div>
+              </Link>
+            )}
           </div>
         </div>
       </section>
@@ -529,7 +580,8 @@ export default function HomePage() {
             <div className="h-px w-16 bg-white/30" />
           </div>
           <p className="mx-auto mb-10 max-w-2xl text-xl text-white/90 animate-fade-in-up" style={{ animationDelay: '0.2s' }}>
-            Our team of professional musicians is ready to help you find the perfect instrument.
+            Browse our collection of 28 premium instruments from Yamaha, Yanagisawa, and Selmer.
+            Our team of professional musicians is ready to help you find the perfect saxophone.
             With decades of experience, we'll guide you to the horn that matches your sound and budget.
           </p>
           <div className="flex flex-wrap justify-center gap-4 animate-fade-in-up" style={{ animationDelay: '0.4s' }}>

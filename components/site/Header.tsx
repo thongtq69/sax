@@ -3,12 +3,14 @@
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
-import { Search, ShoppingCart, Menu, Phone, X, Music } from 'lucide-react'
+import { useRouter } from 'next/navigation'
+import { Search, ShoppingCart, Menu, Phone, X, Music, Loader2 } from 'lucide-react'
 import { useCartStore } from '@/lib/store/cart'
 import { Button } from '@/components/ui/button'
 import { MegaMenu } from './MegaMenu'
 import { SearchBar } from './SearchBar'
 import { MiniCartDrawer } from '@/components/cart/MiniCartDrawer'
+import { useNavigationLoading } from '@/hooks/use-navigation-loading'
 
 export function Header() {
   const [isScrolled, setIsScrolled] = useState(false)
@@ -16,8 +18,11 @@ export function Header() {
   const [isSearchOpen, setIsSearchOpen] = useState(false)
   const [isCartOpen, setIsCartOpen] = useState(false)
   const [cartBounce, setCartBounce] = useState(false)
+  const [isCalling, setIsCalling] = useState(false)
   const itemCount = useCartStore(state => state.getItemCount())
   const subtotal = useCartStore(state => state.getSubtotal())
+  const { isNavigating } = useNavigationLoading()
+  const router = useRouter()
 
   // Watch for cart changes to trigger animation
   useEffect(() => {
@@ -131,13 +136,22 @@ export function Header() {
               <Button
                 size="sm"
                 className="hidden lg:flex bg-secondary hover:bg-secondary/90 group relative overflow-hidden"
-                asChild
+                onClick={() => {
+                  setIsCalling(true)
+                  setTimeout(() => {
+                    window.location.href = 'tel:+17025551234'
+                    setIsCalling(false)
+                  }, 300)
+                }}
+                disabled={isCalling}
               >
-                <Link href="tel:+17025551234">
-                  <span className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-700" />
+                <span className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-700" />
+                {isCalling ? (
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                ) : (
                   <Phone className="mr-2 h-4 w-4 group-hover:animate-wiggle" />
-                  Call Us
-                </Link>
+                )}
+                {isCalling ? 'Calling...' : 'Call Us'}
               </Button>
 
               {/* Mobile Menu Toggle */}
@@ -180,11 +194,23 @@ export function Header() {
                   <Search className="mr-2 h-4 w-4" />
                   Search Products
                 </Button>
-                <Button className="w-full justify-start bg-secondary" asChild>
-                  <Link href="tel:+17025551234">
+                <Button 
+                  className="w-full justify-start bg-secondary"
+                  onClick={() => {
+                    setIsCalling(true)
+                    setTimeout(() => {
+                      window.location.href = 'tel:+17025551234'
+                      setIsCalling(false)
+                    }, 300)
+                  }}
+                  disabled={isCalling}
+                >
+                  {isCalling ? (
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  ) : (
                     <Phone className="mr-2 h-4 w-4" />
-                    Call (702) 555-1234
-                  </Link>
+                  )}
+                  {isCalling ? 'Calling...' : 'Call (702) 555-1234'}
                 </Button>
               </div>
             </div>
