@@ -4,6 +4,15 @@ import { cloudinary } from '@/lib/cloudinary'
 // Upload image to Cloudinary
 export async function POST(request: NextRequest) {
   try {
+    // Check Cloudinary configuration first
+    const config = cloudinary.config()
+    if (!config.cloud_name || !config.api_key) {
+      return NextResponse.json(
+        { error: 'Cloudinary is not configured. Please set CLOUDINARY_URL environment variable.' },
+        { status: 500 }
+      )
+    }
+
     const formData = await request.formData()
     const file = formData.get('file') as File | null
     const url = formData.get('url') as string | null

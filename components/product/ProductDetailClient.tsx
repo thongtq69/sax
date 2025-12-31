@@ -19,6 +19,7 @@ interface ProductDetailClientProps {
 
 export function ProductDetailClient({ product }: ProductDetailClientProps) {
   const [selectedImageIndex, setSelectedImageIndex] = useState(0)
+  const [showVideo, setShowVideo] = useState(false)
   const [quantity, setQuantity] = useState(1)
   const [isWishlisted, setIsWishlisted] = useState(false)
   const [isAddedToCart, setIsAddedToCart] = useState(false)
@@ -26,7 +27,28 @@ export function ProductDetailClient({ product }: ProductDetailClientProps) {
   const [relatedProducts, setRelatedProducts] = useState<Product[]>([])
   const [isLightboxOpen, setIsLightboxOpen] = useState(false)
   const [lightboxIndex, setLightboxIndex] = useState(0)
+  const [navigationProducts, setNavigationProducts] = useState<{prev: Product | null, next: Product | null}>({prev: null, next: null})
+  const [isNavigating, setIsNavigating] = useState(false)
   const addItem = useCartStore((state) => state.addItem)
+  
+  // Extract YouTube video ID from URL
+  const getYouTubeVideoId = (url: string) => {
+    if (!url) return null
+    // Handle various YouTube URL formats
+    let videoId = null
+    if (url.includes('youtube.com/watch?v=')) {
+      videoId = url.split('v=')[1]?.split('&')[0]
+    } else if (url.includes('youtu.be/')) {
+      videoId = url.split('youtu.be/')[1]?.split('?')[0]
+    } else if (url.includes('youtube.com/embed/')) {
+      videoId = url.split('embed/')[1]?.split('?')[0]
+    } else if (url.includes('youtube.com/shorts/')) {
+      videoId = url.split('shorts/')[1]?.split('?')[0]
+    }
+    return videoId
+  }
+  
+  const videoId = product.videoUrl ? getYouTubeVideoId(product.videoUrl) : null
 
   // Lightbox navigation
   const openLightbox = (index: number) => {
@@ -34,19 +56,54 @@ export function ProductDetailClient({ product }: ProductDetailClientProps) {
     setIsLightboxOpen(true)
     document.body.style.overflow = 'hidden'
   }
+  
+  // Open lightbox with video
+  const openVideoLightbox = () => {
+    if (videoId) {
+      setLightboxIndex(VIDEO_INDEX)
+      setIsLightboxOpen(true)
+      document.body.style.overflow = 'hidden'
+    }
+  }
 
   const closeLightbox = () => {
     setIsLightboxOpen(false)
+    setShowVideo(false)
     document.body.style.overflow = 'auto'
   }
 
+  // Video index is -1, images start from 0
+  const VIDEO_INDEX = -1
+  
   const goToPrevious = useCallback(() => {
-    setLightboxIndex((prev) => (prev === 0 ? product.images.length - 1 : prev - 1))
-  }, [product.images.length])
+    setLightboxIndex((prev) => {
+      if (prev === VIDEO_INDEX) {
+        // If at video, go to last image
+        return product.images.length - 1
+      } else if (prev === 0 && videoId) {
+        // If at first image and video exists, go to video
+        return VIDEO_INDEX
+      } else {
+        // Go to previous image
+        return prev - 1
+      }
+    })
+  }, [product.images.length, videoId])
 
   const goToNext = useCallback(() => {
-    setLightboxIndex((prev) => (prev === product.images.length - 1 ? 0 : prev + 1))
-  }, [product.images.length])
+    setLightboxIndex((prev) => {
+      if (prev === VIDEO_INDEX) {
+        // If at video, go to first image
+        return 0
+      } else if (prev === product.images.length - 1 && videoId) {
+        // If at last image and video exists, go to video
+        return VIDEO_INDEX
+      } else {
+        // Go to next image
+        return prev + 1
+      }
+    })
+  }, [product.images.length, videoId])
 
   // Keyboard navigation for lightbox
   useEffect(() => {
@@ -63,26 +120,43 @@ export function ProductDetailClient({ product }: ProductDetailClientProps) {
   useEffect(() => {
     setIsLoaded(true)
     
-    // Fetch related products
-    async function fetchRelatedProducts() {
+    // Fetch related products and navigation products
+    async function fetchProducts() {
       try {
         const response = await getProducts({ 
           category: product.category,
           inStock: true,
-          limit: 10 
+          limit: 1000 // Get all products in category for navigation
         })
         const transformed = response.products
           .map(transformProduct)
-          .filter((p) => p.id !== product.id && p.inStock)
+          .filter((p) => p.inStock)
+        
+        // Find current product index
+        const currentIndex = transformed.findIndex((p) => p.id === product.id)
+        
+        // Set navigation products
+        if (currentIndex !== -1) {
+          setNavigationProducts({
+            prev: currentIndex > 0 ? transformed[currentIndex - 1] : null,
+            next: currentIndex < transformed.length - 1 ? transformed[currentIndex + 1] : null
+          })
+        }
+        
+        // Set related products (exclude current and navigation products)
+        const prevId = currentIndex > 0 ? transformed[currentIndex - 1]?.id : null
+        const nextId = currentIndex < transformed.length - 1 ? transformed[currentIndex + 1]?.id : null
+        const related = transformed
+          .filter((p) => p.id !== product.id && p.id !== prevId && p.id !== nextId)
           .slice(0, 4)
-        setRelatedProducts(transformed)
+        setRelatedProducts(related)
       } catch (error) {
-        console.error('Error fetching related products:', error)
+        console.error('Error fetching products:', error)
       }
     }
     
     if (product.category) {
-      fetchRelatedProducts()
+      fetchProducts()
     }
   }, [product.category, product.id])
 
@@ -104,8 +178,73 @@ export function ProductDetailClient({ product }: ProductDetailClientProps) {
   const savings = product.retailPrice ? product.retailPrice - product.price : 0
   const savingsPercent = product.retailPrice ? Math.round((savings / product.retailPrice) * 100) : 0
 
+  const handleNavigation = (slug: string) => {
+    setIsNavigating(true)
+    // Add a small delay to show loading state
+    setTimeout(() => {
+      window.location.href = `/product/${slug}`
+    }, 100)
+  }
+
   return (
-    <div className={`transition-opacity duration-700 ${isLoaded ? 'opacity-100' : 'opacity-0'}`}>
+    <div className={`relative transition-opacity duration-700 ${isLoaded ? 'opacity-100' : 'opacity-0'}`}>
+      {/* Loading Overlay */}
+      {isNavigating && (
+        <div className="fixed inset-0 z-50 bg-black/50 backdrop-blur-sm flex items-center justify-center">
+          <div className="bg-white rounded-xl p-6 shadow-2xl flex flex-col items-center gap-4">
+            <div className="animate-spin rounded-full h-12 w-12 border-4 border-primary border-t-transparent"></div>
+            <p className="text-lg font-medium text-secondary">Loading product...</p>
+          </div>
+        </div>
+      )}
+
+      {/* Navigation Buttons - Next/Previous */}
+      {(navigationProducts.prev || navigationProducts.next) && (
+        <div className="mb-4 md:mb-6 flex items-center justify-between gap-4 animate-fade-in">
+          {navigationProducts.prev ? (
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => handleNavigation(navigationProducts.prev!.slug)}
+              disabled={isNavigating}
+              className="group flex items-center gap-2 transition-all hover:scale-105"
+            >
+              {isNavigating ? (
+                <span className="animate-spin rounded-full h-4 w-4 border-2 border-current border-t-transparent" />
+              ) : (
+                <>
+                  <ChevronLeft className="h-4 w-4 transition-transform group-hover:-translate-x-1" />
+                  <span className="hidden sm:inline">Previous Product</span>
+                  <span className="sm:hidden">Prev</span>
+                </>
+              )}
+            </Button>
+          ) : (
+            <div></div>
+          )}
+          
+          {navigationProducts.next && (
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => handleNavigation(navigationProducts.next!.slug)}
+              disabled={isNavigating}
+              className="group flex items-center gap-2 transition-all hover:scale-105"
+            >
+              {isNavigating ? (
+                <span className="animate-spin rounded-full h-4 w-4 border-2 border-current border-t-transparent" />
+              ) : (
+                <>
+                  <span className="hidden sm:inline">Next Product</span>
+                  <span className="sm:hidden">Next</span>
+                  <ChevronRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
+                </>
+              )}
+            </Button>
+          )}
+        </div>
+      )}
+
       {/* Breadcrumb */}
       <nav className="mb-4 md:mb-6 flex items-center gap-1.5 md:gap-2 text-xs md:text-sm text-muted-foreground animate-fade-in overflow-x-auto pb-2">
         <Link href="/" className="hover:text-primary transition-colors whitespace-nowrap">Home</Link>
@@ -120,65 +259,186 @@ export function ProductDetailClient({ product }: ProductDetailClientProps) {
       <div className="grid grid-cols-1 gap-6 md:gap-8 lg:gap-10 lg:grid-cols-2">
         {/* Image Gallery */}
         <div className="animate-fade-in-left">
-          {/* Main Image */}
-          <div 
-            className="relative aspect-square overflow-hidden rounded-xl md:rounded-2xl border-2 border-gray-100 bg-gradient-to-br from-gray-50 to-gray-100 group cursor-zoom-in"
-            onClick={() => openLightbox(selectedImageIndex)}
-          >
-            <SmartImage
-              src={product.images[selectedImageIndex] || product.images[0] || ''}
-              alt={product.name}
-              fill
-              className="object-cover transition-transform duration-700 group-hover:scale-105"
-              priority
-            />
-            
-            {/* Zoom hint */}
-            <div className="absolute bottom-4 right-4 px-3 py-1.5 bg-white/90 backdrop-blur-sm rounded-full text-xs font-medium text-gray-600 flex items-center gap-1.5 opacity-0 group-hover:opacity-100 transition-opacity">
-              <ZoomIn className="h-3.5 w-3.5" />
-              Click to zoom
-            </div>
-
-            {/* Badge */}
-            {product.badge && (
-              <div className="absolute top-4 left-4">
-                <Badge 
-                  variant={product.badge} 
-                  className={`text-sm px-3 py-1 shadow-lg ${
-                    product.badge === 'sale' ? 'animate-pulse-soft' : ''
-                  }`}
+          {/* Main Display - Video or Image */}
+          <div className="relative aspect-square overflow-hidden rounded-xl md:rounded-2xl border-2 border-gray-100 bg-gradient-to-br from-gray-50 to-gray-100 group">
+            {showVideo && videoId ? (
+              <div className="relative w-full h-full">
+                <iframe
+                  src={`https://www.youtube.com/embed/${videoId}?autoplay=1&rel=0`}
+                  className="absolute inset-0 w-full h-full"
+                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                  allowFullScreen
+                  title={`${product.name} video`}
+                />
+                <button
+                  onClick={() => setShowVideo(false)}
+                  className="absolute top-4 right-4 z-10 p-2 bg-white/90 backdrop-blur-sm rounded-full hover:bg-white transition-colors shadow-lg"
+                  aria-label="Close video"
                 >
-                  {product.badge === 'new' && '✨ New Arrival'}
-                  {product.badge === 'sale' && `🔥 ${savingsPercent}% OFF`}
-                  {product.badge === 'limited' && '⭐ Limited Edition'}
-                </Badge>
+                  <X className="h-4 w-4 text-gray-700" />
+                </button>
+                
+                {/* Navigation to first image */}
+                {product.images.length > 0 && (
+                  <button
+                    onClick={() => {
+                      setShowVideo(false)
+                      setSelectedImageIndex(0)
+                    }}
+                    className="absolute right-4 top-1/2 -translate-y-1/2 z-10 p-3 rounded-full bg-white/90 hover:bg-white shadow-lg transition-all hover:scale-110 opacity-0 group-hover:opacity-100"
+                    aria-label="Next to images"
+                  >
+                    <ChevronRight className="h-5 w-5 text-gray-800" />
+                  </button>
+                )}
+              </div>
+            ) : (
+              <div 
+                className="relative w-full h-full group cursor-zoom-in"
+                onClick={() => openLightbox(selectedImageIndex)}
+              >
+                <SmartImage
+                  src={product.images[selectedImageIndex] || product.images[0] || ''}
+                  alt={product.name}
+                  fill
+                  className="object-cover transition-transform duration-700 group-hover:scale-105"
+                  priority
+                />
+                
+                {/* Navigation Arrows */}
+                {(product.images.length > 1 || videoId) && (
+                  <>
+                    {/* Previous Button */}
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation()
+                        if (selectedImageIndex === 0 && videoId) {
+                          // If at first image and video exists, go to video
+                          setShowVideo(true)
+                        } else {
+                          // Go to previous image
+                          setSelectedImageIndex((prev) => {
+                            if (prev === 0) return product.images.length - 1
+                            return prev - 1
+                          })
+                          setShowVideo(false)
+                        }
+                      }}
+                      className="absolute left-4 top-1/2 -translate-y-1/2 z-20 p-3 rounded-full bg-white/90 hover:bg-white shadow-lg transition-all hover:scale-110 opacity-0 group-hover:opacity-100"
+                      aria-label="Previous"
+                    >
+                      <ChevronLeft className="h-5 w-5 text-gray-800" />
+                    </button>
+
+                    {/* Next Button */}
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation()
+                        if (selectedImageIndex === product.images.length - 1 && videoId) {
+                          // If at last image and video exists, go to video
+                          setShowVideo(true)
+                        } else {
+                          // Go to next image
+                          setSelectedImageIndex((prev) => {
+                            if (prev === product.images.length - 1) return 0
+                            return prev + 1
+                          })
+                          setShowVideo(false)
+                        }
+                      }}
+                      className="absolute right-4 top-1/2 -translate-y-1/2 z-20 p-3 rounded-full bg-white/90 hover:bg-white shadow-lg transition-all hover:scale-110 opacity-0 group-hover:opacity-100"
+                      aria-label="Next"
+                    >
+                      <ChevronRight className="h-5 w-5 text-gray-800" />
+                    </button>
+                  </>
+                )}
+                
+                {/* Zoom hint */}
+                <div className="absolute bottom-4 right-4 px-3 py-1.5 bg-white/90 backdrop-blur-sm rounded-full text-xs font-medium text-gray-600 flex items-center gap-1.5 opacity-0 group-hover:opacity-100 transition-opacity z-10">
+                  <ZoomIn className="h-3.5 w-3.5" />
+                  Click to zoom
+                </div>
+
+                {/* Badge */}
+                {product.badge && (
+                  <div className="absolute top-4 left-4 z-10">
+                    <Badge 
+                      variant={product.badge} 
+                      className={`text-sm px-3 py-1 shadow-lg ${
+                        product.badge === 'sale' ? 'animate-pulse-soft' : ''
+                      }`}
+                    >
+                      {product.badge === 'new' && '✨ New Arrival'}
+                      {product.badge === 'sale' && `🔥 ${savingsPercent}% OFF`}
+                      {product.badge === 'limited' && '⭐ Limited Edition'}
+                    </Badge>
+                  </div>
+                )}
               </div>
             )}
           </div>
 
           {/* Thumbnails */}
-          {product.images.length > 1 && (
-            <div className="mt-3 md:mt-4 flex gap-2 md:gap-3 overflow-x-auto pb-2">
-              {product.images.map((image, index) => (
-                <button
-                  key={index}
-                  onClick={() => setSelectedImageIndex(index)}
-                  className={`relative h-16 w-16 md:h-20 md:w-20 flex-shrink-0 overflow-hidden rounded-lg md:rounded-xl border-2 transition-all duration-300 ${
-                    selectedImageIndex === index
-                      ? 'border-primary shadow-lg scale-105 ring-2 ring-primary/30'
-                      : 'border-gray-200 hover:border-primary/50 hover:shadow-md'
-                  }`}
-                >
-                  <SmartImage
-                    src={image}
-                    alt={`${product.name} ${index + 1}`}
-                    fill
-                    className="object-cover"
+          <div className="mt-3 md:mt-4 flex gap-2 md:gap-3 overflow-x-auto pb-2">
+            {/* Video Thumbnail */}
+            {videoId && (
+              <button
+                onClick={() => {
+                  setShowVideo(true)
+                  setSelectedImageIndex(-1)
+                }}
+                className={`relative h-16 w-16 md:h-20 md:w-20 flex-shrink-0 overflow-hidden rounded-lg md:rounded-xl border-2 transition-all duration-300 ${
+                  showVideo
+                    ? 'border-primary shadow-lg scale-105 ring-2 ring-primary/30'
+                    : 'border-gray-200 hover:border-primary/50 hover:shadow-md'
+                }`}
+                title="Watch video"
+              >
+                <div className="relative w-full h-full bg-black">
+                  <img
+                    src={`https://img.youtube.com/vi/${videoId}/mqdefault.jpg`}
+                    alt="Video thumbnail"
+                    className="w-full h-full object-cover opacity-75"
+                    onError={(e) => {
+                      // Fallback if thumbnail fails to load
+                      e.currentTarget.style.display = 'none'
+                    }}
                   />
-                </button>
-              ))}
-            </div>
-          )}
+                  <div className="absolute inset-0 flex items-center justify-center">
+                    <div className="w-8 h-8 md:w-10 md:h-10 bg-red-600 rounded-full flex items-center justify-center shadow-lg">
+                      <svg className="w-4 h-4 md:w-5 md:h-5 text-white ml-0.5" fill="currentColor" viewBox="0 0 24 24">
+                        <path d="M8 5v14l11-7z" />
+                      </svg>
+                    </div>
+                  </div>
+                </div>
+              </button>
+            )}
+            
+            {/* Image Thumbnails */}
+            {product.images.map((image, index) => (
+              <button
+                key={index}
+                onClick={() => {
+                  setSelectedImageIndex(index)
+                  setShowVideo(false)
+                }}
+                className={`relative h-16 w-16 md:h-20 md:w-20 flex-shrink-0 overflow-hidden rounded-lg md:rounded-xl border-2 transition-all duration-300 ${
+                  selectedImageIndex === index && !showVideo
+                    ? 'border-primary shadow-lg scale-105 ring-2 ring-primary/30'
+                    : 'border-gray-200 hover:border-primary/50 hover:shadow-md'
+                }`}
+              >
+                <SmartImage
+                  src={image}
+                  alt={`${product.name} ${index + 1}`}
+                  fill
+                  className="object-cover"
+                />
+              </button>
+            ))}
+          </div>
         </div>
 
         {/* Product Info */}
@@ -520,15 +780,27 @@ export function ProductDetailClient({ product }: ProductDetailClientProps) {
               <ChevronLeft className="h-6 w-6 text-gray-800" />
             </button>
 
-            {/* Image */}
-            <div className="relative w-full h-full max-w-5xl max-h-[70vh]">
-              <SmartImage
-                src={product.images[lightboxIndex] || ''}
-                alt={`${product.name} - Image ${lightboxIndex + 1}`}
-                fill
-                className="object-contain"
-              />
-            </div>
+            {/* Video or Image */}
+            {lightboxIndex === VIDEO_INDEX && videoId ? (
+              <div className="relative w-full h-full max-w-5xl max-h-[70vh] aspect-video">
+                <iframe
+                  src={`https://www.youtube.com/embed/${videoId}?autoplay=1&rel=0`}
+                  className="absolute inset-0 w-full h-full"
+                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                  allowFullScreen
+                  title={`${product.name} video`}
+                />
+              </div>
+            ) : (
+              <div className="relative w-full h-full max-w-5xl max-h-[70vh]">
+                <SmartImage
+                  src={product.images[lightboxIndex] || ''}
+                  alt={`${product.name} - Image ${lightboxIndex + 1}`}
+                  fill
+                  className="object-contain"
+                />
+              </div>
+            )}
 
             {/* Next button */}
             <button
@@ -545,6 +817,34 @@ export function ProductDetailClient({ product }: ProductDetailClientProps) {
             onClick={(e) => e.stopPropagation()}
           >
             <div className="flex gap-2 justify-center overflow-x-auto max-w-full pb-2">
+              {/* Video Thumbnail */}
+              {videoId && (
+                <button
+                  onClick={() => setLightboxIndex(VIDEO_INDEX)}
+                  className={`relative h-16 w-16 md:h-20 md:w-20 flex-shrink-0 overflow-hidden rounded-lg transition-all duration-300 ${
+                    lightboxIndex === VIDEO_INDEX
+                      ? 'ring-2 ring-white scale-110 opacity-100'
+                      : 'opacity-50 hover:opacity-80'
+                  }`}
+                >
+                  <div className="relative w-full h-full bg-black">
+                    <img
+                      src={`https://img.youtube.com/vi/${videoId}/mqdefault.jpg`}
+                      alt="Video thumbnail"
+                      className="w-full h-full object-cover opacity-75"
+                    />
+                    <div className="absolute inset-0 flex items-center justify-center">
+                      <div className="w-6 h-6 md:w-8 md:h-8 bg-red-600 rounded-full flex items-center justify-center shadow-lg">
+                        <svg className="w-3 h-3 md:w-4 md:h-4 text-white ml-0.5" fill="currentColor" viewBox="0 0 24 24">
+                          <path d="M8 5v14l11-7z" />
+                        </svg>
+                      </div>
+                    </div>
+                  </div>
+                </button>
+              )}
+              
+              {/* Image Thumbnails */}
               {product.images.map((image, index) => (
                 <button
                   key={index}

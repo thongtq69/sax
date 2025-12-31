@@ -7,11 +7,21 @@ declare global {
 }
 
 if (!global._cloudinaryConfigured) {
-  cloudinary.config({
-    secure: true,
-    // CLOUDINARY_URL already includes key/secret/cloud name
-    url: process.env.CLOUDINARY_URL,
-  })
+  // Try to configure from CLOUDINARY_URL first
+  if (process.env.CLOUDINARY_URL) {
+    cloudinary.config({
+      secure: true,
+      url: process.env.CLOUDINARY_URL,
+    })
+  } else if (process.env.CLOUDINARY_CLOUD_NAME && process.env.CLOUDINARY_API_KEY && process.env.CLOUDINARY_API_SECRET) {
+    // Fallback to individual env vars
+    cloudinary.config({
+      cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+      api_key: process.env.CLOUDINARY_API_KEY,
+      api_secret: process.env.CLOUDINARY_API_SECRET,
+      secure: true,
+    })
+  }
   global._cloudinaryConfigured = true
 }
 

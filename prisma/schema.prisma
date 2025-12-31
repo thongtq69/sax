@@ -47,6 +47,7 @@ model Product {
   subcategoryId String?    @db.ObjectId
   subcategory SubCategory? @relation(fields: [subcategoryId], references: [id], onDelete: SetNull)
   images      String[]     @default([])
+  videoUrl    String?      // YouTube video URL
   badge       String?      // 'new' | 'sale' | 'limited' | 'coming-soon' | 'out-of-stock'
   inStock     Boolean      @default(true)
   stock       Int?         @default(0)

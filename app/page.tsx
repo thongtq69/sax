@@ -6,7 +6,7 @@ import Image from 'next/image'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
 import { ProductCard } from '@/components/product/ProductCard'
-import { getProducts, getPromoBanners, transformProduct } from '@/lib/api'
+import { getProducts, getPromoBanners, getCategories, transformProduct, transformCategory } from '@/lib/api'
 import type { Product } from '@/lib/data'
 import { Phone, Shield, Truck, CreditCard, Award, Headphones, Music, ChevronRight, ChevronLeft, Star, Sparkles } from 'lucide-react'
 import { PromoCarousel } from '@/components/site/PromoCarousel'
@@ -141,6 +141,8 @@ export default function HomePage() {
   const [featuredProducts, setFeaturedProducts] = useState<Product[]>([])
   const [saleProducts, setSaleProducts] = useState<Product[]>([])
   const [promoBanners, setPromoBanners] = useState<any[]>([])
+  const [categories, setCategories] = useState<any[]>([])
+  const [categoryCounts, setCategoryCounts] = useState<Record<string, number>>({})
   const [isLoading, setIsLoading] = useState(true)
 
   // Fetch data
@@ -151,12 +153,24 @@ export default function HomePage() {
         const featured = featuredResponse.products.map(transformProduct)
         setFeaturedProducts(featured)
 
-        const saleResponse = await getProducts({ badge: 'sale', limit: 8 })
-        const sale = saleResponse.products.map(transformProduct)
-        setSaleProducts(sale)
+        const comingSoonResponse = await getProducts({ badge: 'coming-soon', limit: 8 })
+        const comingSoon = comingSoonResponse.products.map(transformProduct)
+        setSaleProducts(comingSoon)
 
         const promos = await getPromoBanners()
         setPromoBanners(promos)
+
+        const categoriesData = await getCategories()
+        const transformedCategories = categoriesData.map(transformCategory)
+        setCategories(transformedCategories)
+        
+        // Fetch product counts for each category
+        const counts: Record<string, number> = {}
+        for (const cat of transformedCategories) {
+          const productsResponse = await getProducts({ category: cat.slug, limit: 1000 })
+          counts[cat.slug] = productsResponse.products.length
+        }
+        setCategoryCounts(counts)
       } catch (error) {
         console.error('Error fetching data:', error)
       } finally {
@@ -286,23 +300,24 @@ export default function HomePage() {
 
       {/* Coming Soon Section */}
       {saleProducts.length > 0 && (
-        <section className="bg-gradient-to-br from-blue-50 to-indigo-50 py-16 relative overflow-hidden">
-          {/* Decorative elements */}
-          <div className="absolute top-0 left-0 w-64 h-64 bg-blue-100 rounded-full -translate-x-1/2 -translate-y-1/2 opacity-50" />
-          <div className="absolute bottom-0 right-0 w-96 h-96 bg-indigo-100 rounded-full translate-x-1/3 translate-y-1/3 opacity-50" />
-          
-          <div className="container mx-auto px-4 relative z-10">
-            <div className="mb-10 text-center animate-fade-in-up">
-              <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-blue-500 text-white text-sm font-medium mb-4 animate-pulse-soft">
-                📦 Arriving Soon
-              </div>
-              <h2 className="text-3xl md:text-4xl font-bold text-secondary">Coming Soon</h2>
-              <p className="mt-3 text-muted-foreground">Premium instruments arriving soon to our store</p>
+        <section className="container mx-auto px-4 py-16">
+          <div className="mb-10 text-center animate-fade-in-up">
+            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-blue-500 text-white text-sm font-medium mb-4 animate-pulse-soft">
+              📦 Arriving Soon
             </div>
-            
-            {/* Auto-scrolling Coming Soon Products Carousel */}
-            <InfiniteCarousel products={saleProducts} id="coming-soon" speed={150} />
+            <h2 className="text-3xl md:text-4xl font-bold text-secondary">Coming Soon</h2>
+            <div className="mt-3 flex items-center justify-center space-x-4">
+              <div className="h-px w-16 bg-gradient-to-r from-transparent to-primary" />
+              <span className="text-2xl text-primary">♫</span>
+              <div className="h-px w-16 bg-gradient-to-l from-transparent to-primary" />
+            </div>
+            <p className="mt-4 text-muted-foreground max-w-xl mx-auto">
+              Premium instruments arriving soon to our store
+            </p>
           </div>
+          
+          {/* Auto-scrolling Coming Soon Products Carousel - SAME STYLE AS FEATURED */}
+          <InfiniteCarousel products={saleProducts} id="coming-soon" speed={150} />
         </section>
       )}
 
@@ -356,12 +371,19 @@ export default function HomePage() {
           </div>
 
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6">
-            {[
-              { name: 'Flutes', slug: 'flutes', icon: '🎵', count: 12 },
-              { name: 'Saxophones', slug: 'saxophones', icon: '🎷', count: 2 },
-              { name: 'Clarinets', slug: 'clarinets', icon: '🎼', count: 1 },
-              { name: 'Piccolos', slug: 'piccolos', icon: '🎶', count: 2 },
-            ].map((cat, i) => (
+            {categories.slice(0, 4).map((cat, i) => {
+              const totalCount = categoryCounts[cat.slug] || 0
+              
+              // Map category names to icons
+              const iconMap: Record<string, string> = {
+                'Woodwinds': '🎷',
+                'Brasswinds': '🎺',
+                'Accessories': '🎵',
+                'Strings': '🎻',
+                'Percussion': '🥁',
+              }
+              
+              return (
               <Link 
                 key={cat.slug}
                 href={`/shop?category=${cat.slug}`}
@@ -376,13 +398,13 @@ export default function HomePage() {
                 
                 <div className="relative z-10">
                   <span className="text-5xl block mb-3 group-hover:scale-125 transition-transform duration-300">
-                    {cat.icon}
+                    {iconMap[cat.name] || '🎵'}
                   </span>
                   <h3 className="text-xl font-bold mb-1">{cat.name}</h3>
-                  <p className="text-sm text-white/70">{cat.count} Products</p>
+                  <p className="text-sm text-white/70">{totalCount} {totalCount === 1 ? 'Product' : 'Products'}</p>
                 </div>
               </Link>
-            ))}
+            )})}
           </div>
         </div>
       </section>

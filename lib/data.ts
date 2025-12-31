@@ -8,6 +8,7 @@ export interface Product {
   category: string
   subcategory?: string
   images: string[]
+  videoUrl?: string
   badge?: 'new' | 'sale' | 'limited' | 'coming-soon' | 'out-of-stock'
   inStock: boolean
   stock?: number

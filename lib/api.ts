@@ -119,6 +119,7 @@ export function transformProduct(apiProduct: any) {
     category: apiProduct.category?.slug || apiProduct.categoryId,
     subcategory: apiProduct.subcategory?.slug || apiProduct.subcategoryId,
     images: apiProduct.images || [],
+    videoUrl: apiProduct.videoUrl,
     badge: apiProduct.badge,
     inStock: apiProduct.inStock,
     stock: apiProduct.stock,

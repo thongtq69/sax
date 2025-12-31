@@ -20,11 +20,33 @@ export async function GET(request: NextRequest) {
     const where: any = {}
 
     if (category) {
-      where.categoryId = category
+      // Check if category is a slug or ID
+      const categoryRecord = await prisma.category.findFirst({
+        where: {
+          OR: [
+            { slug: category },
+            { id: category }
+          ]
+        }
+      })
+      if (categoryRecord) {
+        where.categoryId = categoryRecord.id
+      }
     }
 
     if (subcategory) {
-      where.subcategoryId = subcategory
+      // Check if subcategory is a slug or ID
+      const subcategoryRecord = await prisma.subCategory.findFirst({
+        where: {
+          OR: [
+            { slug: subcategory },
+            { id: subcategory }
+          ]
+        }
+      })
+      if (subcategoryRecord) {
+        where.subcategoryId = subcategoryRecord.id
+      }
     }
 
     if (brand) {
@@ -119,6 +141,7 @@ export async function POST(request: NextRequest) {
       categoryId,
       subcategoryId,
       images,
+      videoUrl,
       badge,
       inStock,
       stock,
@@ -149,6 +172,7 @@ export async function POST(request: NextRequest) {
         categoryId,
         subcategoryId: subcategoryId || null,
         images: images || [],
+        videoUrl: videoUrl || null,
         badge: badge || null,
         inStock: inStock !== undefined ? inStock : true,
         stock: stock ? parseInt(stock) : 0,

@@ -58,6 +58,7 @@ export async function PUT(
       sku,
       rating,
       reviewCount,
+      videoUrl,
     } = body
 
     const product = await prisma.product.update({
@@ -71,6 +72,7 @@ export async function PUT(
         ...(categoryId && { categoryId }),
         ...(subcategoryId !== undefined && { subcategoryId: subcategoryId || null }),
         ...(images !== undefined && { images }),
+        ...(videoUrl !== undefined && { videoUrl: videoUrl || null }),
         ...(badge !== undefined && { badge: badge || null }),
         ...(inStock !== undefined && { inStock }),
         ...(stock !== undefined && { stock: parseInt(stock) }),
