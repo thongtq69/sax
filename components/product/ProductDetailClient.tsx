@@ -5,6 +5,7 @@ import Image from 'next/image'
 import Link from 'next/link'
 import { Product } from '@/lib/data'
 import { getProducts, transformProduct } from '@/lib/api'
+import { getReviewsForProduct, getProductRatingStats } from '@/lib/reviews'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
@@ -31,6 +32,12 @@ export function ProductDetailClient({ product }: ProductDetailClientProps) {
   const [navigationProducts, setNavigationProducts] = useState<{prev: Product | null, next: Product | null}>({prev: null, next: null})
   const [isNavigating, setIsNavigating] = useState(false)
   const addItem = useCartStore((state) => state.addItem)
+  
+  // Get reviews from hardcoded data
+  const reviews = getReviewsForProduct(product.name)
+  const reviewStats = getProductRatingStats(product.name)
+  const displayRating = reviews.length > 0 ? reviewStats.rating : product.rating || 0
+  const displayReviewCount = reviews.length > 0 ? reviewStats.reviewCount : product.reviewCount || 0
   
   // Extract YouTube video ID from URL
   const getYouTubeVideoId = (url: string) => {
@@ -691,16 +698,18 @@ export function ProductDetailClient({ product }: ProductDetailClientProps) {
           
           <TabsContent value="reviews" className="mt-4 md:mt-6 lg:mt-8 animate-fade-in">
             <div className="space-y-4 md:space-y-6">
-              {product.rating && (
+              {reviews.length > 0 && (
                 <div className="flex flex-col sm:flex-row items-center gap-4 md:gap-8 p-4 md:p-6 bg-gradient-to-br from-amber-50 to-orange-50 rounded-xl md:rounded-2xl border border-amber-100">
                   <div className="text-center">
-                    <div className="text-4xl md:text-5xl font-bold text-secondary">{product.rating}</div>
+                    <div className="text-4xl md:text-5xl font-bold text-secondary">
+                      {displayRating.toFixed(1)}
+                    </div>
                     <div className="flex mt-2 justify-center">
                       {Array.from({ length: 5 }).map((_, i) => (
                         <Star
                           key={i}
                           className={`h-4 w-4 md:h-5 md:w-5 ${
-                            i < Math.floor(product.rating || 0)
+                            i < Math.floor(displayRating)
                               ? 'fill-amber-400 text-amber-400'
                               : 'fill-gray-300 text-gray-300'
                           }`}
@@ -708,14 +717,15 @@ export function ProductDetailClient({ product }: ProductDetailClientProps) {
                       ))}
                     </div>
                     <div className="text-xs md:text-sm text-gray-600 mt-1">
-                      {product.reviewCount} reviews
+                      {displayReviewCount} {displayReviewCount === 1 ? 'review' : 'reviews'}
                     </div>
                   </div>
                   
-                  {/* Rating bars */}
+                  {/* Rating bars - calculated from actual reviews */}
                   <div className="flex-1 w-full sm:w-auto space-y-2">
                     {[5, 4, 3, 2, 1].map((stars) => {
-                      const percentage = stars === 5 ? 75 : stars === 4 ? 20 : stars === 3 ? 5 : 0
+                      const count = reviews.filter(r => r.rating === stars).length
+                      const percentage = reviews.length > 0 ? (count / reviews.length) * 100 : 0
                       return (
                         <div key={stars} className="flex items-center gap-2 md:gap-3">
                           <span className="text-xs md:text-sm w-3">{stars}</span>
@@ -726,7 +736,7 @@ export function ProductDetailClient({ product }: ProductDetailClientProps) {
                               style={{ width: `${percentage}%` }}
                             />
                           </div>
-                          <span className="text-xs md:text-sm text-gray-500 w-8 md:w-10">{percentage}%</span>
+                          <span className="text-xs md:text-sm text-gray-500 w-8 md:w-10">{count}</span>
                         </div>
                       )
                     })}
@@ -734,10 +744,54 @@ export function ProductDetailClient({ product }: ProductDetailClientProps) {
                 </div>
               )}
               
-              <div className="text-center py-6 md:py-8 text-gray-500">
-                <p className="mb-3 md:mb-4 text-sm md:text-base">Be the first to share your experience!</p>
-                <Button variant="outline" size="sm" className="md:size-default">Write a Review</Button>
-              </div>
+              {/* Actual Reviews List */}
+              {reviews.length > 0 ? (
+                <div className="space-y-4 md:space-y-6">
+                  {reviews.map((review, index) => (
+                    <div 
+                      key={review.id}
+                      className="p-4 md:p-6 bg-white rounded-xl md:rounded-2xl border border-gray-200 hover:shadow-md transition-shadow animate-fade-in-up"
+                      style={{ animationDelay: `${0.1 * index}s` }}
+                    >
+                      <div className="flex items-start justify-between mb-3">
+                        <div className="flex-1">
+                          <div className="flex items-center gap-2 mb-2">
+                            <span className="font-semibold text-secondary">{review.buyerName}</span>
+                            <span className="text-xs text-gray-400">•</span>
+                            <span className="text-sm text-gray-500">
+                              {new Date(review.date).toLocaleDateString('en-US', { 
+                                year: 'numeric', 
+                                month: 'long', 
+                                day: 'numeric' 
+                              })}
+                            </span>
+                          </div>
+                          <div className="flex items-center gap-1">
+                            {Array.from({ length: 5 }).map((_, i) => (
+                              <Star
+                                key={i}
+                                className={`h-4 w-4 ${
+                                  i < review.rating
+                                    ? 'fill-amber-400 text-amber-400'
+                                    : 'fill-gray-200 text-gray-200'
+                                }`}
+                              />
+                            ))}
+                          </div>
+                        </div>
+                      </div>
+                      <p className="text-gray-700 leading-relaxed text-sm md:text-base mt-3 whitespace-pre-line">
+                        {review.message}
+                      </p>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <div className="text-center py-6 md:py-8 text-gray-500">
+                  <p className="mb-3 md:mb-4 text-sm md:text-base">Be the first to share your experience!</p>
+                  <Button variant="outline" size="sm" className="md:size-default">Write a Review</Button>
+                </div>
+              )}
             </div>
           </TabsContent>
         </Tabs>

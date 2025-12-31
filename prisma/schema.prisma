@@ -58,6 +58,7 @@ model Product {
   sku         String       @unique
   rating      Float?       @default(0)
   reviewCount Int?         @default(0)
+  reviews     Review[]
   createdAt   DateTime     @default(now())
   updatedAt   DateTime     @updatedAt
 
@@ -138,4 +139,21 @@ model OrderItem {
   createdAt DateTime @default(now())
 
   @@index([orderId])
+}
+
+model Review {
+  id          String   @id @default(auto()) @map("_id") @db.ObjectId
+  productId   String   @db.ObjectId
+  product     Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+  buyerName   String
+  rating      Int      // 1-5 stars
+  message     String
+  date        DateTime
+  sourceUrl   String?  // Reverb listing URL
+  sourceApi   String?  // Reverb feedback API URL
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([productId])
+  @@index([date])
 }

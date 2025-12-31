@@ -10,6 +10,7 @@ import { Card, CardContent } from '@/components/ui/card'
 import { QuickViewModal } from './QuickViewModal'
 import { useCartStore } from '@/lib/store/cart'
 import { SmartImage } from '@/components/ui/smart-image'
+import { getProductRatingStats } from '@/lib/reviews'
 
 interface ProductCardProps {
   product: Product
@@ -35,6 +36,11 @@ export function ProductCard({ product, index = 0 }: ProductCardProps) {
   const [isAddingToCart, setIsAddingToCart] = useState(false)
   const [isImageLoading, setIsImageLoading] = useState(true)
   const addItem = useCartStore((state) => state.addItem)
+
+  // Get rating from hardcoded reviews
+  const reviewStats = getProductRatingStats(product.name)
+  const displayRating = reviewStats.rating > 0 ? reviewStats.rating : product.rating || 0
+  const displayReviewCount = reviewStats.reviewCount > 0 ? reviewStats.reviewCount : product.reviewCount || 0
 
   const finishes = getProductFinishes(product.id)
   const monthlyPayment = product.price > 500 ? (product.price / 12).toFixed(0) : null
@@ -185,14 +191,14 @@ export function ProductCard({ product, index = 0 }: ProductCardProps) {
             </Link>
 
             {/* Rating with animation */}
-            {product.rating && (
+            {displayRating > 0 && (
               <div className="mb-2 flex items-center gap-1.5">
                 <div className="flex">
                   {[...Array(5)].map((_, i) => (
                     <Star
                       key={i}
                       className={`h-3.5 w-3.5 transition-all duration-200 ${
-                        i < Math.floor(product.rating || 0)
+                        i < Math.floor(displayRating)
                           ? 'fill-amber-400 text-amber-400'
                           : 'fill-gray-200 text-gray-200'
                       }`}
@@ -200,9 +206,9 @@ export function ProductCard({ product, index = 0 }: ProductCardProps) {
                     />
                   ))}
                 </div>
-                {product.reviewCount && (
+                {displayReviewCount > 0 && (
                   <span className="text-xs text-muted-foreground font-medium">
-                    ({product.reviewCount} reviews)
+                    ({displayReviewCount} {displayReviewCount === 1 ? 'review' : 'reviews'})
                   </span>
                 )}
               </div>
