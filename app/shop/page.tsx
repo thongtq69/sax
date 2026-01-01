@@ -62,6 +62,7 @@ export default function ShopPage() {
   }, [])
 
   const brands = useMemo(() => Array.from(new Set(products.map((p) => p.brand))).sort(), [products])
+  const maxPrice = useMemo(() => (products.length ? Math.max(...products.map((p) => p.price)) : 0), [products])
   const badgeOptions = useMemo(
     () => Array.from(new Set(products.map((p) => p.badge).filter(Boolean))) as string[],
     [products]
@@ -387,8 +388,10 @@ export default function ShopPage() {
                   variant="outline" 
                   onClick={() => {
                     setSelectedBrands([])
-                    setSelectedCategory('all')
-                    setPriceRange([0, 30000])
+                    setSelectedSubcategories([])
+                    setSelectedBadges([])
+                    setInStockOnly(false)
+                    setPriceRange([0, maxPrice])
                   }}
                 >
                   Reset Filters
