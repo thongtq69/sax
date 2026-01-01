@@ -1,7 +1,7 @@
 'use client'
 
-import { useState } from 'react'
-import { products } from '@/lib/data'
+import { useMemo, useState } from 'react'
+import type { Product } from '@/lib/data'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Separator } from '@/components/ui/separator'
@@ -15,18 +15,36 @@ import {
 import { Filter, ChevronDown, X, Sparkles } from 'lucide-react'
 
 interface FiltersProps {
+  allProducts: Product[]
   brands: string[]
+  subcategories: { slug: string; name: string; count: number }[]
+  badges: string[]
   selectedBrands: string[]
+  selectedSubcategories: string[]
+  selectedBadges: string[]
+  inStockOnly: boolean
   onBrandChange: (brands: string[]) => void
+  onSubcategoryChange: (subcats: string[]) => void
+  onBadgeChange: (badges: string[]) => void
+  onInStockChange: (value: boolean) => void
   priceRange: [number, number]
   onPriceRangeChange: (range: [number, number]) => void
   mobile?: boolean
 }
 
 export function Filters({
+  allProducts,
   brands,
+  subcategories,
+  badges,
   selectedBrands,
+  selectedSubcategories,
+  selectedBadges,
+  inStockOnly,
   onBrandChange,
+  onSubcategoryChange,
+  onBadgeChange,
+  onInStockChange,
   priceRange,
   onPriceRangeChange,
   mobile = false,
@@ -34,9 +52,43 @@ export function Filters({
   const [isOpen, setIsOpen] = useState(false)
   const [brandExpanded, setBrandExpanded] = useState(true)
   const [priceExpanded, setPriceExpanded] = useState(true)
+  const [subcategoryExpanded, setSubcategoryExpanded] = useState(true)
+  const [badgeExpanded, setBadgeExpanded] = useState(true)
+  const [availabilityExpanded, setAvailabilityExpanded] = useState(true)
 
-  const allBrands = Array.from(new Set(products.map((p) => p.brand))).sort()
-  const maxPrice = Math.max(...products.map((p) => p.price))
+  const brandCounts = useMemo(() => {
+    const counts: Record<string, number> = {}
+    allProducts.forEach((p) => {
+      counts[p.brand] = (counts[p.brand] || 0) + 1
+    })
+    return counts
+  }, [allProducts])
+
+  const maxPrice = useMemo(
+    () => (allProducts.length > 0 ? Math.max(...allProducts.map((p) => p.price)) : 0),
+    [allProducts]
+  )
+
+  const quickPriceRanges = useMemo(() => {
+    const ranges = [
+      { label: 'Under $1,500', min: 0, max: 1500 },
+      { label: '$1,500 - $3,000', min: 1500, max: 3000 },
+      { label: '$3,000 - $6,000', min: 3000, max: 6000 },
+      { label: '$6,000 - $10,000', min: 6000, max: 10000 },
+      { label: 'Over $10,000', min: 10000, max: maxPrice },
+    ]
+      .filter((r) => r.min <= maxPrice && r.min < r.max)
+      .map((r, idx) => ({ ...r, key: `${r.label}-${idx}` }))
+    return ranges.length ? ranges : [{ label: `Up to $${maxPrice.toLocaleString()}`, min: 0, max: maxPrice, key: 'all' }]
+  }, [maxPrice])
+
+  const hasActiveFilters =
+    selectedBrands.length > 0 ||
+    selectedSubcategories.length > 0 ||
+    selectedBadges.length > 0 ||
+    inStockOnly ||
+    priceRange[0] > 0 ||
+    priceRange[1] < maxPrice
 
   const handleBrandToggle = (brand: string) => {
     if (selectedBrands.includes(brand)) {
@@ -46,7 +98,21 @@ export function Filters({
     }
   }
 
-  const hasActiveFilters = selectedBrands.length > 0 || priceRange[0] > 0 || priceRange[1] < maxPrice
+  const handleSubcategoryToggle = (slug: string) => {
+    if (selectedSubcategories.includes(slug)) {
+      onSubcategoryChange(selectedSubcategories.filter((s) => s !== slug))
+    } else {
+      onSubcategoryChange([...selectedSubcategories, slug])
+    }
+  }
+
+  const handleBadgeToggle = (badge: string) => {
+    if (selectedBadges.includes(badge)) {
+      onBadgeChange(selectedBadges.filter((b) => b !== badge))
+    } else {
+      onBadgeChange([...selectedBadges, badge])
+    }
+  }
 
   const content = (
     <div className="space-y-6">
@@ -58,6 +124,9 @@ export function Filters({
             <button 
               onClick={() => {
                 onBrandChange([])
+                onSubcategoryChange([])
+                onBadgeChange([])
+                onInStockChange(false)
                 onPriceRangeChange([0, maxPrice])
               }}
               className="text-xs text-destructive hover:underline flex items-center gap-1"
@@ -77,6 +146,32 @@ export function Filters({
                 <X className="w-3 h-3" />
               </span>
             ))}
+            {selectedSubcategories.map((sub) => (
+              <span
+                key={sub}
+                className="inline-flex items-center gap-1 px-2 py-1 text-xs bg-secondary/10 text-secondary rounded-full cursor-pointer hover:bg-secondary/20 transition-colors"
+                onClick={() => handleSubcategoryToggle(sub)}
+              >
+                {sub.replace(/-/g, ' ')}
+                <X className="w-3 h-3" />
+              </span>
+            ))}
+            {selectedBadges.map((badge) => (
+              <span
+                key={badge}
+                className="inline-flex items-center gap-1 px-2 py-1 text-xs bg-amber-100 text-amber-700 rounded-full cursor-pointer hover:bg-amber-200 transition-colors"
+                onClick={() => handleBadgeToggle(badge)}
+              >
+                {badge}
+                <X className="w-3 h-3" />
+              </span>
+            ))}
+            {inStockOnly && (
+              <span className="inline-flex items-center gap-1 px-2 py-1 text-xs bg-green-100 text-green-700 rounded-full">
+                In stock
+                <X className="w-3 h-3 cursor-pointer" onClick={() => onInStockChange(false)} />
+              </span>
+            )}
             {(priceRange[0] > 0 || priceRange[1] < maxPrice) && (
               <span className="inline-flex items-center gap-1 px-2 py-1 text-xs bg-accent/10 text-accent rounded-full">
                 ${priceRange[0].toLocaleString()} - ${priceRange[1].toLocaleString()}
@@ -87,6 +182,64 @@ export function Filters({
       )}
 
       {hasActiveFilters && <Separator />}
+
+      {/* Subcategory Filter */}
+      <div className="space-y-3">
+        <button
+          onClick={() => setSubcategoryExpanded(!subcategoryExpanded)}
+          className="flex items-center justify-between w-full group"
+        >
+          <h3 className="font-display font-semibold text-secondary group-hover:text-primary transition-colors">
+            Categories
+          </h3>
+          <ChevronDown
+            className={`w-4 h-4 text-muted-foreground transition-transform duration-300 ${
+              subcategoryExpanded ? 'rotate-180' : ''
+            }`}
+          />
+        </button>
+
+        <div
+          className={`space-y-2 overflow-hidden transition-all duration-300 ${
+            subcategoryExpanded ? 'max-h-96 opacity-100' : 'max-h-0 opacity-0'
+          }`}
+        >
+          {subcategories.map(({ slug, name, count }, index) => (
+            <label
+              key={slug}
+              className="flex items-center space-x-3 cursor-pointer group p-2 rounded-lg hover:bg-muted transition-colors capitalize"
+              style={{ animationDelay: `${index * 50}ms` }}
+            >
+              <div className="relative">
+                <input
+                  type="checkbox"
+                  checked={selectedSubcategories.includes(slug)}
+                  onChange={() => handleSubcategoryToggle(slug)}
+                  className="peer sr-only"
+                />
+                <div className="h-5 w-5 rounded border-2 border-gray-300 transition-all duration-200 peer-checked:border-primary peer-checked:bg-primary flex items-center justify-center">
+                  <svg
+                    className={`w-3 h-3 text-white transition-all duration-200 ${
+                      selectedSubcategories.includes(slug) ? 'opacity-100 scale-100' : 'opacity-0 scale-0'
+                    }`}
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                  >
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
+                  </svg>
+                </div>
+              </div>
+              <span className="text-sm font-body group-hover:text-primary transition-colors">
+                {name}
+              </span>
+              <span className="text-xs text-muted-foreground ml-auto">({count})</span>
+            </label>
+          ))}
+        </div>
+      </div>
+
+      <Separator />
 
       {/* Brand Filter */}
       <div className="space-y-3">
@@ -101,7 +254,7 @@ export function Filters({
         </button>
         
         <div className={`space-y-2 overflow-hidden transition-all duration-300 ${brandExpanded ? 'max-h-96 opacity-100' : 'max-h-0 opacity-0'}`}>
-          {allBrands.map((brand, index) => (
+          {brands.map((brand, index) => (
             <label
               key={brand}
               className="flex items-center space-x-3 cursor-pointer group p-2 rounded-lg hover:bg-muted transition-colors"
@@ -129,10 +282,120 @@ export function Filters({
                 {brand}
               </span>
               <span className="text-xs text-muted-foreground ml-auto">
-                ({products.filter(p => p.brand === brand).length})
+                ({brandCounts[brand] || 0})
               </span>
             </label>
           ))}
+        </div>
+      </div>
+
+      <Separator />
+
+      {/* Badge Filter */}
+      {badges.length > 0 && (
+        <>
+          <div className="space-y-3">
+            <button
+              onClick={() => setBadgeExpanded(!badgeExpanded)}
+              className="flex items-center justify-between w-full group"
+            >
+              <h3 className="font-display font-semibold text-secondary group-hover:text-primary transition-colors">
+                Highlights
+              </h3>
+              <ChevronDown
+                className={`w-4 h-4 text-muted-foreground transition-transform duration-300 ${
+                  badgeExpanded ? 'rotate-180' : ''
+                }`}
+              />
+            </button>
+
+            <div
+              className={`space-y-2 overflow-hidden transition-all duration-300 ${
+                badgeExpanded ? 'max-h-96 opacity-100' : 'max-h-0 opacity-0'
+              }`}
+            >
+              {badges.map((badge, index) => (
+                <label
+                  key={badge}
+                  className="flex items-center space-x-3 cursor-pointer group p-2 rounded-lg hover:bg-muted transition-colors capitalize"
+                  style={{ animationDelay: `${index * 50}ms` }}
+                >
+                  <div className="relative">
+                    <input
+                      type="checkbox"
+                      checked={selectedBadges.includes(badge)}
+                      onChange={() => handleBadgeToggle(badge)}
+                      className="peer sr-only"
+                    />
+                    <div className="h-5 w-5 rounded border-2 border-gray-300 transition-all duration-200 peer-checked:border-primary peer-checked:bg-primary flex items-center justify-center">
+                      <svg
+                        className={`w-3 h-3 text-white transition-all duration-200 ${
+                          selectedBadges.includes(badge) ? 'opacity-100 scale-100' : 'opacity-0 scale-0'
+                        }`}
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        stroke="currentColor"
+                      >
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
+                      </svg>
+                    </div>
+                  </div>
+                  <span className="text-sm font-body group-hover:text-primary transition-colors">
+                    {badge === 'sale' ? 'On Sale' : badge === 'new' ? 'New Arrival' : badge === 'limited' ? 'Limited' : badge}
+                  </span>
+                </label>
+              ))}
+            </div>
+          </div>
+
+          <Separator />
+        </>
+      )}
+
+      {/* Availability */}
+      <div className="space-y-3">
+        <button
+          onClick={() => setAvailabilityExpanded(!availabilityExpanded)}
+          className="flex items-center justify-between w-full group"
+        >
+          <h3 className="font-display font-semibold text-secondary group-hover:text-primary transition-colors">
+            Availability
+          </h3>
+          <ChevronDown
+            className={`w-4 h-4 text-muted-foreground transition-transform duration-300 ${
+              availabilityExpanded ? 'rotate-180' : ''
+            }`}
+          />
+        </button>
+
+        <div
+          className={`space-y-2 overflow-hidden transition-all duration-300 ${
+            availabilityExpanded ? 'max-h-32 opacity-100' : 'max-h-0 opacity-0'
+          }`}
+        >
+          <label className="flex items-center space-x-3 cursor-pointer group p-2 rounded-lg hover:bg-muted transition-colors">
+            <div className="relative">
+              <input
+                type="checkbox"
+                checked={inStockOnly}
+                onChange={(e) => onInStockChange(e.target.checked)}
+                className="peer sr-only"
+              />
+              <div className="h-5 w-5 rounded border-2 border-gray-300 transition-all duration-200 peer-checked:border-primary peer-checked:bg-primary flex items-center justify-center">
+                <svg
+                  className={`w-3 h-3 text-white transition-all duration-200 ${
+                    inStockOnly ? 'opacity-100 scale-100' : 'opacity-0 scale-0'
+                  }`}
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                >
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
+                </svg>
+              </div>
+            </div>
+            <span className="text-sm font-body group-hover:text-primary transition-colors">In stock only</span>
+          </label>
         </div>
       </div>
 
@@ -187,14 +450,9 @@ export function Filters({
 
           {/* Quick price filters */}
           <div className="flex flex-wrap gap-2">
-            {[
-              { label: 'Dưới $1,000', min: 0, max: 1000 },
-              { label: '$1,000 - $5,000', min: 1000, max: 5000 },
-              { label: '$5,000 - $10,000', min: 5000, max: 10000 },
-              { label: 'Trên $10,000', min: 10000, max: maxPrice },
-            ].map((range, index) => (
+            {quickPriceRanges.map((range) => (
               <button
-                key={index}
+                key={range.key}
                 onClick={() => onPriceRangeChange([range.min, range.max])}
                 className={`px-3 py-1.5 text-xs rounded-full border transition-all duration-300 hover:scale-105 ${
                   priceRange[0] === range.min && priceRange[1] === range.max
@@ -222,6 +480,9 @@ export function Filters({
         className="w-full border-2 hover:bg-destructive/10 hover:text-destructive hover:border-destructive transition-all duration-300"
         onClick={() => {
           onBrandChange([])
+          onSubcategoryChange([])
+          onBadgeChange([])
+          onInStockChange(false)
           onPriceRangeChange([0, maxPrice])
         }}
       >

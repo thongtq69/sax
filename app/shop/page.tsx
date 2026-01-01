@@ -23,7 +23,9 @@ export default function ShopPage() {
   const [products, setProducts] = useState<Product[]>([])
   const [categories, setCategories] = useState<any[]>([])
   const [selectedBrands, setSelectedBrands] = useState<string[]>([])
-  const [selectedCategory, setSelectedCategory] = useState<string>('all')
+  const [selectedSubcategories, setSelectedSubcategories] = useState<string[]>([])
+  const [selectedBadges, setSelectedBadges] = useState<string[]>([])
+  const [inStockOnly, setInStockOnly] = useState(false)
   const [priceRange, setPriceRange] = useState<[number, number]>([0, 50000000])
   const [sortBy, setSortBy] = useState<SortOption>('featured')
   const [currentPage, setCurrentPage] = useState(1)
@@ -44,9 +46,11 @@ export default function ShopPage() {
         
         const transformedProducts = productsResponse.products.map(transformProduct)
         const transformedCategories = categoriesData.map(transformCategory)
+        const maxPrice = transformedProducts.length ? Math.max(...transformedProducts.map((p) => p.price)) : 0
         
         setProducts(transformedProducts)
         setCategories(transformedCategories)
+        setPriceRange([0, maxPrice])
       } catch (error) {
         console.error('Error fetching data:', error)
       } finally {
@@ -57,7 +61,11 @@ export default function ShopPage() {
     fetchData()
   }, [])
 
-  const brands = Array.from(new Set(products.map((p) => p.brand)))
+  const brands = useMemo(() => Array.from(new Set(products.map((p) => p.brand))).sort(), [products])
+  const badgeOptions = useMemo(
+    () => Array.from(new Set(products.map((p) => p.badge).filter(Boolean))) as string[],
+    [products]
+  )
 
   // Get subcategories from categories
   const subcategories = useMemo(() => {
@@ -88,22 +96,31 @@ export default function ShopPage() {
   useEffect(() => {
     setCurrentPage(1)
     setIsFiltering(true)
-    // Simulate filtering delay
     const timer = setTimeout(() => setIsFiltering(false), 300)
     return () => clearTimeout(timer)
-  }, [selectedBrands, selectedCategory, priceRange, sortBy])
+  }, [selectedBrands, selectedSubcategories, selectedBadges, inStockOnly, priceRange, sortBy])
 
   const filteredProducts = useMemo(() => {
     let filtered = [...products]
 
     // Category filter
-    if (selectedCategory !== 'all') {
-      filtered = filtered.filter((p) => p.subcategory === selectedCategory)
+    if (selectedSubcategories.length > 0) {
+      filtered = filtered.filter((p) => p.subcategory && selectedSubcategories.includes(p.subcategory))
     }
 
     // Brand filter
     if (selectedBrands.length > 0) {
       filtered = filtered.filter((p) => selectedBrands.includes(p.brand))
+    }
+
+    // Badge filter
+    if (selectedBadges.length > 0) {
+      filtered = filtered.filter((p) => p.badge && selectedBadges.includes(p.badge))
+    }
+
+    // Availability
+    if (inStockOnly) {
+      filtered = filtered.filter((p) => p.inStock)
     }
 
     // Price filter
@@ -143,7 +160,7 @@ export default function ShopPage() {
     }
 
     return filtered
-  }, [products, selectedBrands, selectedCategory, priceRange, sortBy])
+  }, [products, selectedBrands, selectedSubcategories, selectedBadges, inStockOnly, priceRange, sortBy])
 
   const totalPages = Math.ceil(filteredProducts.length / itemsPerPage)
   const paginatedProducts = filteredProducts.slice(
@@ -153,7 +170,7 @@ export default function ShopPage() {
 
   // Group products by subcategory for display
   const groupedByCategory = useMemo(() => {
-    if (selectedCategory !== 'all') return null
+    if (selectedSubcategories.length > 0) return null
     
     const groups = new Map<string, Product[]>()
     filteredProducts.forEach(p => {
@@ -162,7 +179,7 @@ export default function ShopPage() {
       groups.set(key, [...current, p])
     })
     return groups
-  }, [filteredProducts, selectedCategory])
+  }, [filteredProducts, selectedSubcategories])
 
   if (isLoading) {
     return (
@@ -233,9 +250,9 @@ export default function ShopPage() {
         <div className="mb-8 animate-fade-in-up" style={{ animationDelay: '0.2s' }}>
           <div className="flex flex-wrap gap-2 justify-center">
             <button
-              onClick={() => setSelectedCategory('all')}
+              onClick={() => setSelectedSubcategories([])}
               className={`px-4 py-2 rounded-full font-medium text-sm transition-all duration-300 ${
-                selectedCategory === 'all'
+                selectedSubcategories.length === 0
                   ? 'bg-primary text-white shadow-lg scale-105'
                   : 'bg-white border-2 border-gray-200 text-gray-600 hover:border-primary hover:text-primary'
               }`}
@@ -252,9 +269,9 @@ export default function ShopPage() {
             {Array.from(subcategories).map(([slug, { name, count }], index) => (
               <button
                 key={slug}
-                onClick={() => setSelectedCategory(slug)}
+                onClick={() => setSelectedSubcategories([slug])}
                 className={`px-3 py-1.5 md:px-4 md:py-2 rounded-full font-medium text-xs md:text-sm transition-all duration-300 ${
-                  selectedCategory === slug
+                  selectedSubcategories.length === 1 && selectedSubcategories[0] === slug
                     ? 'bg-primary text-white shadow-lg scale-105'
                     : 'bg-white border-2 border-gray-200 text-gray-600 hover:border-primary hover:text-primary'
                 }`}
@@ -276,9 +293,18 @@ export default function ShopPage() {
           <div className="hidden lg:block animate-fade-in-left">
             <div className="sticky top-28">
               <Filters
+                allProducts={products}
                 brands={brands}
+                subcategories={Array.from(subcategories).map(([slug, value]) => ({ slug, ...value }))}
+                badges={badgeOptions}
                 selectedBrands={selectedBrands}
+                selectedSubcategories={selectedSubcategories}
+                selectedBadges={selectedBadges}
+                inStockOnly={inStockOnly}
                 onBrandChange={setSelectedBrands}
+                onSubcategoryChange={setSelectedSubcategories}
+                onBadgeChange={setSelectedBadges}
+                onInStockChange={setInStockOnly}
                 priceRange={priceRange}
                 onPriceRangeChange={setPriceRange}
               />
@@ -290,9 +316,18 @@ export default function ShopPage() {
             {/* Mobile Filters */}
             <div className="mb-6 lg:hidden">
               <Filters
+                allProducts={products}
                 brands={brands}
+                subcategories={Array.from(subcategories).map(([slug, value]) => ({ slug, ...value }))}
+                badges={badgeOptions}
                 selectedBrands={selectedBrands}
+                selectedSubcategories={selectedSubcategories}
+                selectedBadges={selectedBadges}
+                inStockOnly={inStockOnly}
                 onBrandChange={setSelectedBrands}
+                onSubcategoryChange={setSelectedSubcategories}
+                onBadgeChange={setSelectedBadges}
+                onInStockChange={setInStockOnly}
                 priceRange={priceRange}
                 onPriceRangeChange={setPriceRange}
                 mobile

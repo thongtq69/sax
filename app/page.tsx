@@ -591,7 +591,7 @@ export default function HomePage() {
                   <div className="relative z-10 flex flex-row items-center p-5 md:p-6 lg:p-8 h-full min-h-[120px] md:min-h-[140px]">
                     {/* Left section - Small golden saxophone icon */}
                     <div className="flex-shrink-0 mr-4 md:mr-5 lg:mr-6 flex items-center justify-center">
-                      <div className="relative w-12 h-12 md:w-14 md:h-14 lg:w-16 lg:h-16 flex items-center justify-center transition-all duration-300 group-hover:scale-110">
+                      <div className="relative w-12 h-12 md:w-14 md:h-14 lg:w-16 lg:h-16 flex items-center justify-center transition-all duration-300 scale-110 group-hover:scale-125">
                         <Image
                           src="/saxophone-icon.svg"
                           alt="Saxophone"
@@ -627,7 +627,7 @@ export default function HomePage() {
                   <div className="relative z-10 flex flex-row items-center p-5 md:p-6 lg:p-8 h-full min-h-[120px] md:min-h-[140px]">
                     {/* Left section - Small golden saxophone icon */}
                     <div className="flex-shrink-0 mr-4 md:mr-5 lg:mr-6 flex items-center justify-center">
-                      <div className="relative w-12 h-12 md:w-14 md:h-14 lg:w-16 lg:h-16 flex items-center justify-center transition-all duration-300 group-hover:scale-110">
+                      <div className="relative w-12 h-12 md:w-14 md:h-14 lg:w-16 lg:h-16 flex items-center justify-center transition-all duration-300 scale-110 group-hover:scale-125">
                         <Image
                           src="/saxophone-icon.svg"
                           alt="Saxophone"

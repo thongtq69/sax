@@ -14,7 +14,7 @@ import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { useCartStore } from '@/lib/store/cart'
 import { SmartImage } from '@/components/ui/smart-image'
-import { Star, Heart, Check, Minus, Plus, ExternalLink, Truck, Shield, Award, X, Loader2, ChevronLeft, ChevronRight } from 'lucide-react'
+import { Star, Heart, Check, ExternalLink, Truck, Shield, Award, X, Loader2, ChevronLeft, ChevronRight } from 'lucide-react'
 import { getProductRatingStats } from '@/lib/reviews'
 
 interface QuickViewModalProps {
@@ -30,7 +30,6 @@ export function QuickViewModal({
 }: QuickViewModalProps) {
   const [selectedImageIndex, setSelectedImageIndex] = useState(0)
   const [showVideo, setShowVideo] = useState(false)
-  const [quantity, setQuantity] = useState(1)
   const [isWishlisted, setIsWishlisted] = useState(false)
   const [isAddedToCart, setIsAddedToCart] = useState(false)
   const [isAddingToCart, setIsAddingToCart] = useState(false)
@@ -62,16 +61,14 @@ export function QuickViewModal({
     setIsAddingToCart(true)
     // Simulate async operation
     await new Promise(resolve => setTimeout(resolve, 500))
-    for (let i = 0; i < quantity; i++) {
-      addItem({
-        id: `${product.id}-default`,
-        productId: product.id,
-        name: product.name,
-        slug: product.slug,
-        price: product.price,
-        image: product.images[0],
-      })
-    }
+    addItem({
+      id: `${product.id}-default`,
+      productId: product.id,
+      name: product.name,
+      slug: product.slug,
+      price: product.price,
+      image: product.images[0],
+    })
     setIsAddingToCart(false)
     setIsAddedToCart(true)
     setTimeout(() => {
@@ -347,26 +344,11 @@ export function QuickViewModal({
               )}
             </div>
 
-            {/* Quantity & Add to Cart */}
+            {/* Purchase Actions */}
             <div className="space-y-3">
-              <div className="flex items-center gap-4">
-                <span className="text-sm font-medium text-gray-600">Qty:</span>
-                <div className="flex items-center border-2 rounded-lg overflow-hidden">
-                  <button
-                    onClick={() => setQuantity(q => Math.max(1, q - 1))}
-                    className="p-2 hover:bg-gray-100 transition-colors"
-                    disabled={quantity <= 1}
-                  >
-                    <Minus className="h-4 w-4" />
-                  </button>
-                  <span className="w-10 text-center font-semibold">{quantity}</span>
-                  <button
-                    onClick={() => setQuantity(q => Math.min(product.stock || 10, q + 1))}
-                    className="p-2 hover:bg-gray-100 transition-colors"
-                  >
-                    <Plus className="h-4 w-4" />
-                  </button>
-                </div>
+              <div className="p-3 rounded-lg bg-gray-50 border text-sm text-gray-700">
+                <p className="font-semibold text-secondary">One-of-a-kind listing</p>
+                <p className="text-gray-600">Each horn is sold individually; we reserve this instrument for you once you add to cart.</p>
               </div>
 
               <Button
