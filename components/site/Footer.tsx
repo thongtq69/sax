@@ -1,26 +1,10 @@
 'use client'
 
-import { useState } from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
-import { Phone, Mail, MapPin, Clock, Facebook, Instagram, Youtube, Twitter, Music, ArrowRight, Heart, Sparkles } from 'lucide-react'
-import { Input } from '@/components/ui/input'
-import { Button } from '@/components/ui/button'
+import { Phone, Mail, MapPin, Clock, Facebook, Instagram, Youtube, Twitter, Music, Heart } from 'lucide-react'
 
 export function Footer() {
-  const [email, setEmail] = useState('')
-  const [isSubscribed, setIsSubscribed] = useState(false)
-
-  const handleSubscribe = (e: React.FormEvent) => {
-    e.preventDefault()
-    if (email) {
-      setIsSubscribed(true)
-      setTimeout(() => {
-        setIsSubscribed(false)
-        setEmail('')
-      }, 3000)
-    }
-  }
 
   return (
     <footer className="bg-secondary text-secondary-foreground relative overflow-hidden">
@@ -28,49 +12,6 @@ export function Footer() {
       <div className="absolute top-20 left-10 text-6xl text-white/5 animate-float">♪</div>
       <div className="absolute top-40 right-20 text-7xl text-white/5 animate-float" style={{ animationDelay: '1s' }}>♫</div>
       <div className="absolute bottom-40 left-1/4 text-5xl text-white/5 animate-float" style={{ animationDelay: '2s' }}>♩</div>
-
-      {/* Newsletter Banner */}
-      <div className="bg-gradient-to-r from-primary to-primary/80 py-8 relative overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent animate-shimmer" />
-        <div className="container mx-auto px-4">
-          <div className="flex flex-col md:flex-row items-center justify-between gap-6">
-            <div className="text-center md:text-left">
-              <h3 className="text-2xl font-bold text-white flex items-center gap-2 justify-center md:justify-start">
-                <Sparkles className="h-6 w-6" />
-                Join Our Musical Community
-              </h3>
-              <p className="text-white/80 mt-1">Get exclusive deals, tips, and industry news</p>
-            </div>
-            <form onSubmit={handleSubscribe} className="flex gap-2 w-full md:w-auto">
-              <Input
-                type="email"
-                placeholder="Enter your email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                className="bg-white/20 border-white/30 placeholder:text-white/60 text-white min-w-[250px] focus:bg-white/30 transition-all"
-                disabled={isSubscribed}
-              />
-              <Button 
-                type="submit"
-                className={`bg-secondary hover:bg-secondary/90 text-white px-6 transition-all duration-300 ${
-                  isSubscribed ? 'bg-green-500 hover:bg-green-500' : ''
-                }`}
-                disabled={isSubscribed}
-              >
-                {isSubscribed ? (
-                  <span className="flex items-center gap-2">
-                    <span className="animate-bounce">✓</span> Subscribed!
-                  </span>
-                ) : (
-                  <span className="flex items-center gap-2">
-                    Subscribe <ArrowRight className="h-4 w-4" />
-                  </span>
-                )}
-              </Button>
-            </form>
-          </div>
-        </div>
-      </div>
 
       {/* Main Footer */}
       <div className="container mx-auto px-4 py-12">
@@ -82,14 +23,11 @@ export function Footer() {
               <Image
                 src="/logo.png"
                 alt="James Sax Corner"
-                width={60}
-                height={60}
-                className="h-14 w-auto rounded transition-transform group-hover:scale-105"
+                width={280}
+                height={80}
+                className="h-14 w-auto transition-transform group-hover:scale-105"
+                priority
               />
-              <div>
-                <span className="text-xl font-bold block">James Sax Corner</span>
-                <span className="text-xs text-primary">Since 1985</span>
-              </div>
             </div>
             <p className="mb-4 text-sm text-secondary-foreground/80 leading-relaxed">
               Family-owned wind instrument specialists since 1985. We provide expert advice,

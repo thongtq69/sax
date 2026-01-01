@@ -1,7 +1,7 @@
 'use client'
 
 import Link from 'next/link';
-import { Clock, User, MapPin, Phone, Mail } from 'lucide-react';
+import { Clock, User, MapPin, Phone, Mail, Facebook, Instagram, Youtube, Twitter } from 'lucide-react';
 
 export function TopBar() {
     return (
@@ -28,6 +28,46 @@ export function TopBar() {
                         <Phone className="h-3.5 w-3.5" />
                         <Link href="tel:+17025551234" className="hover:underline">
                             Call Us
+                        </Link>
+                    </div>
+
+                    {/* Center: Social Media Icons */}
+                    <div className="hidden md:flex items-center justify-center space-x-2 absolute left-1/2 -translate-x-1/2">
+                        <Link
+                            href="https://facebook.com"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="rounded-full bg-white/10 p-1.5 hover:bg-white/20 transition-all duration-300 hover:scale-110"
+                            aria-label="Facebook"
+                        >
+                            <Facebook className="h-3.5 w-3.5" />
+                        </Link>
+                        <Link
+                            href="https://instagram.com"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="rounded-full bg-white/10 p-1.5 hover:bg-white/20 transition-all duration-300 hover:scale-110"
+                            aria-label="Instagram"
+                        >
+                            <Instagram className="h-3.5 w-3.5" />
+                        </Link>
+                        <Link
+                            href="https://youtube.com"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="rounded-full bg-white/10 p-1.5 hover:bg-white/20 transition-all duration-300 hover:scale-110"
+                            aria-label="YouTube"
+                        >
+                            <Youtube className="h-3.5 w-3.5" />
+                        </Link>
+                        <Link
+                            href="https://twitter.com"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="rounded-full bg-white/10 p-1.5 hover:bg-white/20 transition-all duration-300 hover:scale-110"
+                            aria-label="Twitter"
+                        >
+                            <Twitter className="h-3.5 w-3.5" />
                         </Link>
                     </div>
 
