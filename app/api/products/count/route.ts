@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 
+export const dynamic = 'force-dynamic'
+
 // Helper function to check if a string is a valid MongoDB ObjectID
 function isValidObjectId(str: string): boolean {
   return /^[0-9a-fA-F]{24}$/.test(str)
@@ -63,4 +65,3 @@ export async function GET(request: NextRequest) {
     )
   }
 }
-
