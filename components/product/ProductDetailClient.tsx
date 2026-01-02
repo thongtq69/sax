@@ -10,9 +10,11 @@ import { getReviewsForProduct, getProductRatingStats } from '@/lib/reviews'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
+import { Dialog, DialogContent } from '@/components/ui/dialog'
 import { ProductCard } from './ProductCard'
 import { useCartStore } from '@/lib/store/cart'
 import { SmartImage } from '@/components/ui/smart-image'
+import { InquiryFormContent } from '@/components/inquiry/InquiryFormContent'
 import { Star, ChevronRight, ChevronLeft, Heart, Share2, Shield, Truck, CreditCard, Award, Check, X, ZoomIn, Loader2, MessageCircle } from 'lucide-react'
 
 interface ProductDetailClientProps {
@@ -31,6 +33,7 @@ export function ProductDetailClient({ product }: ProductDetailClientProps) {
   const [lightboxIndex, setLightboxIndex] = useState(0)
   const [navigationProducts, setNavigationProducts] = useState<{prev: Product | null, next: Product | null}>({prev: null, next: null})
   const [showAllReviews, setShowAllReviews] = useState(false)
+  const [isInquiryOpen, setIsInquiryOpen] = useState(false)
   const router = useRouter()
   const addItem = useCartStore((state) => state.addItem)
   
@@ -546,7 +549,7 @@ const handleAddToCart = async () => {
             Each listing is a single instrument; quantity is fixed at one.
           </p>
 
-          {/* Product Inquiry CTA (links to dedicated form) */}
+          {/* Product Inquiry CTA */}
           <div className="p-4 md:p-5 rounded-xl border bg-white/70 shadow-sm space-y-2">
             <div className="flex items-center gap-2">
               <MessageCircle className="h-5 w-5 text-primary" />
@@ -556,15 +559,24 @@ const handleAddToCart = async () => {
               Ask about setup, accessories, financing, or shipping. We’ll reply within one business day.
             </p>
             <Button
-              asChild
+              type="button"
               variant="outline"
               className="border-primary text-primary hover:bg-primary hover:text-white"
+              onClick={() => setIsInquiryOpen(true)}
             >
-              <Link href={`/inquiry?product=${encodeURIComponent(product.name)}&sku=${encodeURIComponent(product.sku)}`}>
-                Open Inquiry Form
-              </Link>
+              Open Inquiry Form
             </Button>
           </div>
+
+          <Dialog open={isInquiryOpen} onOpenChange={setIsInquiryOpen}>
+            <DialogContent className="max-w-3xl w-[95vw] max-h-[90vh] overflow-y-auto p-0 border-0 bg-transparent shadow-none">
+              <InquiryFormContent
+                prefillProduct={product.name}
+                prefillSku={product.sku}
+                onClose={() => setIsInquiryOpen(false)}
+              />
+            </DialogContent>
+          </Dialog>
 
           {/* Action Buttons */}
           <div className="flex gap-2 md:gap-3">

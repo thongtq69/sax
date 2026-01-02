@@ -56,6 +56,19 @@ export function Filters({
   const [badgeExpanded, setBadgeExpanded] = useState(true)
   const [availabilityExpanded, setAvailabilityExpanded] = useState(true)
 
+  const stripSaxophones = (value: string) =>
+    value.replace(/\s+saxophones?/gi, '').replace(/\s+/g, ' ').trim()
+
+  const subcategoryLabels = useMemo(() => {
+    const entries = subcategories.map((subcategory) => [subcategory.slug, subcategory.name] as const)
+    return new Map(entries)
+  }, [subcategories])
+
+  const formatSubcategoryLabel = (slug: string) => {
+    const label = subcategoryLabels.get(slug) || slug.replace(/-/g, ' ')
+    return stripSaxophones(label)
+  }
+
   const brandCounts = useMemo(() => {
     const counts: Record<string, number> = {}
     allProducts.forEach((p) => {
@@ -152,7 +165,7 @@ export function Filters({
                 className="inline-flex items-center gap-1 px-2 py-1 text-xs bg-secondary/10 text-secondary rounded-full cursor-pointer hover:bg-secondary/20 transition-colors"
                 onClick={() => handleSubcategoryToggle(sub)}
               >
-                {sub.replace(/-/g, ' ')}
+                {formatSubcategoryLabel(sub)}
                 <X className="w-3 h-3" />
               </span>
             ))}
@@ -231,7 +244,7 @@ export function Filters({
                 </div>
               </div>
               <span className="text-sm font-body group-hover:text-primary transition-colors">
-                {name}
+                {stripSaxophones(name) || name}
               </span>
               <span className="text-xs text-muted-foreground ml-auto">({count})</span>
             </label>
