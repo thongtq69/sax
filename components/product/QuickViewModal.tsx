@@ -81,16 +81,16 @@ export function QuickViewModal({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="quickview-modal w-[95vw] max-w-4xl max-h-[92vh] p-0 overflow-hidden rounded-2xl border-0 shadow-2xl">
+      <DialogContent className="quickview-modal w-[95vw] max-w-4xl max-h-[92vh] p-0 overflow-hidden rounded-2xl border-0 shadow-2xl animate-scale-in">
         <div className="quickview-body flex flex-col md:grid md:grid-cols-2 max-h-[92vh] overflow-hidden md:overflow-auto">
           {/* Image Gallery */}
           <div className="quickview-media relative bg-gradient-to-br from-gray-50 to-gray-100 p-4 sm:p-6">
             {/* Badge */}
             {product.badge && (
-              <div className="absolute top-4 left-4 z-10">
+              <div className="absolute top-4 left-4 z-10 animate-fade-in-up">
                 <Badge 
                   variant={product.badge} 
-                  className={`shadow-lg ${product.badge === 'sale' ? 'animate-pulse-soft' : ''}`}
+                  className={`shadow-lg transition-transform hover:scale-105 ${product.badge === 'sale' ? 'animate-pulse-soft' : ''}`}
                 >
                   {product.badge === 'new' && '✨ New'}
                   {product.badge === 'sale' && `🔥 ${savingsPercent}% OFF`}
@@ -103,10 +103,10 @@ export function QuickViewModal({
             <button
               onClick={() => setIsWishlisted(!isWishlisted)}
               className={`absolute top-4 right-4 z-10 p-2 rounded-full bg-white/90 shadow-lg transition-all duration-300 hover:scale-110 ${
-                isWishlisted ? 'text-red-500' : 'text-gray-400 hover:text-red-400'
+                isWishlisted ? 'text-red-500 animate-heart-bounce' : 'text-gray-400 hover:text-red-400'
               }`}
             >
-              <Heart className={`h-5 w-5 transition-all ${isWishlisted ? 'fill-current' : ''}`} />
+              <Heart className={`h-5 w-5 transition-all ${isWishlisted ? 'fill-current scale-110' : ''}`} />
             </button>
 
             {/* Main Display - Video or Image */}
@@ -264,7 +264,7 @@ export function QuickViewModal({
 
           {/* Product Info */}
           <div className="quickview-info p-4 sm:p-6 space-y-3 sm:space-y-5 overflow-visible md:overflow-auto">
-            <DialogHeader className="space-y-2 text-left">
+            <DialogHeader className="space-y-2 text-left animate-fade-in-up">
               <div className="flex items-center gap-2 text-sm">
                 <span className="font-semibold text-accent uppercase tracking-wider">
                   {product.brand}
@@ -279,16 +279,17 @@ export function QuickViewModal({
 
             {/* Rating */}
             {displayRating > 0 && (
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-2 animate-fade-in-up" style={{ animationDelay: '0.1s' }}>
                 <div className="flex">
                   {Array.from({ length: 5 }).map((_, i) => (
                     <Star
                       key={i}
-                      className={`h-4 w-4 ${
+                      className={`h-4 w-4 transition-all duration-300 hover:scale-125 ${
                         i < Math.floor(displayRating)
                           ? 'fill-amber-400 text-amber-400'
                           : 'fill-gray-200 text-gray-200'
                       }`}
+                      style={{ animationDelay: `${i * 0.05}s` }}
                     />
                   ))}
                 </div>
@@ -300,7 +301,7 @@ export function QuickViewModal({
             )}
 
             {/* Pricing */}
-            <div className="p-4 rounded-xl bg-gradient-to-br from-primary/5 to-primary/10 border border-primary/20">
+            <div className="p-4 rounded-xl bg-gradient-to-br from-primary/5 to-primary/10 border border-primary/20 animate-fade-in-up hover:shadow-lg transition-all duration-300" style={{ animationDelay: '0.15s' }}>
               <div className="flex items-baseline gap-2 sm:gap-3">
                 <span className="text-2xl sm:text-3xl font-bold text-primary">
                   ${product.price.toLocaleString()}
@@ -310,7 +311,7 @@ export function QuickViewModal({
                     <span className="text-base sm:text-lg text-gray-400 line-through">
                       ${product.retailPrice.toLocaleString()}
                     </span>
-                    <Badge variant="destructive" className="text-[10px] sm:text-xs">
+                    <Badge variant="destructive" className="text-[10px] sm:text-xs animate-pulse-soft">
                       Save ${savings.toLocaleString()}
                     </Badge>
                   </>
@@ -326,12 +327,12 @@ export function QuickViewModal({
             </div>
 
             {/* Stock Status */}
-            <div className={`flex items-center gap-2 text-xs sm:text-sm font-medium ${
+            <div className={`flex items-center gap-2 text-xs sm:text-sm font-medium animate-fade-in-up ${
               product.inStock ? 'text-green-600' : 'text-red-600'
-            }`}>
+            }`} style={{ animationDelay: '0.2s' }}>
               {product.inStock ? (
                 <>
-                  <Check className="h-4 w-4" />
+                  <Check className="h-4 w-4 animate-bounce" />
                   <span>In Stock</span>
                 </>
               ) : (
@@ -345,8 +346,8 @@ export function QuickViewModal({
             </div>
 
             {/* Purchase Actions */}
-            <div className="space-y-3">
-              <div className="p-2 sm:p-3 rounded-lg bg-gray-50 border text-xs sm:text-sm text-gray-700">
+            <div className="space-y-3 animate-fade-in-up" style={{ animationDelay: '0.25s' }}>
+              <div className="p-2 sm:p-3 rounded-lg bg-gray-50 border text-xs sm:text-sm text-gray-700 hover:bg-gray-100 transition-colors">
                 <p className="font-semibold text-secondary">One-of-a-kind listing</p>
                 <p className="text-gray-600">Each horn is sold individually; we reserve this instrument for you once you add to cart.</p>
               </div>
@@ -354,7 +355,7 @@ export function QuickViewModal({
               <Button
                 className={`quickview-action w-full font-semibold transition-all duration-300 ${
                   isAddedToCart 
-                    ? 'bg-green-500 hover:bg-green-600' 
+                    ? 'bg-green-500 hover:bg-green-600 scale-105' 
                     : 'hover:shadow-lg hover:scale-[1.02]'
                 }`}
                 size="lg"
@@ -378,7 +379,7 @@ export function QuickViewModal({
 
               <Button 
                 variant="outline" 
-                className="quickview-action w-full group relative overflow-hidden" 
+                className="quickview-action w-full group relative overflow-hidden hover:border-primary" 
                 size="lg"
                 onClick={() => {
                   // Close modal immediately for better UX
@@ -387,20 +388,21 @@ export function QuickViewModal({
                   router.push(`/product/${product.slug}`)
                 }}
               >
-                <span>View Full Details</span>
-                <ExternalLink className="ml-2 h-4 w-4 transition-transform group-hover:translate-x-1" />
+                <span className="relative z-10">View Full Details</span>
+                <ExternalLink className="ml-2 h-4 w-4 transition-transform group-hover:translate-x-1 relative z-10" />
+                <span className="absolute inset-0 bg-gradient-to-r from-primary/10 to-accent/10 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
               </Button>
             </div>
 
             {/* Trust badges */}
-            <div className="flex gap-2 pt-2 md:grid md:grid-cols-3">
+            <div className="flex gap-2 pt-2 md:grid md:grid-cols-3 animate-fade-in-up" style={{ animationDelay: '0.3s' }}>
               {[
                 { icon: Truck, text: 'Free Ship' },
                 { icon: Shield, text: '30-Day Return' },
                 { icon: Award, text: 'Pro Setup' },
               ].map((item, i) => (
-                <div key={i} className="flex-1 flex flex-col items-center gap-1 p-1.5 sm:p-2 rounded-lg bg-gray-50 text-center">
-                  <item.icon className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-primary" />
+                <div key={i} className="flex-1 flex flex-col items-center gap-1 p-1.5 sm:p-2 rounded-lg bg-gray-50 text-center hover:bg-primary/5 hover:shadow transition-all duration-300 group/trust cursor-default">
+                  <item.icon className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-primary transition-transform group-hover/trust:scale-110" />
                   <span className="text-[10px] sm:text-xs text-gray-600">{item.text}</span>
                 </div>
               ))}

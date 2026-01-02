@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useMemo, useEffect, useRef } from 'react'
+import { useState, useMemo, useEffect, useRef, Suspense } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { getProducts, getCategories, transformProduct, transformCategory } from '@/lib/api'
 import type { Product } from '@/lib/data'
@@ -23,7 +23,7 @@ type SortOption = 'featured' | 'price-low' | 'price-high' | 'newest' | 'name' | 
 const stripSaxophones = (value: string) =>
   value.replace(/\s+saxophones?/gi, '').replace(/\s+/g, ' ').trim()
 
-export default function ShopPage() {
+function ShopPageContent() {
   const router = useRouter()
   const searchParams = useSearchParams()
   const hasInitializedRef = useRef(false)
@@ -618,5 +618,18 @@ export default function ShopPage() {
         </div>
       </div>
     </div>
+  )
+}
+
+// Wrap in Suspense for useSearchParams
+export default function ShopPage() {
+  return (
+    <Suspense fallback={
+      <div className="flex items-center justify-center min-h-screen">
+        <LoadingSpinner size="xl" text="Loading products..." />
+      </div>
+    }>
+      <ShopPageContent />
+    </Suspense>
   )
 }

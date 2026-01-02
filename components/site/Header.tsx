@@ -70,8 +70,8 @@ export function Header() {
     <>
       <header
         className={cn(
-          "sticky top-0 z-50 w-full transition-all duration-300",
-          isScrolled ? 'shadow-lg' : 'shadow-sm',
+          "sticky top-0 z-50 w-full transition-all duration-500",
+          isScrolled ? 'shadow-lg backdrop-blur-sm' : 'shadow-sm',
           isHidden && !isMobileMenuOpen ? '-translate-y-full' : 'translate-y-0'
         )}
         style={{ backgroundColor: '#AFA65F' }} // Match logo background color
@@ -81,13 +81,13 @@ export function Header() {
             }`}>
 
             {/* Left: Logo */}
-            <Link href="/" className="flex items-center shrink-0">
+            <Link href="/" className="flex items-center shrink-0 group">
               <Image
                 src="/logo.png"
                 alt="James Sax Corner"
                 width={280}
                 height={80}
-                className={`site-logo header-logo w-auto transition-all duration-300 ${isScrolled ? 'h-[44px] md:h-[54px]' : 'h-[52px] md:h-[62px]'
+                className={`site-logo header-logo w-auto transition-all duration-500 group-hover:scale-105 ${isScrolled ? 'h-[44px] md:h-[54px]' : 'h-[52px] md:h-[62px]'
                   }`}
                 priority
               />
@@ -102,14 +102,15 @@ export function Header() {
                   { href: 'https://instagram.com', icon: Instagram, label: 'Instagram' },
                   { href: 'https://youtube.com', icon: Youtube, label: 'YouTube' },
                   { href: 'https://twitter.com', icon: Twitter, label: 'Twitter' },
-                ].map((social) => (
+                ].map((social, i) => (
                   <Link
                     key={social.href}
                     href={social.href}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="rounded-full bg-[#2c3e50]/20 p-1.5 hover:bg-[#2c3e50]/40 transition-all"
+                    className="rounded-full bg-[#2c3e50]/20 p-1.5 hover:bg-[#2c3e50]/40 hover:scale-110 hover:rotate-6 transition-all duration-300"
                     aria-label={social.label}
+                    style={{ animationDelay: `${i * 0.05}s` }}
                   >
                     <social.icon className="h-3.5 w-3.5 text-[#2c3e50]" />
                   </Link>
@@ -121,18 +122,22 @@ export function Header() {
 
               {/* Navigation Links */}
               <nav className="flex items-center gap-4 text-sm font-medium">
-                <Link href="/account" className="flex items-center gap-1 text-[#2c3e50] hover:text-[#1a252f] transition-colors">
-                  <User className="h-4 w-4" />
+                <Link href="/account" className="flex items-center gap-1 text-[#2c3e50] hover:text-[#1a252f] transition-all duration-300 relative group/nav">
+                  <User className="h-4 w-4 transition-transform group-hover/nav:scale-110" />
                   My Account
+                  <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-[#2c3e50] transition-all duration-300 group-hover/nav:w-full" />
                 </Link>
-                <Link href="/about" className="text-[#2c3e50] hover:text-[#1a252f] transition-colors">
+                <Link href="/about" className="text-[#2c3e50] hover:text-[#1a252f] transition-all duration-300 relative group/nav">
                   About Us
+                  <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-[#2c3e50] transition-all duration-300 group-hover/nav:w-full" />
                 </Link>
-                <Link href="/contact" className="text-[#2c3e50] hover:text-[#1a252f] transition-colors">
+                <Link href="/contact" className="text-[#2c3e50] hover:text-[#1a252f] transition-all duration-300 relative group/nav">
                   Contact
+                  <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-[#2c3e50] transition-all duration-300 group-hover/nav:w-full" />
                 </Link>
-                <Link href="/blog" className="text-[#2c3e50] hover:text-[#1a252f] transition-colors">
+                <Link href="/blog" className="text-[#2c3e50] hover:text-[#1a252f] transition-all duration-300 relative group/nav">
                   Blog
+                  <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-[#2c3e50] transition-all duration-300 group-hover/nav:w-full" />
                 </Link>
               </nav>
 
@@ -145,7 +150,7 @@ export function Header() {
                 size="icon"
                 onClick={() => setIsSearchOpen(true)}
                 aria-label="Search"
-                className="text-[#2c3e50] hover:text-[#1a252f] hover:bg-[#2c3e50]/10"
+                className="text-[#2c3e50] hover:text-[#1a252f] hover:bg-[#2c3e50]/10 hover:scale-110 transition-all duration-300"
               >
                 <Search className="h-5 w-5" />
               </Button>
@@ -155,13 +160,13 @@ export function Header() {
                 variant="ghost"
                 size="sm"
                 onClick={() => setIsCartOpen(true)}
-                className={`text-[#2c3e50] hover:text-[#1a252f] hover:bg-[#2c3e50]/10 ${cartBounce ? 'animate-wiggle' : ''
+                className={`text-[#2c3e50] hover:text-[#1a252f] hover:bg-[#2c3e50]/10 transition-all duration-300 ${cartBounce ? 'animate-cart-shake' : ''
                   }`}
                 aria-label="Shopping cart"
               >
-                <ShoppingCart className="h-5 w-5 mr-1" />
+                <ShoppingCart className={`h-5 w-5 mr-1 transition-transform ${cartBounce ? 'scale-125' : ''}`} />
                 {itemCount > 0 && (
-                  <span className="flex h-5 w-5 items-center justify-center rounded-full bg-[#2c3e50] text-xs font-bold text-white mr-1">
+                  <span className={`flex h-5 w-5 items-center justify-center rounded-full bg-[#2c3e50] text-xs font-bold text-white mr-1 transition-all duration-300 ${cartBounce ? 'scale-125 animate-bounce' : ''}`}>
                     {itemCount > 9 ? '9+' : itemCount}
                   </span>
                 )}
@@ -171,7 +176,7 @@ export function Header() {
               {/* Call Us Button */}
               <Button
                 size="sm"
-                className="bg-[#2c3e50] text-white hover:bg-[#1a252f] font-semibold"
+                className="bg-[#2c3e50] text-white hover:bg-[#1a252f] font-semibold hover:scale-105 hover:shadow-lg transition-all duration-300 group"
                 onClick={() => {
                   setIsCalling(true)
                   setTimeout(() => {
@@ -184,7 +189,7 @@ export function Header() {
                 {isCalling ? (
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                 ) : (
-                  <Phone className="mr-2 h-4 w-4" />
+                  <Phone className="mr-2 h-4 w-4 transition-transform group-hover:rotate-12 group-hover:scale-110" />
                 )}
                 {isCalling ? 'Calling...' : 'Call Us'}
               </Button>
