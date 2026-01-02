@@ -46,8 +46,8 @@ export function ProductDetailClient({ product }: ProductDetailClientProps) {
     [reviews.length, reviewStats.reviewCount, product.reviewCount]
   )
   
-  // Show first 5 reviews by default, or all if showAllReviews is true
-  const INITIAL_REVIEWS_COUNT = 5
+  // Show first 35 reviews by default, or all if showAllReviews is true
+  const INITIAL_REVIEWS_COUNT = 35
   const displayedReviews = useMemo(() => 
     showAllReviews ? reviews : reviews.slice(0, INITIAL_REVIEWS_COUNT),
     [showAllReviews, reviews]

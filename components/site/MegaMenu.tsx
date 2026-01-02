@@ -125,12 +125,6 @@ export function MegaMenu({ mobile = false }: MegaMenuProps) {
             Rentals
           </Link>
           <Link
-            href="/locations"
-            className="block px-4 py-3 font-medium hover:bg-gray-50"
-          >
-            Locations
-          </Link>
-          <Link
             href="/contact"
             className="block px-4 py-3 font-medium hover:bg-gray-50"
           >
@@ -272,5 +266,4 @@ export function MegaMenu({ mobile = false }: MegaMenuProps) {
     </nav>
   )
 }
-
 

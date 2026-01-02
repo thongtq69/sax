@@ -3,14 +3,11 @@
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
-import { useRouter } from 'next/navigation'
-import { Search, ShoppingCart, Menu, Phone, X, Music, Loader2 } from 'lucide-react'
+import { Search, ShoppingCart, Phone, Menu, X, Loader2, User, Facebook, Instagram, Youtube, Twitter } from 'lucide-react'
 import { useCartStore } from '@/lib/store/cart'
 import { Button } from '@/components/ui/button'
-import { MegaMenu } from './MegaMenu'
 import { SearchBar } from './SearchBar'
 import { MiniCartDrawer } from '@/components/cart/MiniCartDrawer'
-import { useNavigationLoading } from '@/hooks/use-navigation-loading'
 
 export function Header() {
   const [isScrolled, setIsScrolled] = useState(false)
@@ -21,10 +18,7 @@ export function Header() {
   const [isCalling, setIsCalling] = useState(false)
   const itemCount = useCartStore(state => state.getItemCount())
   const subtotal = useCartStore(state => state.getSubtotal())
-  const { isNavigating } = useNavigationLoading()
-  const router = useRouter()
 
-  // Watch for cart changes to trigger animation
   useEffect(() => {
     if (itemCount > 0) {
       setCartBounce(true)
@@ -44,98 +38,106 @@ export function Header() {
   return (
     <>
       <header
-        className={`sticky top-0 z-50 w-full border-b bg-white/95 backdrop-blur-md transition-all duration-500 ${
-          isScrolled 
-            ? 'shadow-lg py-2' 
-            : 'shadow-sm py-0'
-        }`}
+        className={`sticky top-0 z-50 w-full transition-all duration-500 ${isScrolled ? 'shadow-lg' : 'shadow-sm'
+          }`}
+        style={{ backgroundColor: '#C4A35A' }} // Gold color matching logo
       >
-        {/* Top announcement bar */}
-        <div className={`bg-secondary text-white text-center text-sm py-2 transition-all duration-300 overflow-hidden ${
-          isScrolled ? 'max-h-0 py-0 opacity-0' : 'max-h-10 opacity-100'
-        }`}>
-          <div className="container mx-auto px-4 flex items-center justify-center gap-2">
-            <Music className="h-4 w-4 animate-bounce-soft" />
-            <span className="font-medium">Free Shipping on Orders Over $500</span>
-            <span className="text-primary">•</span>
-            <span>0% APR Financing Available</span>
-            <Music className="h-4 w-4 animate-bounce-soft" style={{ animationDelay: '0.3s' }} />
-          </div>
-        </div>
-
         <div className="container mx-auto px-4">
-          <div className={`flex items-center justify-between transition-all duration-300 ${
-            isScrolled ? 'h-16' : 'h-20'
-          }`}>
-            {/* Logo with hover effect */}
-            <Link href="/" className="flex items-center group logo-hover">
-              <div className="relative">
-                <Image
-                  src="/logo.png"
-                  alt="James Sax Corner"
-                  width={280}
-                  height={80}
-                  className={`w-auto transition-all duration-300 ${
-                    isScrolled ? 'h-12 md:h-14' : 'h-14 md:h-16'
+          <div className={`flex items-center justify-between transition-all duration-300 ${isScrolled ? 'h-16 md:h-18' : 'h-18 md:h-22'
+            }`} style={{ minHeight: isScrolled ? '64px' : '80px' }}>
+
+            {/* Left: Logo */}
+            <Link href="/" className="flex items-center shrink-0">
+              <Image
+                src="/logo.png"
+                alt="James Sax Corner"
+                width={280}
+                height={80}
+                className={`w-auto transition-all duration-300 ${isScrolled ? 'h-12 md:h-14' : 'h-14 md:h-16'
                   }`}
-                  priority
-                />
-                {/* Subtle glow on hover */}
-                <div className="absolute inset-0 bg-primary/0 group-hover:bg-primary/10 rounded-lg transition-colors duration-300" />
-              </div>
+                priority
+              />
             </Link>
 
-            {/* Desktop Navigation */}
-            <nav className="hidden items-center space-x-1 lg:flex">
-              <MegaMenu />
-            </nav>
-
-            {/* Right Side Actions */}
-            <div className="flex items-center gap-2 md:gap-4">
-              {/* Search */}
-              <div className="hidden md:block">
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  onClick={() => setIsSearchOpen(true)}
-                  aria-label="Search"
-                  className="relative text-secondary hover:text-primary hover:bg-primary/10 transition-all duration-300 group"
-                >
-                  <Search className="h-5 w-5 transition-transform group-hover:scale-110" />
-                  {/* Tooltip */}
-                  <span className="absolute -bottom-8 left-1/2 -translate-x-1/2 px-2 py-1 bg-secondary text-white text-xs rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none">
-                    Search
-                  </span>
-                </Button>
+            {/* Right: All navigation items */}
+            <div className="hidden lg:flex items-center gap-4">
+              {/* Social Icons */}
+              <div className="flex items-center gap-1.5 mr-2">
+                {[
+                  { href: 'https://facebook.com', icon: Facebook, label: 'Facebook' },
+                  { href: 'https://instagram.com', icon: Instagram, label: 'Instagram' },
+                  { href: 'https://youtube.com', icon: Youtube, label: 'YouTube' },
+                  { href: 'https://twitter.com', icon: Twitter, label: 'Twitter' },
+                ].map((social) => (
+                  <Link
+                    key={social.href}
+                    href={social.href}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="rounded-full bg-[#2c3e50]/20 p-1.5 hover:bg-[#2c3e50]/40 transition-all"
+                    aria-label={social.label}
+                  >
+                    <social.icon className="h-3.5 w-3.5 text-[#2c3e50]" />
+                  </Link>
+                ))}
               </div>
 
-              {/* Cart with animations */}
+              {/* Divider */}
+              <div className="h-6 w-px bg-[#2c3e50]/30" />
+
+              {/* Navigation Links */}
+              <nav className="flex items-center gap-4 text-sm font-medium">
+                <Link href="/account" className="flex items-center gap-1 text-[#2c3e50] hover:text-[#1a252f] transition-colors">
+                  <User className="h-4 w-4" />
+                  My Account
+                </Link>
+                <Link href="/about" className="text-[#2c3e50] hover:text-[#1a252f] transition-colors">
+                  About Us
+                </Link>
+                <Link href="/contact" className="text-[#2c3e50] hover:text-[#1a252f] transition-colors">
+                  Contact
+                </Link>
+                <Link href="/blog" className="text-[#2c3e50] hover:text-[#1a252f] transition-colors">
+                  Blog
+                </Link>
+              </nav>
+
+              {/* Divider */}
+              <div className="h-6 w-px bg-[#2c3e50]/30" />
+
+              {/* Search */}
               <Button
                 variant="ghost"
                 size="icon"
+                onClick={() => setIsSearchOpen(true)}
+                aria-label="Search"
+                className="text-[#2c3e50] hover:text-[#1a252f] hover:bg-[#2c3e50]/10"
+              >
+                <Search className="h-5 w-5" />
+              </Button>
+
+              {/* Cart */}
+              <Button
+                variant="ghost"
+                size="sm"
                 onClick={() => setIsCartOpen(true)}
-                className={`relative text-secondary hover:text-primary hover:bg-primary/10 transition-all duration-300 ${
-                  cartBounce ? 'animate-wiggle' : ''
-                }`}
+                className={`text-[#2c3e50] hover:text-[#1a252f] hover:bg-[#2c3e50]/10 ${cartBounce ? 'animate-wiggle' : ''
+                  }`}
                 aria-label="Shopping cart"
               >
-                <ShoppingCart className="h-5 w-5" />
+                <ShoppingCart className="h-5 w-5 mr-1" />
                 {itemCount > 0 && (
-                  <span className={`absolute -right-1 -top-1 flex h-5 w-5 items-center justify-center rounded-full bg-primary text-xs font-bold text-white shadow-lg transition-all duration-300 ${
-                    cartBounce ? 'scale-125' : 'scale-100'
-                  }`}>
+                  <span className="flex h-5 w-5 items-center justify-center rounded-full bg-[#2c3e50] text-xs font-bold text-white mr-1">
                     {itemCount > 9 ? '9+' : itemCount}
                   </span>
                 )}
-                <span className="ml-2 hidden text-sm font-semibold lg:inline text-secondary">
-                  ${subtotal.toFixed(0)}
-                </span>
+                <span className="font-semibold">Cart ${subtotal.toFixed(0)}</span>
               </Button>
 
-              {/* Call CTA with pulse effect */}
+              {/* Call Us Button */}
               <Button
                 size="sm"
-                className="hidden lg:flex bg-secondary hover:bg-secondary/90 group relative overflow-hidden"
+                className="bg-[#2c3e50] text-white hover:bg-[#1a252f] font-semibold"
                 onClick={() => {
                   setIsCalling(true)
                   setTimeout(() => {
@@ -145,74 +147,139 @@ export function Header() {
                 }}
                 disabled={isCalling}
               >
-                <span className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-700" />
                 {isCalling ? (
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                 ) : (
-                  <Phone className="mr-2 h-4 w-4 group-hover:animate-wiggle" />
+                  <Phone className="mr-2 h-4 w-4" />
                 )}
                 {isCalling ? 'Calling...' : 'Call Us'}
               </Button>
+            </div>
 
-              {/* Mobile Menu Toggle */}
+            {/* Mobile: Right side icons */}
+            <div className="flex lg:hidden items-center gap-2">
               <Button
                 variant="ghost"
                 size="icon"
-                className="lg:hidden text-secondary hover:text-primary hover:bg-primary/10"
+                onClick={() => setIsSearchOpen(true)}
+                className="text-[#2c3e50] hover:bg-[#2c3e50]/10"
+              >
+                <Search className="h-5 w-5" />
+              </Button>
+
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={() => setIsCartOpen(true)}
+                className="relative text-[#2c3e50] hover:bg-[#2c3e50]/10"
+              >
+                <ShoppingCart className="h-5 w-5" />
+                {itemCount > 0 && (
+                  <span className="absolute -right-1 -top-1 flex h-4 w-4 items-center justify-center rounded-full bg-[#2c3e50] text-xs font-bold text-white">
+                    {itemCount > 9 ? '9+' : itemCount}
+                  </span>
+                )}
+              </Button>
+
+              <Button
+                variant="ghost"
+                size="icon"
+                className="text-[#2c3e50] hover:bg-[#2c3e50]/10"
                 onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
                 aria-label="Menu"
               >
                 <div className="relative w-5 h-5">
-                  <Menu className={`absolute inset-0 h-5 w-5 transition-all duration-300 ${
-                    isMobileMenuOpen ? 'opacity-0 rotate-90' : 'opacity-100 rotate-0'
-                  }`} />
-                  <X className={`absolute inset-0 h-5 w-5 transition-all duration-300 ${
-                    isMobileMenuOpen ? 'opacity-100 rotate-0' : 'opacity-0 -rotate-90'
-                  }`} />
+                  <Menu className={`absolute inset-0 h-5 w-5 transition-all duration-300 ${isMobileMenuOpen ? 'opacity-0 rotate-90' : 'opacity-100 rotate-0'
+                    }`} />
+                  <X className={`absolute inset-0 h-5 w-5 transition-all duration-300 ${isMobileMenuOpen ? 'opacity-100 rotate-0' : 'opacity-0 -rotate-90'
+                    }`} />
                 </div>
               </Button>
             </div>
           </div>
 
-          {/* Mobile Menu with slide animation */}
-          <div className={`lg:hidden overflow-hidden transition-all duration-300 ease-in-out ${
-            isMobileMenuOpen ? 'max-h-[500px] opacity-100 border-t' : 'max-h-0 opacity-0'
-          }`}>
-            <div className="py-4">
-              <MegaMenu mobile />
-              
-              {/* Mobile-only actions */}
-              <div className="mt-4 pt-4 border-t flex flex-col gap-2">
-                <Button
-                  variant="outline"
-                  className="w-full justify-start"
-                  onClick={() => {
-                    setIsSearchOpen(true)
-                    setIsMobileMenuOpen(false)
-                  }}
-                >
-                  <Search className="mr-2 h-4 w-4" />
-                  Search Products
-                </Button>
-                <Button 
-                  className="w-full justify-start bg-secondary"
-                  onClick={() => {
-                    setIsCalling(true)
-                    setTimeout(() => {
-                      window.location.href = 'tel:+17025551234'
-                      setIsCalling(false)
-                    }, 100)
-                  }}
-                  disabled={isCalling}
-                >
-                  {isCalling ? (
-                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  ) : (
-                    <Phone className="mr-2 h-4 w-4" />
-                  )}
-                  {isCalling ? 'Calling...' : 'Call (702) 555-1234'}
-                </Button>
+          {/* Mobile Menu */}
+          <div className={`lg:hidden overflow-hidden transition-all duration-300 ease-in-out ${isMobileMenuOpen ? 'max-h-[400px] opacity-100 border-t border-[#2c3e50]/20' : 'max-h-0 opacity-0'
+            }`}>
+            <div className="py-4 space-y-3">
+              {/* Social Icons */}
+              <div className="flex items-center gap-2 pb-3 border-b border-[#2c3e50]/20">
+                {[
+                  { href: 'https://facebook.com', icon: Facebook, label: 'Facebook' },
+                  { href: 'https://instagram.com', icon: Instagram, label: 'Instagram' },
+                  { href: 'https://youtube.com', icon: Youtube, label: 'YouTube' },
+                  { href: 'https://twitter.com', icon: Twitter, label: 'Twitter' },
+                ].map((social) => (
+                  <Link
+                    key={social.href}
+                    href={social.href}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="rounded-full bg-[#2c3e50]/20 p-2 hover:bg-[#2c3e50]/40 transition-all"
+                    aria-label={social.label}
+                  >
+                    <social.icon className="h-4 w-4 text-[#2c3e50]" />
+                  </Link>
+                ))}
               </div>
+
+              {/* Nav Links */}
+              <Link
+                href="/account"
+                className="flex items-center gap-2 text-[#2c3e50] font-medium py-2"
+                onClick={() => setIsMobileMenuOpen(false)}
+              >
+                <User className="h-4 w-4" />
+                My Account
+              </Link>
+              <Link
+                href="/about"
+                className="block text-[#2c3e50] font-medium py-2"
+                onClick={() => setIsMobileMenuOpen(false)}
+              >
+                About Us
+              </Link>
+              <Link
+                href="/contact"
+                className="block text-[#2c3e50] font-medium py-2"
+                onClick={() => setIsMobileMenuOpen(false)}
+              >
+                Contact
+              </Link>
+              <Link
+                href="/blog"
+                className="block text-[#2c3e50] font-medium py-2"
+                onClick={() => setIsMobileMenuOpen(false)}
+              >
+                Blog
+              </Link>
+              <Link
+                href="/shop"
+                className="block text-[#2c3e50] font-medium py-2"
+                onClick={() => setIsMobileMenuOpen(false)}
+              >
+                Shop All Instruments
+              </Link>
+
+              {/* Call Button */}
+              <Button
+                className="w-full bg-[#2c3e50] text-white hover:bg-[#1a252f] font-semibold mt-2"
+                onClick={() => {
+                  setIsCalling(true)
+                  setTimeout(() => {
+                    window.location.href = 'tel:+17025551234'
+                    setIsCalling(false)
+                  }, 100)
+                }}
+                disabled={isCalling}
+              >
+                {isCalling ? (
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                ) : (
+                  <Phone className="mr-2 h-4 w-4" />
+                )}
+                {isCalling ? 'Calling...' : 'Call (702) 555-1234'}
+              </Button>
             </div>
           </div>
         </div>

@@ -2,9 +2,7 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
-import { ChevronLeft, ChevronRight, Loader2 } from 'lucide-react';
-import { useNavigationLoading } from '@/hooks/use-navigation-loading';
+import { ChevronLeft, ChevronRight } from 'lucide-react';
 
 interface PromoBanner {
     id: string;
@@ -23,8 +21,6 @@ export function PromoCarousel({ promos = [] }: PromoCarouselProps) {
     const [currentSlide, setCurrentSlide] = useState(0);
     const [isPaused, setIsPaused] = useState(false);
     const [isAnimating, setIsAnimating] = useState(false);
-    const router = useRouter();
-
     // If no promos, show empty state
     if (promos.length === 0) {
         return null;
@@ -56,7 +52,7 @@ export function PromoCarousel({ promos = [] }: PromoCarouselProps) {
 
     return (
         <div
-            className="bg-gradient-to-r from-secondary via-secondary to-secondary text-secondary-foreground relative overflow-hidden"
+            className="bg-[#2f3f4f] text-white relative overflow-hidden border-b border-black/10"
             onMouseEnter={() => setIsPaused(true)}
             onMouseLeave={() => setIsPaused(false)}
         >
@@ -70,7 +66,7 @@ export function PromoCarousel({ promos = [] }: PromoCarouselProps) {
             }} />
 
             <div className="container mx-auto px-4 relative">
-                <div className="relative flex h-14 items-center justify-center">
+                <div className="relative flex min-h-[48px] items-center justify-center py-2">
                     {/* Previous Button */}
                     <button
                         onClick={prevSlide}
@@ -83,20 +79,26 @@ export function PromoCarousel({ promos = [] }: PromoCarouselProps) {
                     {/* Slide Content with animation */}
                     <div 
                         key={currentSlide}
-                        className="flex items-center space-x-3 text-sm animate-fade-in-up"
+                        className="flex flex-wrap items-center justify-center gap-2 text-[11px] md:text-sm animate-fade-in-up text-center"
                         style={{ animationDuration: '0.4s' }}
                     >
-                        <span className="font-semibold font-display tracking-wide">{slide.title}</span>
-                        <span className="hidden md:block text-secondary-foreground/80 font-body">
+                        <span className="font-semibold font-display uppercase tracking-[0.22em] text-[#D4AF37]">
+                            {slide.title}
+                        </span>
+                        <span className="hidden md:inline text-white/50">-</span>
+                        <span className="hidden md:inline text-white/85 font-body">
+                            {slide.description}
+                        </span>
+                        <span className="md:hidden text-white/85 font-body">
                             {slide.description}
                         </span>
                         {slide.ctaLink && (
                             <Link
                                 href={slide.ctaLink}
-                                className="font-medium underline-animate relative after:bg-accent hover:text-accent transition-colors duration-300 flex items-center gap-1"
+                                className="rounded-full border border-[#D4AF37] px-3 py-1 text-[10px] font-semibold uppercase tracking-widest text-[#D4AF37] hover:bg-[#D4AF37] hover:text-[#2c3e50] transition-colors duration-300"
                                 prefetch={true}
                             >
-                                {slide.ctaText} →
+                                {slide.ctaText}
                             </Link>
                         )}
                     </div>
@@ -118,8 +120,8 @@ export function PromoCarousel({ promos = [] }: PromoCarouselProps) {
                                 onClick={() => !isAnimating && setCurrentSlide(index)}
                                 className={`h-1.5 rounded-full transition-all duration-500 ${
                                     index === currentSlide
-                                        ? 'bg-accent w-6'
-                                        : 'bg-secondary-foreground/30 w-3 hover:bg-secondary-foreground/50'
+                                        ? 'bg-[#D4AF37] w-6'
+                                        : 'bg-white/30 w-3 hover:bg-white/50'
                                 }`}
                                 aria-label={`Go to promotion ${index + 1}`}
                             />

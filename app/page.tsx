@@ -5,11 +5,18 @@ import Link from 'next/link'
 import Image from 'next/image'
 import { Button } from '@/components/ui/button'
 import { ProductCard } from '@/components/product/ProductCard'
-import { getProducts, getPromoBanners, getCategories, transformProduct, transformCategory } from '@/lib/api'
+import { getProducts, getCategories, transformProduct, transformCategory } from '@/lib/api'
 import type { Product } from '@/lib/data'
 import { Phone, Shield, Truck, CreditCard, Award, Headphones, Music, ChevronRight, ChevronLeft, Star, Sparkles } from 'lucide-react'
-import { PromoCarousel } from '@/components/site/PromoCarousel'
 import { reviews, type Review } from '@/lib/reviews'
+
+const getReviewExcerpt = (message: string, maxLength = 160) => {
+  if (message.length <= maxLength) return message
+  const trimmed = message.slice(0, maxLength)
+  const lastSpace = trimmed.lastIndexOf(' ')
+  const safeCut = lastSpace > 0 ? trimmed.slice(0, lastSpace) : trimmed
+  return `${safeCut.trim()}...`
+}
 
 // ============ REVIEWS CAROUSEL COMPONENT ============
 interface ReviewsCarouselProps {
@@ -20,13 +27,13 @@ function ReviewsCarousel({ reviews }: ReviewsCarouselProps) {
   const [currentIndex, setCurrentIndex] = useState(0)
   const [isPaused, setIsPaused] = useState(false)
   const intervalRef = useRef<NodeJS.Timeout | null>(null)
-  
+
   // Show 4 reviews at a time
   const reviewsPerView = 4
-  
+
   useEffect(() => {
     if (reviews.length === 0 || isPaused) return
-    
+
     intervalRef.current = setInterval(() => {
       setCurrentIndex((prev) => {
         // Calculate next index - loop through all reviews
@@ -37,16 +44,16 @@ function ReviewsCarousel({ reviews }: ReviewsCarouselProps) {
         return nextIndex
       })
     }, 4000) // Change every 4 seconds
-    
+
     return () => {
       if (intervalRef.current) {
         clearInterval(intervalRef.current)
       }
     }
   }, [reviews.length, isPaused])
-  
+
   if (reviews.length === 0) return null
-  
+
   // Get reviews to display - create circular array
   const getDisplayReviews = () => {
     const display: Review[] = []
@@ -56,11 +63,11 @@ function ReviewsCarousel({ reviews }: ReviewsCarouselProps) {
     }
     return display
   }
-  
+
   const displayReviews = getDisplayReviews()
-  
+
   return (
-    <div 
+    <div
       className="relative"
       onMouseEnter={() => setIsPaused(true)}
       onMouseLeave={() => setIsPaused(false)}
@@ -76,25 +83,24 @@ function ReviewsCarousel({ reviews }: ReviewsCarouselProps) {
               {[...Array(5)].map((_, i) => (
                 <Star
                   key={i}
-                  className={`h-4 w-4 ${
-                    i < review.rating
-                      ? 'fill-amber-400 text-amber-400'
-                      : 'fill-gray-200 text-gray-200'
-                  }`}
+                  className={`h-4 w-4 ${i < review.rating
+                    ? 'fill-amber-400 text-amber-400'
+                    : 'fill-gray-200 text-gray-200'
+                    }`}
                 />
               ))}
             </div>
-            <p className="text-gray-700 mb-4 text-sm leading-relaxed line-clamp-4">
-              "{review.message || 'Great experience!'}"
+            <p className="text-gray-700 mb-4 text-sm leading-relaxed">
+              "{getReviewExcerpt(review.message || 'Great experience!', 140)}"
             </p>
             <div className="flex items-center justify-between pt-4 border-t border-gray-100">
               <div>
                 <p className="font-semibold text-secondary text-sm">{review.buyerName}</p>
                 <p className="text-xs text-muted-foreground">
-                  {new Date(review.date).toLocaleDateString('en-US', { 
-                    year: 'numeric', 
-                    month: 'short', 
-                    day: 'numeric' 
+                  {new Date(review.date).toLocaleDateString('en-US', {
+                    year: 'numeric',
+                    month: 'short',
+                    day: 'numeric'
                   })}
                 </p>
               </div>
@@ -103,7 +109,7 @@ function ReviewsCarousel({ reviews }: ReviewsCarouselProps) {
           </div>
         ))}
       </div>
-      
+
       {/* View All Reviews Button */}
       <div className="mt-10 text-center animate-fade-in-up" style={{ animationDelay: '0.4s' }}>
         <Button
@@ -135,27 +141,27 @@ function InfiniteCarousel({ products, id, speed = 100 }: InfiniteCarouselProps) 
   const containerRef = useRef<HTMLDivElement>(null)
   const animationRef = useRef<number | null>(null)
   const lastTimeRef = useRef<number>(0)
-  
+
   // Card width + gap
   const cardWidth = 320
   const gap = 24
   const itemWidth = cardWidth + gap
   const totalWidth = products.length * itemWidth
-  
+
   // Animation loop using requestAnimationFrame
   useEffect(() => {
     if (products.length === 0) return
-    
+
     // speed is now passed as prop
-    
+
     const animate = (currentTime: number) => {
       if (!lastTimeRef.current) {
         lastTimeRef.current = currentTime
       }
-      
+
       const deltaTime = currentTime - lastTimeRef.current
       lastTimeRef.current = currentTime
-      
+
       if (!isPaused) {
         setOffset(prev => {
           const newOffset = prev + (speed * deltaTime) / 1000
@@ -166,19 +172,19 @@ function InfiniteCarousel({ products, id, speed = 100 }: InfiniteCarouselProps) 
           return newOffset
         })
       }
-      
+
       animationRef.current = requestAnimationFrame(animate)
     }
-    
+
     animationRef.current = requestAnimationFrame(animate)
-    
+
     return () => {
       if (animationRef.current) {
         cancelAnimationFrame(animationRef.current)
       }
     }
   }, [products.length, isPaused, totalWidth, speed])
-  
+
   // Manual scroll functions
   const scroll = (direction: 'left' | 'right') => {
     const scrollAmount = cardWidth
@@ -192,14 +198,14 @@ function InfiniteCarousel({ products, id, speed = 100 }: InfiniteCarouselProps) 
       }
     })
   }
-  
+
   // Triple the products for seamless loop
   const tripleProducts = [...products, ...products, ...products]
-  
+
   if (products.length === 0) return null
-  
+
   return (
-    <div 
+    <div
       className="relative"
       onMouseEnter={() => setIsPaused(true)}
       onMouseLeave={() => setIsPaused(false)}
@@ -207,7 +213,7 @@ function InfiniteCarousel({ products, id, speed = 100 }: InfiniteCarouselProps) 
       {/* Overflow container */}
       <div className="overflow-hidden" ref={containerRef}>
         {/* Moving track */}
-        <div 
+        <div
           className="flex gap-6"
           style={{
             transform: `translateX(-${offset}px)`,
@@ -215,7 +221,7 @@ function InfiniteCarousel({ products, id, speed = 100 }: InfiniteCarouselProps) 
           }}
         >
           {tripleProducts.map((product, index) => (
-            <div 
+            <div
               key={`${id}-${product.id}-${index}`}
               className="flex-shrink-0"
               style={{ width: `${cardWidth}px` }}
@@ -251,7 +257,6 @@ function InfiniteCarousel({ products, id, speed = 100 }: InfiniteCarouselProps) 
 export default function HomePage() {
   const [featuredProducts, setFeaturedProducts] = useState<Product[]>([])
   const [saleProducts, setSaleProducts] = useState<Product[]>([])
-  const [promoBanners, setPromoBanners] = useState<any[]>([])
   const [categories, setCategories] = useState<any[]>([])
   const [categoryCounts, setCategoryCounts] = useState<Record<string, number>>({})
   const [subcategories, setSubcategories] = useState<any[]>([])
@@ -270,16 +275,13 @@ export default function HomePage() {
         const comingSoon = comingSoonResponse.products.map(transformProduct)
         setSaleProducts(comingSoon)
 
-        const promos = await getPromoBanners()
-        setPromoBanners(promos)
-
         const categoriesData = await getCategories()
         const transformedCategories = categoriesData.map(transformCategory)
         setCategories(transformedCategories)
-        
+
         // Set loading to false early so page can render - critical data is loaded
         setIsLoading(false)
-        
+
         // Extract all subcategories with products
         const allSubcategories: any[] = []
         transformedCategories.forEach(cat => {
@@ -289,7 +291,7 @@ export default function HomePage() {
             })
           }
         })
-        
+
         // Fetch product counts in background (non-blocking) - optimized: fetch in parallel and use count API
         Promise.all([
           // Fetch subcategory counts in parallel
@@ -325,11 +327,11 @@ export default function HomePage() {
           subcategoryCountResults.forEach(result => {
             subcategoryCounts[result.slug] = result.count
           })
-          
+
           // Filter subcategories that have products
           const subcategoriesWithProducts = allSubcategories.filter(sub => (subcategoryCounts[sub.slug] || 0) > 0)
           setSubcategories(subcategoriesWithProducts)
-          
+
           const counts: Record<string, number> = {}
           categoryCountResults.forEach(result => {
             counts[result.slug] = result.count
@@ -345,7 +347,7 @@ export default function HomePage() {
     }
     fetchData()
   }, [])
-  
+
   if (isLoading) {
     return (
       <div className="flex items-center justify-center min-h-screen">
@@ -359,11 +361,8 @@ export default function HomePage() {
 
   return (
     <div className="space-y-0 page-content">
-      {/* Promo Carousel */}
-      <PromoCarousel promos={promoBanners} />
-
       {/* Hero Section - Vintage Classic Style */}
-      <section className="relative min-h-[400px] md:min-h-[500px] lg:min-h-[600px] overflow-hidden bg-gradient-to-br from-primary via-primary/95 to-primary/90">
+      <section className="relative min-h-[320px] md:min-h-[420px] lg:min-h-[480px] overflow-hidden bg-gradient-to-br from-primary via-primary/95 to-primary/90">
         {/* Animated Vintage Pattern Background */}
         <div className="absolute inset-0 opacity-10">
           <div className="absolute inset-0 animate-pulse-soft" style={{
@@ -381,20 +380,20 @@ export default function HomePage() {
         <div className="absolute top-0 left-0 right-0 h-2 bg-secondary opacity-40" />
         <div className="absolute top-3 left-0 right-0 h-0.5 bg-secondary opacity-20" />
 
-        <div className="container relative mx-auto flex min-h-[400px] md:min-h-[500px] lg:min-h-[600px] items-center px-4 py-8 md:py-12 lg:py-16">
-          <div className="max-w-3xl space-y-4 md:space-y-6">
+        <div className="container relative mx-auto flex min-h-[320px] md:min-h-[420px] lg:min-h-[480px] items-center px-4 py-6 md:py-10 lg:py-12">
+          <div className="max-w-3xl space-y-3 md:space-y-5">
             {/* Vintage Badge with animation */}
             <div className="hero-title inline-flex items-center space-x-1.5 md:space-x-2 rounded border-2 border-secondary/30 bg-secondary/10 px-3 py-1.5 md:px-4 md:py-2 backdrop-blur-sm">
               <Music className="h-3.5 w-3.5 md:h-4 md:w-4 text-secondary animate-bounce-soft" />
               <span className="text-xs md:text-sm font-medium tracking-widest uppercase text-secondary">
-                Est. 1985 • Family Owned
+                Premium Wind Instruments
               </span>
             </div>
 
             {/* Classic Typography with stagger animation */}
-            <h1 className="hero-subtitle text-3xl md:text-5xl lg:text-6xl xl:text-7xl font-bold leading-tight text-secondary tracking-tight">
-              <span className="block">James Sax</span>
-              <span className="block text-white/90">Corner</span>
+            <h1 className="hero-subtitle font-elegant uppercase text-3xl md:text-5xl lg:text-6xl xl:text-7xl font-semibold leading-[0.9] tracking-[0.32em] md:tracking-[0.36em]">
+              <span className="block text-[#6b5b32]">James Sax</span>
+              <span className="block text-[#6b5b32] tracking-[0.24em] md:tracking-[0.28em]">Corner</span>
             </h1>
 
             {/* Decorative Divider with animation */}
@@ -409,23 +408,10 @@ export default function HomePage() {
             </p>
 
             <p className="hero-cta text-lg leading-relaxed text-secondary/80 max-w-2xl">
-              Specializing in premium saxophones from Yamaha, Yanagisawa, and Selmer. 
-              We offer 28 carefully selected instruments, each professionally set up and ready to play. 
-              From vintage classics to modern professional models – find your perfect horn with us.
+              Premium Japanese saxophones, expertly maintained for peak performance. Trusted by musicians worldwide, backed by outstanding reviews. Unmatched customer service—your satisfaction comes first! Buy with confidence.
             </p>
 
-            <p className="hero-cta text-base font-medium text-accent flex items-center gap-2" style={{ animationDelay: '0.7s' }}>
-              <Phone className="h-5 w-5 animate-wiggle" style={{ animationDuration: '2s' }} />
-              You Have Questions – We Have Answers – Give Us A Call!
-            </p>
-
-            <div className="hero-cta flex flex-wrap gap-4 pt-4" style={{ animationDelay: '0.8s' }}>
-              <Button size="lg" className="bg-secondary hover:bg-secondary/90 text-white font-semibold tracking-wide hover:scale-105 transition-transform shadow-xl hover:shadow-2xl" asChild>
-                <Link href="tel:+17025551234">
-                  <Phone className="mr-2 h-5 w-5" />
-                  (702) 555-1234
-                </Link>
-              </Button>
+            <div className="hero-cta flex flex-wrap gap-4 pt-3 md:pt-4" style={{ animationDelay: '0.8s' }}>
               <Button size="lg" variant="outline" className="border-2 border-secondary text-secondary hover:bg-secondary hover:text-white group" asChild>
                 <Link href="/shop" className="flex items-center">
                   Explore Collection
@@ -442,7 +428,7 @@ export default function HomePage() {
       </section>
 
       {/* Trust Strip - Classic Style with animations */}
-      <section className="border-y-2 border-primary/30 bg-white py-10">
+      <section className="border-y-2 border-primary/30 bg-white py-10 hidden" aria-hidden="true">
         <div className="container mx-auto px-4">
           <div className="grid grid-cols-2 gap-6 md:grid-cols-4">
             {[
@@ -451,8 +437,8 @@ export default function HomePage() {
               { icon: Truck, title: 'Free Shipping', desc: 'On orders over $500', delay: 0.2 },
               { icon: CreditCard, title: 'Financing', desc: '0% APR available', delay: 0.3 },
             ].map((item, i) => (
-              <div 
-                key={i} 
+              <div
+                key={i}
                 className="flex flex-col items-center text-center space-y-3 p-4 rounded-xl hover:bg-primary/5 transition-all duration-300 hover:shadow-lg group animate-fade-in-up"
                 style={{ animationDelay: `${item.delay}s` }}
               >
@@ -478,9 +464,6 @@ export default function HomePage() {
             <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold text-secondary mb-4">
               What Our Customers Say
             </h2>
-            <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-              Verified reviews from satisfied customers. All reviews are 5-star rated!
-            </p>
             <div className="flex items-center justify-center gap-2 mt-4">
               <div className="flex">
                 {[...Array(5)].map((_, i) => (
@@ -500,20 +483,14 @@ export default function HomePage() {
       {saleProducts.length > 0 && (
         <section className="container mx-auto px-4 py-16">
           <div className="mb-10 text-center animate-fade-in-up">
-            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-blue-500 text-white text-sm font-medium mb-4 animate-pulse-soft">
-              📦 Arriving Soon
-            </div>
             <h2 className="text-3xl md:text-4xl font-bold text-secondary">Coming Soon</h2>
             <div className="mt-3 flex items-center justify-center space-x-4">
               <div className="h-px w-16 bg-gradient-to-r from-transparent to-primary" />
               <span className="text-2xl text-primary">♫</span>
               <div className="h-px w-16 bg-gradient-to-l from-transparent to-primary" />
             </div>
-            <p className="mt-4 text-muted-foreground max-w-xl mx-auto">
-              6 premium instruments arriving soon. Reserve yours today!
-            </p>
           </div>
-          
+
           {/* Auto-scrolling Coming Soon Products Carousel - SAME STYLE AS FEATURED */}
           <InfiniteCarousel products={saleProducts} id="coming-soon" speed={150} />
         </section>
@@ -522,31 +499,23 @@ export default function HomePage() {
       {/* Featured Products - New Arrivals */}
       <section className="container mx-auto px-4 py-16">
         <div className="mb-10 text-center animate-fade-in-up">
-          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary/10 text-primary text-sm font-medium mb-4">
-            <Sparkles className="h-4 w-4" />
-            Just Arrived
-          </div>
           <h2 className="text-3xl md:text-4xl font-bold text-secondary">Featured Instruments</h2>
           <div className="mt-3 flex items-center justify-center space-x-4">
             <div className="h-px w-16 bg-gradient-to-r from-transparent to-primary" />
             <span className="text-2xl text-primary">♫</span>
             <div className="h-px w-16 bg-gradient-to-l from-transparent to-primary" />
           </div>
-          <p className="mt-4 text-muted-foreground max-w-xl mx-auto">
-            Explore our collection of 22 premium saxophones from Yamaha, Yanagisawa, and Selmer. 
-            Each instrument is professionally set up and ready to play.
-          </p>
         </div>
-        
+
         {/* Auto-scrolling Product Carousel - CONTINUOUS INFINITE SCROLL */}
         <InfiniteCarousel products={featuredProducts} id="featured" speed={150} />
-        
+
         {/* View All Button */}
         <div className="mt-10 text-center">
-          <Button 
-            variant="outline" 
-            size="lg" 
-            className="border-2 border-secondary bg-white text-secondary hover:bg-secondary hover:text-white group px-8 shadow-lg" 
+          <Button
+            variant="outline"
+            size="lg"
+            className="border-2 border-secondary bg-white text-secondary hover:bg-secondary hover:text-white group px-8 shadow-lg"
             asChild
           >
             <Link href="/shop" className="flex items-center">
@@ -567,58 +536,56 @@ export default function HomePage() {
               <span className="text-2xl text-primary">🎷</span>
               <div className="h-px w-16 bg-gradient-to-l from-transparent to-primary" />
             </div>
-            <p className="mt-4 text-muted-foreground max-w-xl mx-auto">
-              Browse our collection by instrument type
-            </p>
           </div>
 
           <div className="w-full px-4 md:px-6 lg:px-8">
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-5 lg:gap-6 w-full">
               {subcategories.map((sub, i) => {
                 const totalCount = categoryCounts[sub.slug] || 0
-                
+
                 // Remove "Saxophones" from display name
                 const displayName = sub.name.replace(/\s+Saxophones?/gi, '')
-                
+
                 return (
-                <Link 
-                  key={sub.slug}
-                  href={`/shop?subcategory=${sub.slug}`}
-                  className="group relative overflow-hidden rounded-2xl bg-secondary border border-secondary/80 transition-all duration-300 hover:shadow-xl hover:bg-secondary/90 hover:scale-[1.02] animate-fade-in-up"
-                  style={{ animationDelay: `${0.1 * i}s` }}
-                >
-                  {/* Horizontal layout container - icon left, text right */}
-                  <div className="relative z-10 flex flex-row items-center p-5 md:p-6 lg:p-8 h-full min-h-[120px] md:min-h-[140px]">
-                    {/* Left section - Small golden saxophone icon */}
-                    <div className="flex-shrink-0 mr-4 md:mr-5 lg:mr-6 flex items-center justify-center">
-                      <div className="relative w-12 h-12 md:w-14 md:h-14 lg:w-16 lg:h-16 flex items-center justify-center transition-all duration-300 scale-110 group-hover:scale-125">
-                        <Image
-                          src="/saxophone-icon.svg"
-                          alt="Saxophone"
-                          width={64}
-                          height={64}
-                          className="w-full h-full"
-                          style={{ filter: 'brightness(0) saturate(100%) invert(69%) sepia(96%) saturate(1467%) hue-rotate(3deg) brightness(104%) contrast(95%)' }}
-                        />
+                  <Link
+                    key={sub.slug}
+                    href={`/shop?subcategory=${sub.slug}`}
+                    className="group relative overflow-hidden rounded-2xl bg-secondary border border-secondary/80 transition-all duration-300 hover:shadow-xl hover:bg-secondary/90 hover:scale-[1.02] animate-fade-in-up"
+                    style={{ animationDelay: `${0.1 * i}s` }}
+                  >
+                    {/* Horizontal layout container - icon left, text right */}
+                    <div className="relative z-10 flex flex-row items-center p-5 md:p-6 lg:p-8 h-full min-h-[120px] md:min-h-[140px]">
+                      {/* Left section - Small golden saxophone icon */}
+                      <div className="flex-shrink-0 mr-4 md:mr-5 lg:mr-6 flex items-center justify-center">
+                        <div className="relative w-12 h-12 md:w-14 md:h-14 lg:w-16 lg:h-16 flex items-center justify-center transition-all duration-300 scale-110 group-hover:scale-125">
+                          <Image
+                            src="/saxophone-icon.svg"
+                            alt="Saxophone"
+                            width={64}
+                            height={64}
+                            className="w-full h-full"
+                            style={{ filter: 'brightness(0) saturate(100%) invert(69%) sepia(96%) saturate(1467%) hue-rotate(3deg) brightness(104%) contrast(95%)' }}
+                          />
+                        </div>
+                      </div>
+
+                      {/* Right section - Category info (white text) */}
+                      <div className="flex-1 flex flex-col justify-center space-y-1 md:space-y-1.5">
+                        <h3 className="text-lg md:text-xl lg:text-2xl font-bold text-white group-hover:text-accent transition-colors duration-300 leading-tight">
+                          {displayName}
+                        </h3>
+                        <p className="text-sm md:text-base text-white/80 font-medium">
+                          {totalCount} {totalCount === 1 ? 'Product' : 'Products'}
+                        </p>
                       </div>
                     </div>
-                    
-                    {/* Right section - Category info (white text) */}
-                    <div className="flex-1 flex flex-col justify-center space-y-1 md:space-y-1.5">
-                      <h3 className="text-lg md:text-xl lg:text-2xl font-bold text-white group-hover:text-accent transition-colors duration-300 leading-tight">
-                        {displayName}
-                      </h3>
-                      <p className="text-sm md:text-base text-white/80 font-medium">
-                        {totalCount} {totalCount === 1 ? 'Product' : 'Products'}
-                      </p>
-                    </div>
-                  </div>
-                </Link>
-              )})}
-              
+                  </Link>
+                )
+              })}
+
               {/* Add Baritone category if not exists in subcategories */}
               {!subcategories.find(s => s.slug.includes('baritone') || s.name.toLowerCase().includes('baritone')) && (
-                <Link 
+                <Link
                   href="/shop?subcategory=baritone-saxophones"
                   className="group relative overflow-hidden rounded-2xl bg-secondary border border-secondary/80 transition-all duration-300 hover:shadow-xl hover:bg-secondary/90 hover:scale-[1.02] animate-fade-in-up"
                   style={{ animationDelay: `${0.1 * subcategories.length}s` }}
@@ -638,7 +605,7 @@ export default function HomePage() {
                         />
                       </div>
                     </div>
-                    
+
                     {/* Right section - Category info (white text) */}
                     <div className="flex-1 flex flex-col justify-center space-y-1 md:space-y-1.5">
                       <h3 className="text-lg md:text-xl lg:text-2xl font-bold text-white group-hover:text-accent transition-colors duration-300 leading-tight">
@@ -682,7 +649,7 @@ export default function HomePage() {
                   </div>
                 ))}
               </div>
-              
+
               {/* Featured Review Card */}
               <div className="bg-gradient-to-br from-primary/10 to-primary/5 rounded-3xl p-6 md:p-8 text-center">
                 <div className="flex justify-center mb-4">
@@ -696,121 +663,119 @@ export default function HomePage() {
                 <div className="font-semibold text-secondary">— {reviews.find(r => r.id === '2')?.buyerName || 'Zach E.'}</div>
               </div>
             </div>
-            
+
             <div className="animate-fade-in-right flex flex-col">
               <h3 className="text-2xl md:text-3xl font-bold text-secondary mb-6">More Customer Reviews</h3>
               <div className="space-y-4">
-              {reviews.slice(currentReviewIndex, currentReviewIndex + 4).map((review) => (
-                <div key={review.id} className="bg-white rounded-xl p-5 border border-gray-200 hover:shadow-md transition-shadow">
-                  <div className="flex items-center gap-1 mb-2">
-                    {[...Array(5)].map((_, i) => (
-                      <Star
-                        key={i}
-                        className={`h-3.5 w-3.5 ${
-                          i < review.rating
+                {reviews.slice(currentReviewIndex, currentReviewIndex + 4).map((review) => (
+                  <div key={review.id} className="bg-white rounded-xl p-5 border border-gray-200 hover:shadow-md transition-shadow">
+                    <div className="flex items-center gap-1 mb-2">
+                      {[...Array(5)].map((_, i) => (
+                        <Star
+                          key={i}
+                          className={`h-3.5 w-3.5 ${i < review.rating
                             ? 'fill-amber-400 text-amber-400'
                             : 'fill-gray-200 text-gray-200'
-                        }`}
-                      />
-                    ))}
+                            }`}
+                        />
+                      ))}
+                    </div>
+                    <p className="text-sm text-gray-700 mb-3">
+                      &ldquo;{review.message || 'Great experience!'}&rdquo;
+                    </p>
+                    <div className="flex items-center justify-between">
+                      <span className="text-xs font-semibold text-secondary">{review.buyerName}</span>
+                      <span className="text-xs text-muted-foreground">
+                        {new Date(review.date).toLocaleDateString('en-US', { month: 'short', year: 'numeric' })}
+                      </span>
+                    </div>
                   </div>
-                  <p className="text-sm text-gray-700 mb-3 line-clamp-3">
-                    &ldquo;{review.message || 'Great experience!'}&rdquo;
-                  </p>
-                  <div className="flex items-center justify-between">
-                    <span className="text-xs font-semibold text-secondary">{review.buyerName}</span>
-                    <span className="text-xs text-muted-foreground">
-                      {new Date(review.date).toLocaleDateString('en-US', { month: 'short', year: 'numeric' })}
-                    </span>
-                  </div>
-                </div>
-              ))}
+                ))}
               </div>
-              
+
               {/* Pagination */}
               <div className="mt-6">
-              {(() => {
-                const reviewsPerPage = 4
-                const totalPages = Math.ceil(reviews.length / reviewsPerPage)
-                const currentPage = Math.floor(currentReviewIndex / reviewsPerPage) + 1
-                
-                const getPageNumbers = () => {
-                  const pages: number[] = []
-                  const maxPages = 5
-                  
-                  if (totalPages <= maxPages) {
-                    for (let i = 1; i <= totalPages; i++) {
-                      pages.push(i)
-                    }
-                  } else {
-                    let start = Math.max(1, currentPage - 2)
-                    let end = Math.min(totalPages, currentPage + 2)
-                    
-                    if (end - start < 4) {
-                      if (start === 1) {
-                        end = Math.min(totalPages, start + 4)
-                      } else if (end === totalPages) {
-                        start = Math.max(1, end - 4)
+                {(() => {
+                  const reviewsPerPage = 4
+                  const totalPages = Math.ceil(reviews.length / reviewsPerPage)
+                  const currentPage = Math.floor(currentReviewIndex / reviewsPerPage) + 1
+
+                  const getPageNumbers = () => {
+                    const pages: number[] = []
+                    const maxPages = 5
+
+                    if (totalPages <= maxPages) {
+                      for (let i = 1; i <= totalPages; i++) {
+                        pages.push(i)
+                      }
+                    } else {
+                      let start = Math.max(1, currentPage - 2)
+                      let end = Math.min(totalPages, currentPage + 2)
+
+                      if (end - start < 4) {
+                        if (start === 1) {
+                          end = Math.min(totalPages, start + 4)
+                        } else if (end === totalPages) {
+                          start = Math.max(1, end - 4)
+                        }
+                      }
+
+                      for (let i = start; i <= end; i++) {
+                        pages.push(i)
                       }
                     }
-                    
-                    for (let i = start; i <= end; i++) {
-                      pages.push(i)
-                    }
+
+                    return pages
                   }
-                  
-                  return pages
-                }
-                
-                const pageNumbers = getPageNumbers()
-                const canGoPrev = currentPage > 1
-                const canGoNext = currentPage < totalPages
-                
-                return (
-                  <div className="pt-4 flex items-center justify-center gap-2 flex-wrap">
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      className="h-8 px-3"
-                      onClick={() => setCurrentReviewIndex(Math.max(0, currentReviewIndex - reviewsPerPage))}
-                      disabled={!canGoPrev}
-                    >
-                      <ChevronLeft className="h-4 w-4 mr-1" />
-                      Prev
-                    </Button>
-                    
-                    {pageNumbers.map((page) => {
-                      const isActive = currentPage === page
-                      return (
-                        <Button
-                          key={page}
-                          variant={isActive ? "default" : "outline"}
-                          size="sm"
-                          className={`h-8 min-w-[32px] px-3 ${
-                            isActive 
-                              ? 'bg-primary text-white hover:bg-primary/90' 
+
+                  const pageNumbers = getPageNumbers()
+                  const canGoPrev = currentPage > 1
+                  const canGoNext = currentPage < totalPages
+
+                  return (
+                    <div className="pt-4 flex items-center justify-center gap-2 flex-wrap">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className="h-8 px-3"
+                        onClick={() => setCurrentReviewIndex(Math.max(0, currentReviewIndex - reviewsPerPage))}
+                        disabled={!canGoPrev}
+                      >
+                        <ChevronLeft className="h-4 w-4 mr-1" />
+                        Prev
+                      </Button>
+
+                      {pageNumbers.map((page) => {
+                        const isActive = currentPage === page
+                        return (
+                          <Button
+                            key={page}
+                            variant={isActive ? "default" : "outline"}
+                            size="sm"
+                            className={`h-8 min-w-[32px] px-3 ${isActive
+                              ? 'bg-primary text-white hover:bg-primary/90'
                               : 'hover:bg-primary/5 hover:border-primary/30'
-                          } transition-all`}
-                          onClick={() => setCurrentReviewIndex((page - 1) * reviewsPerPage)}
-                        >
-                          {page}
-                        </Button>
-                      )
-                    })}
-                    
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      className="h-8 px-3"
-                      onClick={() => setCurrentReviewIndex(Math.min(reviews.length - reviewsPerPage, currentReviewIndex + reviewsPerPage))}
-                      disabled={!canGoNext}
-                    >
-                      Next
-                      <ChevronRight className="h-4 w-4 ml-1" />
-                    </Button>
-                  </div>
-                )
-              })()}
+                              } transition-all`}
+                            onClick={() => setCurrentReviewIndex((page - 1) * reviewsPerPage)}
+                          >
+                            {page}
+                          </Button>
+                        )
+                      })}
+
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className="h-8 px-3"
+                        onClick={() => setCurrentReviewIndex(Math.min(reviews.length - reviewsPerPage, currentReviewIndex + reviewsPerPage))}
+                        disabled={!canGoNext}
+                      >
+                        Next
+                        <ChevronRight className="h-4 w-4 ml-1" />
+                      </Button>
+                    </div>
+                  )
+                })()}
               </div>
             </div>
           </div>
@@ -829,7 +794,7 @@ export default function HomePage() {
               </h3>
               <p className="text-white/80 mt-1">Get exclusive deals, tips, and industry news</p>
             </div>
-            <form 
+            <form
               onSubmit={(e) => {
                 e.preventDefault()
                 const formData = new FormData(e.currentTarget)
@@ -839,7 +804,7 @@ export default function HomePage() {
                   alert('Thank you for subscribing!')
                   e.currentTarget.reset()
                 }
-              }} 
+              }}
               className="flex gap-2 w-full md:w-auto"
             >
               <input
@@ -849,7 +814,7 @@ export default function HomePage() {
                 className="bg-white/20 border border-white/30 placeholder:text-white/60 text-white min-w-[250px] px-4 py-2 rounded-md focus:bg-white/30 focus:outline-none focus:ring-2 focus:ring-white/50 transition-all"
                 required
               />
-              <Button 
+              <Button
                 type="submit"
                 className="bg-secondary hover:bg-secondary/90 text-white px-6 transition-all duration-300"
               >
@@ -858,47 +823,6 @@ export default function HomePage() {
                 </span>
               </Button>
             </form>
-          </div>
-        </div>
-      </section>
-
-      {/* Call to Action - Vintage Style */}
-      <section className="relative bg-secondary py-20 text-white overflow-hidden">
-        {/* Decorative Pattern */}
-        <div className="absolute inset-0 opacity-5">
-          <div className="absolute inset-0" style={{
-            backgroundImage: `url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.3'%3E%3Ccircle cx='30' cy='30' r='4'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")`,
-          }} />
-        </div>
-
-        {/* Floating elements */}
-        <div className="absolute top-10 left-10 text-4xl text-white/10 animate-float">♪</div>
-        <div className="absolute bottom-10 right-10 text-5xl text-white/10 animate-float" style={{ animationDelay: '1s' }}>♫</div>
-
-        <div className="container relative mx-auto px-4 text-center">
-          <h2 className="mb-4 text-3xl font-bold md:text-5xl animate-fade-in-up">
-            Need Help Choosing the Right Instrument?
-          </h2>
-          <div className="mt-4 mb-8 flex items-center justify-center space-x-4">
-            <div className="h-px w-16 bg-white/30" />
-            <span className="text-accent text-xl">★</span>
-            <div className="h-px w-16 bg-white/30" />
-          </div>
-          <p className="mx-auto mb-10 max-w-2xl text-xl text-white/90 animate-fade-in-up" style={{ animationDelay: '0.2s' }}>
-            Browse our collection of 28 premium instruments from Yamaha, Yanagisawa, and Selmer.
-            Our team of professional musicians is ready to help you find the perfect saxophone.
-            With decades of experience, we'll guide you to the horn that matches your sound and budget.
-          </p>
-          <div className="flex flex-wrap justify-center gap-4 animate-fade-in-up" style={{ animationDelay: '0.4s' }}>
-            <Button size="lg" className="bg-primary hover:bg-primary/90 text-white font-semibold text-lg px-8 hover:scale-105 transition-transform shadow-xl" asChild>
-              <Link href="tel:+17025551234">
-                <Phone className="mr-2 h-5 w-5" />
-                Call (702) 555-1234
-              </Link>
-            </Button>
-            <Button size="lg" variant="outline" className="border-2 border-white text-white hover:bg-white hover:text-secondary text-lg px-8" asChild>
-              <Link href="/contact">Send a Message</Link>
-            </Button>
           </div>
         </div>
       </section>
