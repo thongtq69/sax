@@ -29,7 +29,7 @@ function ReviewsCarousel({ reviews }: ReviewsCarouselProps) {
   const [isPaused, setIsPaused] = useState(false)
   const intervalRef = useRef<NodeJS.Timeout | null>(null)
 
-  // Show 4 reviews at a time
+  // Show 4 reviews at a time on desktop, 1 on mobile
   const reviewsPerView = 4
 
   useEffect(() => {
@@ -38,7 +38,7 @@ function ReviewsCarousel({ reviews }: ReviewsCarouselProps) {
     intervalRef.current = setInterval(() => {
       setCurrentIndex((prev) => {
         // Calculate next index - loop through all reviews
-        const nextIndex = prev + reviewsPerView
+        const nextIndex = prev + 1
         if (nextIndex >= reviews.length) {
           return 0
         }
@@ -73,18 +73,20 @@ function ReviewsCarousel({ reviews }: ReviewsCarouselProps) {
       onMouseEnter={() => setIsPaused(true)}
       onMouseLeave={() => setIsPaused(false)}
     >
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 lg:gap-6">
         {displayReviews.map((review, index) => (
           <div
             key={`${review.id}-${currentIndex}-${index}`}
-            className="bg-white rounded-2xl p-6 shadow-lg border border-gray-100 hover:shadow-2xl hover:border-primary/30 hover:-translate-y-2 hover-border-glow transition-all duration-500 animate-fade-in-up group"
+            className={`bg-white rounded-xl sm:rounded-2xl p-3 sm:p-4 lg:p-6 shadow-lg border border-gray-100 hover:shadow-2xl hover:border-primary/30 hover:-translate-y-2 hover-border-glow transition-all duration-500 animate-fade-in-up group ${
+              index >= 1 ? 'hidden sm:block' : ''
+            } ${index >= 2 ? 'sm:hidden lg:block' : ''}`}
             style={{ animationDelay: `${0.1 * index}s` }}
           >
-            <div className="flex items-center gap-1 mb-3 group-hover:scale-105 transition-transform duration-300">
+            <div className="flex items-center gap-1 mb-2 group-hover:scale-105 transition-transform duration-300">
               {[...Array(5)].map((_, i) => (
                 <Star
                   key={i}
-                  className={`h-4 w-4 transition-all duration-300 group-hover:animate-star-twinkle ${i < review.rating
+                  className={`h-3 w-3 sm:h-3.5 sm:w-3.5 transition-all duration-300 group-hover:animate-star-twinkle ${i < review.rating
                     ? 'fill-amber-400 text-amber-400'
                     : 'fill-gray-200 text-gray-200'
                     }`}
@@ -92,37 +94,36 @@ function ReviewsCarousel({ reviews }: ReviewsCarouselProps) {
                 />
               ))}
             </div>
-            <p className="text-gray-700 mb-4 text-sm leading-relaxed">
-              "{getReviewExcerpt(review.message || 'Great experience!', 140)}"
+            <p className="text-gray-700 mb-2 sm:mb-3 text-xs sm:text-sm leading-relaxed line-clamp-3">
+              "{getReviewExcerpt(review.message || 'Great experience!', 120)}"
             </p>
-            <div className="flex items-center justify-between pt-4 border-t border-gray-100 animate-fade-in-up" style={{ animationDelay: `${0.2 + index * 0.1}s` }}>
+            <div className="flex items-center justify-between pt-2 sm:pt-3 border-t border-gray-100 animate-fade-in-up" style={{ animationDelay: `${0.2 + index * 0.1}s` }}>
               <div>
-                <p className="font-semibold text-secondary text-sm">{review.buyerName}</p>
-                <p className="text-xs text-muted-foreground">
+                <p className="font-semibold text-secondary text-xs">{review.buyerName}</p>
+                <p className="text-[10px] text-muted-foreground">
                   {new Date(review.date).toLocaleDateString('en-US', {
-                    year: 'numeric',
-                    month: 'short',
-                    day: 'numeric'
+                    year: '2-digit',
+                    month: 'short'
                   })}
                 </p>
               </div>
-              <div className="text-2xl transition-transform duration-300 group-hover:rotate-12 group-hover:scale-110">🎷</div>
+              <div className="text-lg sm:text-xl transition-transform duration-300 group-hover:rotate-12 group-hover:scale-110">🎷</div>
             </div>
           </div>
         ))}
       </div>
 
       {/* View All Reviews Button */}
-      <div className="mt-10 text-center animate-fade-in-up" style={{ animationDelay: '0.4s' }}>
+      <div className="mt-4 sm:mt-6 lg:mt-10 text-center animate-fade-in-up" style={{ animationDelay: '0.4s' }}>
         <Button
-          size="lg"
+          size="sm"
           variant="outline"
-          className="border-2 border-primary text-primary hover:bg-primary hover:text-white font-semibold px-8"
+          className="border-2 border-primary text-primary hover:bg-primary hover:text-white font-semibold px-4 sm:px-6 lg:px-8 text-xs sm:text-sm h-8 sm:h-10"
           asChild
         >
           <Link href="#reviews">
             View All Reviews
-            <ChevronRight className="ml-2 h-5 w-5" />
+            <ChevronRight className="ml-1 sm:ml-2 h-3.5 w-3.5 sm:h-4 sm:w-4" />
           </Link>
         </Button>
       </div>
@@ -140,13 +141,22 @@ interface InfiniteCarouselProps {
 function InfiniteCarousel({ products, id, speed = 100 }: InfiniteCarouselProps) {
   const [isPaused, setIsPaused] = useState(false)
   const [offset, setOffset] = useState(0)
+  const [isMobile, setIsMobile] = useState(false)
   const containerRef = useRef<HTMLDivElement>(null)
   const animationRef = useRef<number | null>(null)
   const lastTimeRef = useRef<number>(0)
 
-  // Card width + gap
-  const cardWidth = 320
-  const gap = 24
+  // Check for mobile viewport
+  useEffect(() => {
+    const checkMobile = () => setIsMobile(window.innerWidth < 640)
+    checkMobile()
+    window.addEventListener('resize', checkMobile)
+    return () => window.removeEventListener('resize', checkMobile)
+  }, [])
+
+  // Card width + gap - smaller on mobile
+  const cardWidth = isMobile ? 260 : 320
+  const gap = isMobile ? 16 : 24
   const itemWidth = cardWidth + gap
   const totalWidth = products.length * itemWidth
 
@@ -216,7 +226,7 @@ function InfiniteCarousel({ products, id, speed = 100 }: InfiniteCarouselProps) 
       <div className="overflow-hidden" ref={containerRef}>
         {/* Moving track */}
         <div
-          className="flex gap-6"
+          className={`flex ${isMobile ? 'gap-4' : 'gap-6'}`}
           style={{
             transform: `translateX(-${offset}px)`,
             width: `${tripleProducts.length * itemWidth}px`
@@ -234,12 +244,12 @@ function InfiniteCarousel({ products, id, speed = 100 }: InfiniteCarouselProps) 
         </div>
       </div>
 
-      {/* Navigation arrows */}
+      {/* Navigation arrows - hidden on mobile */}
       <button
         type="button"
         aria-label="Scroll left"
         onClick={() => scroll('left')}
-        className="absolute left-0 top-1/2 -translate-y-1/2 -translate-x-1/2 rounded-full bg-white/90 border border-primary/20 shadow-lg p-3 text-primary hover:bg-primary hover:text-white transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-primary z-10"
+        className="hidden sm:block absolute left-0 top-1/2 -translate-y-1/2 -translate-x-1/2 rounded-full bg-white/90 border border-primary/20 shadow-lg p-3 text-primary hover:bg-primary hover:text-white transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-primary z-10"
       >
         <ChevronLeft className="h-5 w-5" />
       </button>
@@ -247,7 +257,7 @@ function InfiniteCarousel({ products, id, speed = 100 }: InfiniteCarouselProps) 
         type="button"
         aria-label="Scroll right"
         onClick={() => scroll('right')}
-        className="absolute right-0 top-1/2 -translate-y-1/2 translate-x-1/2 rounded-full bg-white/90 border border-primary/20 shadow-lg p-3 text-primary hover:bg-primary hover:text-white transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-primary z-10"
+        className="hidden sm:block absolute right-0 top-1/2 -translate-y-1/2 translate-x-1/2 rounded-full bg-white/90 border border-primary/20 shadow-lg p-3 text-primary hover:bg-primary hover:text-white transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-primary z-10"
       >
         <ChevronRight className="h-5 w-5" />
       </button>
@@ -459,23 +469,23 @@ export default function HomePage() {
       </section>
 
       {/* Customer Reviews Section - At the Top */}
-      <section className="bg-gradient-to-br from-amber-50 via-white to-blue-50 py-16 md:py-20">
+      <section className="bg-gradient-to-br from-amber-50 via-white to-blue-50 py-6 sm:py-10 md:py-14 lg:py-20">
         <div className="container mx-auto px-4">
-          <div className="mb-10 text-center animate-fade-in-up">
-            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-amber-100 text-amber-800 text-sm font-medium mb-4">
-              <Star className="h-4 w-4 fill-amber-400 text-amber-400" />
+          <div className="mb-4 sm:mb-6 md:mb-8 text-center animate-fade-in-up">
+            <div className="inline-flex items-center gap-1.5 px-2.5 py-1 sm:px-3 sm:py-1.5 rounded-full bg-amber-100 text-amber-800 text-[10px] sm:text-xs font-medium mb-2 sm:mb-3">
+              <Star className="h-3 w-3 sm:h-3.5 sm:w-3.5 fill-amber-400 text-amber-400" />
               Trusted by Musicians Worldwide
             </div>
-            <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold text-secondary mb-4">
+            <h2 className="text-xl sm:text-2xl md:text-3xl lg:text-4xl font-bold text-secondary mb-2 sm:mb-3">
               What Our Customers Say
             </h2>
-            <div className="flex items-center justify-center gap-2 mt-4">
+            <div className="flex items-center justify-center gap-1.5 sm:gap-2 mt-2 sm:mt-3">
               <div className="flex">
                 {[...Array(5)].map((_, i) => (
-                  <Star key={i} className="h-6 w-6 fill-amber-400 text-amber-400" />
+                  <Star key={i} className="h-3.5 w-3.5 sm:h-4 sm:w-4 md:h-5 md:w-5 fill-amber-400 text-amber-400" />
                 ))}
               </div>
-              <span className="text-2xl font-bold text-secondary ml-2">5.0</span>
+              <span className="text-base sm:text-lg md:text-xl font-bold text-secondary ml-1">5.0</span>
             </div>
           </div>
 
@@ -486,13 +496,13 @@ export default function HomePage() {
 
       {/* Coming Soon Section */}
       {saleProducts.length > 0 && (
-        <section className="container mx-auto px-4 py-16">
-          <div className="mb-10 text-center animate-fade-in-up">
-            <h2 className="text-3xl md:text-4xl font-bold text-secondary">Coming Soon</h2>
-            <div className="mt-3 flex items-center justify-center space-x-4">
-              <div className="h-px w-16 bg-gradient-to-r from-transparent to-primary" />
-              <span className="text-2xl text-primary">♫</span>
-              <div className="h-px w-16 bg-gradient-to-l from-transparent to-primary" />
+        <section className="container mx-auto px-4 py-8 sm:py-12 md:py-16">
+          <div className="mb-6 sm:mb-8 md:mb-10 text-center animate-fade-in-up">
+            <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold text-secondary">Coming Soon</h2>
+            <div className="mt-2 sm:mt-3 flex items-center justify-center space-x-4">
+              <div className="h-px w-12 sm:w-16 bg-gradient-to-r from-transparent to-primary" />
+              <span className="text-xl sm:text-2xl text-primary">♫</span>
+              <div className="h-px w-12 sm:w-16 bg-gradient-to-l from-transparent to-primary" />
             </div>
           </div>
 
@@ -502,13 +512,13 @@ export default function HomePage() {
       )}
 
       {/* Featured Products - New Arrivals */}
-      <section className="container mx-auto px-4 py-16">
-        <div className="mb-10 text-center animate-fade-in-up">
-          <h2 className="text-3xl md:text-4xl font-bold text-secondary">Featured Instruments</h2>
-          <div className="mt-3 flex items-center justify-center space-x-4">
-            <div className="h-px w-16 bg-gradient-to-r from-transparent to-primary" />
-            <span className="text-2xl text-primary">♫</span>
-            <div className="h-px w-16 bg-gradient-to-l from-transparent to-primary" />
+      <section className="container mx-auto px-4 py-8 sm:py-12 md:py-16">
+        <div className="mb-6 sm:mb-8 md:mb-10 text-center animate-fade-in-up">
+          <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold text-secondary">Featured Instruments</h2>
+          <div className="mt-2 sm:mt-3 flex items-center justify-center space-x-4">
+            <div className="h-px w-12 sm:w-16 bg-gradient-to-r from-transparent to-primary" />
+            <span className="text-xl sm:text-2xl text-primary">♫</span>
+            <div className="h-px w-12 sm:w-16 bg-gradient-to-l from-transparent to-primary" />
           </div>
         </div>
 
@@ -516,35 +526,35 @@ export default function HomePage() {
         <InfiniteCarousel products={featuredProducts} id="featured" speed={150} />
 
         {/* View All Button */}
-        <div className="mt-10 text-center">
+        <div className="mt-6 sm:mt-8 md:mt-10 text-center">
           <Button
             variant="outline"
             size="lg"
-            className="border-2 border-secondary bg-white text-secondary hover:bg-secondary hover:text-white group px-8 shadow-lg"
+            className="border-2 border-secondary bg-white text-secondary hover:bg-secondary hover:text-white group px-6 sm:px-8 shadow-lg text-sm sm:text-base"
             asChild
           >
             <Link href="/shop" className="flex items-center">
               View All Instruments
-              <ChevronRight className="ml-2 h-5 w-5 group-hover:translate-x-1 transition-transform" />
+              <ChevronRight className="ml-2 h-4 w-4 sm:h-5 sm:w-5 group-hover:translate-x-1 transition-transform" />
             </Link>
           </Button>
         </div>
       </section>
 
       {/* Shop by Category */}
-      <section className="bg-gradient-to-b from-muted/50 to-white py-16">
+      <section className="bg-gradient-to-b from-muted/50 to-white py-8 sm:py-12 md:py-16">
         <div className="container mx-auto px-4">
-          <div className="mb-10 text-center animate-fade-in-up">
-            <h2 className="text-3xl md:text-4xl font-bold text-secondary">Shop by Category</h2>
-            <div className="mt-3 flex items-center justify-center space-x-4">
-              <div className="h-px w-16 bg-gradient-to-r from-transparent to-primary" />
-              <span className="text-2xl text-primary">🎷</span>
-              <div className="h-px w-16 bg-gradient-to-l from-transparent to-primary" />
+          <div className="mb-6 sm:mb-8 md:mb-10 text-center animate-fade-in-up">
+            <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold text-secondary">Shop by Category</h2>
+            <div className="mt-2 sm:mt-3 flex items-center justify-center space-x-4">
+              <div className="h-px w-12 sm:w-16 bg-gradient-to-r from-transparent to-primary" />
+              <span className="text-xl sm:text-2xl text-primary">🎷</span>
+              <div className="h-px w-12 sm:w-16 bg-gradient-to-l from-transparent to-primary" />
             </div>
           </div>
 
-          <div className="w-full px-4 md:px-6 lg:px-8">
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-5 lg:gap-6 w-full">
+          <div className="w-full px-0 sm:px-4 md:px-6 lg:px-8">
+            <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 md:gap-5 lg:gap-6 w-full">
               {subcategories.map((sub, i) => {
                 const totalCount = categoryCounts[sub.slug] || 0
 
@@ -555,17 +565,17 @@ export default function HomePage() {
                   <Link
                     key={sub.slug}
                     href={`/shop?subcategory=${sub.slug}`}
-                    className="group relative overflow-hidden rounded-2xl bg-secondary border-2 border-transparent hover:border-gradient-animate transition-all duration-500 hover:shadow-2xl animate-tilt-3d animate-fade-in-up"
+                    className="group relative overflow-hidden rounded-xl sm:rounded-2xl bg-secondary border-2 border-transparent hover:border-gradient-animate transition-all duration-500 hover:shadow-2xl animate-tilt-3d animate-fade-in-up"
                     style={{ animationDelay: `${0.1 * i}s` }}
                   >
                     {/* Gradient border effect on hover */}
-                    <div className="absolute inset-0 bg-gradient-to-r from-accent via-primary to-accent opacity-0 group-hover:opacity-100 transition-opacity duration-500 rounded-2xl -z-10" style={{ padding: '2px' }} />
+                    <div className="absolute inset-0 bg-gradient-to-r from-accent via-primary to-accent opacity-0 group-hover:opacity-100 transition-opacity duration-500 rounded-xl sm:rounded-2xl -z-10" style={{ padding: '2px' }} />
 
                     {/* Horizontal layout container - icon left, text right */}
-                    <div className="relative z-10 flex flex-row items-center p-5 md:p-6 lg:p-8 h-full min-h-[120px] md:min-h-[140px] bg-secondary rounded-2xl">
+                    <div className="relative z-10 flex flex-row items-center p-3 sm:p-4 md:p-6 lg:p-8 h-full min-h-[80px] sm:min-h-[100px] md:min-h-[140px] bg-secondary rounded-xl sm:rounded-2xl">
                       {/* Left section - Small golden saxophone icon */}
-                      <div className="flex-shrink-0 mr-4 md:mr-5 lg:mr-6 flex items-center justify-center">
-                        <div className="relative w-12 h-12 md:w-14 md:h-14 lg:w-16 lg:h-16 flex items-center justify-center transition-all duration-300 scale-110 group-hover:scale-125 group-hover:animate-sax-swing">
+                      <div className="flex-shrink-0 mr-2 sm:mr-3 md:mr-5 lg:mr-6 flex items-center justify-center">
+                        <div className="relative w-8 h-8 sm:w-10 sm:h-10 md:w-14 md:h-14 lg:w-16 lg:h-16 flex items-center justify-center transition-all duration-300 scale-110 group-hover:scale-125 group-hover:animate-sax-swing">
                           <Image
                             src="/saxophone-icon.svg"
                             alt="Saxophone"
@@ -578,11 +588,11 @@ export default function HomePage() {
                       </div>
 
                       {/* Right section - Category info (white text) */}
-                      <div className="flex-1 flex flex-col justify-center space-y-1 md:space-y-1.5">
-                        <h3 className="text-lg md:text-xl lg:text-2xl font-bold text-white group-hover:text-accent transition-colors duration-300 leading-tight">
+                      <div className="flex-1 flex flex-col justify-center space-y-0.5 sm:space-y-1 md:space-y-1.5">
+                        <h3 className="text-sm sm:text-base md:text-xl lg:text-2xl font-bold text-white group-hover:text-accent transition-colors duration-300 leading-tight">
                           {displayName}
                         </h3>
-                        <p className="text-sm md:text-base text-white/80 font-medium counter-animate" style={{ animationDelay: `${0.15 * i}s` }}>
+                        <p className="text-xs sm:text-sm md:text-base text-white/80 font-medium counter-animate" style={{ animationDelay: `${0.15 * i}s` }}>
                           {totalCount} {totalCount === 1 ? 'Product' : 'Products'}
                         </p>
                       </div>
@@ -595,14 +605,14 @@ export default function HomePage() {
               {!subcategories.find(s => s.slug.includes('baritone') || s.name.toLowerCase().includes('baritone')) && (
                 <Link
                   href="/shop?subcategory=baritone-saxophones"
-                  className="group relative overflow-hidden rounded-2xl bg-secondary border border-secondary/80 transition-all duration-300 hover:shadow-xl hover:bg-secondary/90 hover:scale-[1.02] animate-fade-in-up"
+                  className="group relative overflow-hidden rounded-xl sm:rounded-2xl bg-secondary border border-secondary/80 transition-all duration-300 hover:shadow-xl hover:bg-secondary/90 hover:scale-[1.02] animate-fade-in-up"
                   style={{ animationDelay: `${0.1 * subcategories.length}s` }}
                 >
                   {/* Horizontal layout container - icon left, text right */}
-                  <div className="relative z-10 flex flex-row items-center p-5 md:p-6 lg:p-8 h-full min-h-[120px] md:min-h-[140px]">
+                  <div className="relative z-10 flex flex-row items-center p-3 sm:p-4 md:p-6 lg:p-8 h-full min-h-[80px] sm:min-h-[100px] md:min-h-[140px]">
                     {/* Left section - Small golden saxophone icon */}
-                    <div className="flex-shrink-0 mr-4 md:mr-5 lg:mr-6 flex items-center justify-center">
-                      <div className="relative w-12 h-12 md:w-14 md:h-14 lg:w-16 lg:h-16 flex items-center justify-center transition-all duration-300 scale-110 group-hover:scale-125">
+                    <div className="flex-shrink-0 mr-2 sm:mr-3 md:mr-5 lg:mr-6 flex items-center justify-center">
+                      <div className="relative w-8 h-8 sm:w-10 sm:h-10 md:w-14 md:h-14 lg:w-16 lg:h-16 flex items-center justify-center transition-all duration-300 scale-110 group-hover:scale-125">
                         <Image
                           src="/saxophone-icon.svg"
                           alt="Saxophone"
@@ -615,11 +625,11 @@ export default function HomePage() {
                     </div>
 
                     {/* Right section - Category info (white text) */}
-                    <div className="flex-1 flex flex-col justify-center space-y-1 md:space-y-1.5">
-                      <h3 className="text-lg md:text-xl lg:text-2xl font-bold text-white group-hover:text-accent transition-colors duration-300 leading-tight">
+                    <div className="flex-1 flex flex-col justify-center space-y-0.5 sm:space-y-1 md:space-y-1.5">
+                      <h3 className="text-sm sm:text-base md:text-xl lg:text-2xl font-bold text-white group-hover:text-accent transition-colors duration-300 leading-tight">
                         Baritone
                       </h3>
-                      <p className="text-sm md:text-base text-white/80 font-medium">
+                      <p className="text-xs sm:text-sm md:text-base text-white/80 font-medium">
                         0 Products
                       </p>
                     </div>
@@ -632,68 +642,68 @@ export default function HomePage() {
       </section>
 
       {/* Testimonial / Why Choose Us */}
-      <section id="reviews" className="bg-gradient-to-br from-amber-50/30 via-white to-blue-50/30 py-12 md:py-16">
+      <section id="reviews" className="bg-gradient-to-br from-amber-50/30 via-white to-blue-50/30 py-6 sm:py-10 md:py-14">
         <div className="container mx-auto px-4 max-w-7xl">
-          <div className="flex flex-col md:grid md:grid-cols-2 gap-8 md:gap-10 lg:gap-12 items-stretch">
+          <div className="flex flex-col md:grid md:grid-cols-2 gap-4 sm:gap-6 md:gap-8 lg:gap-12 items-stretch">
             <div className="animate-fade-in-left flex flex-col">
-              <h2 className="text-3xl md:text-4xl font-bold text-secondary mb-6">
+              <h2 className="text-lg sm:text-xl md:text-2xl lg:text-3xl font-bold text-secondary mb-3 sm:mb-4 md:mb-6">
                 Why Musicians Choose Us
               </h2>
-              <div className="space-y-4 mb-8">
+              <div className="space-y-2 sm:space-y-3 mb-4 sm:mb-6">
                 {[
                   { title: '40+ Years of Expertise', desc: 'Trusted by professional musicians since 1985' },
-                  { title: 'Professional Setup', desc: 'Every instrument is play-tested and adjusted by our technicians' },
-                  { title: 'Expert Consultation', desc: 'Our staff includes professional players who understand your needs' },
-                  { title: 'Lifetime Support', desc: 'We\'re here to help you throughout your musical journey' },
+                  { title: 'Professional Setup', desc: 'Every instrument is play-tested and adjusted' },
+                  { title: 'Expert Consultation', desc: 'Our staff includes professional players' },
+                  { title: 'Lifetime Support', desc: 'We\'re here throughout your musical journey' },
                 ].map((item, i) => (
-                  <div key={i} className="flex gap-3 md:gap-4 p-3 md:p-4 rounded-xl bg-white border-2 border-transparent hover:border-primary/30 transition-all duration-500 hover:shadow-lg progressive-reveal scroll-reveal" data-delay={i * 100}>
-                    <div className="flex-shrink-0 w-9 h-9 md:w-10 md:h-10 rounded-full bg-primary/10 flex items-center justify-center transition-transform duration-300 hover:scale-110 group">
-                      <Star className="h-4 w-4 md:h-5 md:w-5 text-primary group-hover:animate-star-twinkle" />
+                  <div key={i} className="flex gap-2 sm:gap-3 p-2 sm:p-2.5 md:p-3 rounded-lg sm:rounded-xl bg-white border border-transparent hover:border-primary/30 transition-all duration-500 hover:shadow-lg progressive-reveal scroll-reveal" data-delay={i * 100}>
+                    <div className="flex-shrink-0 w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-primary/10 flex items-center justify-center">
+                      <Star className="h-3 w-3 sm:h-3.5 sm:w-3.5 text-primary" />
                     </div>
                     <div>
-                      <h3 className="font-semibold text-secondary underline-slide">{item.title}</h3>
-                      <p className="text-xs sm:text-sm text-muted-foreground">{item.desc}</p>
+                      <h3 className="font-semibold text-secondary text-xs sm:text-sm">{item.title}</h3>
+                      <p className="text-[10px] sm:text-xs text-muted-foreground">{item.desc}</p>
                     </div>
                   </div>
                 ))}
               </div>
 
               {/* Featured Review Card */}
-              <div className="bg-gradient-to-br from-primary/10 to-primary/5 rounded-3xl p-4 sm:p-6 md:p-8 text-center">
-                <div className="flex justify-center mb-4">
+              <div className="bg-gradient-to-br from-primary/10 to-primary/5 rounded-xl sm:rounded-2xl p-3 sm:p-4 md:p-6 text-center">
+                <div className="flex justify-center mb-2 sm:mb-3">
                   {[...Array(5)].map((_, i) => (
-                    <Star key={i} className="h-5 w-5 sm:h-6 sm:w-6 md:h-8 md:w-8 fill-amber-400 text-amber-400" />
+                    <Star key={i} className="h-3.5 w-3.5 sm:h-4 sm:w-4 md:h-5 md:w-5 fill-amber-400 text-amber-400" />
                   ))}
                 </div>
-                <blockquote className="text-base sm:text-lg md:text-xl italic text-secondary mb-4 md:mb-6 leading-relaxed">
-                  &ldquo;{reviews.find(r => r.id === '2')?.message || "This was the single best transaction I've had with an online seller. James sent me a 10 minute video minutes after contacting him detailing the horn and exhibiting the condition. Shipping from Vietnam to the US east coast took 3 days and the packaging was impeccable. The horn arrived exactly as described and plays just as well as it should; James did an excellent job replacing pads and adjusting. There are no visible or audible leaks. I would purchase from him again in a heartbeat."}&rdquo;
+                <blockquote className="text-xs sm:text-sm md:text-base italic text-secondary mb-2 sm:mb-3 leading-relaxed line-clamp-4 sm:line-clamp-none">
+                  &ldquo;{reviews.find(r => r.id === '2')?.message || "This was the single best transaction I've had with an online seller. James sent me a 10 minute video minutes after contacting him detailing the horn and exhibiting the condition."}&rdquo;
                 </blockquote>
-                <div className="font-semibold text-secondary">— {reviews.find(r => r.id === '2')?.buyerName || 'Zach E.'}</div>
+                <div className="font-semibold text-secondary text-xs sm:text-sm">— {reviews.find(r => r.id === '2')?.buyerName || 'Zach E.'}</div>
               </div>
             </div>
 
             <div className="animate-fade-in-right flex flex-col">
-              <h3 className="text-2xl md:text-3xl font-bold text-secondary mb-6">More Customer Reviews</h3>
-              <div className="space-y-4">
+              <h3 className="text-base sm:text-lg md:text-xl lg:text-2xl font-bold text-secondary mb-3 sm:mb-4">More Customer Reviews</h3>
+              <div className="space-y-2 sm:space-y-3">
                 {reviews.slice(currentReviewIndex, currentReviewIndex + 4).map((review) => (
-                  <div key={review.id} className="bg-white rounded-xl p-4 sm:p-5 border border-gray-200 hover:shadow-md transition-shadow">
-                    <div className="flex items-center gap-1 mb-2">
+                  <div key={review.id} className="bg-white rounded-lg sm:rounded-xl p-2.5 sm:p-3 md:p-4 border border-gray-200 hover:shadow-md transition-shadow">
+                    <div className="flex items-center gap-0.5 mb-1.5">
                       {[...Array(5)].map((_, i) => (
                         <Star
                           key={i}
-                          className={`h-3.5 w-3.5 ${i < review.rating
+                          className={`h-2.5 w-2.5 sm:h-3 sm:w-3 ${i < review.rating
                             ? 'fill-amber-400 text-amber-400'
                             : 'fill-gray-200 text-gray-200'
                             }`}
                         />
                       ))}
                     </div>
-                    <p className="text-sm text-gray-700 mb-3">
+                    <p className="text-[10px] sm:text-xs text-gray-700 mb-1.5 sm:mb-2 line-clamp-2 sm:line-clamp-3">
                       &ldquo;{review.message || 'Great experience!'}&rdquo;
                     </p>
                     <div className="flex items-center justify-between">
-                      <span className="text-xs font-semibold text-secondary">{review.buyerName}</span>
-                      <span className="text-xs text-muted-foreground">
+                      <span className="text-[10px] sm:text-xs font-semibold text-secondary">{review.buyerName}</span>
+                      <span className="text-[9px] sm:text-[10px] text-muted-foreground">
                         {new Date(review.date).toLocaleDateString('en-US', { month: 'short', year: 'numeric' })}
                       </span>
                     </div>
@@ -790,17 +800,17 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* Join Our Musical Community */}
-      <section className="bg-gradient-to-r from-primary to-primary/80 py-8 relative overflow-hidden">
+      {/* Join Our Musical Community - Compact on mobile */}
+      <section className="bg-gradient-to-r from-primary to-primary/80 py-2.5 sm:py-5 md:py-8 lg:py-10 relative overflow-hidden">
         <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent animate-shimmer" />
-        <div className="container mx-auto px-4">
-          <div className="flex flex-col md:flex-row items-center justify-between gap-6">
-            <div className="text-center md:text-left">
-              <h3 className="text-2xl font-bold text-white flex items-center gap-2 justify-center md:justify-start">
-                <Sparkles className="h-6 w-6" />
+        <div className="container mx-auto px-3 sm:px-4">
+          <div className="flex flex-col sm:flex-row items-center justify-between gap-2 sm:gap-4 md:gap-6">
+            <div className="text-center sm:text-left">
+              <h3 className="text-xs sm:text-base md:text-xl lg:text-2xl font-bold text-white flex items-center gap-1 sm:gap-2 justify-center sm:justify-start">
+                <Sparkles className="h-3 w-3 sm:h-5 sm:w-5 md:h-6 md:w-6" />
                 Join Our Musical Community
               </h3>
-              <p className="text-white/80 mt-1">Get exclusive deals, tips, and industry news</p>
+              <p className="text-white/80 mt-0.5 text-[9px] sm:text-xs md:text-sm lg:text-base hidden sm:block">Get exclusive deals, tips, and industry news</p>
             </div>
             <form
               onSubmit={(e) => {
@@ -813,21 +823,24 @@ export default function HomePage() {
                   e.currentTarget.reset()
                 }
               }}
-              className="flex gap-2 w-full md:w-auto"
+              className="flex gap-1.5 sm:gap-2 w-full sm:w-auto"
             >
               <input
                 type="email"
                 name="email"
                 placeholder="Enter your email"
-                className="bg-white/20 border-2 border-white/30 placeholder:text-white/60 text-white min-w-[250px] px-4 py-2 rounded-md transition-all duration-300 focus:bg-white/30 focus:outline-none focus:border-white/50 focus:shadow-[0_0_0_4px_rgba(212,175,55,0.3)] hover:border-white/40"
+                className="bg-white/20 border border-white/30 placeholder:text-white/60 text-white min-w-0 flex-1 sm:min-w-[180px] md:min-w-[200px] lg:min-w-[280px] px-2.5 sm:px-3 md:px-4 py-1.5 sm:py-2 md:py-2.5 rounded-md transition-all duration-300 focus:bg-white/30 focus:outline-none focus:border-white/50 text-[11px] sm:text-sm md:text-base"
                 required
               />
               <Button
                 type="submit"
-                className="bg-secondary hover:bg-secondary/90 hover:scale-105 text-white px-6 transition-all duration-300 hover:shadow-xl btn-ripple relative overflow-hidden"
+                size="sm"
+                className="bg-secondary hover:bg-secondary/90 text-white px-2.5 sm:px-4 md:px-6 transition-all duration-300 text-[11px] sm:text-sm md:text-base h-7 sm:h-9 md:h-10"
               >
-                <span className="flex items-center gap-2 relative z-10">
-                  Subscribe <ChevronRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
+                <span className="flex items-center gap-0.5 sm:gap-1">
+                  <span className="hidden md:inline">Subscribe</span>
+                  <span className="md:hidden">Go</span>
+                  <ChevronRight className="h-3 w-3 sm:h-3.5 sm:w-3.5 md:h-4 md:w-4" />
                 </span>
               </Button>
             </form>

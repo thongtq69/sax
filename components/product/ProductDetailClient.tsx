@@ -6,7 +6,7 @@ import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { Product } from '@/lib/data'
 import { getProducts, transformProduct } from '@/lib/api'
-import { getReviewsForProduct, getProductRatingStats } from '@/lib/reviews'
+import { getAllReviews, getProductRatingStats } from '@/lib/reviews'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
@@ -37,8 +37,8 @@ export function ProductDetailClient({ product }: ProductDetailClientProps) {
   const router = useRouter()
   const addItem = useCartStore((state) => state.addItem)
   
-  // Get reviews from hardcoded data - memoized to avoid recalculation on every render
-  const reviews = useMemo(() => getReviewsForProduct(product.name), [product.name])
+  // Get all reviews from hardcoded data - all products show all 35 reviews
+  const reviews = useMemo(() => getAllReviews(), [])
   const reviewStats = useMemo(() => getProductRatingStats(product.name), [product.name])
   const displayRating = useMemo(() => 
     reviews.length > 0 ? reviewStats.rating : product.rating || 0,

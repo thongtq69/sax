@@ -74,14 +74,14 @@ export function ProductCard({ product, index = 0 }: ProductCardProps) {
   return (
     <>
       <Card 
-        className="product-card group relative overflow-hidden border-2 border-transparent hover:border-primary/30 transition-all duration-500 hover:shadow-2xl hover:-translate-y-2 bg-card"
+        className="product-card group relative overflow-hidden border-2 border-transparent hover:border-primary/30 transition-all duration-500 hover:shadow-2xl hover:-translate-y-1 sm:hover:-translate-y-2 bg-card"
         style={{ animationDelay: `${staggerDelay}s` }}
       >
-        {/* Decorative corner accents on hover */}
-        <div className="absolute top-0 left-0 w-8 h-8 border-l-2 border-t-2 border-primary/0 group-hover:border-primary/50 transition-all duration-500 z-10" />
-        <div className="absolute top-0 right-0 w-8 h-8 border-r-2 border-t-2 border-primary/0 group-hover:border-primary/50 transition-all duration-500 z-10" />
-        <div className="absolute bottom-0 left-0 w-8 h-8 border-l-2 border-b-2 border-primary/0 group-hover:border-primary/50 transition-all duration-500 z-10" />
-        <div className="absolute bottom-0 right-0 w-8 h-8 border-r-2 border-b-2 border-primary/0 group-hover:border-primary/50 transition-all duration-500 z-10" />
+        {/* Decorative corner accents on hover - hidden on mobile */}
+        <div className="hidden sm:block absolute top-0 left-0 w-8 h-8 border-l-2 border-t-2 border-primary/0 group-hover:border-primary/50 transition-all duration-500 z-10" />
+        <div className="hidden sm:block absolute top-0 right-0 w-8 h-8 border-r-2 border-t-2 border-primary/0 group-hover:border-primary/50 transition-all duration-500 z-10" />
+        <div className="hidden sm:block absolute bottom-0 left-0 w-8 h-8 border-l-2 border-b-2 border-primary/0 group-hover:border-primary/50 transition-all duration-500 z-10" />
+        <div className="hidden sm:block absolute bottom-0 right-0 w-8 h-8 border-r-2 border-b-2 border-primary/0 group-hover:border-primary/50 transition-all duration-500 z-10" />
 
         <div
           className="product-image-container relative aspect-square overflow-hidden bg-gradient-to-br from-gray-50 to-gray-100"
@@ -125,7 +125,7 @@ export function ProductCard({ product, index = 0 }: ProductCardProps) {
           <div className="absolute inset-0 bg-gradient-to-tr from-transparent via-white/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none transform -translate-x-full group-hover:translate-x-full" style={{ transitionDuration: '0.8s' }} />
 
           {/* Badges with animations */}
-          <div className="absolute left-3 top-3 flex flex-col gap-2 z-20">
+          <div className="absolute left-2 sm:left-3 top-2 sm:top-3 flex flex-col gap-1.5 sm:gap-2 z-20">
             {product.badge && (
               <Badge
                 variant={product.badge}
@@ -159,8 +159,8 @@ export function ProductCard({ product, index = 0 }: ProductCardProps) {
             />
           </button>
 
-          {/* Quick View Overlay */}
-          <div className="absolute inset-0 flex items-center justify-center bg-gradient-to-t from-secondary/80 via-secondary/40 to-transparent opacity-0 group-hover:opacity-100 transition-all duration-500">
+          {/* Quick View Overlay - hidden on mobile */}
+          <div className="hidden sm:flex absolute inset-0 items-center justify-center bg-gradient-to-t from-secondary/80 via-secondary/40 to-transparent opacity-0 group-hover:opacity-100 transition-all duration-500">
             <Button
               variant="secondary"
               size="sm"
@@ -173,20 +173,20 @@ export function ProductCard({ product, index = 0 }: ProductCardProps) {
           </div>
 
           {/* Category tag */}
-          <div className="absolute bottom-3 left-3 z-20 opacity-0 group-hover:opacity-100 transition-all duration-300 transform translate-y-2 group-hover:translate-y-0">
-            <span className="text-xs font-medium px-2 py-1 rounded bg-white/90 backdrop-blur-sm text-secondary capitalize">
+          <div className="absolute bottom-2 sm:bottom-3 left-2 sm:left-3 z-20 opacity-0 group-hover:opacity-100 transition-all duration-300 transform translate-y-2 group-hover:translate-y-0">
+            <span className="text-[10px] sm:text-xs font-medium px-1.5 sm:px-2 py-0.5 sm:py-1 rounded bg-white/90 backdrop-blur-sm text-secondary capitalize">
               {product.subcategory?.replace('-', ' ') || product.category}
             </span>
           </div>
         </div>
 
-        <CardContent className="p-4 relative">
+        <CardContent className="p-3 sm:p-4 relative">
           {/* Subtle gradient background on hover */}
           <div className="absolute inset-0 bg-gradient-to-t from-primary/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
 
           <div className="relative z-10">
             {/* Brand */}
-            <p className="mb-1 text-xs font-semibold uppercase tracking-widest text-accent transition-colors duration-300 group-hover:text-primary">
+            <p className="mb-0.5 sm:mb-1 text-[10px] sm:text-xs font-semibold uppercase tracking-widest text-accent transition-colors duration-300 group-hover:text-primary">
               {product.brand}
             </p>
 
@@ -196,19 +196,19 @@ export function ProductCard({ product, index = 0 }: ProductCardProps) {
               className="block group/title"
               prefetch={true}
             >
-              <h3 className="mb-2 line-clamp-2 text-sm font-bold leading-tight text-secondary transition-colors duration-300 group-hover/title:text-primary">
+              <h3 className="mb-1.5 sm:mb-2 line-clamp-2 text-xs sm:text-sm font-bold leading-tight text-secondary transition-colors duration-300 group-hover/title:text-primary">
                 {product.name}
               </h3>
             </Link>
 
             {/* Rating with animation */}
             {displayRating > 0 && (
-              <div className="mb-2 flex items-center gap-1.5">
+              <div className="mb-1.5 sm:mb-2 flex items-center gap-1 sm:gap-1.5">
                 <div className="flex">
                   {[...Array(5)].map((_, i) => (
                     <Star
                       key={i}
-                      className={`h-3.5 w-3.5 transition-all duration-200 ${
+                      className={`h-3 w-3 sm:h-3.5 sm:w-3.5 transition-all duration-200 ${
                         i < Math.floor(displayRating)
                           ? 'fill-amber-400 text-amber-400'
                           : 'fill-gray-200 text-gray-200'
@@ -218,16 +218,16 @@ export function ProductCard({ product, index = 0 }: ProductCardProps) {
                   ))}
                 </div>
                 {displayReviewCount > 0 && (
-                  <span className="text-xs text-muted-foreground font-medium">
-                    ({displayReviewCount} {displayReviewCount === 1 ? 'review' : 'reviews'})
+                  <span className="text-[10px] sm:text-xs text-muted-foreground font-medium">
+                    ({displayReviewCount})
                   </span>
                 )}
               </div>
             )}
 
-            {/* Finish Options with hover effect */}
+            {/* Finish Options with hover effect - hidden on mobile */}
             {finishes.length > 1 && (
-              <div className="mb-3 flex items-center gap-2">
+              <div className="hidden sm:flex mb-3 items-center gap-2">
                 <span className="text-xs text-muted-foreground">Finishes:</span>
                 <div className="flex gap-1.5">
                   {finishes.map((color, i) => (
@@ -243,21 +243,21 @@ export function ProductCard({ product, index = 0 }: ProductCardProps) {
             )}
 
             {/* Pricing with highlight animation */}
-            <div className="mb-3">
-              <div className="flex items-baseline gap-2">
-                <span className="price-highlight text-xl font-bold text-primary transition-all duration-300 group-hover:text-2xl">
+            <div className="mb-2 sm:mb-3">
+              <div className="flex items-baseline gap-1.5 sm:gap-2">
+                <span className="price-highlight text-base sm:text-xl font-bold text-primary transition-all duration-300 group-hover:text-lg sm:group-hover:text-2xl">
                   ${product.price.toLocaleString()}
                 </span>
                 {product.retailPrice && (
-                  <span className="text-sm text-muted-foreground line-through decoration-red-400">
+                  <span className="text-[10px] sm:text-sm text-muted-foreground line-through decoration-red-400">
                     ${product.retailPrice.toLocaleString()}
                   </span>
                 )}
               </div>
 
-              {/* Financing */}
+              {/* Financing - hidden on mobile */}
               {monthlyPayment && (
-                <p className="mt-1.5 text-xs text-accent font-semibold flex items-center gap-1">
+                <p className="hidden sm:flex mt-1.5 text-xs text-accent font-semibold items-center gap-1">
                   <span className="inline-block w-1.5 h-1.5 rounded-full bg-accent animate-pulse" />
                   Or ${monthlyPayment}/mo with 0% APR
                 </p>
@@ -266,22 +266,22 @@ export function ProductCard({ product, index = 0 }: ProductCardProps) {
 
             {/* Add to Cart Button with ripple effect */}
             <Button
-              className={`add-to-cart-btn w-full btn-ripple font-semibold tracking-wide transition-all duration-300 ${
+              className={`add-to-cart-btn w-full btn-ripple font-semibold tracking-wide transition-all duration-300 text-xs sm:text-sm h-8 sm:h-10 ${
                 isAddingToCart ? 'scale-95 bg-green-500' : ''
               }`}
               onClick={handleAddToCart}
               disabled={!product.inStock || product.badge === 'out-of-stock' || isAddingToCart}
             >
               {isAddingToCart ? (
-                <span className="flex items-center gap-2">
-                  <Loader2 className="h-4 w-4 animate-spin" />
-                  Adding...
+                <span className="flex items-center gap-1.5 sm:gap-2">
+                  <Loader2 className="h-3.5 w-3.5 sm:h-4 sm:w-4 animate-spin" />
+                  <span className="hidden sm:inline">Adding...</span>
                 </span>
               ) : !product.inStock || product.badge === 'out-of-stock' ? (
                 'Out of Stock'
               ) : (
-                <span className="flex items-center gap-2">
-                  <ShoppingBag className="h-4 w-4" />
+                <span className="flex items-center gap-1.5 sm:gap-2">
+                  <ShoppingBag className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
                   Add to Cart
                 </span>
               )}

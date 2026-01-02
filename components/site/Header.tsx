@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
 import { Search, ShoppingCart, Phone, Menu, X, Loader2, User, Facebook, Instagram, Youtube, Twitter } from 'lucide-react'
@@ -8,14 +8,17 @@ import { useCartStore } from '@/lib/store/cart'
 import { Button } from '@/components/ui/button'
 import { SearchBar } from './SearchBar'
 import { MiniCartDrawer } from '@/components/cart/MiniCartDrawer'
+import { cn } from '@/lib/utils'
 
 export function Header() {
   const [isScrolled, setIsScrolled] = useState(false)
+  const [isHidden, setIsHidden] = useState(false)
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
   const [isSearchOpen, setIsSearchOpen] = useState(false)
   const [isCartOpen, setIsCartOpen] = useState(false)
   const [cartBounce, setCartBounce] = useState(false)
   const [isCalling, setIsCalling] = useState(false)
+  const lastScrollY = useRef(0)
   const itemCount = useCartStore(state => state.getItemCount())
   const subtotal = useCartStore(state => state.getSubtotal())
 
@@ -27,19 +30,50 @@ export function Header() {
     }
   }, [itemCount])
 
+  // Enhanced scroll handling with direction detection
   useEffect(() => {
+    let ticking = false
+    
     const handleScroll = () => {
-      setIsScrolled(window.scrollY > 10)
+      if (!ticking) {
+        window.requestAnimationFrame(() => {
+          const currentScrollY = window.scrollY
+          
+          // Determine if scrolled past threshold
+          setIsScrolled(currentScrollY > 10)
+          
+          // Hide header on scroll down, show on scroll up (only after scrolling 100px)
+          if (currentScrollY > 100) {
+            if (currentScrollY > lastScrollY.current && currentScrollY > 200) {
+              // Scrolling down & past 200px - hide header
+              setIsHidden(true)
+            } else if (currentScrollY < lastScrollY.current) {
+              // Scrolling up - show header
+              setIsHidden(false)
+            }
+          } else {
+            setIsHidden(false)
+          }
+          
+          lastScrollY.current = currentScrollY
+          ticking = false
+        })
+        ticking = true
+      }
     }
-    window.addEventListener('scroll', handleScroll)
+    
+    window.addEventListener('scroll', handleScroll, { passive: true })
     return () => window.removeEventListener('scroll', handleScroll)
   }, [])
 
   return (
     <>
       <header
-        className={`sticky top-0 z-50 w-full transition-all duration-500 ${isScrolled ? 'shadow-lg' : 'shadow-sm'
-          }`}
+        className={cn(
+          "sticky top-0 z-50 w-full transition-all duration-300",
+          isScrolled ? 'shadow-lg' : 'shadow-sm',
+          isHidden && !isMobileMenuOpen ? '-translate-y-full' : 'translate-y-0'
+        )}
         style={{ backgroundColor: '#AFA65F' }} // Match logo background color
       >
         <div className="container mx-auto px-4">

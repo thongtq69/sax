@@ -1,4 +1,4 @@
-// Hardcoded reviews from Reverb
+// Hardcoded reviews from Reverb - All 35 reviews
 export interface Review {
   id: string
   productName: string
@@ -75,6 +75,15 @@ export const reviews: Review[] = [
   },
   {
     id: '8',
+    productName: 'Yanagisawa A-WO20 Alto Saxophone',
+    buyerName: 'Matthew M.',
+    rating: 4,
+    date: '2025-05-27',
+    message: "",
+    sourceUrl: 'https://reverb.com/item/84271626-yanagisawa-a-wo20-alto-saxophone',
+  },
+  {
+    id: '9',
     productName: 'Yanagisawa A-WO2 Alto Saxophone',
     buyerName: 'Norman M.',
     rating: 5,
@@ -83,16 +92,25 @@ export const reviews: Review[] = [
     sourceUrl: 'https://reverb.com/item/81615905-yanagisawa-a-wo2-alto-saxophone',
   },
   {
-    id: '9',
+    id: '10',
     productName: 'Vintage Yamaha YTS-62 Purple Logo Tenor Saxophone',
-    buyerName: 'Hugh  P.',
+    buyerName: 'Hugh P.',
     rating: 5,
     date: '2025-02-07',
-    message: "James was beyond professional in communicating and through all of his updates I was given ample information on each step of the shipping process. The instrument arrived in perfect condition, impeccably packaged for transit, and reflected the seller's description to a T. James obviously takes his time and care to meet the needs of each customer, both novice saxophonist and professional. I could not recommend another seller more.\nHugh",
+    message: "James was beyond professional in communicating and through all of his updates I was given ample information on each step of the shipping process. The instrument arrived in perfect condition, impeccably packaged for transit, and reflected the seller's description to a T. James obviously takes his time and care to meet the needs of each customer, both novice saxophonist and professional. I could not recommend another seller more.",
     sourceUrl: 'https://reverb.com/item/79382134-vintage-yamaha-yts-62-purple-logo-tenor-saxophone',
   },
   {
-    id: '10',
+    id: '11',
+    productName: 'Yanagisawa T-902 Tenor Saxophone',
+    buyerName: 'John M.',
+    rating: 5,
+    date: '2025-01-12',
+    message: "The saxophone arrived in perfect condition as advertised. It was shipped quickly and expertly packed to ensure safe transit. James provided constant communication even with a slight delay due to bad weather. I couldn't have asked for better service and the price was good as well.",
+    sourceUrl: 'https://reverb.com/item/86150066-yanagisawa-t-902-tenor-saxophone',
+  },
+  {
+    id: '12',
     productName: 'Yamaha YTS-62 Tenor Saxophone Purple Logo',
     buyerName: 'Annabelle J.',
     rating: 5,
@@ -101,7 +119,7 @@ export const reviews: Review[] = [
     sourceUrl: 'https://reverb.com/item/83880866-yamaha-yts-62-tenor-saxophone-purple-logo',
   },
   {
-    id: '11',
+    id: '13',
     productName: 'Vintage Yamaha YTS-61 Purple Logo Tenor Saxophone',
     buyerName: 'William A.',
     rating: 5,
@@ -110,7 +128,7 @@ export const reviews: Review[] = [
     sourceUrl: 'https://reverb.com/item/80915532-vintage-yamaha-yts-61-purple-logo-tenor-saxophone',
   },
   {
-    id: '12',
+    id: '14',
     productName: 'Yanagisawa A-900 Alto Saxophone',
     buyerName: 'Henry D.',
     rating: 5,
@@ -119,7 +137,7 @@ export const reviews: Review[] = [
     sourceUrl: 'https://reverb.com/item/84159562-yanagisawa-a-900-alto-saxophone',
   },
   {
-    id: '13',
+    id: '15',
     productName: 'Yamaha YTS-62S Silver Tenor Saxophone',
     buyerName: 'Antonio G.',
     rating: 5,
@@ -128,7 +146,16 @@ export const reviews: Review[] = [
     sourceUrl: 'https://reverb.com/item/84177408-yamaha-yts-62s-silver-tenor-saxophone',
   },
   {
-    id: '14',
+    id: '16',
+    productName: 'Yanagisawa T-900 Tenor Saxophone',
+    buyerName: 'Curtis H.',
+    rating: 5,
+    date: '2024-09-25',
+    message: "It was a pleasant experience doing business with James Sax Corner. He takes great strides to ensure the payment and delivery process goes smoothly. The sax came to my door in excellent condition, and the deliverables came exactly as described.",
+    sourceUrl: 'https://reverb.com/item/84159583-yanagisawa-t-900-tenor-saxophone',
+  },
+  {
+    id: '17',
     productName: 'Yamaha YAS-62 Alto Saxophone Purple Logo',
     buyerName: 'Tenise A.',
     rating: 5,
@@ -137,7 +164,7 @@ export const reviews: Review[] = [
     sourceUrl: 'https://reverb.com/item/83843051-yamaha-yas-62-alto-saxophone-purple-logo',
   },
   {
-    id: '15',
+    id: '18',
     productName: 'Yanagisawa S-6 Soprano Saxophone',
     buyerName: 'Ralph L.',
     rating: 5,
@@ -146,7 +173,7 @@ export const reviews: Review[] = [
     sourceUrl: 'https://reverb.com/item/83687209-yanagisawa-s-6-soprano-saxophone',
   },
   {
-    id: '16',
+    id: '19',
     productName: 'Vintage Yamaha YTS-62 Purple Logo Tenor Saxophone',
     buyerName: 'Matt L.',
     rating: 5,
@@ -155,7 +182,7 @@ export const reviews: Review[] = [
     sourceUrl: 'https://reverb.com/item/78435482-vintage-yamaha-yts-62-purple-logo-tenor-saxophone',
   },
   {
-    id: '17',
+    id: '20',
     productName: 'Yanagisawa T900u Tenor Saxophone',
     buyerName: 'David C.',
     rating: 5,
@@ -164,7 +191,7 @@ export const reviews: Review[] = [
     sourceUrl: 'https://reverb.com/item/78375012-yanagisawa-t900u-tenor-saxophone',
   },
   {
-    id: '18',
+    id: '21',
     productName: 'Yanagisawa A900u Alto Saxophone',
     buyerName: 'Catherine S.',
     rating: 5,
@@ -173,7 +200,7 @@ export const reviews: Review[] = [
     sourceUrl: 'https://reverb.com/item/78818948-yanagisawa-a900u-alto-saxophone',
   },
   {
-    id: '19',
+    id: '22',
     productName: 'Yamaha YTS-62III Professional Tenor Saxophone',
     buyerName: 'Emily C.',
     rating: 5,
@@ -182,7 +209,7 @@ export const reviews: Review[] = [
     sourceUrl: 'https://reverb.com/item/77394029-yamaha-yts-62iii-professional-tenor-saxophone',
   },
   {
-    id: '20',
+    id: '23',
     productName: 'Yamaha YAS-875EX Alto Saxophone selected by Nobuya Sugawa',
     buyerName: 'Gregory G.',
     rating: 5,
@@ -191,7 +218,7 @@ export const reviews: Review[] = [
     sourceUrl: 'https://reverb.com/item/81283167-yamaha-yas-875ex-alto-saxophone-selected-by-nobuya-sugawa',
   },
   {
-    id: '21',
+    id: '24',
     productName: 'Vintage Yamaha YTS-61 Purple Logo Tenor Saxophone',
     buyerName: 'Menna A.',
     rating: 5,
@@ -200,7 +227,7 @@ export const reviews: Review[] = [
     sourceUrl: 'https://reverb.com/item/78241481-vintage-yamaha-yts-61-purple-logo-tenor-saxophone',
   },
   {
-    id: '22',
+    id: '25',
     productName: 'Yamaha YTS-62II Tenor Saxophone',
     buyerName: 'Noe G.',
     rating: 5,
@@ -209,7 +236,7 @@ export const reviews: Review[] = [
     sourceUrl: 'https://reverb.com/item/78041316-yamaha-yts-62ii-tenor-saxophone',
   },
   {
-    id: '23',
+    id: '26',
     productName: 'Yamaha YTS-62II G3 Custom Neck Tenor Saxophone',
     buyerName: 'Ryder S.',
     rating: 5,
@@ -218,7 +245,16 @@ export const reviews: Review[] = [
     sourceUrl: 'https://reverb.com/item/78301414-yamaha-yts-62ii-g3-custom-neck-tenor-saxophone',
   },
   {
-    id: '24',
+    id: '27',
+    productName: 'Yanagisawa T-WO2 Tenor Saxophone',
+    buyerName: 'Bart M.',
+    rating: 5,
+    date: '2023-12-28',
+    message: "I have to admit I was more than a little skeptical about spending thousands of dollars to buy a horn from someone in Vietnam.  I took a chance and purchased my dream sax, a Yani tenor.  James was very helpful and honest in his dealings with me.  The horn arrived in very good condition and in time, even though it was over the Christmas holiday and had to come all the way to Idaho.  I am extremely happy with my purchase and would encourage anyone to buy from James Sax Corner with confidence!!",
+    sourceUrl: 'https://reverb.com/item/77023625-yanagisawa-t-wo2-tenor-saxophone',
+  },
+  {
+    id: '28',
     productName: 'Yamaha YAS-62s Silver Alto Saxophone',
     buyerName: 'Marcelino L.',
     rating: 5,
@@ -227,7 +263,7 @@ export const reviews: Review[] = [
     sourceUrl: 'https://reverb.com/item/76990549-yamaha-yas-62s-silver-alto-saxophone',
   },
   {
-    id: '25',
+    id: '29',
     productName: 'Yanagisawa Alto A900',
     buyerName: 'Celeste B.',
     rating: 5,
@@ -236,7 +272,7 @@ export const reviews: Review[] = [
     sourceUrl: 'https://reverb.com/item/73794797-yanagisawa-alto-a900',
   },
   {
-    id: '26',
+    id: '30',
     productName: 'Yanagisawa A900u Alto Saxophone',
     buyerName: 'Joseph D.',
     rating: 5,
@@ -245,7 +281,7 @@ export const reviews: Review[] = [
     sourceUrl: 'https://reverb.com/item/75032549-yanagisawa-a900u-alto-saxophone',
   },
   {
-    id: '27',
+    id: '31',
     productName: 'Vintage Yamaha YTS-61 Tenor Saxophone Purple Logo',
     buyerName: 'Thomas B.',
     rating: 5,
@@ -254,7 +290,7 @@ export const reviews: Review[] = [
     sourceUrl: 'https://reverb.com/item/73740843-vintage-yamaha-yts-61-tenor-saxophone-purple-logo',
   },
   {
-    id: '28',
+    id: '32',
     productName: 'Vintage Yamaha YSS-61 Soprano SN 1406',
     buyerName: 'Jurga C.',
     rating: 5,
@@ -263,7 +299,7 @@ export const reviews: Review[] = [
     sourceUrl: 'https://reverb.com/item/72812942-vintage-yamaha-yss-61-soprano-sn-1406',
   },
   {
-    id: '29',
+    id: '33',
     productName: 'Yanagisawa Alto A-902 SN 24xxx',
     buyerName: 'Fahim A.',
     rating: 5,
@@ -272,16 +308,16 @@ export const reviews: Review[] = [
     sourceUrl: 'https://reverb.com/item/72770789-yanagisawa-alto-a-902-sn-24xxx',
   },
   {
-    id: '30',
+    id: '34',
     productName: 'Yanagisawa S-6',
-    buyerName: 'Bernd  K.',
+    buyerName: 'Bernd K.',
     rating: 5,
     date: '2023-08-20',
     message: "I am very happy with the whole process of buying my Yanagisawa S6 from James Le. The interaction with the seller was always pleasant, he even went out of his way to make the transaction easier and more transparent. In terms of the sold saxophone: it arrived in the best of conditions, instantly ready to play and the delivery process was very fast. Over all I can warmly recommend the seller. 10/10 experience!",
     sourceUrl: 'https://reverb.com/item/67658887-yanagisawa-s-6',
   },
   {
-    id: '31',
+    id: '35',
     productName: 'Yamaha YAS-62II',
     buyerName: 'Andrew M.',
     rating: 5,
@@ -290,6 +326,25 @@ export const reviews: Review[] = [
     sourceUrl: 'https://reverb.com/item/60437618-yamaha-yas-62ii',
   },
 ]
+
+// Get all reviews (for store-wide display)
+export function getAllReviews(): Review[] {
+  // Filter out reviews with empty messages
+  return reviews.filter(r => r.message && r.message.trim().length > 0)
+}
+
+// Get total review count (excluding empty messages)
+export function getTotalReviewCount(): number {
+  return getAllReviews().length
+}
+
+// Get average rating across all reviews
+export function getAverageRating(): number {
+  const validReviews = getAllReviews()
+  if (validReviews.length === 0) return 0
+  const total = validReviews.reduce((sum, r) => sum + r.rating, 0)
+  return Math.round((total / validReviews.length) * 10) / 10
+}
 
 // Helper function to normalize product name for matching
 function normalizeProductName(name: string): string {
@@ -307,6 +362,9 @@ export function getReviewsForProduct(productName: string): Review[] {
   const normalized = normalizeProductName(productName)
   
   return reviews.filter(review => {
+    // Skip reviews with empty messages
+    if (!review.message || review.message.trim().length === 0) return false
+    
     const reviewNormalized = normalizeProductName(review.productName)
     
     // Exact match
@@ -341,18 +399,20 @@ export function getReviewsForProduct(productName: string): Review[] {
 }
 
 // Calculate rating and review count for a product
+// Now returns store-wide stats since all products share the same reviews
 export function getProductRatingStats(productName: string): { rating: number; reviewCount: number } {
-  const productReviews = getReviewsForProduct(productName)
+  // Return store-wide stats - all 35 reviews apply to all products
+  const validReviews = getAllReviews()
   
-  if (productReviews.length === 0) {
+  if (validReviews.length === 0) {
     return { rating: 0, reviewCount: 0 }
   }
   
-  const totalRating = productReviews.reduce((sum, r) => sum + r.rating, 0)
-  const avgRating = totalRating / productReviews.length
+  const totalRating = validReviews.reduce((sum, r) => sum + r.rating, 0)
+  const avgRating = totalRating / validReviews.length
   
   return {
     rating: Math.round(avgRating * 10) / 10,
-    reviewCount: productReviews.length,
+    reviewCount: validReviews.length,
   }
 }
