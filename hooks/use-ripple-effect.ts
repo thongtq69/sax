@@ -22,7 +22,13 @@ const defaultOptions: Required<RippleEffectOptions> = {
   opacity: 0.5,
 }
 
-export function useRippleEffect(options: RippleEffectOptions = {}) {
+interface RippleEffectReturn {
+  ripples: Ripple[]
+  createRipple: (e: React.MouseEvent<HTMLElement>) => void
+  RippleContainer: () => JSX.Element
+}
+
+export function useRippleEffect(options: RippleEffectOptions = {}): RippleEffectReturn {
   const prefersReducedMotion = useReducedMotion()
   const [ripples, setRipples] = useState<Ripple[]>([])
   const opts = { ...defaultOptions, ...options }

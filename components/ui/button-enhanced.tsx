@@ -6,6 +6,7 @@ import { cva, type VariantProps } from "class-variance-authority"
 import { Loader2, Check } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { useRippleEffect } from "@/hooks/use-ripple-effect"
+// Hook returns { ripples, createRipple, RippleContainer }
 import { useMagneticEffect } from "@/hooks/use-cursor-spotlight"
 import { useReducedMotion } from "@/hooks/use-reduced-motion"
 
