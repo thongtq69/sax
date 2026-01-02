@@ -33,23 +33,23 @@ export default async function ProductPage({
       <div className="min-h-screen">
         {/* Breadcrumbs */}
         <div className="bg-muted/30 border-b">
-          <div className="container mx-auto px-3 md:px-4 py-2 md:py-3 lg:py-4">
-            <nav className="flex items-center space-x-1.5 md:space-x-2 text-xs md:text-sm overflow-x-auto pb-1">
+          <div className="container mx-auto px-4 py-2 md:py-3 lg:py-4">
+            <nav className="flex items-center gap-1.5 md:gap-2 text-[11px] sm:text-xs md:text-sm overflow-x-auto pb-1 leading-none">
               <Link href="/" className="text-muted-foreground hover:text-primary transition-colors flex items-center gap-1 whitespace-nowrap">
                 <Home className="h-3 w-3 md:h-3.5 md:w-3.5" />
                 Home
               </Link>
               <ChevronRight className="h-3 w-3 md:h-4 md:w-4 text-muted-foreground/50 flex-shrink-0" />
-              <Link href="/shop" className="text-muted-foreground hover:text-primary transition-colors whitespace-nowrap">
+              <Link href="/shop" className="inline-flex items-center text-muted-foreground hover:text-primary transition-colors whitespace-nowrap">
                 Products
               </Link>
               <ChevronRight className="h-3 w-3 md:h-4 md:w-4 text-muted-foreground/50 flex-shrink-0" />
-              <span className="text-secondary font-medium line-clamp-1 truncate max-w-[150px] md:max-w-none">{product.name}</span>
+              <span className="inline-flex items-center text-secondary font-medium line-clamp-1 truncate max-w-[150px] md:max-w-none min-w-0">{product.name}</span>
             </nav>
           </div>
         </div>
 
-        <div className="container mx-auto px-3 md:px-4 py-6 md:py-8 lg:py-10">
+        <div className="container mx-auto px-4 py-4 md:py-6 lg:py-8">
           <ProductDetailClient product={product} />
         </div>
       </div>

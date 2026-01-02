@@ -269,11 +269,11 @@ const handleAddToCart = async () => {
         </div>
       )}
 
-      <div className="grid grid-cols-1 gap-6 md:gap-8 lg:gap-10 lg:grid-cols-10">
+      <div className="flex flex-col gap-6 md:gap-8 lg:gap-10 lg:grid lg:grid-cols-10">
         {/* Image Gallery */}
         <div className="animate-fade-in-left lg:col-span-6">
           {/* Main Display - Video or Image */}
-          <div className="relative aspect-[4/5] md:aspect-[4/5] lg:aspect-[4/5] overflow-hidden rounded-xl md:rounded-2xl border-2 border-gray-100 bg-gradient-to-br from-gray-50 to-gray-100 group">
+          <div className="relative aspect-[4/3] sm:aspect-[4/5] md:aspect-[4/5] lg:aspect-[4/5] overflow-hidden rounded-xl md:rounded-2xl border-2 border-gray-100 bg-gradient-to-br from-gray-50 to-gray-100 group">
             {showVideo && videoId ? (
               <div className="relative w-full h-full">
                 <iframe
@@ -393,7 +393,7 @@ const handleAddToCart = async () => {
           </div>
 
           {/* Thumbnails */}
-          <div className="mt-3 md:mt-4 flex gap-2 md:gap-3 overflow-x-auto pb-2">
+          <div className="mt-3 md:mt-4 flex gap-1.5 sm:gap-2 md:gap-3 overflow-x-auto pb-2">
             {/* Video Thumbnail */}
             {videoId && (
               <button
@@ -401,7 +401,7 @@ const handleAddToCart = async () => {
                   setShowVideo(true)
                   setSelectedImageIndex(-1)
                 }}
-                className={`relative h-16 w-16 md:h-20 md:w-20 flex-shrink-0 overflow-hidden rounded-lg md:rounded-xl border-2 transition-all duration-300 ${
+                className={`thumb-button relative h-12 w-12 sm:h-16 sm:w-16 md:h-20 md:w-20 flex-shrink-0 overflow-hidden rounded-lg md:rounded-xl border-2 transition-all duration-300 ${
                   showVideo
                     ? 'border-primary shadow-lg scale-105 ring-2 ring-primary/30'
                     : 'border-gray-200 hover:border-primary/50 hover:shadow-md'
@@ -437,7 +437,7 @@ const handleAddToCart = async () => {
                   setSelectedImageIndex(index)
                   setShowVideo(false)
                 }}
-                className={`relative h-16 w-16 md:h-20 md:w-20 flex-shrink-0 overflow-hidden rounded-lg md:rounded-xl border-2 transition-all duration-300 ${
+                className={`thumb-button relative h-12 w-12 sm:h-16 sm:w-16 md:h-20 md:w-20 flex-shrink-0 overflow-hidden rounded-lg md:rounded-xl border-2 transition-all duration-300 ${
                   selectedImageIndex === index && !showVideo
                     ? 'border-primary shadow-lg scale-105 ring-2 ring-primary/30'
                     : 'border-gray-200 hover:border-primary/50 hover:shadow-md'
@@ -643,7 +643,7 @@ const handleAddToCart = async () => {
               <TabsTrigger 
                 key={tab}
                 value={tab} 
-                className="relative capitalize text-sm md:text-base lg:text-lg pb-3 md:pb-4 px-2 md:px-0 rounded-none bg-transparent data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:text-primary font-medium text-gray-500 hover:text-gray-700 transition-colors whitespace-nowrap after:absolute after:bottom-0 after:left-0 after:right-0 after:h-0.5 after:bg-primary after:scale-x-0 data-[state=active]:after:scale-x-100 after:transition-transform after:duration-300"
+                className="product-tabs-trigger relative capitalize text-sm md:text-base lg:text-lg pb-3 md:pb-4 px-2 md:px-0 rounded-none bg-transparent data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:text-primary font-medium text-gray-500 hover:text-gray-700 transition-colors whitespace-nowrap after:absolute after:bottom-0 after:left-0 after:right-0 after:h-0.5 after:bg-primary after:scale-x-0 data-[state=active]:after:scale-x-100 after:transition-transform after:duration-300"
               >
                 {tab === 'description' && '📝 '}
                 {tab === 'specs' && '📋 '}
@@ -836,13 +836,13 @@ const handleAddToCart = async () => {
             </Button>
           </div>
 
-          <div className="overflow-x-auto pb-3 -mx-1">
-            <div className="grid grid-flow-col auto-cols-[minmax(220px,260px)] md:auto-cols-[minmax(240px,280px)] gap-4 md:gap-5 snap-x snap-mandatory px-1">
+          <div className="overflow-x-auto pb-3 -mx-1 snap-x snap-mandatory">
+            <div className="flex gap-4 px-1 md:grid md:grid-flow-col md:auto-cols-[minmax(240px,280px)] md:gap-5">
               {relatedProducts.map((item, index) => (
                 <Link
                   key={`${item.id}-${index}`}
                   href={`/product/${item.slug}`}
-                  className="group snap-start bg-white rounded-2xl border border-gray-100 shadow-sm hover:shadow-lg transition-all duration-300 overflow-hidden"
+                  className="group snap-start bg-white rounded-2xl border border-gray-100 shadow-sm hover:shadow-lg transition-all duration-300 overflow-hidden min-w-[220px] w-[220px] sm:min-w-[240px] sm:w-[240px] md:min-w-0 md:w-auto"
                 >
                   <div className="relative aspect-[4/5] overflow-hidden">
                     <SmartImage

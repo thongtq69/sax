@@ -66,11 +66,11 @@ export function PromoCarousel({ promos = [] }: PromoCarouselProps) {
             }} />
 
             <div className="container mx-auto px-4 relative">
-                <div className="relative flex min-h-[48px] items-center justify-center py-2">
+                <div className="relative flex min-h-[40px] sm:min-h-[44px] md:min-h-[48px] items-center justify-center py-1 sm:py-1.5 md:py-2">
                     {/* Previous Button */}
                     <button
                         onClick={prevSlide}
-                        className="absolute left-0 p-2 hover:bg-white/10 rounded-full transition-all duration-300 hover:scale-110 group"
+                        className="promo-carousel-nav absolute left-0 p-2 hover:bg-white/10 rounded-full transition-all duration-300 hover:scale-110 group"
                         aria-label="Previous promotion"
                     >
                         <ChevronLeft className="h-4 w-4 transition-transform group-hover:-translate-x-0.5" />
@@ -79,7 +79,7 @@ export function PromoCarousel({ promos = [] }: PromoCarouselProps) {
                     {/* Slide Content with animation */}
                     <div 
                         key={currentSlide}
-                        className="flex flex-wrap items-center justify-center gap-2 text-[11px] md:text-sm animate-fade-in-up text-center"
+                        className="flex flex-col items-center justify-center gap-1.5 text-[10px] sm:text-[11px] md:text-sm animate-fade-in-up text-center leading-tight sm:flex-row sm:flex-wrap sm:gap-2"
                         style={{ animationDuration: '0.4s' }}
                     >
                         <span className="font-semibold font-display uppercase tracking-[0.22em] text-[#D4AF37]">
@@ -89,24 +89,26 @@ export function PromoCarousel({ promos = [] }: PromoCarouselProps) {
                         <span className="hidden md:inline text-white/85 font-body">
                             {slide.description}
                         </span>
-                        <span className="md:hidden text-white/85 font-body">
+                        <span className="md:hidden text-white/85 font-body line-clamp-2 max-w-[72vw]">
                             {slide.description}
                         </span>
                         {slide.ctaLink && (
-                            <Link
-                                href={slide.ctaLink}
-                                className="rounded-full border border-[#D4AF37] px-3 py-1 text-[10px] font-semibold uppercase tracking-widest text-[#D4AF37] hover:bg-[#D4AF37] hover:text-[#2c3e50] transition-colors duration-300"
-                                prefetch={true}
-                            >
-                                {slide.ctaText}
-                            </Link>
+                            <div className="w-full flex justify-center sm:w-auto">
+                                <Link
+                                    href={slide.ctaLink}
+                                    className="rounded-full border border-[#D4AF37] px-2.5 sm:px-3 py-0.5 sm:py-1 text-[10px] font-semibold uppercase tracking-widest text-[#D4AF37] hover:bg-[#D4AF37] hover:text-[#2c3e50] transition-colors duration-300"
+                                    prefetch={true}
+                                >
+                                    {slide.ctaText}
+                                </Link>
+                            </div>
                         )}
                     </div>
 
                     {/* Next Button */}
                     <button
                         onClick={nextSlide}
-                        className="absolute right-0 p-2 hover:bg-white/10 rounded-full transition-all duration-300 hover:scale-110 group"
+                        className="promo-carousel-nav absolute right-0 p-2 hover:bg-white/10 rounded-full transition-all duration-300 hover:scale-110 group"
                         aria-label="Next promotion"
                     >
                         <ChevronRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5" />
@@ -118,7 +120,7 @@ export function PromoCarousel({ promos = [] }: PromoCarouselProps) {
                             <button
                                 key={index}
                                 onClick={() => !isAnimating && setCurrentSlide(index)}
-                                className={`h-1.5 rounded-full transition-all duration-500 ${
+                                className={`promo-carousel-dot h-1.5 rounded-full transition-all duration-500 ${
                                     index === currentSlide
                                         ? 'bg-[#D4AF37] w-6'
                                         : 'bg-white/30 w-3 hover:bg-white/50'

@@ -39,17 +39,17 @@ export function Footer() {
 
       {/* Main Footer */}
       <div className="container mx-auto px-4 py-6">
-        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-6 lg:gap-8 items-start">
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4 sm:gap-6 lg:gap-8 items-start">
 
           {/* Store Info */}
-          <div className="col-span-2 md:col-span-1">
+          <div className="col-span-1">
             <div className="mb-3 group">
               <Image
                 src="/logo.png"
                 alt="James Sax Corner"
                 width={200}
                 height={60}
-                className="h-10 md:h-12 w-auto transition-transform group-hover:scale-105"
+                className="site-logo h-10 md:h-12 w-auto transition-transform group-hover:scale-105"
                 priority
               />
             </div>

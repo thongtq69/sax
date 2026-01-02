@@ -9,6 +9,7 @@ import { getProducts, getCategories, transformProduct, transformCategory } from 
 import type { Product } from '@/lib/data'
 import { Phone, Shield, Truck, CreditCard, Award, Headphones, Music, ChevronRight, ChevronLeft, Star, Sparkles } from 'lucide-react'
 import { reviews, type Review } from '@/lib/reviews'
+import { ScrollAnimations } from '@/components/site/ScrollAnimations'
 
 const getReviewExcerpt = (message: string, maxLength = 160) => {
   if (message.length <= maxLength) return message
@@ -76,24 +77,25 @@ function ReviewsCarousel({ reviews }: ReviewsCarouselProps) {
         {displayReviews.map((review, index) => (
           <div
             key={`${review.id}-${currentIndex}-${index}`}
-            className="bg-white rounded-2xl p-6 shadow-lg border border-gray-100 hover:shadow-xl transition-all duration-300 hover:-translate-y-1 animate-fade-in-up"
+            className="bg-white rounded-2xl p-6 shadow-lg border border-gray-100 hover:shadow-2xl hover:border-primary/30 hover:-translate-y-2 hover-border-glow transition-all duration-500 animate-fade-in-up group"
             style={{ animationDelay: `${0.1 * index}s` }}
           >
-            <div className="flex items-center gap-1 mb-3">
+            <div className="flex items-center gap-1 mb-3 group-hover:scale-105 transition-transform duration-300">
               {[...Array(5)].map((_, i) => (
                 <Star
                   key={i}
-                  className={`h-4 w-4 ${i < review.rating
+                  className={`h-4 w-4 transition-all duration-300 group-hover:animate-star-twinkle ${i < review.rating
                     ? 'fill-amber-400 text-amber-400'
                     : 'fill-gray-200 text-gray-200'
                     }`}
+                  style={{ animationDelay: `${i * 0.05}s` }}
                 />
               ))}
             </div>
             <p className="text-gray-700 mb-4 text-sm leading-relaxed">
               "{getReviewExcerpt(review.message || 'Great experience!', 140)}"
             </p>
-            <div className="flex items-center justify-between pt-4 border-t border-gray-100">
+            <div className="flex items-center justify-between pt-4 border-t border-gray-100 animate-fade-in-up" style={{ animationDelay: `${0.2 + index * 0.1}s` }}>
               <div>
                 <p className="font-semibold text-secondary text-sm">{review.buyerName}</p>
                 <p className="text-xs text-muted-foreground">
@@ -104,7 +106,7 @@ function ReviewsCarousel({ reviews }: ReviewsCarouselProps) {
                   })}
                 </p>
               </div>
-              <div className="text-2xl">🎷</div>
+              <div className="text-2xl transition-transform duration-300 group-hover:rotate-12 group-hover:scale-110">🎷</div>
             </div>
           </div>
         ))}
@@ -361,8 +363,9 @@ export default function HomePage() {
 
   return (
     <div className="space-y-0 page-content">
+      <ScrollAnimations />
       {/* Hero Section - Vintage Classic Style */}
-      <section className="relative min-h-[320px] md:min-h-[420px] lg:min-h-[480px] overflow-hidden bg-gradient-to-br from-primary via-primary/95 to-primary/90">
+      <section className="homepage-hero relative min-h-[320px] md:min-h-[420px] lg:min-h-[480px] overflow-hidden bg-gradient-to-br from-primary via-primary/95 to-primary/90">
         {/* Animated Vintage Pattern Background */}
         <div className="absolute inset-0 opacity-10">
           <div className="absolute inset-0 animate-pulse-soft" style={{
@@ -370,11 +373,12 @@ export default function HomePage() {
           }} />
         </div>
 
-        {/* Floating musical notes decoration */}
-        <div className="absolute top-20 left-10 text-4xl text-secondary/20 animate-float">♪</div>
-        <div className="absolute top-40 right-20 text-5xl text-secondary/20 animate-float" style={{ animationDelay: '1s' }}>♫</div>
-        <div className="absolute bottom-40 left-1/4 text-3xl text-secondary/20 animate-float" style={{ animationDelay: '2s' }}>♩</div>
-        <div className="absolute top-1/3 right-1/3 text-4xl text-secondary/20 animate-float" style={{ animationDelay: '0.5s' }}>♬</div>
+        {/* Floating musical notes decoration with sine wave animation */}
+        <div className="absolute top-20 left-10 text-4xl text-secondary/20 animate-float-sine">♪</div>
+        <div className="absolute top-40 right-20 text-5xl text-secondary/20 animate-float-sine" style={{ animationDelay: '1.5s' }}>♫</div>
+        <div className="absolute bottom-40 left-1/4 text-3xl text-secondary/20 animate-float-sine" style={{ animationDelay: '3s' }}>♩</div>
+        <div className="absolute top-1/3 right-1/3 text-4xl text-secondary/20 animate-float-sine" style={{ animationDelay: '0.7s' }}>♬</div>
+        <div className="absolute bottom-20 right-1/4 text-3xl text-secondary/20 animate-float-sine" style={{ animationDelay: '2.2s' }}>♪</div>
 
         {/* Art Deco Lines */}
         <div className="absolute top-0 left-0 right-0 h-2 bg-secondary opacity-40" />
@@ -393,7 +397,7 @@ export default function HomePage() {
             {/* Classic Typography with stagger animation */}
             <h1 className="hero-subtitle font-elegant uppercase text-3xl md:text-5xl lg:text-6xl xl:text-7xl font-semibold leading-[0.9] tracking-[0.32em] md:tracking-[0.36em]">
               <span className="block text-[#6b5b32]">James Sax</span>
-              <span className="block text-[#6b5b32] tracking-[0.24em] md:tracking-[0.28em]">Corner</span>
+              <span className="block text-[#6b5b32] tracking-[0.24em] md:tracking-[0.28em]" style={{ animationDelay: '0.3s' }}>Corner</span>
             </h1>
 
             {/* Decorative Divider with animation */}
@@ -412,10 +416,11 @@ export default function HomePage() {
             </p>
 
             <div className="hero-cta flex flex-wrap gap-4 pt-3 md:pt-4" style={{ animationDelay: '0.8s' }}>
-              <Button size="lg" variant="outline" className="border-2 border-secondary text-secondary hover:bg-secondary hover:text-white group" asChild>
-                <Link href="/shop" className="flex items-center">
+              <Button size="lg" variant="outline" className="border-2 border-secondary text-secondary hover:bg-secondary hover:text-white hover:scale-105 hover:shadow-2xl group transition-all duration-300" asChild>
+                <Link href="/shop" className="flex items-center relative overflow-hidden">
                   Explore Collection
-                  <ChevronRight className="ml-1 h-4 w-4 transition-transform group-hover:translate-x-1" />
+                  <ChevronRight className="ml-1 h-4 w-4 transition-all duration-300 group-hover:translate-x-2 group-hover:opacity-100 opacity-70" />
+                  <span className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
                 </Link>
               </Button>
             </div>
@@ -550,14 +555,17 @@ export default function HomePage() {
                   <Link
                     key={sub.slug}
                     href={`/shop?subcategory=${sub.slug}`}
-                    className="group relative overflow-hidden rounded-2xl bg-secondary border border-secondary/80 transition-all duration-300 hover:shadow-xl hover:bg-secondary/90 hover:scale-[1.02] animate-fade-in-up"
+                    className="group relative overflow-hidden rounded-2xl bg-secondary border-2 border-transparent hover:border-gradient-animate transition-all duration-500 hover:shadow-2xl animate-tilt-3d animate-fade-in-up"
                     style={{ animationDelay: `${0.1 * i}s` }}
                   >
+                    {/* Gradient border effect on hover */}
+                    <div className="absolute inset-0 bg-gradient-to-r from-accent via-primary to-accent opacity-0 group-hover:opacity-100 transition-opacity duration-500 rounded-2xl -z-10" style={{ padding: '2px' }} />
+
                     {/* Horizontal layout container - icon left, text right */}
-                    <div className="relative z-10 flex flex-row items-center p-5 md:p-6 lg:p-8 h-full min-h-[120px] md:min-h-[140px]">
+                    <div className="relative z-10 flex flex-row items-center p-5 md:p-6 lg:p-8 h-full min-h-[120px] md:min-h-[140px] bg-secondary rounded-2xl">
                       {/* Left section - Small golden saxophone icon */}
                       <div className="flex-shrink-0 mr-4 md:mr-5 lg:mr-6 flex items-center justify-center">
-                        <div className="relative w-12 h-12 md:w-14 md:h-14 lg:w-16 lg:h-16 flex items-center justify-center transition-all duration-300 scale-110 group-hover:scale-125">
+                        <div className="relative w-12 h-12 md:w-14 md:h-14 lg:w-16 lg:h-16 flex items-center justify-center transition-all duration-300 scale-110 group-hover:scale-125 group-hover:animate-sax-swing">
                           <Image
                             src="/saxophone-icon.svg"
                             alt="Saxophone"
@@ -574,7 +582,7 @@ export default function HomePage() {
                         <h3 className="text-lg md:text-xl lg:text-2xl font-bold text-white group-hover:text-accent transition-colors duration-300 leading-tight">
                           {displayName}
                         </h3>
-                        <p className="text-sm md:text-base text-white/80 font-medium">
+                        <p className="text-sm md:text-base text-white/80 font-medium counter-animate" style={{ animationDelay: `${0.15 * i}s` }}>
                           {totalCount} {totalCount === 1 ? 'Product' : 'Products'}
                         </p>
                       </div>
@@ -624,9 +632,9 @@ export default function HomePage() {
       </section>
 
       {/* Testimonial / Why Choose Us */}
-      <section id="reviews" className="bg-gradient-to-br from-amber-50/30 via-white to-blue-50/30 py-16">
+      <section id="reviews" className="bg-gradient-to-br from-amber-50/30 via-white to-blue-50/30 py-12 md:py-16">
         <div className="container mx-auto px-4 max-w-7xl">
-          <div className="grid md:grid-cols-2 gap-8 md:gap-10 lg:gap-12 items-stretch">
+          <div className="flex flex-col md:grid md:grid-cols-2 gap-8 md:gap-10 lg:gap-12 items-stretch">
             <div className="animate-fade-in-left flex flex-col">
               <h2 className="text-3xl md:text-4xl font-bold text-secondary mb-6">
                 Why Musicians Choose Us
@@ -638,26 +646,26 @@ export default function HomePage() {
                   { title: 'Expert Consultation', desc: 'Our staff includes professional players who understand your needs' },
                   { title: 'Lifetime Support', desc: 'We\'re here to help you throughout your musical journey' },
                 ].map((item, i) => (
-                  <div key={i} className="flex gap-4 p-4 rounded-xl bg-white border-2 border-transparent hover:border-primary/30 transition-all duration-300 hover:shadow-lg">
-                    <div className="flex-shrink-0 w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">
-                      <Star className="h-5 w-5 text-primary" />
+                  <div key={i} className="flex gap-3 md:gap-4 p-3 md:p-4 rounded-xl bg-white border-2 border-transparent hover:border-primary/30 transition-all duration-500 hover:shadow-lg progressive-reveal scroll-reveal" data-delay={i * 100}>
+                    <div className="flex-shrink-0 w-9 h-9 md:w-10 md:h-10 rounded-full bg-primary/10 flex items-center justify-center transition-transform duration-300 hover:scale-110 group">
+                      <Star className="h-4 w-4 md:h-5 md:w-5 text-primary group-hover:animate-star-twinkle" />
                     </div>
                     <div>
-                      <h3 className="font-semibold text-secondary">{item.title}</h3>
-                      <p className="text-sm text-muted-foreground">{item.desc}</p>
+                      <h3 className="font-semibold text-secondary underline-slide">{item.title}</h3>
+                      <p className="text-xs sm:text-sm text-muted-foreground">{item.desc}</p>
                     </div>
                   </div>
                 ))}
               </div>
 
               {/* Featured Review Card */}
-              <div className="bg-gradient-to-br from-primary/10 to-primary/5 rounded-3xl p-6 md:p-8 text-center">
+              <div className="bg-gradient-to-br from-primary/10 to-primary/5 rounded-3xl p-4 sm:p-6 md:p-8 text-center">
                 <div className="flex justify-center mb-4">
                   {[...Array(5)].map((_, i) => (
-                    <Star key={i} className="h-6 w-6 md:h-8 md:w-8 fill-amber-400 text-amber-400" />
+                    <Star key={i} className="h-5 w-5 sm:h-6 sm:w-6 md:h-8 md:w-8 fill-amber-400 text-amber-400" />
                   ))}
                 </div>
-                <blockquote className="text-lg md:text-xl italic text-secondary mb-4 md:mb-6 leading-relaxed">
+                <blockquote className="text-base sm:text-lg md:text-xl italic text-secondary mb-4 md:mb-6 leading-relaxed">
                   &ldquo;{reviews.find(r => r.id === '2')?.message || "This was the single best transaction I've had with an online seller. James sent me a 10 minute video minutes after contacting him detailing the horn and exhibiting the condition. Shipping from Vietnam to the US east coast took 3 days and the packaging was impeccable. The horn arrived exactly as described and plays just as well as it should; James did an excellent job replacing pads and adjusting. There are no visible or audible leaks. I would purchase from him again in a heartbeat."}&rdquo;
                 </blockquote>
                 <div className="font-semibold text-secondary">— {reviews.find(r => r.id === '2')?.buyerName || 'Zach E.'}</div>
@@ -668,7 +676,7 @@ export default function HomePage() {
               <h3 className="text-2xl md:text-3xl font-bold text-secondary mb-6">More Customer Reviews</h3>
               <div className="space-y-4">
                 {reviews.slice(currentReviewIndex, currentReviewIndex + 4).map((review) => (
-                  <div key={review.id} className="bg-white rounded-xl p-5 border border-gray-200 hover:shadow-md transition-shadow">
+                  <div key={review.id} className="bg-white rounded-xl p-4 sm:p-5 border border-gray-200 hover:shadow-md transition-shadow">
                     <div className="flex items-center gap-1 mb-2">
                       {[...Array(5)].map((_, i) => (
                         <Star
@@ -733,16 +741,16 @@ export default function HomePage() {
                   const canGoNext = currentPage < totalPages
 
                   return (
-                    <div className="pt-4 flex items-center justify-center gap-2 flex-wrap">
+                    <div className="reviews-pagination pt-4 flex items-center justify-center gap-1.5 sm:gap-2 flex-wrap">
                       <Button
                         variant="outline"
                         size="sm"
-                        className="h-8 px-3"
+                        className="reviews-pagination-button h-8 px-3"
                         onClick={() => setCurrentReviewIndex(Math.max(0, currentReviewIndex - reviewsPerPage))}
                         disabled={!canGoPrev}
                       >
-                        <ChevronLeft className="h-4 w-4 mr-1" />
-                        Prev
+                        <ChevronLeft className="h-4 w-4 sm:mr-1" />
+                        <span className="hidden sm:inline">Prev</span>
                       </Button>
 
                       {pageNumbers.map((page) => {
@@ -752,7 +760,7 @@ export default function HomePage() {
                             key={page}
                             variant={isActive ? "default" : "outline"}
                             size="sm"
-                            className={`h-8 min-w-[32px] px-3 ${isActive
+                            className={`reviews-pagination-button h-8 min-w-[32px] px-3 ${isActive
                               ? 'bg-primary text-white hover:bg-primary/90'
                               : 'hover:bg-primary/5 hover:border-primary/30'
                               } transition-all`}
@@ -766,12 +774,12 @@ export default function HomePage() {
                       <Button
                         variant="outline"
                         size="sm"
-                        className="h-8 px-3"
+                        className="reviews-pagination-button h-8 px-3"
                         onClick={() => setCurrentReviewIndex(Math.min(reviews.length - reviewsPerPage, currentReviewIndex + reviewsPerPage))}
                         disabled={!canGoNext}
                       >
-                        Next
-                        <ChevronRight className="h-4 w-4 ml-1" />
+                        <span className="hidden sm:inline">Next</span>
+                        <ChevronRight className="h-4 w-4 sm:ml-1" />
                       </Button>
                     </div>
                   )
@@ -811,15 +819,15 @@ export default function HomePage() {
                 type="email"
                 name="email"
                 placeholder="Enter your email"
-                className="bg-white/20 border border-white/30 placeholder:text-white/60 text-white min-w-[250px] px-4 py-2 rounded-md focus:bg-white/30 focus:outline-none focus:ring-2 focus:ring-white/50 transition-all"
+                className="bg-white/20 border-2 border-white/30 placeholder:text-white/60 text-white min-w-[250px] px-4 py-2 rounded-md transition-all duration-300 focus:bg-white/30 focus:outline-none focus:border-white/50 focus:shadow-[0_0_0_4px_rgba(212,175,55,0.3)] hover:border-white/40"
                 required
               />
               <Button
                 type="submit"
-                className="bg-secondary hover:bg-secondary/90 text-white px-6 transition-all duration-300"
+                className="bg-secondary hover:bg-secondary/90 hover:scale-105 text-white px-6 transition-all duration-300 hover:shadow-xl btn-ripple relative overflow-hidden"
               >
-                <span className="flex items-center gap-2">
-                  Subscribe <ChevronRight className="h-4 w-4" />
+                <span className="flex items-center gap-2 relative z-10">
+                  Subscribe <ChevronRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
                 </span>
               </Button>
             </form>

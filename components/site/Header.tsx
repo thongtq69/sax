@@ -40,11 +40,11 @@ export function Header() {
       <header
         className={`sticky top-0 z-50 w-full transition-all duration-500 ${isScrolled ? 'shadow-lg' : 'shadow-sm'
           }`}
-        style={{ backgroundColor: '#C4A35A' }} // Gold color matching logo
+        style={{ backgroundColor: '#AFA65F' }} // Match logo background color
       >
         <div className="container mx-auto px-4">
-          <div className={`flex items-center justify-between transition-all duration-300 ${isScrolled ? 'h-16 md:h-18' : 'h-18 md:h-22'
-            }`} style={{ minHeight: isScrolled ? '64px' : '80px' }}>
+          <div className={`flex items-center justify-between transition-all duration-300 ${isScrolled ? 'h-[56px] md:h-16' : 'h-[64px] md:h-20'
+            }`}>
 
             {/* Left: Logo */}
             <Link href="/" className="flex items-center shrink-0">
@@ -53,7 +53,7 @@ export function Header() {
                 alt="James Sax Corner"
                 width={280}
                 height={80}
-                className={`w-auto transition-all duration-300 ${isScrolled ? 'h-12 md:h-14' : 'h-14 md:h-16'
+                className={`site-logo header-logo w-auto transition-all duration-300 ${isScrolled ? 'h-[44px] md:h-[54px]' : 'h-[52px] md:h-[62px]'
                   }`}
                 priority
               />
@@ -162,7 +162,7 @@ export function Header() {
                 variant="ghost"
                 size="icon"
                 onClick={() => setIsSearchOpen(true)}
-                className="text-[#2c3e50] hover:bg-[#2c3e50]/10"
+                className="header-icon-button text-[#2c3e50] hover:bg-[#2c3e50]/10"
               >
                 <Search className="h-5 w-5" />
               </Button>
@@ -171,7 +171,7 @@ export function Header() {
                 variant="ghost"
                 size="icon"
                 onClick={() => setIsCartOpen(true)}
-                className="relative text-[#2c3e50] hover:bg-[#2c3e50]/10"
+                className="header-icon-button relative text-[#2c3e50] hover:bg-[#2c3e50]/10"
               >
                 <ShoppingCart className="h-5 w-5" />
                 {itemCount > 0 && (
@@ -184,7 +184,7 @@ export function Header() {
               <Button
                 variant="ghost"
                 size="icon"
-                className="text-[#2c3e50] hover:bg-[#2c3e50]/10"
+                className="header-icon-button text-[#2c3e50] hover:bg-[#2c3e50]/10"
                 onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
                 aria-label="Menu"
               >
