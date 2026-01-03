@@ -55,7 +55,11 @@ export function PayPalButton({ shippingInfo, onSuccess, onError }: PayPalButtonP
       const response = await fetch('/api/paypal/capture-order', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ orderID: data.orderID }),
+        body: JSON.stringify({ 
+          orderID: data.orderID,
+          items,
+          shippingInfo 
+        }),
       })
 
       const captureData = await response.json()

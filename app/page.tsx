@@ -52,7 +52,6 @@ function ReviewsCarousel({ reviews, productImages = [] }: ReviewsCarouselProps) 
   if (reviews.length === 0) return null
 
   const currentReview = reviews[currentIndex]
-  const currentImage = productImages[currentIndex % productImages.length]
 
   return (
     <div
@@ -67,22 +66,7 @@ function ReviewsCarousel({ reviews, productImages = [] }: ReviewsCarouselProps) 
         }`}
       >
         <div className="flex flex-col sm:flex-row sm:items-center gap-4 sm:gap-6">
-          {/* Left: Product Image */}
-          {currentImage && (
-            <div className="hidden sm:block flex-shrink-0">
-              <div className="relative w-20 h-20 md:w-24 md:h-24 overflow-hidden shadow-md">
-                <Image
-                  src={currentImage}
-                  alt="Product"
-                  fill
-                  className="object-cover"
-                  sizes="96px"
-                />
-              </div>
-            </div>
-          )}
-
-          {/* Center: Stars + Name + Review */}
+          {/* Stars + Name + Review */}
           <div className="flex-1">
             <div className="flex items-center gap-3 mb-2">
               <div className="flex gap-0.5">
@@ -105,18 +89,6 @@ function ReviewsCarousel({ reviews, productImages = [] }: ReviewsCarouselProps) 
             <p className="text-gray-700 text-sm sm:text-base md:text-lg leading-relaxed italic">
               "{getReviewExcerpt(currentReview.message || 'Great experience!', 220)}"
             </p>
-          </div>
-
-          {/* Right: Decorative Saxophone */}
-          <div className="hidden lg:flex w-24 h-24 items-center justify-center flex-shrink-0 opacity-20">
-            <Image
-              src="/saxophone-icon.svg"
-              alt="Saxophone"
-              width={96}
-              height={96}
-              className="w-full h-full"
-              style={{ filter: 'brightness(0) saturate(100%) invert(69%) sepia(96%) saturate(1467%) hue-rotate(3deg) brightness(104%) contrast(95%)' }}
-            />
           </div>
         </div>
       </div>
@@ -756,47 +728,29 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* Testimonial / Why Choose Us - With Product Image */}
-      <section id="reviews" className="bg-gradient-to-br from-amber-50/30 via-white to-blue-50/30 py-4 sm:py-6 md:py-8">
-        <div className="container mx-auto px-4 max-w-7xl">
-          <div className="flex flex-col md:grid md:grid-cols-3 gap-4 sm:gap-6 md:gap-8 items-stretch">
-            {/* Left: Product Image Showcase */}
-            <div className="hidden md:flex animate-fade-in-left items-center justify-center">
-              <div className="relative w-full max-w-[200px] aspect-[3/4] overflow-hidden shadow-2xl">
-                <Image
-                  src={allProducts[0]?.images[0] || '/placeholder.jpg'}
-                  alt="Premium Saxophone"
-                  fill
-                  className="object-cover"
-                  sizes="200px"
-                />
-                <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent" />
-                <div className="absolute bottom-3 left-3 right-3">
-                  <p className="text-white text-xs font-medium">Premium Quality</p>
-                  <p className="text-amber-300 text-[10px]">Handpicked Selection</p>
-                </div>
-              </div>
-            </div>
-
-            {/* Center: Why Musicians Choose Us */}
-            <div className="animate-fade-in-up flex flex-col">
-              <h2 className="text-lg sm:text-xl md:text-2xl font-bold text-secondary mb-3 sm:mb-4 text-center md:text-left">
+      {/* Testimonial / Why Choose Us */}
+      <section id="reviews" className="bg-gradient-to-br from-amber-50/30 via-white to-blue-50/30 py-6 sm:py-8 md:py-10">
+        <div className="container mx-auto px-4 max-w-6xl">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-10 items-stretch">
+            {/* Left: Why Musicians Choose Us */}
+            <div className="animate-fade-in-left">
+              <h2 className="text-xl sm:text-2xl md:text-3xl font-bold text-secondary mb-4 sm:mb-6">
                 Why Musicians Choose Us
               </h2>
-              <div className="space-y-2 sm:space-y-3 flex-1">
+              <div className="space-y-3 sm:space-y-4">
                 {[
                   { title: '40+ Years of Expertise', desc: 'Trusted by professional musicians since 1985' },
                   { title: 'Professional Setup', desc: 'Every instrument is play-tested and adjusted' },
                   { title: 'Expert Consultation', desc: 'Our staff includes professional players' },
                   { title: 'Lifetime Support', desc: 'We\'re here throughout your musical journey' },
                 ].map((item, i) => (
-                  <div key={i} className="flex gap-2 sm:gap-3 p-2 sm:p-2.5 bg-white border border-transparent hover:border-primary/30 transition-all duration-500 hover:shadow-lg">
-                    <div className="flex-shrink-0 w-7 h-7 sm:w-8 sm:h-8 bg-primary/10 flex items-center justify-center">
-                      <Star className="h-3 w-3 sm:h-3.5 sm:w-3.5 text-primary" />
+                  <div key={i} className="flex gap-3 sm:gap-4 p-3 sm:p-4 bg-white border border-transparent hover:border-primary/30 transition-all duration-500 hover:shadow-lg">
+                    <div className="flex-shrink-0 w-10 h-10 sm:w-12 sm:h-12 bg-primary/10 flex items-center justify-center">
+                      <Star className="h-4 w-4 sm:h-5 sm:w-5 text-primary" />
                     </div>
                     <div>
-                      <h3 className="font-semibold text-secondary text-xs sm:text-sm">{item.title}</h3>
-                      <p className="text-[10px] sm:text-xs text-muted-foreground">{item.desc}</p>
+                      <h3 className="font-semibold text-secondary text-sm sm:text-base">{item.title}</h3>
+                      <p className="text-xs sm:text-sm text-muted-foreground">{item.desc}</p>
                     </div>
                   </div>
                 ))}
@@ -805,16 +759,16 @@ export default function HomePage() {
 
             {/* Right: Featured Review - Zach E. */}
             <div className="animate-fade-in-right flex flex-col">
-              <div className="bg-gradient-to-br from-primary/10 to-primary/5 p-4 sm:p-5 h-full flex flex-col justify-center">
-                <div className="flex justify-center mb-3 sm:mb-4">
+              <div className="bg-gradient-to-br from-primary/10 to-primary/5 p-5 sm:p-6 md:p-8 h-full flex flex-col justify-center">
+                <div className="flex justify-center mb-4 sm:mb-5">
                   {[...Array(5)].map((_, i) => (
-                    <Star key={i} className="h-4 w-4 sm:h-5 sm:w-5 md:h-6 md:w-6 fill-amber-400 text-amber-400" />
+                    <Star key={i} className="h-5 w-5 sm:h-6 sm:w-6 md:h-7 md:w-7 fill-amber-400 text-amber-400" />
                   ))}
                 </div>
-                <blockquote className="text-sm sm:text-base md:text-lg italic text-secondary mb-4 sm:mb-5 leading-relaxed text-center">
+                <blockquote className="text-sm sm:text-base md:text-lg italic text-secondary mb-5 sm:mb-6 leading-relaxed text-center">
                   &ldquo;This was the single best transaction I've had with an online seller. James sent me a 10 minute video minutes after contacting him detailing the horn and exhibiting the condition. Shipping from Vietnam to the US east coast took 3 days and the packaging was impeccable. The horn arrived exactly as described and plays just as well as it should; James did an excellent job replacing pads and adjusting. There are no visible or audible leaks. I would purchase from him again in a heartbeat.&rdquo;
                 </blockquote>
-                <div className="font-semibold text-secondary text-sm sm:text-base text-center">— Zach E.</div>
+                <div className="font-semibold text-secondary text-base sm:text-lg text-center">— Zach E.</div>
               </div>
             </div>
           </div>
