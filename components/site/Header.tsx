@@ -262,7 +262,7 @@ export function Header() {
           <div className={`flex items-center justify-between transition-all duration-300 ${isScrolled ? 'h-[56px] md:h-16' : 'h-[64px] md:h-20'
             }`}>
 
-            {/* Left: Logo - Larger size */}
+            {/* Left: Logo */}
             <Link href="/" className="flex items-center shrink-0 group">
               <Image
                 src="/logo.png"
@@ -275,35 +275,30 @@ export function Header() {
               />
             </Link>
 
-            {/* Right: All navigation items - Compact spacing */}
-            <div className="hidden lg:flex items-center gap-3">
-              {/* Social Icons - Compact */}
-              <div className="flex items-center gap-1">
-                {[
-                  { href: 'https://facebook.com', icon: Facebook, label: 'Facebook' },
-                  { href: 'https://instagram.com', icon: Instagram, label: 'Instagram' },
-                  { href: 'https://youtube.com', icon: Youtube, label: 'YouTube' },
-                  { href: 'https://twitter.com', icon: Twitter, label: 'Twitter' },
-                ].map((social, i) => (
-                  <Link
-                    key={social.href}
-                    href={social.href}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="rounded-full bg-[#2c3e50]/20 p-1.5 hover:bg-[#2c3e50]/40 hover:scale-110 hover:rotate-6 transition-all duration-300"
-                    aria-label={social.label}
-                    style={{ animationDelay: `${i * 0.05}s` }}
-                  >
-                    <social.icon className="h-3 w-3 text-[#2c3e50]" />
-                  </Link>
-                ))}
+            {/* Center: Search Box - fills the gap */}
+            <div className="hidden lg:flex flex-1 max-w-md mx-6">
+              <div 
+                className="relative w-full cursor-pointer"
+                onClick={() => setIsSearchOpen(true)}
+              >
+                <input
+                  type="text"
+                  placeholder="Search saxophones..."
+                  className="w-full h-9 pl-10 pr-4 rounded-full bg-white/80 border border-[#2c3e50]/20 text-sm text-[#2c3e50] placeholder-[#2c3e50]/50 focus:outline-none focus:ring-2 focus:ring-[#2c3e50]/30 focus:bg-white transition-all font-body cursor-pointer"
+                  readOnly
+                />
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-[#2c3e50]/50" />
               </div>
+            </div>
 
-              {/* Divider */}
-              <div className="h-5 w-px bg-[#2c3e50]/30" />
-
-              {/* Navigation Links - Compact */}
-              <nav className="flex items-center gap-3 text-sm font-medium">
+            {/* Right: Navigation & Actions */}
+            <div className="hidden lg:flex items-center gap-4">
+              {/* Navigation Links */}
+              <nav className="flex items-center gap-5 text-sm font-medium">
+                <Link href="/shop" className="text-[#2c3e50] hover:text-[#1a252f] transition-all duration-300 relative group/nav font-body">
+                  Shop
+                  <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-[#2c3e50] transition-all duration-300 group-hover/nav:w-full" />
+                </Link>
                 <Link href="/about" className="text-[#2c3e50] hover:text-[#1a252f] transition-all duration-300 relative group/nav font-body">
                   About Us
                   <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-[#2c3e50] transition-all duration-300 group-hover/nav:w-full" />
@@ -321,17 +316,31 @@ export function Header() {
               {/* Divider */}
               <div className="h-5 w-px bg-[#2c3e50]/30" />
 
-              {/* Search */}
-              <Button
-                variant="ghost"
-                size="icon"
-                onClick={() => setIsSearchOpen(true)}
-                aria-label="Search"
-                className="text-[#2c3e50] hover:text-[#1a252f] hover:bg-[#2c3e50]/10 hover:scale-110 transition-all duration-300 h-8 w-8"
-              >
-                <Search className="h-4 w-4" />
-              </Button>
+              {/* Social Icons */}
+              <div className="flex items-center gap-1.5">
+                {[
+                  { href: 'https://facebook.com', icon: Facebook, label: 'Facebook' },
+                  { href: 'https://instagram.com', icon: Instagram, label: 'Instagram' },
+                  { href: 'https://youtube.com', icon: Youtube, label: 'YouTube' },
+                  { href: 'https://twitter.com', icon: Twitter, label: 'Twitter' },
+                ].map((social, i) => (
+                  <Link
+                    key={social.href}
+                    href={social.href}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="rounded-full bg-[#2c3e50]/20 p-1.5 hover:bg-[#2c3e50]/40 hover:scale-110 hover:rotate-6 transition-all duration-300"
+                    aria-label={social.label}
+                    style={{ animationDelay: `${i * 0.05}s` }}
+                  >
+                    <social.icon className="h-3.5 w-3.5 text-[#2c3e50]" />
+                  </Link>
+                ))}
+              </div>
+            </div>
 
+            {/* Right: Actions */}
+            <div className="hidden lg:flex items-center gap-2">
               {/* Cart */}
               <Button
                 variant="ghost"
