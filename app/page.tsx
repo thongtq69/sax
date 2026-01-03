@@ -22,9 +22,10 @@ const getReviewExcerpt = (message: string, maxLength = 160) => {
 // ============ REVIEWS CAROUSEL COMPONENT ============
 interface ReviewsCarouselProps {
   reviews: Review[]
+  productImages?: string[]
 }
 
-function ReviewsCarousel({ reviews }: ReviewsCarouselProps) {
+function ReviewsCarousel({ reviews, productImages = [] }: ReviewsCarouselProps) {
   const [currentIndex, setCurrentIndex] = useState(0)
   const [isPaused, setIsPaused] = useState(false)
   const [isAnimating, setIsAnimating] = useState(false)
@@ -51,6 +52,7 @@ function ReviewsCarousel({ reviews }: ReviewsCarouselProps) {
   if (reviews.length === 0) return null
 
   const currentReview = reviews[currentIndex]
+  const currentImage = productImages[currentIndex % productImages.length]
 
   return (
     <div
@@ -60,48 +62,59 @@ function ReviewsCarousel({ reviews }: ReviewsCarouselProps) {
     >
       {/* Compact Horizontal Review Card - Full Width */}
       <div
-        className={`bg-white rounded-xl sm:rounded-2xl p-5 sm:p-6 md:p-8 shadow-lg border border-gray-100 transition-all duration-300 ease-out ${
+        className={`bg-white rounded-xl sm:rounded-2xl p-4 sm:p-5 md:p-6 shadow-lg border border-gray-100 transition-all duration-300 ease-out ${
           isAnimating ? 'opacity-0 scale-98' : 'opacity-100 scale-100'
         }`}
       >
-        <div className="flex flex-col sm:flex-row sm:items-center gap-4 sm:gap-8">
-          {/* Left: Stars + Name */}
-          <div className="flex sm:flex-col items-center sm:items-start gap-3 sm:gap-2 sm:min-w-[140px]">
-            <div className="flex gap-1">
-              {[...Array(5)].map((_, i) => (
-                <Star
-                  key={i}
-                  className={`h-4 w-4 sm:h-5 sm:w-5 ${
-                    i < currentReview.rating
-                      ? 'fill-amber-400 text-amber-400'
-                      : 'fill-gray-200 text-gray-200'
-                  }`}
+        <div className="flex flex-col sm:flex-row sm:items-center gap-4 sm:gap-6">
+          {/* Left: Product Image */}
+          {currentImage && (
+            <div className="hidden sm:block flex-shrink-0">
+              <div className="relative w-20 h-20 md:w-24 md:h-24 rounded-xl overflow-hidden shadow-md">
+                <Image
+                  src={currentImage}
+                  alt="Product"
+                  fill
+                  className="object-cover"
+                  sizes="96px"
                 />
-              ))}
+              </div>
             </div>
-            <div className="sm:mt-1">
-              <p className="font-semibold text-secondary text-base sm:text-lg">{currentReview.buyerName}</p>
-              <p className="text-xs sm:text-sm text-muted-foreground">
-                {new Date(currentReview.date).toLocaleDateString('en-US', { month: 'short', year: 'numeric' })}
-              </p>
-            </div>
-          </div>
+          )}
 
-          {/* Center: Review Text */}
+          {/* Center: Stars + Name + Review */}
           <div className="flex-1">
-            <p className="text-gray-700 text-base sm:text-lg md:text-xl leading-relaxed italic">
-              "{getReviewExcerpt(currentReview.message || 'Great experience!', 280)}"
+            <div className="flex items-center gap-3 mb-2">
+              <div className="flex gap-0.5">
+                {[...Array(5)].map((_, i) => (
+                  <Star
+                    key={i}
+                    className={`h-3.5 w-3.5 sm:h-4 sm:w-4 ${
+                      i < currentReview.rating
+                        ? 'fill-amber-400 text-amber-400'
+                        : 'fill-gray-200 text-gray-200'
+                    }`}
+                  />
+                ))}
+              </div>
+              <span className="text-sm font-semibold text-secondary">{currentReview.buyerName}</span>
+              <span className="text-xs text-muted-foreground">
+                {new Date(currentReview.date).toLocaleDateString('en-US', { month: 'short', year: 'numeric' })}
+              </span>
+            </div>
+            <p className="text-gray-700 text-sm sm:text-base md:text-lg leading-relaxed italic">
+              "{getReviewExcerpt(currentReview.message || 'Great experience!', 220)}"
             </p>
           </div>
 
-          {/* Right: Large Saxophone Icon */}
-          <div className="hidden md:flex w-32 h-32 lg:w-40 lg:h-40 items-center justify-center flex-shrink-0">
+          {/* Right: Decorative Saxophone */}
+          <div className="hidden lg:flex w-24 h-24 items-center justify-center flex-shrink-0 opacity-20">
             <Image
               src="/saxophone-icon.svg"
               alt="Saxophone"
-              width={160}
-              height={160}
-              className="w-full h-full opacity-30"
+              width={96}
+              height={96}
+              className="w-full h-full"
               style={{ filter: 'brightness(0) saturate(100%) invert(69%) sepia(96%) saturate(1467%) hue-rotate(3deg) brightness(104%) contrast(95%)' }}
             />
           </div>
@@ -109,7 +122,7 @@ function ReviewsCarousel({ reviews }: ReviewsCarouselProps) {
       </div>
 
       {/* View All Reviews Button */}
-      <div className="mt-4 sm:mt-5 text-center">
+      <div className="mt-3 sm:mt-4 text-center">
         <Button
           size="sm"
           variant="outline"
@@ -148,7 +161,7 @@ function NewArrivalsCarousel({ products, id }: NewArrivalsCarouselProps) {
   }, [])
 
   // Number of products to show at once
-  const productsPerView = isMobile ? 1 : 4
+  const productsPerView = isMobile ? 2 : 6
 
   // Auto-advance every 4 seconds with fast smooth animation
   useEffect(() => {
@@ -210,7 +223,7 @@ function NewArrivalsCarousel({ products, id }: NewArrivalsCarouselProps) {
     >
       {/* Products Grid with Fast Animation */}
       <div className="overflow-hidden">
-        <div className={`grid ${isMobile ? 'grid-cols-1' : 'grid-cols-4'} gap-4 sm:gap-6`}>
+        <div className={`grid ${isMobile ? 'grid-cols-2' : 'grid-cols-6'} gap-3 sm:gap-4`}>
           {displayProducts.map((product, index) => (
             <div
               key={`${id}-${product.id}-${currentIndex}-${index}`}
@@ -390,6 +403,7 @@ function InfiniteCarousel({ products, id, speed = 100 }: InfiniteCarouselProps) 
 export default function HomePage() {
   const [featuredProducts, setFeaturedProducts] = useState<Product[]>([])
   const [saleProducts, setSaleProducts] = useState<Product[]>([])
+  const [allProducts, setAllProducts] = useState<Product[]>([])
   const [categories, setCategories] = useState<any[]>([])
   const [categoryCounts, setCategoryCounts] = useState<Record<string, number>>({})
   const [subcategories, setSubcategories] = useState<any[]>([])
@@ -407,6 +421,11 @@ export default function HomePage() {
         const comingSoonResponse = await getProducts({ badge: 'coming-soon', limit: 8 })
         const comingSoon = comingSoonResponse.products.map(transformProduct)
         setSaleProducts(comingSoon)
+
+        // Fetch all products for gallery
+        const allResponse = await getProducts({ limit: 28 })
+        const all = allResponse.products.map(transformProduct)
+        setAllProducts(all)
 
         const categoriesData = await getCategories()
         const transformedCategories = categoriesData.map(transformCategory)
@@ -618,16 +637,16 @@ export default function HomePage() {
           </div>
 
           {/* Reviews Grid - Auto-scrolling Carousel */}
-          <ReviewsCarousel reviews={reviews} />
+          <ReviewsCarousel reviews={reviews} productImages={allProducts.slice(0, 10).map(p => p.images[0])} />
         </div>
       </section>
 
       {/* NEW ARRIVALS Section */}
       {saleProducts.length > 0 && (
-        <section className="container mx-auto px-4 py-8 sm:py-12 md:py-16">
-          <div className="mb-6 sm:mb-8 md:mb-10 text-center animate-fade-in-up">
+        <section className="container mx-auto px-4 py-4 sm:py-6 md:py-8">
+          <div className="mb-4 sm:mb-5 text-center animate-fade-in-up">
             <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold text-secondary">NEW ARRIVALS</h2>
-            <div className="mt-2 sm:mt-3 flex items-center justify-center space-x-4">
+            <div className="mt-2 flex items-center justify-center space-x-4">
               <div className="h-px w-12 sm:w-16 bg-gradient-to-r from-transparent to-primary" />
               <span className="text-3xl sm:text-4xl text-primary">♪</span>
               <div className="h-px w-12 sm:w-16 bg-gradient-to-l from-transparent to-primary" />
@@ -640,10 +659,10 @@ export default function HomePage() {
       )}
 
       {/* Featured Products - New Arrivals */}
-      <section className="container mx-auto px-4 py-8 sm:py-12 md:py-16">
-        <div className="mb-6 sm:mb-8 md:mb-10 text-center animate-fade-in-up">
+      <section className="container mx-auto px-4 py-4 sm:py-6 md:py-8">
+        <div className="mb-4 sm:mb-5 text-center animate-fade-in-up">
           <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold text-secondary">Featured Instruments</h2>
-          <div className="mt-2 sm:mt-3 flex items-center justify-center space-x-4">
+          <div className="mt-2 flex items-center justify-center space-x-4">
             <div className="h-px w-12 sm:w-16 bg-gradient-to-r from-transparent to-primary" />
             <span className="text-3xl sm:text-4xl text-primary">♫</span>
             <div className="h-px w-12 sm:w-16 bg-gradient-to-l from-transparent to-primary" />
@@ -654,7 +673,7 @@ export default function HomePage() {
         <NewArrivalsCarousel products={featuredProducts} id="featured" />
 
         {/* View All Button */}
-        <div className="mt-6 sm:mt-8 md:mt-10 text-center">
+        <div className="mt-4 sm:mt-5 text-center">
           <Button
             variant="outline"
             size="lg"
@@ -669,12 +688,12 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* Shop by Category */}
-      <section className="bg-gradient-to-b from-muted/50 to-white py-8 sm:py-12 md:py-16">
+      {/* Shop by Category - With Product Images */}
+      <section className="bg-gradient-to-b from-muted/50 to-white py-4 sm:py-6 md:py-8">
         <div className="container mx-auto px-4">
-          <div className="mb-6 sm:mb-8 md:mb-10 text-center animate-fade-in-up">
+          <div className="mb-4 sm:mb-5 text-center animate-fade-in-up">
             <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold text-secondary">Shop by Category</h2>
-            <div className="mt-2 sm:mt-3 flex items-center justify-center space-x-4">
+            <div className="mt-2 flex items-center justify-center space-x-4">
               <div className="h-px w-12 sm:w-16 bg-gradient-to-r from-transparent to-primary" />
               <span className="text-3xl sm:text-4xl text-primary">♬</span>
               <div className="h-px w-12 sm:w-16 bg-gradient-to-l from-transparent to-primary" />
@@ -686,34 +705,37 @@ export default function HomePage() {
               {subcategories.map((sub, i) => {
                 // Remove "Saxophones" from display name
                 const displayName = sub.name.replace(/\s+Saxophones?/gi, '')
-                // Different music notes for each category
-                const musicNotes = ['♪', '♫', '♩', '♬']
-                const noteIndex = i % musicNotes.length
+                // Get a product image for this category from allProducts
+                const categoryProduct = allProducts.find(p => 
+                  p.name.toLowerCase().includes(displayName.toLowerCase()) ||
+                  p.category?.toLowerCase().includes(displayName.toLowerCase())
+                ) || allProducts[i % allProducts.length]
 
                 return (
                   <Link
                     key={sub.slug}
                     href={`/shop?subcategory=${sub.slug}`}
-                    className="group relative overflow-hidden rounded-xl sm:rounded-2xl bg-secondary border-2 border-transparent hover:border-gradient-animate transition-all duration-500 hover:shadow-2xl animate-tilt-3d animate-fade-in-up"
+                    className="group relative overflow-hidden rounded-xl sm:rounded-2xl border-2 border-transparent hover:border-primary transition-all duration-500 hover:shadow-2xl animate-fade-in-up"
                     style={{ animationDelay: `${0.1 * i}s` }}
                   >
-                    {/* Gradient border effect on hover */}
-                    <div className="absolute inset-0 bg-gradient-to-r from-accent via-primary to-accent opacity-0 group-hover:opacity-100 transition-opacity duration-500 rounded-xl sm:rounded-2xl -z-10" style={{ padding: '2px' }} />
-
-                    {/* Horizontal layout container - icon left, text right */}
-                    <div className="relative z-10 flex flex-row items-center p-3 sm:p-4 md:p-6 lg:p-8 h-full min-h-[70px] sm:min-h-[90px] md:min-h-[110px] bg-secondary rounded-xl sm:rounded-2xl">
-                      {/* Left section - Music note icon */}
-                      <div className="flex-shrink-0 mr-2 sm:mr-3 md:mr-5 lg:mr-6 flex items-center justify-center">
-                        <span className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl text-amber-400 transition-all duration-300 group-hover:scale-125 group-hover:rotate-12">
-                          {musicNotes[noteIndex]}
-                        </span>
-                      </div>
-
-                      {/* Right section - Category name only (larger) */}
-                      <div className="flex-1 flex flex-col justify-center">
-                        <h3 className="text-base sm:text-lg md:text-2xl lg:text-3xl font-bold text-white group-hover:text-accent transition-colors duration-300 leading-tight">
+                    {/* Background Product Image */}
+                    <div className="relative h-[120px] sm:h-[140px] md:h-[160px] lg:h-[180px]">
+                      <Image
+                        src={categoryProduct?.images[0] || '/placeholder.jpg'}
+                        alt={displayName}
+                        fill
+                        className="object-cover transition-transform duration-500 group-hover:scale-110"
+                        sizes="(max-width: 640px) 50vw, (max-width: 1024px) 50vw, 25vw"
+                      />
+                      {/* Gradient Overlay */}
+                      <div className="absolute inset-0 bg-gradient-to-t from-secondary via-secondary/70 to-transparent" />
+                      
+                      {/* Category Name */}
+                      <div className="absolute bottom-0 left-0 right-0 p-3 sm:p-4">
+                        <h3 className="text-lg sm:text-xl md:text-2xl font-bold text-white group-hover:text-amber-300 transition-colors duration-300">
                           {displayName}
                         </h3>
+                        <p className="text-xs text-white/70 mt-0.5">View Collection →</p>
                       </div>
                     </div>
                   </Link>
@@ -724,23 +746,27 @@ export default function HomePage() {
               {!subcategories.find(s => s.slug.includes('baritone') || s.name.toLowerCase().includes('baritone')) && (
                 <Link
                   href="/shop?subcategory=baritone-saxophones"
-                  className="group relative overflow-hidden rounded-xl sm:rounded-2xl bg-secondary border border-secondary/80 transition-all duration-300 hover:shadow-xl hover:bg-secondary/90 hover:scale-[1.02] animate-fade-in-up"
+                  className="group relative overflow-hidden rounded-xl sm:rounded-2xl border-2 border-transparent hover:border-primary transition-all duration-500 hover:shadow-2xl animate-fade-in-up"
                   style={{ animationDelay: `${0.1 * subcategories.length}s` }}
                 >
-                  {/* Horizontal layout container - icon left, text right */}
-                  <div className="relative z-10 flex flex-row items-center p-3 sm:p-4 md:p-6 lg:p-8 h-full min-h-[70px] sm:min-h-[90px] md:min-h-[110px]">
-                    {/* Left section - Music note icon */}
-                    <div className="flex-shrink-0 mr-2 sm:mr-3 md:mr-5 lg:mr-6 flex items-center justify-center">
-                      <span className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl text-amber-400 transition-all duration-300 group-hover:scale-125 group-hover:rotate-12">
-                        ♩
-                      </span>
-                    </div>
-
-                    {/* Right section - Category name only (larger) */}
-                    <div className="flex-1 flex flex-col justify-center">
-                      <h3 className="text-base sm:text-lg md:text-2xl lg:text-3xl font-bold text-white group-hover:text-accent transition-colors duration-300 leading-tight">
+                  {/* Background Product Image */}
+                  <div className="relative h-[120px] sm:h-[140px] md:h-[160px] lg:h-[180px]">
+                    <Image
+                      src={allProducts[3]?.images[0] || '/placeholder.jpg'}
+                      alt="Baritone"
+                      fill
+                      className="object-cover transition-transform duration-500 group-hover:scale-110"
+                      sizes="(max-width: 640px) 50vw, (max-width: 1024px) 50vw, 25vw"
+                    />
+                    {/* Gradient Overlay */}
+                    <div className="absolute inset-0 bg-gradient-to-t from-secondary via-secondary/70 to-transparent" />
+                    
+                    {/* Category Name */}
+                    <div className="absolute bottom-0 left-0 right-0 p-3 sm:p-4">
+                      <h3 className="text-lg sm:text-xl md:text-2xl font-bold text-white group-hover:text-amber-300 transition-colors duration-300">
                         Baritone
                       </h3>
+                      <p className="text-xs text-white/70 mt-0.5">View Collection →</p>
                     </div>
                   </div>
                 </Link>
@@ -750,13 +776,31 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* Testimonial / Why Choose Us */}
-      <section id="reviews" className="bg-gradient-to-br from-amber-50/30 via-white to-blue-50/30 py-6 sm:py-10 md:py-14">
+      {/* Testimonial / Why Choose Us - With Product Image */}
+      <section id="reviews" className="bg-gradient-to-br from-amber-50/30 via-white to-blue-50/30 py-4 sm:py-6 md:py-8">
         <div className="container mx-auto px-4 max-w-7xl">
-          <div className="flex flex-col md:grid md:grid-cols-2 gap-4 sm:gap-6 md:gap-8 lg:gap-12 items-stretch">
-            {/* Left: Why Musicians Choose Us */}
-            <div className="animate-fade-in-left flex flex-col">
-              <h2 className="text-lg sm:text-xl md:text-2xl lg:text-3xl font-bold text-secondary mb-3 sm:mb-4 md:mb-6">
+          <div className="flex flex-col md:grid md:grid-cols-3 gap-4 sm:gap-6 md:gap-8 items-stretch">
+            {/* Left: Product Image Showcase */}
+            <div className="hidden md:flex animate-fade-in-left items-center justify-center">
+              <div className="relative w-full max-w-[200px] aspect-[3/4] rounded-2xl overflow-hidden shadow-2xl">
+                <Image
+                  src={allProducts[0]?.images[0] || '/placeholder.jpg'}
+                  alt="Premium Saxophone"
+                  fill
+                  className="object-cover"
+                  sizes="200px"
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent" />
+                <div className="absolute bottom-3 left-3 right-3">
+                  <p className="text-white text-xs font-medium">Premium Quality</p>
+                  <p className="text-amber-300 text-[10px]">Handpicked Selection</p>
+                </div>
+              </div>
+            </div>
+
+            {/* Center: Why Musicians Choose Us */}
+            <div className="animate-fade-in-up flex flex-col">
+              <h2 className="text-lg sm:text-xl md:text-2xl font-bold text-secondary mb-3 sm:mb-4 text-center md:text-left">
                 Why Musicians Choose Us
               </h2>
               <div className="space-y-2 sm:space-y-3 flex-1">
@@ -766,7 +810,7 @@ export default function HomePage() {
                   { title: 'Expert Consultation', desc: 'Our staff includes professional players' },
                   { title: 'Lifetime Support', desc: 'We\'re here throughout your musical journey' },
                 ].map((item, i) => (
-                  <div key={i} className="flex gap-2 sm:gap-3 p-2 sm:p-2.5 md:p-3 rounded-lg sm:rounded-xl bg-white border border-transparent hover:border-primary/30 transition-all duration-500 hover:shadow-lg progressive-reveal scroll-reveal" data-delay={i * 100}>
+                  <div key={i} className="flex gap-2 sm:gap-3 p-2 sm:p-2.5 rounded-lg bg-white border border-transparent hover:border-primary/30 transition-all duration-500 hover:shadow-lg">
                     <div className="flex-shrink-0 w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-primary/10 flex items-center justify-center">
                       <Star className="h-3 w-3 sm:h-3.5 sm:w-3.5 text-primary" />
                     </div>
@@ -781,7 +825,7 @@ export default function HomePage() {
 
             {/* Right: Featured Review - Zach E. */}
             <div className="animate-fade-in-right flex flex-col">
-              <div className="bg-gradient-to-br from-primary/10 to-primary/5 rounded-xl sm:rounded-2xl p-4 sm:p-6 md:p-8 h-full flex flex-col justify-center">
+              <div className="bg-gradient-to-br from-primary/10 to-primary/5 rounded-xl sm:rounded-2xl p-4 sm:p-5 h-full flex flex-col justify-center">
                 <div className="flex justify-center mb-3 sm:mb-4">
                   {[...Array(5)].map((_, i) => (
                     <Star key={i} className="h-4 w-4 sm:h-5 sm:w-5 md:h-6 md:w-6 fill-amber-400 text-amber-400" />
