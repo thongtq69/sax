@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/button'
 import { ProductCard } from '@/components/product/ProductCard'
 import { getProducts, getCategories, transformProduct, transformCategory } from '@/lib/api'
 import type { Product } from '@/lib/data'
-import { Phone, Shield, Truck, CreditCard, Award, Headphones, Music, ChevronRight, ChevronLeft, Star, Sparkles } from 'lucide-react'
+import { Phone, Shield, Truck, CreditCard, Award, Headphones, ChevronRight, ChevronLeft, Star, Sparkles } from 'lucide-react'
 import { reviews, type Review } from '@/lib/reviews'
 import { ScrollAnimations } from '@/components/site/ScrollAnimations'
 
@@ -27,24 +27,19 @@ interface ReviewsCarouselProps {
 function ReviewsCarousel({ reviews }: ReviewsCarouselProps) {
   const [currentIndex, setCurrentIndex] = useState(0)
   const [isPaused, setIsPaused] = useState(false)
+  const [isAnimating, setIsAnimating] = useState(false)
   const intervalRef = useRef<NodeJS.Timeout | null>(null)
-
-  // Show 4 reviews at a time on desktop, 1 on mobile
-  const reviewsPerView = 4
 
   useEffect(() => {
     if (reviews.length === 0 || isPaused) return
 
     intervalRef.current = setInterval(() => {
-      setCurrentIndex((prev) => {
-        // Calculate next index - loop through all reviews
-        const nextIndex = prev + 1
-        if (nextIndex >= reviews.length) {
-          return 0
-        }
-        return nextIndex
-      })
-    }, 4000) // Change every 4 seconds
+      setIsAnimating(true)
+      setTimeout(() => {
+        setCurrentIndex((prev) => (prev + 1) % reviews.length)
+        setTimeout(() => setIsAnimating(false), 50)
+      }, 200)
+    }, 5000)
 
     return () => {
       if (intervalRef.current) {
@@ -55,17 +50,7 @@ function ReviewsCarousel({ reviews }: ReviewsCarouselProps) {
 
   if (reviews.length === 0) return null
 
-  // Get reviews to display - create circular array
-  const getDisplayReviews = () => {
-    const display: Review[] = []
-    for (let i = 0; i < reviewsPerView; i++) {
-      const index = (currentIndex + i) % reviews.length
-      display.push(reviews[index])
-    }
-    return display
-  }
-
-  const displayReviews = getDisplayReviews()
+  const currentReview = reviews[currentIndex]
 
   return (
     <div
@@ -73,60 +58,196 @@ function ReviewsCarousel({ reviews }: ReviewsCarouselProps) {
       onMouseEnter={() => setIsPaused(true)}
       onMouseLeave={() => setIsPaused(false)}
     >
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 lg:gap-6">
-        {displayReviews.map((review, index) => (
-          <div
-            key={`${review.id}-${currentIndex}-${index}`}
-            className={`bg-white rounded-xl sm:rounded-2xl p-3 sm:p-4 lg:p-6 shadow-lg border border-gray-100 hover:shadow-2xl hover:border-primary/30 hover:-translate-y-2 hover-border-glow transition-all duration-500 animate-fade-in-up group ${
-              index >= 1 ? 'hidden sm:block' : ''
-            } ${index >= 2 ? 'sm:hidden lg:block' : ''}`}
-            style={{ animationDelay: `${0.1 * index}s` }}
-          >
-            <div className="flex items-center gap-1 mb-2 group-hover:scale-105 transition-transform duration-300">
+      {/* Compact Horizontal Review Card - Full Width */}
+      <div
+        className={`bg-white rounded-xl sm:rounded-2xl p-5 sm:p-6 md:p-8 shadow-lg border border-gray-100 transition-all duration-300 ease-out ${
+          isAnimating ? 'opacity-0 scale-98' : 'opacity-100 scale-100'
+        }`}
+      >
+        <div className="flex flex-col sm:flex-row sm:items-center gap-4 sm:gap-8">
+          {/* Left: Stars + Name */}
+          <div className="flex sm:flex-col items-center sm:items-start gap-3 sm:gap-2 sm:min-w-[140px]">
+            <div className="flex gap-1">
               {[...Array(5)].map((_, i) => (
                 <Star
                   key={i}
-                  className={`h-3 w-3 sm:h-3.5 sm:w-3.5 transition-all duration-300 group-hover:animate-star-twinkle ${i < review.rating
-                    ? 'fill-amber-400 text-amber-400'
-                    : 'fill-gray-200 text-gray-200'
-                    }`}
-                  style={{ animationDelay: `${i * 0.05}s` }}
+                  className={`h-4 w-4 sm:h-5 sm:w-5 ${
+                    i < currentReview.rating
+                      ? 'fill-amber-400 text-amber-400'
+                      : 'fill-gray-200 text-gray-200'
+                  }`}
                 />
               ))}
             </div>
-            <p className="text-gray-700 mb-2 sm:mb-3 text-xs sm:text-sm leading-relaxed line-clamp-3">
-              "{getReviewExcerpt(review.message || 'Great experience!', 120)}"
-            </p>
-            <div className="flex items-center justify-between pt-2 sm:pt-3 border-t border-gray-100 animate-fade-in-up" style={{ animationDelay: `${0.2 + index * 0.1}s` }}>
-              <div>
-                <p className="font-semibold text-secondary text-xs">{review.buyerName}</p>
-                <p className="text-[10px] text-muted-foreground">
-                  {new Date(review.date).toLocaleDateString('en-US', {
-                    year: '2-digit',
-                    month: 'short'
-                  })}
-                </p>
-              </div>
-              <div className="text-lg sm:text-xl transition-transform duration-300 group-hover:rotate-12 group-hover:scale-110">🎷</div>
+            <div className="sm:mt-1">
+              <p className="font-semibold text-secondary text-base sm:text-lg">{currentReview.buyerName}</p>
+              <p className="text-xs sm:text-sm text-muted-foreground">
+                {new Date(currentReview.date).toLocaleDateString('en-US', { month: 'short', year: 'numeric' })}
+              </p>
             </div>
           </div>
-        ))}
+
+          {/* Center: Review Text */}
+          <div className="flex-1">
+            <p className="text-gray-700 text-base sm:text-lg md:text-xl leading-relaxed italic">
+              "{getReviewExcerpt(currentReview.message || 'Great experience!', 280)}"
+            </p>
+          </div>
+
+          {/* Right: Large Saxophone Icon */}
+          <div className="hidden md:flex w-32 h-32 lg:w-40 lg:h-40 items-center justify-center flex-shrink-0">
+            <Image
+              src="/saxophone-icon.svg"
+              alt="Saxophone"
+              width={160}
+              height={160}
+              className="w-full h-full opacity-30"
+              style={{ filter: 'brightness(0) saturate(100%) invert(69%) sepia(96%) saturate(1467%) hue-rotate(3deg) brightness(104%) contrast(95%)' }}
+            />
+          </div>
+        </div>
       </div>
 
       {/* View All Reviews Button */}
-      <div className="mt-4 sm:mt-6 lg:mt-10 text-center animate-fade-in-up" style={{ animationDelay: '0.4s' }}>
+      <div className="mt-4 sm:mt-5 text-center">
         <Button
           size="sm"
           variant="outline"
-          className="border-2 border-primary text-primary hover:bg-primary hover:text-white font-semibold px-4 sm:px-6 lg:px-8 text-xs sm:text-sm h-8 sm:h-10"
+          className="border-2 border-primary text-primary hover:bg-primary hover:text-white font-semibold px-5 sm:px-6 text-xs sm:text-sm h-8 sm:h-9"
           asChild
         >
           <Link href="#reviews">
             View All Reviews
-            <ChevronRight className="ml-1 sm:ml-2 h-3.5 w-3.5 sm:h-4 sm:w-4" />
+            <ChevronRight className="ml-1.5 h-3.5 w-3.5 sm:h-4 sm:w-4" />
           </Link>
         </Button>
       </div>
+    </div>
+  )
+}
+
+// ============ NEW ARRIVALS CAROUSEL COMPONENT ============
+interface NewArrivalsCarouselProps {
+  products: Product[]
+  id: string
+}
+
+function NewArrivalsCarousel({ products, id }: NewArrivalsCarouselProps) {
+  const [currentIndex, setCurrentIndex] = useState(0)
+  const [isPaused, setIsPaused] = useState(false)
+  const [isAnimating, setIsAnimating] = useState(false)
+  const [isMobile, setIsMobile] = useState(false)
+  const intervalRef = useRef<NodeJS.Timeout | null>(null)
+
+  // Check for mobile viewport
+  useEffect(() => {
+    const checkMobile = () => setIsMobile(window.innerWidth < 640)
+    checkMobile()
+    window.addEventListener('resize', checkMobile)
+    return () => window.removeEventListener('resize', checkMobile)
+  }, [])
+
+  // Number of products to show at once
+  const productsPerView = isMobile ? 1 : 4
+
+  // Auto-advance every 4 seconds with fast smooth animation
+  useEffect(() => {
+    if (products.length === 0 || isPaused) return
+
+    intervalRef.current = setInterval(() => {
+      setIsAnimating(true)
+      // Quick fade out then change
+      setTimeout(() => {
+        setCurrentIndex((prev) => (prev + 1) % products.length)
+        // Quick fade in
+        setTimeout(() => setIsAnimating(false), 50)
+      }, 200)
+    }, 4000) // Change every 4 seconds
+
+    return () => {
+      if (intervalRef.current) {
+        clearInterval(intervalRef.current)
+      }
+    }
+  }, [products.length, isPaused])
+
+  // Get products to display
+  const getDisplayProducts = () => {
+    const display: Product[] = []
+    for (let i = 0; i < productsPerView; i++) {
+      const index = (currentIndex + i) % products.length
+      display.push(products[index])
+    }
+    return display
+  }
+
+  const displayProducts = getDisplayProducts()
+
+  // Manual navigation - fast
+  const goToNext = () => {
+    setIsAnimating(true)
+    setTimeout(() => {
+      setCurrentIndex((prev) => (prev + 1) % products.length)
+      setTimeout(() => setIsAnimating(false), 50)
+    }, 150)
+  }
+
+  const goToPrev = () => {
+    setIsAnimating(true)
+    setTimeout(() => {
+      setCurrentIndex((prev) => (prev - 1 + products.length) % products.length)
+      setTimeout(() => setIsAnimating(false), 50)
+    }, 150)
+  }
+
+  if (products.length === 0) return null
+
+  return (
+    <div
+      className="relative"
+      onMouseEnter={() => setIsPaused(true)}
+      onMouseLeave={() => setIsPaused(false)}
+    >
+      {/* Products Grid with Fast Animation */}
+      <div className="overflow-hidden">
+        <div className={`grid ${isMobile ? 'grid-cols-1' : 'grid-cols-4'} gap-4 sm:gap-6`}>
+          {displayProducts.map((product, index) => (
+            <div
+              key={`${id}-${product.id}-${currentIndex}-${index}`}
+              className={`transition-all duration-300 ease-out ${
+                isAnimating 
+                  ? 'opacity-0 scale-95' 
+                  : 'opacity-100 scale-100'
+              }`}
+              style={{ 
+                transitionDelay: isAnimating ? '0ms' : `${index * 30}ms`,
+              }}
+            >
+              <ProductCard product={product} index={index} />
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* Navigation arrows */}
+      <button
+        type="button"
+        aria-label="Previous products"
+        onClick={goToPrev}
+        className="hidden sm:flex absolute left-0 top-1/2 -translate-y-1/2 -translate-x-1/2 rounded-full bg-white/95 border-2 border-primary/20 shadow-xl p-3 text-primary hover:bg-primary hover:text-white hover:border-primary hover:scale-110 transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-primary z-10 items-center justify-center"
+      >
+        <ChevronLeft className="h-5 w-5" />
+      </button>
+      <button
+        type="button"
+        aria-label="Next products"
+        onClick={goToNext}
+        className="hidden sm:flex absolute right-0 top-1/2 -translate-y-1/2 translate-x-1/2 rounded-full bg-white/95 border-2 border-primary/20 shadow-xl p-3 text-primary hover:bg-primary hover:text-white hover:border-primary hover:scale-110 transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-primary z-10 items-center justify-center"
+      >
+        <ChevronRight className="h-5 w-5" />
+      </button>
+
+      {/* Progress Indicator - Hidden */}
     </div>
   )
 }
@@ -374,10 +495,22 @@ export default function HomePage() {
   return (
     <div className="space-y-0 page-content">
       <ScrollAnimations />
-      {/* Hero Section - Vintage Classic Style */}
-      <section className="homepage-hero relative min-h-[320px] md:min-h-[420px] lg:min-h-[480px] overflow-hidden bg-gradient-to-br from-primary via-primary/95 to-primary/90">
+      {/* Hero Section - Vintage Classic Style with JSC Logo */}
+      <section className="homepage-hero relative min-h-[280px] md:min-h-[360px] lg:min-h-[400px] overflow-hidden bg-gradient-to-br from-primary via-primary/95 to-primary/90">
+        {/* Music Note Pattern Background */}
+        <div className="absolute inset-0 opacity-[0.08]">
+          <div 
+            className="absolute inset-0"
+            style={{
+              backgroundImage: `url('/musicnote.svg')`,
+              backgroundSize: '120px 120px',
+              backgroundRepeat: 'repeat',
+            }}
+          />
+        </div>
+
         {/* Animated Vintage Pattern Background */}
-        <div className="absolute inset-0 opacity-10">
+        <div className="absolute inset-0 opacity-5">
           <div className="absolute inset-0 animate-pulse-soft" style={{
             backgroundImage: `url("data:image/svg+xml,%3Csvg width='80' height='80' viewBox='0 0 80 80' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.4'%3E%3Cpath d='M40 0l40 40-40 40L0 40 40 0zm0 10L10 40l30 30 30-30-30-30z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")`,
           }} />
@@ -394,41 +527,36 @@ export default function HomePage() {
         <div className="absolute top-0 left-0 right-0 h-2 bg-secondary opacity-40" />
         <div className="absolute top-3 left-0 right-0 h-0.5 bg-secondary opacity-20" />
 
-        <div className="container relative mx-auto flex min-h-[320px] md:min-h-[420px] lg:min-h-[480px] items-center px-4 py-6 md:py-10 lg:py-12">
-          <div className="max-w-3xl space-y-3 md:space-y-5">
-            {/* Vintage Badge with animation */}
-            <div className="hero-title inline-flex items-center space-x-1.5 md:space-x-2 rounded border-2 border-secondary/30 bg-secondary/10 px-3 py-1.5 md:px-4 md:py-2 backdrop-blur-sm">
-              <Music className="h-3.5 w-3.5 md:h-4 md:w-4 text-secondary animate-bounce-soft" />
-              <span className="text-xs md:text-sm font-medium tracking-widest uppercase text-secondary">
-                Premium Wind Instruments
-              </span>
+        <div className="container relative mx-auto flex min-h-[280px] md:min-h-[360px] lg:min-h-[400px] items-center px-4 py-6 md:py-8 lg:py-10">
+          <div className="max-w-3xl space-y-3 md:space-y-4">
+            {/* JSC Logo SVG - Horizontal */}
+            <div className="hero-title">
+              <Image
+                src="/jsc.svg"
+                alt="James Sax Corner"
+                width={500}
+                height={100}
+                className="h-[50px] md:h-[70px] lg:h-[90px] w-auto"
+                style={{ filter: 'brightness(0) saturate(100%) invert(33%) sepia(15%) saturate(1000%) hue-rotate(10deg) brightness(95%) contrast(90%)' }}
+                priority
+              />
             </div>
 
-            {/* Classic Typography with stagger animation */}
-            <h1 className="hero-subtitle font-elegant uppercase text-3xl md:text-5xl lg:text-6xl xl:text-7xl font-semibold leading-[0.9] tracking-[0.32em] md:tracking-[0.36em]">
-              <span className="block text-[#6b5b32]">James Sax</span>
-              <span className="block text-[#6b5b32] tracking-[0.24em] md:tracking-[0.28em]" style={{ animationDelay: '0.3s' }}>Corner</span>
-            </h1>
-
             {/* Decorative Divider with animation */}
-            <div className="hero-subtitle flex items-center space-x-4" style={{ animationDelay: '0.5s' }}>
+            <div className="hero-subtitle flex items-center space-x-4" style={{ animationDelay: '0.3s' }}>
               <div className="h-px w-16 bg-gradient-to-r from-transparent to-secondary/50" />
               <span className="text-2xl text-secondary animate-pulse">✦</span>
               <div className="h-px w-16 bg-gradient-to-l from-transparent to-secondary/50" />
             </div>
 
-            <p className="hero-subtitle text-2xl font-medium text-secondary/90 italic" style={{ animationDelay: '0.6s' }}>
-              Wind Instrument Specialists
-            </p>
-
-            <p className="hero-cta text-lg leading-relaxed text-secondary/80 max-w-2xl">
+            <p className="hero-cta text-base md:text-lg leading-relaxed text-secondary/80 max-w-2xl font-body">
               Premium Japanese saxophones, expertly maintained for peak performance. Trusted by musicians worldwide, backed by outstanding reviews. Unmatched customer service—your satisfaction comes first! Buy with confidence.
             </p>
 
-            <div className="hero-cta flex flex-wrap gap-4 pt-3 md:pt-4" style={{ animationDelay: '0.8s' }}>
-              <Button size="lg" variant="outline" className="border-2 border-secondary text-secondary hover:bg-secondary hover:text-white hover:scale-105 hover:shadow-2xl group transition-all duration-300" asChild>
+            <div className="hero-cta flex flex-wrap gap-4 pt-2 md:pt-3" style={{ animationDelay: '0.5s' }}>
+              <Button size="lg" variant="outline" className="border-2 border-secondary text-secondary hover:bg-secondary hover:text-white hover:scale-105 hover:shadow-2xl group transition-all duration-300 font-body" asChild>
                 <Link href="/shop" className="flex items-center relative overflow-hidden">
-                  Explore Collection
+                  Buy with confidence!
                   <ChevronRight className="ml-1 h-4 w-4 transition-all duration-300 group-hover:translate-x-2 group-hover:opacity-100 opacity-70" />
                   <span className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
                 </Link>
@@ -468,24 +596,24 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* Customer Reviews Section - At the Top */}
-      <section className="bg-gradient-to-br from-amber-50 via-white to-blue-50 py-6 sm:py-10 md:py-14 lg:py-20">
+      {/* Customer Reviews Section - Compact */}
+      <section className="bg-gradient-to-br from-amber-50 via-white to-blue-50 py-4 sm:py-6 md:py-8">
         <div className="container mx-auto px-4">
-          <div className="mb-4 sm:mb-6 md:mb-8 text-center animate-fade-in-up">
-            <div className="inline-flex items-center gap-1.5 px-2.5 py-1 sm:px-3 sm:py-1.5 rounded-full bg-amber-100 text-amber-800 text-[10px] sm:text-xs font-medium mb-2 sm:mb-3">
+          <div className="mb-3 sm:mb-4 text-center animate-fade-in-up">
+            <div className="inline-flex items-center gap-1.5 px-2.5 py-1 sm:px-3 sm:py-1.5 rounded-full bg-amber-100 text-amber-800 text-[10px] sm:text-xs font-medium mb-2">
               <Star className="h-3 w-3 sm:h-3.5 sm:w-3.5 fill-amber-400 text-amber-400" />
               Trusted by Musicians Worldwide
             </div>
-            <h2 className="text-xl sm:text-2xl md:text-3xl lg:text-4xl font-bold text-secondary mb-2 sm:mb-3">
+            <h2 className="text-xl sm:text-2xl md:text-3xl font-bold text-secondary mb-1 sm:mb-2">
               What Our Customers Say
             </h2>
-            <div className="flex items-center justify-center gap-1.5 sm:gap-2 mt-2 sm:mt-3">
+            <div className="flex items-center justify-center gap-1.5 sm:gap-2">
               <div className="flex">
                 {[...Array(5)].map((_, i) => (
-                  <Star key={i} className="h-3.5 w-3.5 sm:h-4 sm:w-4 md:h-5 md:w-5 fill-amber-400 text-amber-400" />
+                  <Star key={i} className="h-3.5 w-3.5 sm:h-4 sm:w-4 fill-amber-400 text-amber-400" />
                 ))}
               </div>
-              <span className="text-base sm:text-lg md:text-xl font-bold text-secondary ml-1">5.0</span>
+              <span className="text-base sm:text-lg font-bold text-secondary ml-1">5.0</span>
             </div>
           </div>
 
@@ -494,20 +622,20 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* Coming Soon Section */}
+      {/* NEW ARRIVALS Section */}
       {saleProducts.length > 0 && (
         <section className="container mx-auto px-4 py-8 sm:py-12 md:py-16">
           <div className="mb-6 sm:mb-8 md:mb-10 text-center animate-fade-in-up">
-            <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold text-secondary">Coming Soon</h2>
+            <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold text-secondary">NEW ARRIVALS</h2>
             <div className="mt-2 sm:mt-3 flex items-center justify-center space-x-4">
               <div className="h-px w-12 sm:w-16 bg-gradient-to-r from-transparent to-primary" />
-              <span className="text-xl sm:text-2xl text-primary">♫</span>
+              <span className="text-3xl sm:text-4xl text-primary">♪</span>
               <div className="h-px w-12 sm:w-16 bg-gradient-to-l from-transparent to-primary" />
             </div>
           </div>
 
-          {/* Auto-scrolling Coming Soon Products Carousel - SAME STYLE AS FEATURED */}
-          <InfiniteCarousel products={saleProducts} id="coming-soon" speed={150} />
+          {/* New Arrivals Products Carousel with smooth transitions */}
+          <NewArrivalsCarousel products={saleProducts} id="new-arrivals" />
         </section>
       )}
 
@@ -517,13 +645,13 @@ export default function HomePage() {
           <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold text-secondary">Featured Instruments</h2>
           <div className="mt-2 sm:mt-3 flex items-center justify-center space-x-4">
             <div className="h-px w-12 sm:w-16 bg-gradient-to-r from-transparent to-primary" />
-            <span className="text-xl sm:text-2xl text-primary">♫</span>
+            <span className="text-3xl sm:text-4xl text-primary">♫</span>
             <div className="h-px w-12 sm:w-16 bg-gradient-to-l from-transparent to-primary" />
           </div>
         </div>
 
-        {/* Auto-scrolling Product Carousel - CONTINUOUS INFINITE SCROLL */}
-        <InfiniteCarousel products={featuredProducts} id="featured" speed={150} />
+        {/* Product Carousel with smooth transitions - same as NEW ARRIVALS */}
+        <NewArrivalsCarousel products={featuredProducts} id="featured" />
 
         {/* View All Button */}
         <div className="mt-6 sm:mt-8 md:mt-10 text-center">
@@ -548,7 +676,7 @@ export default function HomePage() {
             <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold text-secondary">Shop by Category</h2>
             <div className="mt-2 sm:mt-3 flex items-center justify-center space-x-4">
               <div className="h-px w-12 sm:w-16 bg-gradient-to-r from-transparent to-primary" />
-              <span className="text-xl sm:text-2xl text-primary">🎷</span>
+              <span className="text-3xl sm:text-4xl text-primary">♬</span>
               <div className="h-px w-12 sm:w-16 bg-gradient-to-l from-transparent to-primary" />
             </div>
           </div>
@@ -556,10 +684,11 @@ export default function HomePage() {
           <div className="w-full px-0 sm:px-4 md:px-6 lg:px-8">
             <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 md:gap-5 lg:gap-6 w-full">
               {subcategories.map((sub, i) => {
-                const totalCount = categoryCounts[sub.slug] || 0
-
                 // Remove "Saxophones" from display name
                 const displayName = sub.name.replace(/\s+Saxophones?/gi, '')
+                // Different music notes for each category
+                const musicNotes = ['♪', '♫', '♩', '♬']
+                const noteIndex = i % musicNotes.length
 
                 return (
                   <Link
@@ -572,29 +701,19 @@ export default function HomePage() {
                     <div className="absolute inset-0 bg-gradient-to-r from-accent via-primary to-accent opacity-0 group-hover:opacity-100 transition-opacity duration-500 rounded-xl sm:rounded-2xl -z-10" style={{ padding: '2px' }} />
 
                     {/* Horizontal layout container - icon left, text right */}
-                    <div className="relative z-10 flex flex-row items-center p-3 sm:p-4 md:p-6 lg:p-8 h-full min-h-[80px] sm:min-h-[100px] md:min-h-[140px] bg-secondary rounded-xl sm:rounded-2xl">
-                      {/* Left section - Small golden saxophone icon */}
+                    <div className="relative z-10 flex flex-row items-center p-3 sm:p-4 md:p-6 lg:p-8 h-full min-h-[70px] sm:min-h-[90px] md:min-h-[110px] bg-secondary rounded-xl sm:rounded-2xl">
+                      {/* Left section - Music note icon */}
                       <div className="flex-shrink-0 mr-2 sm:mr-3 md:mr-5 lg:mr-6 flex items-center justify-center">
-                        <div className="relative w-8 h-8 sm:w-10 sm:h-10 md:w-14 md:h-14 lg:w-16 lg:h-16 flex items-center justify-center transition-all duration-300 scale-110 group-hover:scale-125 group-hover:animate-sax-swing">
-                          <Image
-                            src="/saxophone-icon.svg"
-                            alt="Saxophone"
-                            width={64}
-                            height={64}
-                            className="w-full h-full"
-                            style={{ filter: 'brightness(0) saturate(100%) invert(69%) sepia(96%) saturate(1467%) hue-rotate(3deg) brightness(104%) contrast(95%)' }}
-                          />
-                        </div>
+                        <span className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl text-amber-400 transition-all duration-300 group-hover:scale-125 group-hover:rotate-12">
+                          {musicNotes[noteIndex]}
+                        </span>
                       </div>
 
-                      {/* Right section - Category info (white text) */}
-                      <div className="flex-1 flex flex-col justify-center space-y-0.5 sm:space-y-1 md:space-y-1.5">
-                        <h3 className="text-sm sm:text-base md:text-xl lg:text-2xl font-bold text-white group-hover:text-accent transition-colors duration-300 leading-tight">
+                      {/* Right section - Category name only (larger) */}
+                      <div className="flex-1 flex flex-col justify-center">
+                        <h3 className="text-base sm:text-lg md:text-2xl lg:text-3xl font-bold text-white group-hover:text-accent transition-colors duration-300 leading-tight">
                           {displayName}
                         </h3>
-                        <p className="text-xs sm:text-sm md:text-base text-white/80 font-medium counter-animate" style={{ animationDelay: `${0.15 * i}s` }}>
-                          {totalCount} {totalCount === 1 ? 'Product' : 'Products'}
-                        </p>
                       </div>
                     </div>
                   </Link>
@@ -609,29 +728,19 @@ export default function HomePage() {
                   style={{ animationDelay: `${0.1 * subcategories.length}s` }}
                 >
                   {/* Horizontal layout container - icon left, text right */}
-                  <div className="relative z-10 flex flex-row items-center p-3 sm:p-4 md:p-6 lg:p-8 h-full min-h-[80px] sm:min-h-[100px] md:min-h-[140px]">
-                    {/* Left section - Small golden saxophone icon */}
+                  <div className="relative z-10 flex flex-row items-center p-3 sm:p-4 md:p-6 lg:p-8 h-full min-h-[70px] sm:min-h-[90px] md:min-h-[110px]">
+                    {/* Left section - Music note icon */}
                     <div className="flex-shrink-0 mr-2 sm:mr-3 md:mr-5 lg:mr-6 flex items-center justify-center">
-                      <div className="relative w-8 h-8 sm:w-10 sm:h-10 md:w-14 md:h-14 lg:w-16 lg:h-16 flex items-center justify-center transition-all duration-300 scale-110 group-hover:scale-125">
-                        <Image
-                          src="/saxophone-icon.svg"
-                          alt="Saxophone"
-                          width={64}
-                          height={64}
-                          className="w-full h-full"
-                          style={{ filter: 'brightness(0) saturate(100%) invert(69%) sepia(96%) saturate(1467%) hue-rotate(3deg) brightness(104%) contrast(95%)' }}
-                        />
-                      </div>
+                      <span className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl text-amber-400 transition-all duration-300 group-hover:scale-125 group-hover:rotate-12">
+                        ♩
+                      </span>
                     </div>
 
-                    {/* Right section - Category info (white text) */}
-                    <div className="flex-1 flex flex-col justify-center space-y-0.5 sm:space-y-1 md:space-y-1.5">
-                      <h3 className="text-sm sm:text-base md:text-xl lg:text-2xl font-bold text-white group-hover:text-accent transition-colors duration-300 leading-tight">
+                    {/* Right section - Category name only (larger) */}
+                    <div className="flex-1 flex flex-col justify-center">
+                      <h3 className="text-base sm:text-lg md:text-2xl lg:text-3xl font-bold text-white group-hover:text-accent transition-colors duration-300 leading-tight">
                         Baritone
                       </h3>
-                      <p className="text-xs sm:text-sm md:text-base text-white/80 font-medium">
-                        0 Products
-                      </p>
                     </div>
                   </div>
                 </Link>
@@ -645,11 +754,12 @@ export default function HomePage() {
       <section id="reviews" className="bg-gradient-to-br from-amber-50/30 via-white to-blue-50/30 py-6 sm:py-10 md:py-14">
         <div className="container mx-auto px-4 max-w-7xl">
           <div className="flex flex-col md:grid md:grid-cols-2 gap-4 sm:gap-6 md:gap-8 lg:gap-12 items-stretch">
+            {/* Left: Why Musicians Choose Us */}
             <div className="animate-fade-in-left flex flex-col">
               <h2 className="text-lg sm:text-xl md:text-2xl lg:text-3xl font-bold text-secondary mb-3 sm:mb-4 md:mb-6">
                 Why Musicians Choose Us
               </h2>
-              <div className="space-y-2 sm:space-y-3 mb-4 sm:mb-6">
+              <div className="space-y-2 sm:space-y-3 flex-1">
                 {[
                   { title: '40+ Years of Expertise', desc: 'Trusted by professional musicians since 1985' },
                   { title: 'Professional Setup', desc: 'Every instrument is play-tested and adjusted' },
@@ -667,150 +777,36 @@ export default function HomePage() {
                   </div>
                 ))}
               </div>
-
-              {/* Featured Review Card */}
-              <div className="bg-gradient-to-br from-primary/10 to-primary/5 rounded-xl sm:rounded-2xl p-3 sm:p-4 md:p-6 text-center">
-                <div className="flex justify-center mb-2 sm:mb-3">
-                  {[...Array(5)].map((_, i) => (
-                    <Star key={i} className="h-3.5 w-3.5 sm:h-4 sm:w-4 md:h-5 md:w-5 fill-amber-400 text-amber-400" />
-                  ))}
-                </div>
-                <blockquote className="text-xs sm:text-sm md:text-base italic text-secondary mb-2 sm:mb-3 leading-relaxed line-clamp-4 sm:line-clamp-none">
-                  &ldquo;{reviews.find(r => r.id === '2')?.message || "This was the single best transaction I've had with an online seller. James sent me a 10 minute video minutes after contacting him detailing the horn and exhibiting the condition."}&rdquo;
-                </blockquote>
-                <div className="font-semibold text-secondary text-xs sm:text-sm">— {reviews.find(r => r.id === '2')?.buyerName || 'Zach E.'}</div>
-              </div>
             </div>
 
+            {/* Right: Featured Review - Zach E. */}
             <div className="animate-fade-in-right flex flex-col">
-              <h3 className="text-base sm:text-lg md:text-xl lg:text-2xl font-bold text-secondary mb-3 sm:mb-4">More Customer Reviews</h3>
-              <div className="space-y-2 sm:space-y-3">
-                {reviews.slice(currentReviewIndex, currentReviewIndex + 4).map((review) => (
-                  <div key={review.id} className="bg-white rounded-lg sm:rounded-xl p-2.5 sm:p-3 md:p-4 border border-gray-200 hover:shadow-md transition-shadow">
-                    <div className="flex items-center gap-0.5 mb-1.5">
-                      {[...Array(5)].map((_, i) => (
-                        <Star
-                          key={i}
-                          className={`h-2.5 w-2.5 sm:h-3 sm:w-3 ${i < review.rating
-                            ? 'fill-amber-400 text-amber-400'
-                            : 'fill-gray-200 text-gray-200'
-                            }`}
-                        />
-                      ))}
-                    </div>
-                    <p className="text-[10px] sm:text-xs text-gray-700 mb-1.5 sm:mb-2 line-clamp-2 sm:line-clamp-3">
-                      &ldquo;{review.message || 'Great experience!'}&rdquo;
-                    </p>
-                    <div className="flex items-center justify-between">
-                      <span className="text-[10px] sm:text-xs font-semibold text-secondary">{review.buyerName}</span>
-                      <span className="text-[9px] sm:text-[10px] text-muted-foreground">
-                        {new Date(review.date).toLocaleDateString('en-US', { month: 'short', year: 'numeric' })}
-                      </span>
-                    </div>
-                  </div>
-                ))}
-              </div>
-
-              {/* Pagination */}
-              <div className="mt-6">
-                {(() => {
-                  const reviewsPerPage = 4
-                  const totalPages = Math.ceil(reviews.length / reviewsPerPage)
-                  const currentPage = Math.floor(currentReviewIndex / reviewsPerPage) + 1
-
-                  const getPageNumbers = () => {
-                    const pages: number[] = []
-                    const maxPages = 5
-
-                    if (totalPages <= maxPages) {
-                      for (let i = 1; i <= totalPages; i++) {
-                        pages.push(i)
-                      }
-                    } else {
-                      let start = Math.max(1, currentPage - 2)
-                      let end = Math.min(totalPages, currentPage + 2)
-
-                      if (end - start < 4) {
-                        if (start === 1) {
-                          end = Math.min(totalPages, start + 4)
-                        } else if (end === totalPages) {
-                          start = Math.max(1, end - 4)
-                        }
-                      }
-
-                      for (let i = start; i <= end; i++) {
-                        pages.push(i)
-                      }
-                    }
-
-                    return pages
-                  }
-
-                  const pageNumbers = getPageNumbers()
-                  const canGoPrev = currentPage > 1
-                  const canGoNext = currentPage < totalPages
-
-                  return (
-                    <div className="reviews-pagination pt-4 flex items-center justify-center gap-1.5 sm:gap-2 flex-wrap">
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        className="reviews-pagination-button h-8 px-3"
-                        onClick={() => setCurrentReviewIndex(Math.max(0, currentReviewIndex - reviewsPerPage))}
-                        disabled={!canGoPrev}
-                      >
-                        <ChevronLeft className="h-4 w-4 sm:mr-1" />
-                        <span className="hidden sm:inline">Prev</span>
-                      </Button>
-
-                      {pageNumbers.map((page) => {
-                        const isActive = currentPage === page
-                        return (
-                          <Button
-                            key={page}
-                            variant={isActive ? "default" : "outline"}
-                            size="sm"
-                            className={`reviews-pagination-button h-8 min-w-[32px] px-3 ${isActive
-                              ? 'bg-primary text-white hover:bg-primary/90'
-                              : 'hover:bg-primary/5 hover:border-primary/30'
-                              } transition-all`}
-                            onClick={() => setCurrentReviewIndex((page - 1) * reviewsPerPage)}
-                          >
-                            {page}
-                          </Button>
-                        )
-                      })}
-
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        className="reviews-pagination-button h-8 px-3"
-                        onClick={() => setCurrentReviewIndex(Math.min(reviews.length - reviewsPerPage, currentReviewIndex + reviewsPerPage))}
-                        disabled={!canGoNext}
-                      >
-                        <span className="hidden sm:inline">Next</span>
-                        <ChevronRight className="h-4 w-4 sm:ml-1" />
-                      </Button>
-                    </div>
-                  )
-                })()}
+              <div className="bg-gradient-to-br from-primary/10 to-primary/5 rounded-xl sm:rounded-2xl p-4 sm:p-6 md:p-8 h-full flex flex-col justify-center">
+                <div className="flex justify-center mb-3 sm:mb-4">
+                  {[...Array(5)].map((_, i) => (
+                    <Star key={i} className="h-4 w-4 sm:h-5 sm:w-5 md:h-6 md:w-6 fill-amber-400 text-amber-400" />
+                  ))}
+                </div>
+                <blockquote className="text-sm sm:text-base md:text-lg italic text-secondary mb-4 sm:mb-5 leading-relaxed text-center">
+                  &ldquo;This was the single best transaction I've had with an online seller. James sent me a 10 minute video minutes after contacting him detailing the horn and exhibiting the condition. Shipping from Vietnam to the US east coast took 3 days and the packaging was impeccable. The horn arrived exactly as described and plays just as well as it should; James did an excellent job replacing pads and adjusting. There are no visible or audible leaks. I would purchase from him again in a heartbeat.&rdquo;
+                </blockquote>
+                <div className="font-semibold text-secondary text-sm sm:text-base text-center">— Zach E.</div>
               </div>
             </div>
           </div>
         </div>
       </section>
-
-      {/* Join Our Musical Community - Compact on mobile */}
-      <section className="bg-gradient-to-r from-primary to-primary/80 py-2.5 sm:py-5 md:py-8 lg:py-10 relative overflow-hidden">
+      {/* Join Our Musical Community - Compact */}
+      <section className="bg-gradient-to-r from-primary to-primary/80 py-2 sm:py-3 relative overflow-hidden">
         <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent animate-shimmer" />
         <div className="container mx-auto px-3 sm:px-4">
-          <div className="flex flex-col sm:flex-row items-center justify-between gap-2 sm:gap-4 md:gap-6">
+          <div className="flex flex-col sm:flex-row items-center justify-between gap-2 sm:gap-3">
             <div className="text-center sm:text-left">
-              <h3 className="text-xs sm:text-base md:text-xl lg:text-2xl font-bold text-white flex items-center gap-1 sm:gap-2 justify-center sm:justify-start">
-                <Sparkles className="h-3 w-3 sm:h-5 sm:w-5 md:h-6 md:w-6" />
+              <h3 className="text-xs sm:text-sm font-bold text-white flex items-center gap-1 justify-center sm:justify-start">
+                <Sparkles className="h-3 w-3 sm:h-4 sm:w-4" />
                 Join Our Musical Community
               </h3>
-              <p className="text-white/80 mt-0.5 text-[9px] sm:text-xs md:text-sm lg:text-base hidden sm:block">Get exclusive deals, tips, and industry news</p>
+              <p className="text-white/80 text-[9px] sm:text-xs hidden sm:block">Get exclusive deals, tips, and industry news</p>
             </div>
             <form
               onSubmit={(e) => {
@@ -818,29 +814,27 @@ export default function HomePage() {
                 const formData = new FormData(e.currentTarget)
                 const email = formData.get('email')
                 if (email) {
-                  // Handle subscription
                   alert('Thank you for subscribing!')
                   e.currentTarget.reset()
                 }
               }}
-              className="flex gap-1.5 sm:gap-2 w-full sm:w-auto"
+              className="flex gap-1.5 w-full sm:w-auto"
             >
               <input
                 type="email"
                 name="email"
                 placeholder="Enter your email"
-                className="bg-white/20 border border-white/30 placeholder:text-white/60 text-white min-w-0 flex-1 sm:min-w-[180px] md:min-w-[200px] lg:min-w-[280px] px-2.5 sm:px-3 md:px-4 py-1.5 sm:py-2 md:py-2.5 rounded-md transition-all duration-300 focus:bg-white/30 focus:outline-none focus:border-white/50 text-[11px] sm:text-sm md:text-base"
+                className="bg-white/20 border border-white/30 placeholder:text-white/60 text-white min-w-0 flex-1 sm:min-w-[160px] px-2.5 py-1.5 rounded-md transition-all duration-300 focus:bg-white/30 focus:outline-none focus:border-white/50 text-[11px] sm:text-xs"
                 required
               />
               <Button
                 type="submit"
                 size="sm"
-                className="bg-secondary hover:bg-secondary/90 text-white px-2.5 sm:px-4 md:px-6 transition-all duration-300 text-[11px] sm:text-sm md:text-base h-7 sm:h-9 md:h-10"
+                className="bg-secondary hover:bg-secondary/90 text-white px-3 transition-all duration-300 text-[11px] sm:text-xs h-7"
               >
-                <span className="flex items-center gap-0.5 sm:gap-1">
-                  <span className="hidden md:inline">Subscribe</span>
-                  <span className="md:hidden">Go</span>
-                  <ChevronRight className="h-3 w-3 sm:h-3.5 sm:w-3.5 md:h-4 md:w-4" />
+                <span className="flex items-center gap-0.5">
+                  Subscribe
+                  <ChevronRight className="h-3 w-3" />
                 </span>
               </Button>
             </form>

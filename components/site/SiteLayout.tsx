@@ -5,6 +5,7 @@ import { TopBar } from './TopBar'
 import { Header } from './Header'
 import { AnnouncementBar } from './AnnouncementBar'
 import { Footer } from './Footer'
+import { NewYearPopup } from './NewYearPopup'
 import { useNavigationLoading } from '@/hooks/use-navigation-loading'
 import { Loader2 } from 'lucide-react'
 
@@ -23,6 +24,9 @@ export function SiteLayout({ children }: { children: React.ReactNode }) {
       <AnnouncementBar />
       <main className="min-h-screen">{children}</main>
       <Footer />
+
+      {/* New Year 2026 Flash Sale Popup */}
+      <NewYearPopup />
 
       {/* Global Navigation Loading Indicator - Lightweight progress bar */}
       {isNavigating && (

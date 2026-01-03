@@ -9,7 +9,7 @@ export function Footer() {
   return (
     <footer className="bg-[#2f3f4f] text-white">
       {/* Main Footer - includes CTA */}
-      <div className="container mx-auto px-3 sm:px-4 py-3 sm:py-6 md:py-10">
+      <div className="container mx-auto px-3 sm:px-4 py-3 sm:py-4 md:py-6">
         
         {/* Mobile Layout - Ultra Compact */}
         <div className="sm:hidden">
@@ -120,15 +120,9 @@ export function Footer() {
             </div>
             <div className="flex gap-2 flex-shrink-0">
               <Button size="sm" className="bg-[#D4AF37] hover:bg-[#c4a030] text-[#2f3f4f] font-semibold text-xs md:text-sm px-4 h-8 md:h-9 hover:scale-105 hover:shadow-lg transition-all duration-300 group" asChild>
-                <Link href="tel:+17025551234">
+                <Link href="/contact">
                   <Phone className="mr-1.5 h-3.5 w-3.5 transition-transform group-hover:rotate-12" />
-                  Call (702) 555-1234
-                </Link>
-              </Button>
-              <Button size="sm" variant="outline" className="border-white/30 text-white hover:bg-white/10 text-xs md:text-sm px-4 h-8 md:h-9 hover:scale-105 transition-all duration-300 group" asChild>
-                <Link href="/inquiry">
-                  Message
-                  <ArrowRight className="ml-1 h-3 w-3 transition-transform group-hover:translate-x-1" />
+                  Ask Now
                 </Link>
               </Button>
             </div>
@@ -263,15 +257,6 @@ export function Footer() {
         </div>
       </div>
 
-      {/* Bottom Bar */}
-      <div className="border-t border-white/10">
-        <div className="container mx-auto px-3 sm:px-4 py-2 sm:py-4">
-          <p className="text-[9px] sm:text-sm text-white/60 text-center flex items-center justify-center gap-1 animate-fade-in-up">
-            © {new Date().getFullYear()} James Sax Corner
-            <Heart className="h-2.5 w-2.5 sm:h-3.5 sm:w-3.5 text-red-400 fill-current animate-pulse" />
-          </p>
-        </div>
-      </div>
     </footer>
   )
 }

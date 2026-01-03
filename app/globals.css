@@ -2,8 +2,8 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Import classic serif font for vintage feel */
-@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600;700&family=Lora:wght@400;500;600&family=Cormorant+Garamond:wght@400;500;600;700&display=swap');
+/* Import Lora font for consistent typography */
+@import url('https://fonts.googleapis.com/css2?family=Lora:wght@400;500;600;700&display=swap');
 
 @layer base {
   :root {
@@ -73,19 +73,28 @@
   body {
     @apply bg-background text-foreground;
     font-feature-settings: "rlig" 1, "calt" 1;
+    font-family: 'Lora', Georgia, serif;
   }
 
-  /* Classic serif headings for vintage feel */
+  /* All text uses Lora font for consistency */
   h1,
   h2,
-  h3 {
-    font-family: 'Playfair Display', Georgia, serif;
-  }
-
-  /* Elegant body text */
+  h3,
+  h4,
+  h5,
+  h6,
   p,
   span,
-  a {
+  a,
+  button,
+  input,
+  textarea,
+  select,
+  label,
+  li,
+  td,
+  th,
+  div {
     font-family: 'Lora', Georgia, serif;
   }
 }
@@ -446,9 +455,9 @@
     transform: translateY(0);
   }
 
-  /* Font utilities */
+  /* Font utilities - all use Lora for consistency */
   .font-display {
-    font-family: 'Playfair Display', Georgia, serif;
+    font-family: 'Lora', Georgia, serif;
   }
 
   .font-body {
@@ -456,7 +465,7 @@
   }
 
   .font-elegant {
-    font-family: 'Cormorant Garamond', Georgia, serif;
+    font-family: 'Lora', Georgia, serif;
   }
 
   /* Color utilities */

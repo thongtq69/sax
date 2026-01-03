@@ -92,7 +92,7 @@ export function PromoCarousel({ promos = [] }: PromoCarouselProps) {
                         <span className="md:hidden text-white/85 font-body line-clamp-2 max-w-[72vw]">
                             {slide.description}
                         </span>
-                        {slide.ctaLink && (
+                        {slide.ctaLink && slide.ctaText && (
                             <div className="w-full flex justify-center sm:w-auto">
                                 <Link
                                     href={slide.ctaLink}

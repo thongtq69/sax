@@ -3,12 +3,193 @@
 import { useState, useEffect, useRef } from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
-import { Search, ShoppingCart, Phone, Menu, X, Loader2, User, Facebook, Instagram, Youtube, Twitter } from 'lucide-react'
+import { Search, ShoppingCart, Menu, X, Loader2, User, Facebook, Instagram, Youtube, Twitter, LogIn, Eye, EyeOff } from 'lucide-react'
 import { useCartStore } from '@/lib/store/cart'
 import { Button } from '@/components/ui/button'
 import { SearchBar } from './SearchBar'
 import { MiniCartDrawer } from '@/components/cart/MiniCartDrawer'
 import { cn } from '@/lib/utils'
+
+// WhatsApp Icon Component
+function WhatsAppIcon({ className }: { className?: string }) {
+  return (
+    <svg className={className} viewBox="0 0 24 24" fill="currentColor">
+      <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/>
+    </svg>
+  )
+}
+
+// Login/Register Modal Component
+function LoginModal({ open, onOpenChange }: { open: boolean; onOpenChange: (open: boolean) => void }) {
+  const [isLogin, setIsLogin] = useState(true)
+  const [showPassword, setShowPassword] = useState(false)
+  const [formData, setFormData] = useState({
+    email: '',
+    password: '',
+    confirmPassword: '',
+    name: ''
+  })
+
+  if (!open) return null
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault()
+    // Handle login/register logic here
+    console.log(isLogin ? 'Login' : 'Register', formData)
+    onOpenChange(false)
+  }
+
+  return (
+    <div className="fixed inset-0 z-[100] flex items-center justify-center">
+      {/* Backdrop */}
+      <div 
+        className="absolute inset-0 bg-black/60 backdrop-blur-sm animate-fade-in"
+        onClick={() => onOpenChange(false)}
+      />
+      
+      {/* Modal */}
+      <div className="relative bg-white rounded-2xl shadow-2xl w-full max-w-md mx-4 overflow-hidden animate-scale-in">
+        {/* Header with gradient */}
+        <div className="bg-gradient-to-r from-[#AFA65F] to-[#D4AF37] p-6 text-center">
+          <div className="w-16 h-16 mx-auto mb-3 bg-white/20 rounded-full flex items-center justify-center">
+            <User className="h-8 w-8 text-white" />
+          </div>
+          <h2 className="text-2xl font-bold text-white font-display">
+            {isLogin ? 'Welcome Back' : 'Create Account'}
+          </h2>
+          <p className="text-white/80 text-sm mt-1 font-body">
+            {isLogin ? 'Sign in to your account' : 'Join our community of musicians'}
+          </p>
+        </div>
+
+        {/* Form */}
+        <form onSubmit={handleSubmit} className="p-6 space-y-4">
+          {!isLogin && (
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1 font-body">Full Name</label>
+              <input
+                type="text"
+                value={formData.name}
+                onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#AFA65F] focus:border-transparent transition-all font-body"
+                placeholder="Enter your name"
+                required={!isLogin}
+              />
+            </div>
+          )}
+          
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1 font-body">Email</label>
+            <input
+              type="email"
+              value={formData.email}
+              onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#AFA65F] focus:border-transparent transition-all font-body"
+              placeholder="Enter your email"
+              required
+            />
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1 font-body">Password</label>
+            <div className="relative">
+              <input
+                type={showPassword ? 'text' : 'password'}
+                value={formData.password}
+                onChange={(e) => setFormData({ ...formData, password: e.target.value })}
+                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#AFA65F] focus:border-transparent transition-all pr-12 font-body"
+                placeholder="Enter your password"
+                required
+              />
+              <button
+                type="button"
+                onClick={() => setShowPassword(!showPassword)}
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700"
+              >
+                {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
+              </button>
+            </div>
+          </div>
+
+          {!isLogin && (
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1 font-body">Confirm Password</label>
+              <input
+                type="password"
+                value={formData.confirmPassword}
+                onChange={(e) => setFormData({ ...formData, confirmPassword: e.target.value })}
+                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#AFA65F] focus:border-transparent transition-all font-body"
+                placeholder="Confirm your password"
+                required={!isLogin}
+              />
+            </div>
+          )}
+
+          <Button
+            type="submit"
+            className="w-full bg-[#2c3e50] hover:bg-[#1a252f] text-white py-3 rounded-lg font-semibold transition-all hover:scale-[1.02] font-body"
+          >
+            {isLogin ? 'Sign In' : 'Create Account'}
+          </Button>
+
+          {/* Social Login */}
+          <div className="relative my-4">
+            <div className="absolute inset-0 flex items-center">
+              <div className="w-full border-t border-gray-300"></div>
+            </div>
+            <div className="relative flex justify-center text-sm">
+              <span className="px-2 bg-white text-gray-500 font-body">Or continue with</span>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-2 gap-3">
+            <button
+              type="button"
+              className="flex items-center justify-center gap-2 px-4 py-2.5 border border-gray-300 rounded-lg hover:bg-gray-50 transition-all font-body"
+            >
+              <svg className="h-5 w-5" viewBox="0 0 24 24">
+                <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
+                <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
+                <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
+                <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
+              </svg>
+              Google
+            </button>
+            <button
+              type="button"
+              className="flex items-center justify-center gap-2 px-4 py-2.5 border border-gray-300 rounded-lg hover:bg-gray-50 transition-all font-body"
+            >
+              <Facebook className="h-5 w-5 text-[#1877F2]" />
+              Facebook
+            </button>
+          </div>
+        </form>
+
+        {/* Footer */}
+        <div className="px-6 pb-6 text-center">
+          <p className="text-sm text-gray-600 font-body">
+            {isLogin ? "Don't have an account? " : "Already have an account? "}
+            <button
+              type="button"
+              onClick={() => setIsLogin(!isLogin)}
+              className="text-[#AFA65F] hover:text-[#8a8347] font-semibold"
+            >
+              {isLogin ? 'Sign Up' : 'Sign In'}
+            </button>
+          </p>
+        </div>
+
+        {/* Close button */}
+        <button
+          onClick={() => onOpenChange(false)}
+          className="absolute top-4 right-4 text-white/80 hover:text-white transition-colors"
+        >
+          <X className="h-6 w-6" />
+        </button>
+      </div>
+    </div>
+  )
+}
 
 export function Header() {
   const [isScrolled, setIsScrolled] = useState(false)
@@ -16,8 +197,9 @@ export function Header() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
   const [isSearchOpen, setIsSearchOpen] = useState(false)
   const [isCartOpen, setIsCartOpen] = useState(false)
+  const [isLoginOpen, setIsLoginOpen] = useState(false)
   const [cartBounce, setCartBounce] = useState(false)
-  const [isCalling, setIsCalling] = useState(false)
+  const [isWhatsAppLoading, setIsWhatsAppLoading] = useState(false)
   const lastScrollY = useRef(0)
   const itemCount = useCartStore(state => state.getItemCount())
   const subtotal = useCartStore(state => state.getSubtotal())
@@ -80,23 +262,23 @@ export function Header() {
           <div className={`flex items-center justify-between transition-all duration-300 ${isScrolled ? 'h-[56px] md:h-16' : 'h-[64px] md:h-20'
             }`}>
 
-            {/* Left: Logo */}
+            {/* Left: Logo - Larger size */}
             <Link href="/" className="flex items-center shrink-0 group">
               <Image
                 src="/logo.png"
                 alt="James Sax Corner"
-                width={280}
-                height={80}
-                className={`site-logo header-logo w-auto transition-all duration-500 group-hover:scale-105 ${isScrolled ? 'h-[44px] md:h-[54px]' : 'h-[52px] md:h-[62px]'
+                width={320}
+                height={90}
+                className={`site-logo header-logo w-auto transition-all duration-500 group-hover:scale-105 ${isScrolled ? 'h-[52px] md:h-[64px]' : 'h-[60px] md:h-[72px]'
                   }`}
                 priority
               />
             </Link>
 
-            {/* Right: All navigation items */}
-            <div className="hidden lg:flex items-center gap-4">
-              {/* Social Icons */}
-              <div className="flex items-center gap-1.5 mr-2">
+            {/* Right: All navigation items - Compact spacing */}
+            <div className="hidden lg:flex items-center gap-3">
+              {/* Social Icons - Compact */}
+              <div className="flex items-center gap-1">
                 {[
                   { href: 'https://facebook.com', icon: Facebook, label: 'Facebook' },
                   { href: 'https://instagram.com', icon: Instagram, label: 'Instagram' },
@@ -112,37 +294,32 @@ export function Header() {
                     aria-label={social.label}
                     style={{ animationDelay: `${i * 0.05}s` }}
                   >
-                    <social.icon className="h-3.5 w-3.5 text-[#2c3e50]" />
+                    <social.icon className="h-3 w-3 text-[#2c3e50]" />
                   </Link>
                 ))}
               </div>
 
               {/* Divider */}
-              <div className="h-6 w-px bg-[#2c3e50]/30" />
+              <div className="h-5 w-px bg-[#2c3e50]/30" />
 
-              {/* Navigation Links */}
-              <nav className="flex items-center gap-4 text-sm font-medium">
-                <Link href="/account" className="flex items-center gap-1 text-[#2c3e50] hover:text-[#1a252f] transition-all duration-300 relative group/nav">
-                  <User className="h-4 w-4 transition-transform group-hover/nav:scale-110" />
-                  My Account
-                  <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-[#2c3e50] transition-all duration-300 group-hover/nav:w-full" />
-                </Link>
-                <Link href="/about" className="text-[#2c3e50] hover:text-[#1a252f] transition-all duration-300 relative group/nav">
+              {/* Navigation Links - Compact */}
+              <nav className="flex items-center gap-3 text-sm font-medium">
+                <Link href="/about" className="text-[#2c3e50] hover:text-[#1a252f] transition-all duration-300 relative group/nav font-body">
                   About Us
                   <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-[#2c3e50] transition-all duration-300 group-hover/nav:w-full" />
                 </Link>
-                <Link href="/contact" className="text-[#2c3e50] hover:text-[#1a252f] transition-all duration-300 relative group/nav">
+                <Link href="/contact" className="text-[#2c3e50] hover:text-[#1a252f] transition-all duration-300 relative group/nav font-body">
                   Contact
                   <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-[#2c3e50] transition-all duration-300 group-hover/nav:w-full" />
                 </Link>
-                <Link href="/blog" className="text-[#2c3e50] hover:text-[#1a252f] transition-all duration-300 relative group/nav">
+                <Link href="/blog" className="text-[#2c3e50] hover:text-[#1a252f] transition-all duration-300 relative group/nav font-body">
                   Blog
                   <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-[#2c3e50] transition-all duration-300 group-hover/nav:w-full" />
                 </Link>
               </nav>
 
               {/* Divider */}
-              <div className="h-6 w-px bg-[#2c3e50]/30" />
+              <div className="h-5 w-px bg-[#2c3e50]/30" />
 
               {/* Search */}
               <Button
@@ -150,9 +327,9 @@ export function Header() {
                 size="icon"
                 onClick={() => setIsSearchOpen(true)}
                 aria-label="Search"
-                className="text-[#2c3e50] hover:text-[#1a252f] hover:bg-[#2c3e50]/10 hover:scale-110 transition-all duration-300"
+                className="text-[#2c3e50] hover:text-[#1a252f] hover:bg-[#2c3e50]/10 hover:scale-110 transition-all duration-300 h-8 w-8"
               >
-                <Search className="h-5 w-5" />
+                <Search className="h-4 w-4" />
               </Button>
 
               {/* Cart */}
@@ -160,38 +337,49 @@ export function Header() {
                 variant="ghost"
                 size="sm"
                 onClick={() => setIsCartOpen(true)}
-                className={`text-[#2c3e50] hover:text-[#1a252f] hover:bg-[#2c3e50]/10 transition-all duration-300 ${cartBounce ? 'animate-cart-shake' : ''
+                className={`text-[#2c3e50] hover:text-[#1a252f] hover:bg-[#2c3e50]/10 transition-all duration-300 h-8 px-2 ${cartBounce ? 'animate-cart-shake' : ''
                   }`}
                 aria-label="Shopping cart"
               >
-                <ShoppingCart className={`h-5 w-5 mr-1 transition-transform ${cartBounce ? 'scale-125' : ''}`} />
+                <ShoppingCart className={`h-4 w-4 mr-1 transition-transform ${cartBounce ? 'scale-125' : ''}`} />
                 {itemCount > 0 && (
-                  <span className={`flex h-5 w-5 items-center justify-center rounded-full bg-[#2c3e50] text-xs font-bold text-white mr-1 transition-all duration-300 ${cartBounce ? 'scale-125 animate-bounce' : ''}`}>
+                  <span className={`flex h-4 w-4 items-center justify-center rounded-full bg-[#2c3e50] text-[10px] font-bold text-white mr-1 transition-all duration-300 ${cartBounce ? 'scale-125 animate-bounce' : ''}`}>
                     {itemCount > 9 ? '9+' : itemCount}
                   </span>
                 )}
-                <span className="font-semibold">Cart ${subtotal.toFixed(0)}</span>
+                <span className="font-semibold text-xs font-body">${subtotal.toFixed(0)}</span>
               </Button>
 
-              {/* Call Us Button */}
+              {/* Login Button */}
               <Button
                 size="sm"
-                className="bg-[#2c3e50] text-white hover:bg-[#1a252f] font-semibold hover:scale-105 hover:shadow-lg transition-all duration-300 group"
+                variant="outline"
+                className="border-[#2c3e50] text-[#2c3e50] hover:bg-[#2c3e50] hover:text-white font-semibold hover:scale-105 transition-all duration-300 group h-8 px-3 font-body"
+                onClick={() => setIsLoginOpen(true)}
+              >
+                <LogIn className="mr-1.5 h-3.5 w-3.5 transition-transform group-hover:rotate-12" />
+                Login
+              </Button>
+
+              {/* WhatsApp Button */}
+              <Button
+                size="sm"
+                className="bg-[#25D366] text-white hover:bg-[#128C7E] font-semibold hover:scale-105 hover:shadow-lg transition-all duration-300 group h-8 px-3 font-body"
                 onClick={() => {
-                  setIsCalling(true)
+                  setIsWhatsAppLoading(true)
                   setTimeout(() => {
-                    window.location.href = 'tel:+17025551234'
-                    setIsCalling(false)
+                    window.open('https://wa.me/17025551234', '_blank')
+                    setIsWhatsAppLoading(false)
                   }, 100)
                 }}
-                disabled={isCalling}
+                disabled={isWhatsAppLoading}
               >
-                {isCalling ? (
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                {isWhatsAppLoading ? (
+                  <Loader2 className="mr-1.5 h-3.5 w-3.5 animate-spin" />
                 ) : (
-                  <Phone className="mr-2 h-4 w-4 transition-transform group-hover:rotate-12 group-hover:scale-110" />
+                  <WhatsAppIcon className="mr-1.5 h-3.5 w-3.5 transition-transform group-hover:scale-110" />
                 )}
-                {isCalling ? 'Calling...' : 'Call Us'}
+                {isWhatsAppLoading ? 'Opening...' : 'WhatsApp'}
               </Button>
             </div>
 
@@ -263,61 +451,63 @@ export function Header() {
               </div>
 
               {/* Nav Links */}
-              <Link
-                href="/account"
-                className="flex items-center gap-2 text-[#2c3e50] font-medium py-2"
-                onClick={() => setIsMobileMenuOpen(false)}
+              <button
+                onClick={() => {
+                  setIsMobileMenuOpen(false)
+                  setIsLoginOpen(true)
+                }}
+                className="flex items-center gap-2 text-[#2c3e50] font-medium py-2 w-full text-left font-body"
               >
-                <User className="h-4 w-4" />
-                My Account
-              </Link>
+                <LogIn className="h-4 w-4" />
+                Login / Register
+              </button>
               <Link
                 href="/about"
-                className="block text-[#2c3e50] font-medium py-2"
+                className="block text-[#2c3e50] font-medium py-2 font-body"
                 onClick={() => setIsMobileMenuOpen(false)}
               >
                 About Us
               </Link>
               <Link
                 href="/contact"
-                className="block text-[#2c3e50] font-medium py-2"
+                className="block text-[#2c3e50] font-medium py-2 font-body"
                 onClick={() => setIsMobileMenuOpen(false)}
               >
                 Contact
               </Link>
               <Link
                 href="/blog"
-                className="block text-[#2c3e50] font-medium py-2"
+                className="block text-[#2c3e50] font-medium py-2 font-body"
                 onClick={() => setIsMobileMenuOpen(false)}
               >
                 Blog
               </Link>
               <Link
                 href="/shop"
-                className="block text-[#2c3e50] font-medium py-2"
+                className="block text-[#2c3e50] font-medium py-2 font-body"
                 onClick={() => setIsMobileMenuOpen(false)}
               >
                 Shop All Instruments
               </Link>
 
-              {/* Call Button */}
+              {/* WhatsApp Button */}
               <Button
-                className="w-full bg-[#2c3e50] text-white hover:bg-[#1a252f] font-semibold mt-2"
+                className="w-full bg-[#25D366] text-white hover:bg-[#128C7E] font-semibold mt-2 font-body"
                 onClick={() => {
-                  setIsCalling(true)
+                  setIsWhatsAppLoading(true)
                   setTimeout(() => {
-                    window.location.href = 'tel:+17025551234'
-                    setIsCalling(false)
+                    window.open('https://wa.me/17025551234', '_blank')
+                    setIsWhatsAppLoading(false)
                   }, 100)
                 }}
-                disabled={isCalling}
+                disabled={isWhatsAppLoading}
               >
-                {isCalling ? (
+                {isWhatsAppLoading ? (
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                 ) : (
-                  <Phone className="mr-2 h-4 w-4" />
+                  <WhatsAppIcon className="mr-2 h-4 w-4" />
                 )}
-                {isCalling ? 'Calling...' : 'Call (702) 555-1234'}
+                {isWhatsAppLoading ? 'Opening...' : 'Chat on WhatsApp'}
               </Button>
             </div>
           </div>
@@ -329,6 +519,9 @@ export function Header() {
 
       {/* Cart Drawer */}
       <MiniCartDrawer open={isCartOpen} onOpenChange={setIsCartOpen} />
+
+      {/* Login Modal */}
+      <LoginModal open={isLoginOpen} onOpenChange={setIsLoginOpen} />
     </>
   )
 }
