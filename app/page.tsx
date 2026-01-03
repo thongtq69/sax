@@ -627,65 +627,62 @@ export default function HomePage() {
 
       {/* NEW ARRIVALS Section */}
       {saleProducts.length > 0 && (
-        <section className="container mx-auto px-4 py-4 sm:py-6 md:py-8">
-          <div className="mb-4 sm:mb-5 text-center animate-fade-in-up">
-            <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold text-secondary">NEW ARRIVALS</h2>
-            <div className="mt-2 flex items-center justify-center space-x-4">
-              <div className="h-px w-12 sm:w-16 bg-gradient-to-r from-transparent to-primary" />
-              <span className="text-3xl sm:text-4xl text-primary">♪</span>
-              <div className="h-px w-12 sm:w-16 bg-gradient-to-l from-transparent to-primary" />
+        <section>
+          {/* Section Header - Left aligned */}
+          <div className="container mx-auto px-4 py-3 sm:py-4">
+            <div className="flex items-center gap-3">
+              <span className="text-2xl sm:text-3xl text-primary">♪</span>
+              <h2 className="text-lg sm:text-xl md:text-2xl font-bold text-secondary tracking-wide">NEW ARRIVALS</h2>
+              <div className="flex-1 h-px bg-primary/30 ml-4" />
+              <Link href="/shop?badge=coming-soon" className="text-xs sm:text-sm text-primary hover:text-secondary transition-colors flex items-center gap-1">
+                View All <ChevronRight className="h-3 w-3 sm:h-4 sm:w-4" />
+              </Link>
             </div>
           </div>
-
-          {/* New Arrivals Products Carousel with smooth transitions */}
-          <NewArrivalsCarousel products={saleProducts} id="new-arrivals" />
+          
+          {/* Products */}
+          <div className="container mx-auto px-4 pb-4 sm:pb-6">
+            <NewArrivalsCarousel products={saleProducts} id="new-arrivals" />
+          </div>
         </section>
       )}
 
-      {/* Featured Products - New Arrivals */}
-      <section className="container mx-auto px-4 py-4 sm:py-6 md:py-8">
-        <div className="mb-4 sm:mb-5 text-center animate-fade-in-up">
-          <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold text-secondary">Featured Instruments</h2>
-          <div className="mt-2 flex items-center justify-center space-x-4">
-            <div className="h-px w-12 sm:w-16 bg-gradient-to-r from-transparent to-primary" />
-            <span className="text-3xl sm:text-4xl text-primary">♫</span>
-            <div className="h-px w-12 sm:w-16 bg-gradient-to-l from-transparent to-primary" />
+      {/* Featured Products */}
+      <section>
+        {/* Section Header - Left aligned */}
+        <div className="container mx-auto px-4 py-3 sm:py-4">
+          <div className="flex items-center gap-3">
+            <span className="text-2xl sm:text-3xl text-primary">♫</span>
+            <h2 className="text-lg sm:text-xl md:text-2xl font-bold text-secondary tracking-wide">Featured Instruments</h2>
+            <div className="flex-1 h-px bg-primary/30 ml-4" />
+            <Link href="/shop?badge=new" className="text-xs sm:text-sm text-primary hover:text-secondary transition-colors flex items-center gap-1">
+              View All <ChevronRight className="h-3 w-3 sm:h-4 sm:w-4" />
+            </Link>
           </div>
         </div>
-
-        {/* Product Carousel with smooth transitions - same as NEW ARRIVALS */}
-        <NewArrivalsCarousel products={featuredProducts} id="featured" />
-
-        {/* View All Button */}
-        <div className="mt-4 sm:mt-5 text-center">
-          <Button
-            variant="outline"
-            size="lg"
-            className="border-2 border-secondary bg-white text-secondary hover:bg-secondary hover:text-white group px-6 sm:px-8 shadow-lg text-sm sm:text-base"
-            asChild
-          >
-            <Link href="/shop" className="flex items-center">
-              View All Instruments
-              <ChevronRight className="ml-2 h-4 w-4 sm:h-5 sm:w-5 group-hover:translate-x-1 transition-transform" />
-            </Link>
-          </Button>
+        
+        {/* Products */}
+        <div className="container mx-auto px-4 pb-4 sm:pb-6">
+          <NewArrivalsCarousel products={featuredProducts} id="featured" />
         </div>
       </section>
 
       {/* Shop by Category - With Product Images */}
-      <section className="bg-gradient-to-b from-muted/50 to-white py-4 sm:py-6 md:py-8">
-        <div className="container mx-auto px-4">
-          <div className="mb-4 sm:mb-5 text-center animate-fade-in-up">
-            <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold text-secondary">Shop by Category</h2>
-            <div className="mt-2 flex items-center justify-center space-x-4">
-              <div className="h-px w-12 sm:w-16 bg-gradient-to-r from-transparent to-primary" />
-              <span className="text-3xl sm:text-4xl text-primary">♬</span>
-              <div className="h-px w-12 sm:w-16 bg-gradient-to-l from-transparent to-primary" />
-            </div>
+      <section>
+        {/* Section Header - Left aligned */}
+        <div className="container mx-auto px-4 py-3 sm:py-4">
+          <div className="flex items-center gap-3">
+            <span className="text-2xl sm:text-3xl text-primary">♬</span>
+            <h2 className="text-lg sm:text-xl md:text-2xl font-bold text-secondary tracking-wide">Shop by Category</h2>
+            <div className="flex-1 h-px bg-primary/30 ml-4" />
+            <Link href="/shop" className="text-xs sm:text-sm text-primary hover:text-secondary transition-colors flex items-center gap-1">
+              View All <ChevronRight className="h-3 w-3 sm:h-4 sm:w-4" />
+            </Link>
           </div>
-
-          <div className="w-full px-0 sm:px-4 md:px-6 lg:px-8">
-            <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 md:gap-5 lg:gap-6 w-full">
+        </div>
+        
+        <div className="container mx-auto px-4 py-4 sm:py-6">
+          <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 md:gap-5 lg:gap-6 w-full">
               {subcategories.map((sub, i) => {
                 // Remove "Saxophones" from display name
                 const displayName = sub.name.replace(/\s+Saxophones?/gi, '')
@@ -755,7 +752,6 @@ export default function HomePage() {
                   </div>
                 </Link>
               )}
-            </div>
           </div>
         </div>
       </section>
