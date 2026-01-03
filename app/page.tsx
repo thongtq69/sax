@@ -62,7 +62,7 @@ function ReviewsCarousel({ reviews, productImages = [] }: ReviewsCarouselProps) 
     >
       {/* Compact Horizontal Review Card - Full Width */}
       <div
-        className={`bg-white rounded-xl sm:rounded-2xl p-4 sm:p-5 md:p-6 shadow-lg border border-gray-100 transition-all duration-300 ease-out ${
+        className={`bg-white p-4 sm:p-5 md:p-6 shadow-lg border border-gray-100 transition-all duration-300 ease-out ${
           isAnimating ? 'opacity-0 scale-98' : 'opacity-100 scale-100'
         }`}
       >
@@ -70,7 +70,7 @@ function ReviewsCarousel({ reviews, productImages = [] }: ReviewsCarouselProps) 
           {/* Left: Product Image */}
           {currentImage && (
             <div className="hidden sm:block flex-shrink-0">
-              <div className="relative w-20 h-20 md:w-24 md:h-24 rounded-xl overflow-hidden shadow-md">
+              <div className="relative w-20 h-20 md:w-24 md:h-24 overflow-hidden shadow-md">
                 <Image
                   src={currentImage}
                   alt="Product"
@@ -603,7 +603,7 @@ export default function HomePage() {
       <section className="bg-gradient-to-br from-amber-50 via-white to-blue-50 py-4 sm:py-6 md:py-8">
         <div className="container mx-auto px-4">
           <div className="mb-3 sm:mb-4 text-center animate-fade-in-up">
-            <div className="inline-flex items-center gap-1.5 px-2.5 py-1 sm:px-3 sm:py-1.5 rounded-full bg-amber-100 text-amber-800 text-[10px] sm:text-xs font-medium mb-2">
+            <div className="inline-flex items-center gap-1.5 px-2.5 py-1 sm:px-3 sm:py-1.5 bg-amber-100 text-amber-800 text-[10px] sm:text-xs font-medium mb-2">
               <Star className="h-3 w-3 sm:h-3.5 sm:w-3.5 fill-amber-400 text-amber-400" />
               Trusted by Musicians Worldwide
             </div>
@@ -699,7 +699,7 @@ export default function HomePage() {
                   <Link
                     key={sub.slug}
                     href={`/shop?subcategory=${sub.slug}`}
-                    className="group relative overflow-hidden rounded-xl sm:rounded-2xl border-2 border-transparent hover:border-primary transition-all duration-500 hover:shadow-2xl animate-fade-in-up"
+                    className="group relative overflow-hidden border-2 border-transparent hover:border-primary transition-all duration-500 hover:shadow-2xl animate-fade-in-up"
                     style={{ animationDelay: `${0.1 * i}s` }}
                   >
                     {/* Background Product Image */}
@@ -730,7 +730,7 @@ export default function HomePage() {
               {!subcategories.find(s => s.slug.includes('baritone') || s.name.toLowerCase().includes('baritone')) && (
                 <Link
                   href="/shop?subcategory=baritone-saxophones"
-                  className="group relative overflow-hidden rounded-xl sm:rounded-2xl border-2 border-transparent hover:border-primary transition-all duration-500 hover:shadow-2xl animate-fade-in-up"
+                  className="group relative overflow-hidden border-2 border-transparent hover:border-primary transition-all duration-500 hover:shadow-2xl animate-fade-in-up"
                   style={{ animationDelay: `${0.1 * subcategories.length}s` }}
                 >
                   {/* Background Product Image */}
@@ -766,7 +766,7 @@ export default function HomePage() {
           <div className="flex flex-col md:grid md:grid-cols-3 gap-4 sm:gap-6 md:gap-8 items-stretch">
             {/* Left: Product Image Showcase */}
             <div className="hidden md:flex animate-fade-in-left items-center justify-center">
-              <div className="relative w-full max-w-[200px] aspect-[3/4] rounded-2xl overflow-hidden shadow-2xl">
+              <div className="relative w-full max-w-[200px] aspect-[3/4] overflow-hidden shadow-2xl">
                 <Image
                   src={allProducts[0]?.images[0] || '/placeholder.jpg'}
                   alt="Premium Saxophone"
@@ -794,8 +794,8 @@ export default function HomePage() {
                   { title: 'Expert Consultation', desc: 'Our staff includes professional players' },
                   { title: 'Lifetime Support', desc: 'We\'re here throughout your musical journey' },
                 ].map((item, i) => (
-                  <div key={i} className="flex gap-2 sm:gap-3 p-2 sm:p-2.5 rounded-lg bg-white border border-transparent hover:border-primary/30 transition-all duration-500 hover:shadow-lg">
-                    <div className="flex-shrink-0 w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-primary/10 flex items-center justify-center">
+                  <div key={i} className="flex gap-2 sm:gap-3 p-2 sm:p-2.5 bg-white border border-transparent hover:border-primary/30 transition-all duration-500 hover:shadow-lg">
+                    <div className="flex-shrink-0 w-7 h-7 sm:w-8 sm:h-8 bg-primary/10 flex items-center justify-center">
                       <Star className="h-3 w-3 sm:h-3.5 sm:w-3.5 text-primary" />
                     </div>
                     <div>
@@ -809,7 +809,7 @@ export default function HomePage() {
 
             {/* Right: Featured Review - Zach E. */}
             <div className="animate-fade-in-right flex flex-col">
-              <div className="bg-gradient-to-br from-primary/10 to-primary/5 rounded-xl sm:rounded-2xl p-4 sm:p-5 h-full flex flex-col justify-center">
+              <div className="bg-gradient-to-br from-primary/10 to-primary/5 p-4 sm:p-5 h-full flex flex-col justify-center">
                 <div className="flex justify-center mb-3 sm:mb-4">
                   {[...Array(5)].map((_, i) => (
                     <Star key={i} className="h-4 w-4 sm:h-5 sm:w-5 md:h-6 md:w-6 fill-amber-400 text-amber-400" />
@@ -852,7 +852,7 @@ export default function HomePage() {
                 type="email"
                 name="email"
                 placeholder="Enter your email"
-                className="bg-white/20 border border-white/30 placeholder:text-white/60 text-white min-w-0 flex-1 sm:min-w-[160px] px-2.5 py-1.5 rounded-md transition-all duration-300 focus:bg-white/30 focus:outline-none focus:border-white/50 text-[11px] sm:text-xs"
+                className="bg-white/20 border border-white/30 placeholder:text-white/60 text-white min-w-0 flex-1 sm:min-w-[160px] px-2.5 py-1.5 transition-all duration-300 focus:bg-white/30 focus:outline-none focus:border-white/50 text-[11px] sm:text-xs"
                 required
               />
               <Button
