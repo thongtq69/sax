@@ -59,51 +59,58 @@ function ReviewsCarousel({ reviews, productImages = [] }: ReviewsCarouselProps) 
       onMouseEnter={() => setIsPaused(true)}
       onMouseLeave={() => setIsPaused(false)}
     >
-      {/* Compact Horizontal Review Card - Full Width */}
+      {/* Wide Review Card - Horizontal Layout */}
       <div
-        className={`bg-white p-4 sm:p-5 md:p-6 shadow-lg border border-gray-100 transition-all duration-300 ease-out ${
-          isAnimating ? 'opacity-0 scale-98' : 'opacity-100 scale-100'
+        className={`bg-white/85 backdrop-blur-md px-6 sm:px-8 md:px-10 py-4 sm:py-5 shadow-xl border border-white/50 rounded-xl w-full transition-all duration-300 ease-out ${
+          isAnimating ? 'opacity-0 scale-95' : 'opacity-100 scale-100'
         }`}
       >
-        <div className="flex flex-col sm:flex-row sm:items-center gap-4 sm:gap-6">
-          {/* Stars + Name + Review */}
+        <div className="flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-6">
+          {/* Quote + Review Text */}
           <div className="flex-1">
-            <div className="flex items-center gap-3 mb-2">
-              <div className="flex gap-0.5">
-                {[...Array(5)].map((_, i) => (
-                  <Star
-                    key={i}
-                    className={`h-3.5 w-3.5 sm:h-4 sm:w-4 ${
-                      i < currentReview.rating
-                        ? 'fill-amber-400 text-amber-400'
-                        : 'fill-gray-200 text-gray-200'
-                    }`}
-                  />
-                ))}
-              </div>
-              <span className="text-sm font-semibold text-secondary">{currentReview.buyerName}</span>
-              <span className="text-xs text-muted-foreground">
+            <p className="text-gray-700 text-sm sm:text-base md:text-lg leading-relaxed italic">
+              <span className="text-amber-400 text-xl mr-1">"</span>
+              {getReviewExcerpt(currentReview.message || 'Great experience!', 250)}
+              <span className="text-amber-400 text-xl ml-1">"</span>
+            </p>
+          </div>
+          
+          {/* Reviewer Info + Stars */}
+          <div className="flex sm:flex-col items-center sm:items-end gap-3 sm:gap-1 shrink-0">
+            <div className="flex gap-0.5">
+              {[...Array(5)].map((_, i) => (
+                <Star
+                  key={i}
+                  className={`h-3.5 w-3.5 sm:h-4 sm:w-4 ${
+                    i < currentReview.rating
+                      ? 'fill-amber-400 text-amber-400'
+                      : 'fill-gray-200 text-gray-200'
+                  }`}
+                />
+              ))}
+            </div>
+            <div className="text-right">
+              <span className="font-semibold text-secondary text-sm">{currentReview.buyerName}</span>
+              <span className="text-gray-400 mx-1.5 hidden sm:inline">•</span>
+              <span className="text-xs text-gray-500 block sm:inline">
                 {new Date(currentReview.date).toLocaleDateString('en-US', { month: 'short', year: 'numeric' })}
               </span>
             </div>
-            <p className="text-gray-700 text-sm sm:text-base md:text-lg leading-relaxed italic">
-              "{getReviewExcerpt(currentReview.message || 'Great experience!', 220)}"
-            </p>
           </div>
         </div>
       </div>
 
       {/* View All Reviews Button */}
-      <div className="mt-3 sm:mt-4 text-center">
+      <div className="mt-4 text-center">
         <Button
           size="sm"
           variant="outline"
-          className="border-2 border-primary text-primary hover:bg-primary hover:text-white font-semibold px-5 sm:px-6 text-xs sm:text-sm h-8 sm:h-9"
+          className="bg-white/90 backdrop-blur-sm border-2 border-white text-secondary hover:bg-white hover:text-primary font-semibold px-6 text-sm h-9 rounded-full shadow-lg"
           asChild
         >
           <Link href="#reviews">
             View All Reviews
-            <ChevronRight className="ml-1.5 h-3.5 w-3.5 sm:h-4 sm:w-4" />
+            <ChevronRight className="ml-1.5 h-4 w-4" />
           </Link>
         </Button>
       </div>
