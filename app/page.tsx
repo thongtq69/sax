@@ -63,27 +63,27 @@ function ReviewsCarousel({ reviews, productImages = [], onViewAll }: ReviewsCaro
     >
       {/* Wide Review Card - Horizontal Layout */}
       <div
-        className={`bg-white/85 backdrop-blur-md px-6 sm:px-8 md:px-10 py-4 sm:py-5 shadow-xl border border-white/50 rounded-xl w-full transition-all duration-300 ease-out ${
+        className={`bg-white/85 backdrop-blur-md px-8 sm:px-10 md:px-12 py-6 sm:py-8 shadow-xl border border-white/50 rounded-xl w-full transition-all duration-300 ease-out ${
           isAnimating ? 'opacity-0 scale-95' : 'opacity-100 scale-100'
         }`}
       >
-        <div className="flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-6">
+        <div className="flex flex-col sm:flex-row sm:items-center gap-4 sm:gap-8">
           {/* Quote + Review Text */}
           <div className="flex-1">
-            <p className="text-gray-700 text-sm sm:text-base md:text-lg leading-relaxed italic">
-              <span className="text-amber-400 text-xl mr-1">"</span>
-              {getReviewExcerpt(currentReview.message || 'Great experience!', 250)}
-              <span className="text-amber-400 text-xl ml-1">"</span>
+            <p className="text-gray-700 text-base sm:text-lg md:text-xl leading-relaxed italic">
+              <span className="text-amber-400 text-2xl mr-1">"</span>
+              {getReviewExcerpt(currentReview.message || 'Great experience!', 300)}
+              <span className="text-amber-400 text-2xl ml-1">"</span>
             </p>
           </div>
           
           {/* Reviewer Info + Stars */}
-          <div className="flex sm:flex-col items-center sm:items-end gap-3 sm:gap-1 shrink-0">
+          <div className="flex sm:flex-col items-center sm:items-end gap-3 sm:gap-2 shrink-0">
             <div className="flex gap-0.5">
               {[...Array(5)].map((_, i) => (
                 <Star
                   key={i}
-                  className={`h-3.5 w-3.5 sm:h-4 sm:w-4 ${
+                  className={`h-4 w-4 sm:h-5 sm:w-5 ${
                     i < currentReview.rating
                       ? 'fill-amber-400 text-amber-400'
                       : 'fill-gray-200 text-gray-200'
@@ -92,27 +92,14 @@ function ReviewsCarousel({ reviews, productImages = [], onViewAll }: ReviewsCaro
               ))}
             </div>
             <div className="text-right">
-              <span className="font-semibold text-secondary text-sm">{currentReview.buyerName}</span>
+              <span className="font-semibold text-secondary text-base">{currentReview.buyerName}</span>
               <span className="text-gray-400 mx-1.5 hidden sm:inline">•</span>
-              <span className="text-xs text-gray-500 block sm:inline">
+              <span className="text-sm text-gray-500 block sm:inline">
                 {new Date(currentReview.date).toLocaleDateString('en-US', { month: 'short', year: 'numeric' })}
               </span>
             </div>
           </div>
         </div>
-      </div>
-
-      {/* View All Reviews Button */}
-      <div className="mt-4 text-center">
-        <Button
-          size="sm"
-          variant="outline"
-          className="bg-white/90 backdrop-blur-sm border-2 border-white text-secondary hover:bg-white hover:text-primary font-semibold px-6 text-sm h-9 rounded-full shadow-lg"
-          onClick={onViewAll}
-        >
-          View All Reviews
-          <ChevronRight className="ml-1.5 h-4 w-4" />
-        </Button>
       </div>
     </div>
   )
@@ -556,6 +543,17 @@ export default function HomePage() {
 
         {/* Customer Reviews - Same Background */}
         <div className="relative py-8 sm:py-10 md:py-12">
+          {/* View All Reviews Button - Absolute positioned at bottom right corner */}
+          <Button
+            size="sm"
+            variant="outline"
+            className="absolute bottom-2 right-2 sm:bottom-3 sm:right-3 md:bottom-4 md:right-4 bg-white/95 backdrop-blur-sm border border-gray-200 text-secondary hover:bg-primary hover:text-white hover:border-primary font-medium px-4 text-xs h-8 rounded-full shadow-md transition-all z-10"
+            onClick={() => setShowTestimonials(true)}
+          >
+            View All Reviews
+            <ChevronRight className="ml-1 h-3.5 w-3.5" />
+          </Button>
+
           <div className="container mx-auto px-4">
             <div className="mb-4 sm:mb-6 text-center animate-fade-in-up">
               <div className="inline-flex items-center gap-1.5 px-3 py-1.5 sm:px-4 sm:py-2 bg-white/90 text-amber-700 text-[10px] sm:text-xs font-medium mb-3 rounded-full shadow-md backdrop-blur-sm">
