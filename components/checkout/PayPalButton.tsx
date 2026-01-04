@@ -17,7 +17,7 @@ interface PayPalButtonProps {
     zip: string
     country: string
     phone: string
-  }
+  } | null
   onSuccess?: (details: any) => void
   onError?: (error: any) => void
 }

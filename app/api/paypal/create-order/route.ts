@@ -35,11 +35,20 @@ export async function POST(request: NextRequest) {
 
     const accessToken = await getAccessToken()
 
-    const orderData = {
+    // Check if user provided shipping info
+    const hasShippingInfo = shippingInfo && 
+      shippingInfo.firstName && 
+      shippingInfo.lastName && 
+      shippingInfo.address1 && 
+      shippingInfo.city && 
+      shippingInfo.state && 
+      shippingInfo.zip
+
+    const orderData: any = {
       intent: 'CAPTURE',
-      // Force PayPal to use the shipping address we provide, not from PayPal account
       application_context: {
-        shipping_preference: 'SET_PROVIDED_ADDRESS', // Use address from our website
+        // If user filled form, use their address; otherwise let PayPal provide address
+        shipping_preference: hasShippingInfo ? 'SET_PROVIDED_ADDRESS' : 'GET_FROM_FILE',
         user_action: 'PAY_NOW',
         brand_name: 'James Sax Corner',
         landing_page: 'NO_PREFERENCE',
@@ -59,18 +68,22 @@ export async function POST(request: NextRequest) {
           quantity: item.quantity.toString(),
           unit_amount: { currency_code: 'USD', value: item.price.toFixed(2) },
         })),
-        shipping: shippingInfo ? {
-          name: { full_name: `${shippingInfo.firstName} ${shippingInfo.lastName}` },
-          address: {
-            address_line_1: shippingInfo.address1,
-            address_line_2: shippingInfo.address2 || undefined,
-            admin_area_2: shippingInfo.city,
-            admin_area_1: shippingInfo.state,
-            postal_code: shippingInfo.zip,
-            country_code: 'US',
-          }
-        } : undefined,
       }],
+    }
+
+    // Only add shipping address if user provided it
+    if (hasShippingInfo) {
+      orderData.purchase_units[0].shipping = {
+        name: { full_name: `${shippingInfo.firstName} ${shippingInfo.lastName}` },
+        address: {
+          address_line_1: shippingInfo.address1,
+          address_line_2: shippingInfo.address2 || undefined,
+          admin_area_2: shippingInfo.city,
+          admin_area_1: shippingInfo.state,
+          postal_code: shippingInfo.zip,
+          country_code: 'US',
+        }
+      }
     }
 
     const response = await fetch(`${PAYPAL_API_URL}/v2/checkout/orders`, {
