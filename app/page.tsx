@@ -486,58 +486,45 @@ export default function HomePage() {
   return (
     <div className="space-y-0 page-content">
       <ScrollAnimations />
-      {/* Hero Section - Vintage Classic Style with JSC Logo */}
-      <section className="homepage-hero relative min-h-[200px] md:min-h-[260px] lg:min-h-[300px] overflow-hidden bg-gradient-to-br from-primary via-primary/95 to-primary/90">
-        {/* Music Note Pattern Background - Larger */}
-        <div className="absolute inset-0 opacity-[0.12]">
-          <div 
-            className="absolute inset-0"
-            style={{
-              backgroundImage: `url('/musicnote.svg')`,
-              backgroundSize: '200px 200px',
-              backgroundRepeat: 'repeat',
-            }}
+      {/* Hero Section - With Background Image */}
+      <section className="homepage-hero relative min-h-[300px] md:min-h-[400px] lg:min-h-[500px] overflow-hidden">
+        {/* Background Image */}
+        <div className="absolute inset-0">
+          <Image
+            src="/homepage.png"
+            alt="Saxophones Background"
+            fill
+            className="object-cover"
+            priority
           />
+          {/* Dark Overlay for better text readability */}
+          <div className="absolute inset-0 bg-black/30" />
         </div>
 
-        {/* Floating musical notes decoration - Larger */}
-        <div className="absolute top-10 left-10 text-6xl md:text-7xl text-secondary/25 animate-float-sine">♪</div>
-        <div className="absolute top-20 right-16 text-7xl md:text-8xl text-secondary/25 animate-float-sine" style={{ animationDelay: '1.5s' }}>♫</div>
-        <div className="absolute bottom-20 left-1/4 text-5xl md:text-6xl text-secondary/25 animate-float-sine" style={{ animationDelay: '3s' }}>♩</div>
-        <div className="absolute top-1/3 right-1/3 text-6xl md:text-7xl text-secondary/25 animate-float-sine" style={{ animationDelay: '0.7s' }}>♬</div>
-        <div className="absolute bottom-10 right-1/4 text-5xl md:text-6xl text-secondary/25 animate-float-sine" style={{ animationDelay: '2.2s' }}>♪</div>
-
-        <div className="container relative mx-auto flex min-h-[200px] md:min-h-[260px] lg:min-h-[300px] items-center px-4 py-6 md:py-8">
-          <div className="max-w-4xl space-y-3 md:space-y-4">
-            {/* JSC Logo SVG - Larger */}
-            <div className="hero-title">
+        {/* Content - Centered */}
+        <div className="container relative mx-auto flex min-h-[300px] md:min-h-[400px] lg:min-h-[500px] items-center justify-center px-4 py-8 md:py-12">
+          <div className="text-center space-y-4 md:space-y-6">
+            {/* Logo Image */}
+            <div className="hero-title flex justify-center">
               <Image
-                src="/jsc.svg"
+                src="/jsc-logo-cropped.svg"
                 alt="James Sax Corner"
-                width={700}
-                height={140}
-                className="h-[70px] md:h-[100px] lg:h-[130px] w-auto"
-                style={{ filter: 'brightness(0) saturate(100%) invert(33%) sepia(15%) saturate(1000%) hue-rotate(10deg) brightness(95%) contrast(90%)' }}
+                width={760}
+                height={220}
+                className="h-[60px] md:h-[75px] lg:h-[95px] w-auto"
                 priority
               />
             </div>
 
-            {/* Decorative Divider */}
-            <div className="hero-subtitle flex items-center space-x-4">
-              <div className="h-px w-20 bg-gradient-to-r from-transparent to-secondary/50" />
-              <span className="text-xl text-secondary/60">✦</span>
-              <div className="h-px w-20 bg-gradient-to-l from-transparent to-secondary/50" />
-            </div>
-
-            <p className="hero-cta text-sm md:text-base leading-relaxed text-secondary/70 max-w-2xl font-body">
+            <p className="hero-cta text-base md:text-lg lg:text-xl leading-relaxed text-white max-w-3xl mx-auto font-body drop-shadow-lg">
               Premium Japanese saxophones, expertly maintained for peak performance. Trusted by musicians worldwide, backed by outstanding reviews. Unmatched customer service—your satisfaction comes first! Buy with confidence.
             </p>
 
-            <div className="hero-cta flex flex-wrap gap-4 pt-1">
-              <Button size="default" variant="outline" className="border-2 border-secondary text-secondary hover:bg-secondary hover:text-white hover:scale-105 group transition-all duration-300 font-body" asChild>
+            <div className="hero-cta flex justify-center pt-2">
+              <Button size="lg" variant="outline" className="border-2 border-white bg-white text-black hover:bg-white/90 hover:text-secondary hover:scale-105 group transition-all duration-300 font-body text-base md:text-lg px-6 md:px-8" asChild>
                 <Link href="/shop" className="flex items-center">
                   Buy with confidence!
-                  <ChevronRight className="ml-1 h-4 w-4 group-hover:translate-x-1 transition-transform" />
+                  <ChevronRight className="ml-2 h-5 w-5 group-hover:translate-x-1 transition-transform" />
                 </Link>
               </Button>
             </div>

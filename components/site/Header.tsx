@@ -252,12 +252,23 @@ export function Header() {
     <>
       <header
         className={cn(
-          "sticky top-0 z-50 w-full transition-all duration-500",
+          "sticky top-0 z-50 w-full transition-all duration-500 relative overflow-hidden",
           isScrolled ? 'shadow-lg backdrop-blur-sm' : 'shadow-sm',
           isHidden && !isMobileMenuOpen ? '-translate-y-full' : 'translate-y-0'
         )}
         style={{ backgroundColor: '#AFA65F' }} // Match logo background color
       >
+        {/* Music Note Pattern Background */}
+        <div className="absolute inset-0 opacity-[0.08] pointer-events-none overflow-hidden">
+          <div 
+            className="absolute inset-0"
+            style={{
+              backgroundImage: `url('/musicnote.svg')`,
+              backgroundSize: '150px 150px',
+              backgroundRepeat: 'repeat',
+            }}
+          />
+        </div>
         <div className="container mx-auto px-4">
           <div className={`flex items-center justify-between transition-all duration-300 ${isScrolled ? 'h-[56px] md:h-16' : 'h-[64px] md:h-20'
             }`}>
