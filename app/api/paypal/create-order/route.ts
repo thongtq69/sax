@@ -37,6 +37,13 @@ export async function POST(request: NextRequest) {
 
     const orderData = {
       intent: 'CAPTURE',
+      // Force PayPal to use the shipping address we provide, not from PayPal account
+      application_context: {
+        shipping_preference: 'SET_PROVIDED_ADDRESS', // Use address from our website
+        user_action: 'PAY_NOW',
+        brand_name: 'James Sax Corner',
+        landing_page: 'NO_PREFERENCE',
+      },
       purchase_units: [{
         amount: {
           currency_code: 'USD',
