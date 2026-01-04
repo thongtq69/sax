@@ -3,11 +3,12 @@
 import { useState, useEffect, useRef } from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
-import { Search, ShoppingCart, Menu, X, Loader2, User, Facebook, Instagram, Youtube, Twitter, LogIn, Eye, EyeOff } from 'lucide-react'
+import { Search, ShoppingCart, Menu, X, Loader2, User, Facebook, Instagram, Youtube, Twitter, LogIn, Eye, EyeOff, Star } from 'lucide-react'
 import { useCartStore } from '@/lib/store/cart'
 import { Button } from '@/components/ui/button'
 import { SearchBar } from './SearchBar'
 import { MiniCartDrawer } from '@/components/cart/MiniCartDrawer'
+import { TestimonialsPopup } from './TestimonialsPopup'
 import { cn } from '@/lib/utils'
 
 // WhatsApp Icon Component
@@ -198,6 +199,7 @@ export function Header() {
   const [isSearchOpen, setIsSearchOpen] = useState(false)
   const [isCartOpen, setIsCartOpen] = useState(false)
   const [isLoginOpen, setIsLoginOpen] = useState(false)
+  const [isTestimonialsOpen, setIsTestimonialsOpen] = useState(false)
   const [cartBounce, setCartBounce] = useState(false)
   const [isWhatsAppLoading, setIsWhatsAppLoading] = useState(false)
   const lastScrollY = useRef(0)
@@ -314,10 +316,14 @@ export function Header() {
                   About Us
                   <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-[#2c3e50] transition-all duration-300 group-hover/nav:w-full" />
                 </Link>
-                <Link href="/contact" className="text-[#2c3e50] hover:text-[#1a252f] transition-all duration-300 relative group/nav font-body">
-                  Contact
+                <button 
+                  onClick={() => setIsTestimonialsOpen(true)}
+                  className="text-[#2c3e50] hover:text-[#1a252f] transition-all duration-300 relative group/nav font-body flex items-center gap-1"
+                >
+                  <Star className="h-3.5 w-3.5 fill-amber-400 text-amber-400" />
+                  Testimonials
                   <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-[#2c3e50] transition-all duration-300 group-hover/nav:w-full" />
-                </Link>
+                </button>
                 <Link href="/blog" className="text-[#2c3e50] hover:text-[#1a252f] transition-all duration-300 relative group/nav font-body">
                   Blog
                   <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-[#2c3e50] transition-all duration-300 group-hover/nav:w-full" />
@@ -488,13 +494,16 @@ export function Header() {
               >
                 About Us
               </Link>
-              <Link
-                href="/contact"
-                className="block text-[#2c3e50] font-medium py-2 font-body"
-                onClick={() => setIsMobileMenuOpen(false)}
+              <button
+                onClick={() => {
+                  setIsMobileMenuOpen(false)
+                  setIsTestimonialsOpen(true)
+                }}
+                className="flex items-center gap-2 text-[#2c3e50] font-medium py-2 w-full text-left font-body"
               >
-                Contact
-              </Link>
+                <Star className="h-4 w-4 fill-amber-400 text-amber-400" />
+                Testimonials
+              </button>
               <Link
                 href="/blog"
                 className="block text-[#2c3e50] font-medium py-2 font-body"
@@ -542,6 +551,9 @@ export function Header() {
 
       {/* Login Modal */}
       <LoginModal open={isLoginOpen} onOpenChange={setIsLoginOpen} />
+
+      {/* Testimonials Popup */}
+      <TestimonialsPopup isOpen={isTestimonialsOpen} onClose={() => setIsTestimonialsOpen(false)} />
     </>
   )
 }

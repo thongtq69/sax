@@ -10,6 +10,7 @@ import type { Product } from '@/lib/data'
 import { Phone, Shield, Truck, CreditCard, Award, Headphones, ChevronRight, ChevronLeft, Star, Sparkles } from 'lucide-react'
 import { reviews, type Review } from '@/lib/reviews'
 import { ScrollAnimations } from '@/components/site/ScrollAnimations'
+import { TestimonialsPopup } from '@/components/site/TestimonialsPopup'
 
 const getReviewExcerpt = (message: string, maxLength = 160) => {
   if (message.length <= maxLength) return message
@@ -23,9 +24,10 @@ const getReviewExcerpt = (message: string, maxLength = 160) => {
 interface ReviewsCarouselProps {
   reviews: Review[]
   productImages?: string[]
+  onViewAll?: () => void
 }
 
-function ReviewsCarousel({ reviews, productImages = [] }: ReviewsCarouselProps) {
+function ReviewsCarousel({ reviews, productImages = [], onViewAll }: ReviewsCarouselProps) {
   const [currentIndex, setCurrentIndex] = useState(0)
   const [isPaused, setIsPaused] = useState(false)
   const [isAnimating, setIsAnimating] = useState(false)
@@ -106,12 +108,10 @@ function ReviewsCarousel({ reviews, productImages = [] }: ReviewsCarouselProps) 
           size="sm"
           variant="outline"
           className="bg-white/90 backdrop-blur-sm border-2 border-white text-secondary hover:bg-white hover:text-primary font-semibold px-6 text-sm h-9 rounded-full shadow-lg"
-          asChild
+          onClick={onViewAll}
         >
-          <Link href="#reviews">
-            View All Reviews
-            <ChevronRight className="ml-1.5 h-4 w-4" />
-          </Link>
+          View All Reviews
+          <ChevronRight className="ml-1.5 h-4 w-4" />
         </Button>
       </div>
     </div>
@@ -388,6 +388,7 @@ export default function HomePage() {
   const [subcategories, setSubcategories] = useState<any[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [currentReviewIndex, setCurrentReviewIndex] = useState(0)
+  const [showTestimonials, setShowTestimonials] = useState(false)
 
   // Fetch data
   useEffect(() => {
@@ -575,7 +576,11 @@ export default function HomePage() {
             </div>
 
             {/* Reviews Carousel */}
-            <ReviewsCarousel reviews={reviews} productImages={allProducts.slice(0, 10).map(p => p.images[0])} />
+            <ReviewsCarousel 
+              reviews={reviews} 
+              productImages={allProducts.slice(0, 10).map(p => p.images[0])} 
+              onViewAll={() => setShowTestimonials(true)}
+            />
           </div>
         </div>
       </section>
@@ -782,6 +787,12 @@ export default function HomePage() {
           </div>
         </div>
       </section>
+
+      {/* Testimonials Popup */}
+      <TestimonialsPopup 
+        isOpen={showTestimonials} 
+        onClose={() => setShowTestimonials(false)} 
+      />
     </div>
   )
 }

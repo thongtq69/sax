@@ -1,11 +1,15 @@
 'use client'
 
+import { useState } from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
-import { Phone, MapPin, Clock, Music, Heart, Mail, ArrowRight } from 'lucide-react'
+import { Phone, MapPin, Clock, Music, Heart, Mail, ArrowRight, MessageSquare } from 'lucide-react'
 import { Button } from '@/components/ui/button'
+import { TestimonialsPopup } from './TestimonialsPopup'
 
 export function Footer() {
+  const [showTestimonials, setShowTestimonials] = useState(false)
+
   return (
     <footer className="bg-[#2f3f4f] text-white">
       {/* Main Footer - includes CTA */}
@@ -219,6 +223,15 @@ export function Footer() {
                     </Link>
                   </li>
                 ))}
+                <li>
+                  <button 
+                    onClick={() => setShowTestimonials(true)}
+                    className="hover:text-white transition-all duration-300 inline-flex items-center gap-1 group"
+                  >
+                    <span className="opacity-0 -translate-x-2 group-hover:opacity-100 group-hover:translate-x-0 transition-all duration-300 text-[#D4AF37]">→</span>
+                    Testimonials
+                  </button>
+                </li>
               </ul>
             </div>
 
@@ -257,6 +270,11 @@ export function Footer() {
         </div>
       </div>
 
+      {/* Testimonials Popup */}
+      <TestimonialsPopup 
+        isOpen={showTestimonials} 
+        onClose={() => setShowTestimonials(false)} 
+      />
     </footer>
   )
 }
