@@ -622,8 +622,8 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* Shop by Category - With Product Images */}
-      <section>
+      {/* Shop by Category - Simple Cards */}
+      <section className="bg-gradient-to-br from-amber-50/50 via-white to-blue-50/50">
         {/* Section Header - Left aligned */}
         <div className="container mx-auto px-4 py-3 sm:py-4">
           <div className="flex items-center gap-3">
@@ -641,37 +641,26 @@ export default function HomePage() {
               {subcategories.map((sub, i) => {
                 // Remove "Saxophones" from display name
                 const displayName = sub.name.replace(/\s+Saxophones?/gi, '')
-                // Get a product image for this category from allProducts
-                const categoryProduct = allProducts.find(p => 
-                  p.name.toLowerCase().includes(displayName.toLowerCase()) ||
-                  p.category?.toLowerCase().includes(displayName.toLowerCase())
-                ) || allProducts[i % allProducts.length]
+                // Different music notes for each category
+                const musicNotes = ['♪', '♫', '♬', '𝄞']
+                const noteIcon = musicNotes[i % musicNotes.length]
 
                 return (
                   <Link
                     key={sub.slug}
                     href={`/shop?subcategory=${sub.slug}`}
-                    className="group relative overflow-hidden border-2 border-transparent hover:border-primary transition-all duration-500 hover:shadow-2xl animate-fade-in-up"
+                    className="group bg-secondary hover:bg-secondary/90 rounded-lg p-4 sm:p-5 transition-all duration-300 hover:shadow-2xl hover:scale-105 hover:-translate-y-1 animate-fade-in-up"
                     style={{ animationDelay: `${0.1 * i}s` }}
                   >
-                    {/* Background Product Image */}
-                    <div className="relative h-[120px] sm:h-[140px] md:h-[160px] lg:h-[180px]">
-                      <Image
-                        src={categoryProduct?.images[0] || '/placeholder.jpg'}
-                        alt={displayName}
-                        fill
-                        className="object-cover transition-transform duration-500 group-hover:scale-110"
-                        sizes="(max-width: 640px) 50vw, (max-width: 1024px) 50vw, 25vw"
-                      />
-                      {/* Gradient Overlay */}
-                      <div className="absolute inset-0 bg-gradient-to-t from-secondary via-secondary/70 to-transparent" />
+                    <div className="flex items-center gap-3">
+                      {/* Music Note Icon with animation */}
+                      <span className="text-amber-400 text-2xl sm:text-3xl group-hover:animate-bounce transition-transform duration-300">{noteIcon}</span>
                       
-                      {/* Category Name */}
-                      <div className="absolute bottom-0 left-0 right-0 p-3 sm:p-4">
-                        <h3 className="text-lg sm:text-xl md:text-2xl font-bold text-white group-hover:text-amber-300 transition-colors duration-300">
+                      {/* Category Info */}
+                      <div>
+                        <h3 className="text-base sm:text-lg md:text-xl font-bold text-white group-hover:text-amber-300 transition-colors duration-300">
                           {displayName}
                         </h3>
-                        <p className="text-xs text-white/70 mt-0.5">View Collection →</p>
                       </div>
                     </div>
                   </Link>
@@ -682,27 +671,18 @@ export default function HomePage() {
               {!subcategories.find(s => s.slug.includes('baritone') || s.name.toLowerCase().includes('baritone')) && (
                 <Link
                   href="/shop?subcategory=baritone-saxophones"
-                  className="group relative overflow-hidden border-2 border-transparent hover:border-primary transition-all duration-500 hover:shadow-2xl animate-fade-in-up"
+                  className="group bg-secondary hover:bg-secondary/90 rounded-lg p-4 sm:p-5 transition-all duration-300 hover:shadow-2xl hover:scale-105 hover:-translate-y-1 animate-fade-in-up"
                   style={{ animationDelay: `${0.1 * subcategories.length}s` }}
                 >
-                  {/* Background Product Image */}
-                  <div className="relative h-[120px] sm:h-[140px] md:h-[160px] lg:h-[180px]">
-                    <Image
-                      src={allProducts[3]?.images[0] || '/placeholder.jpg'}
-                      alt="Baritone"
-                      fill
-                      className="object-cover transition-transform duration-500 group-hover:scale-110"
-                      sizes="(max-width: 640px) 50vw, (max-width: 1024px) 50vw, 25vw"
-                    />
-                    {/* Gradient Overlay */}
-                    <div className="absolute inset-0 bg-gradient-to-t from-secondary via-secondary/70 to-transparent" />
+                  <div className="flex items-center gap-3">
+                    {/* Music Note Icon with animation */}
+                    <span className="text-amber-400 text-2xl sm:text-3xl group-hover:animate-bounce transition-transform duration-300">𝄞</span>
                     
-                    {/* Category Name */}
-                    <div className="absolute bottom-0 left-0 right-0 p-3 sm:p-4">
-                      <h3 className="text-lg sm:text-xl md:text-2xl font-bold text-white group-hover:text-amber-300 transition-colors duration-300">
+                    {/* Category Info */}
+                    <div>
+                      <h3 className="text-base sm:text-lg md:text-xl font-bold text-white group-hover:text-amber-300 transition-colors duration-300">
                         Baritone
                       </h3>
-                      <p className="text-xs text-white/70 mt-0.5">View Collection →</p>
                     </div>
                   </div>
                 </Link>
