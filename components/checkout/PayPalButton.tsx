@@ -1,9 +1,9 @@
 'use client'
 
-import { PayPalButtons, usePayPalScriptReducer } from '@paypal/react-paypal-js'
+import { PayPalButtons, usePayPalScriptReducer, SCRIPT_LOADING_STATE } from '@paypal/react-paypal-js'
 import { useRouter } from 'next/navigation'
 import { useCartStore } from '@/lib/store/cart'
-import { Loader2 } from 'lucide-react'
+import { Loader2, AlertCircle } from 'lucide-react'
 
 interface PayPalButtonProps {
   shippingInfo: {
@@ -22,7 +22,8 @@ interface PayPalButtonProps {
   onError?: (error: any) => void
 }
 
-export function PayPalButton({ shippingInfo, onSuccess, onError }: PayPalButtonProps) {
+// Inner component that uses PayPal hooks - only rendered when PayPal is configured
+function PayPalButtonInner({ shippingInfo, onSuccess, onError }: PayPalButtonProps) {
   const [{ isPending, isRejected }] = usePayPalScriptReducer()
   const router = useRouter()
   const items = useCartStore((state) => state.items)
@@ -115,4 +116,25 @@ export function PayPalButton({ shippingInfo, onSuccess, onError }: PayPalButtonP
       }}
     />
   )
+}
+
+// Main export - checks if PayPal is configured before rendering
+export function PayPalButton(props: PayPalButtonProps) {
+  const clientId = process.env.NEXT_PUBLIC_PAYPAL_CLIENT_ID
+
+  if (!clientId) {
+    return (
+      <div className="p-4 bg-amber-50 border border-amber-200 text-amber-800">
+        <div className="flex items-center gap-2 mb-2">
+          <AlertCircle className="h-5 w-5" />
+          <span className="font-semibold">PayPal Not Configured</span>
+        </div>
+        <p className="text-sm">
+          Payment system is not available. Please contact the store administrator.
+        </p>
+      </div>
+    )
+  }
+
+  return <PayPalButtonInner {...props} />
 }

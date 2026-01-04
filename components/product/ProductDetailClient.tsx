@@ -549,27 +549,18 @@ const handleAddToCart = async () => {
             Each listing is a single instrument; quantity is fixed at one.
           </p>
 
-          {/* Product Inquiry CTA */}
-          <div className="p-4 md:p-5 rounded-xl border bg-white/70 shadow-sm space-y-2">
-            <div className="flex items-center gap-2">
-              <MessageCircle className="h-5 w-5 text-primary" />
-              <h3 className="text-sm md:text-base font-semibold text-secondary">Product Inquiry</h3>
-            </div>
-            <p className="text-xs md:text-sm text-gray-600">
-              Ask about setup, accessories, financing, or shipping. We’ll reply within one business day.
-            </p>
-            <Button
-              type="button"
-              variant="outline"
-              className="border-primary text-primary hover:bg-primary hover:text-white"
-              onClick={() => setIsInquiryOpen(true)}
-            >
-              Open Inquiry Form
-            </Button>
-          </div>
+
+          {/* Product Inquiry - Compact Link */}
+          <button
+            onClick={() => setIsInquiryOpen(true)}
+            className="flex items-center gap-2 text-sm text-primary hover:text-primary/80 hover:underline transition-colors"
+          >
+            <MessageCircle className="h-4 w-4" />
+            <span>Product Inquiry - Ask about this item</span>
+          </button>
 
           <Dialog open={isInquiryOpen} onOpenChange={setIsInquiryOpen}>
-            <DialogContent className="max-w-3xl w-[95vw] max-h-[90vh] overflow-y-auto p-0 border-0 bg-transparent shadow-none">
+            <DialogContent className="max-w-lg w-[95vw] max-h-[90vh] overflow-y-auto p-0 border-0 bg-transparent shadow-none">
               <InquiryFormContent
                 prefillProduct={product.name}
                 prefillSku={product.sku}
