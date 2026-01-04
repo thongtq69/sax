@@ -486,101 +486,90 @@ export default function HomePage() {
   return (
     <div className="space-y-0 page-content">
       <ScrollAnimations />
-      {/* Hero Section - With Background Image */}
-      <section className="homepage-hero relative min-h-[300px] md:min-h-[400px] lg:min-h-[500px] overflow-hidden">
-        {/* Background Image */}
+      {/* Hero + Reviews Section - Shared Background */}
+      <section className="homepage-hero relative overflow-hidden">
+        {/* Shared Background Image */}
         <div className="absolute inset-0">
           <Image
-            src="/homepage.png"
+            src="/homepage3.png"
             alt="Saxophones Background"
             fill
             className="object-cover"
             priority
           />
-          {/* Dark Overlay for better text readability */}
-          <div className="absolute inset-0 bg-black/30" />
         </div>
 
-        {/* Content - Centered */}
-        <div className="container relative mx-auto flex min-h-[300px] md:min-h-[400px] lg:min-h-[500px] items-center justify-center px-4 py-8 md:py-12">
-          <div className="text-center space-y-4 md:space-y-6">
-            {/* Logo Image */}
-            <div className="hero-title flex justify-center">
-              <Image
-                src="/jsc-logo-cropped.svg"
-                alt="James Sax Corner"
-                width={760}
-                height={220}
-                className="h-[60px] md:h-[75px] lg:h-[95px] w-auto"
-                priority
-              />
-            </div>
+        {/* Hero Content */}
+        <div className="relative min-h-[280px] md:min-h-[350px] lg:min-h-[420px]">
+          <div className="container mx-auto flex min-h-[280px] md:min-h-[350px] lg:min-h-[420px] items-center justify-center px-4 py-8 md:py-12">
+            <div className="text-center space-y-4 md:space-y-6">
+              {/* Logo Image */}
+              <div className="hero-title flex justify-center">
+                <Image
+                  src="/jsc-logo-cropped.svg"
+                  alt="James Sax Corner"
+                  width={760}
+                  height={220}
+                  className="h-[60px] md:h-[75px] lg:h-[95px] w-auto"
+                  priority
+                />
+              </div>
 
-            <p className="hero-cta text-base md:text-lg lg:text-xl leading-relaxed text-white max-w-3xl mx-auto font-body drop-shadow-lg">
-              Premium Japanese saxophones, expertly maintained for peak performance. Trusted by musicians worldwide, backed by outstanding reviews. Unmatched customer service—your satisfaction comes first! Buy with confidence.
-            </p>
+              <p className="hero-cta text-base md:text-lg lg:text-xl leading-relaxed text-white max-w-3xl mx-auto font-body drop-shadow-lg">
+                Premium Japanese saxophones, expertly maintained for peak performance. Trusted by musicians worldwide, backed by outstanding reviews. Unmatched customer service—your satisfaction comes first! Buy with confidence.
+              </p>
 
-            <div className="hero-cta flex justify-center pt-2">
-              <Button size="lg" variant="outline" className="border-2 border-white bg-white text-black hover:bg-white/90 hover:text-secondary hover:scale-105 group transition-all duration-300 font-body text-base md:text-lg px-6 md:px-8" asChild>
-                <Link href="/shop" className="flex items-center">
-                  Buy with confidence!
-                  <ChevronRight className="ml-2 h-5 w-5 group-hover:translate-x-1 transition-transform" />
-                </Link>
-              </Button>
+              <div className="hero-cta flex justify-center pt-2">
+                <Button size="lg" variant="outline" className="border-2 border-white bg-white text-black hover:bg-white/90 hover:text-secondary hover:scale-105 group transition-all duration-300 font-body text-base md:text-lg px-6 md:px-8" asChild>
+                  <Link href="/shop" className="flex items-center">
+                    Buy with confidence!
+                    <ChevronRight className="ml-2 h-5 w-5 group-hover:translate-x-1 transition-transform" />
+                  </Link>
+                </Button>
+              </div>
             </div>
           </div>
         </div>
-      </section>
 
-      {/* Trust Strip - Classic Style with animations */}
-      <section className="border-y-2 border-primary/30 bg-white py-10 hidden" aria-hidden="true">
-        <div className="container mx-auto px-4">
-          <div className="grid grid-cols-2 gap-6 md:grid-cols-4">
-            {[
-              { icon: Headphones, title: 'Expert Advice', desc: 'Pro musicians on staff', delay: 0 },
-              { icon: Award, title: 'Professional Setup', desc: 'Play-tested before shipping', delay: 0.1 },
-              { icon: Truck, title: 'Free Shipping', desc: 'On orders over $500', delay: 0.2 },
-              { icon: CreditCard, title: 'Financing', desc: '0% APR available', delay: 0.3 },
-            ].map((item, i) => (
-              <div
-                key={i}
-                className="flex flex-col items-center text-center space-y-3 p-4 rounded-xl hover:bg-primary/5 transition-all duration-300 hover:shadow-lg group animate-fade-in-up"
-                style={{ animationDelay: `${item.delay}s` }}
-              >
-                <div className="rounded-full border-2 border-primary p-4 group-hover:bg-primary group-hover:border-primary transition-all duration-300 group-hover:scale-110">
-                  <item.icon className="h-6 w-6 text-primary group-hover:text-white transition-colors" />
+        {/* Divider between Hero and Reviews */}
+        <div className="relative">
+          <div className="container mx-auto px-4">
+            <div className="flex items-center justify-center gap-4">
+              <div className="flex-1 h-[1px] bg-gradient-to-r from-transparent via-white/60 to-white/60" />
+              <div className="flex items-center gap-2">
+                <span className="text-white/80 text-2xl">♪</span>
+                <span className="text-white/80 text-xl">♫</span>
+                <span className="text-white/80 text-2xl">♪</span>
+              </div>
+              <div className="flex-1 h-[1px] bg-gradient-to-l from-transparent via-white/60 to-white/60" />
+            </div>
+          </div>
+        </div>
+
+        {/* Customer Reviews - Same Background */}
+        <div className="relative py-8 sm:py-10 md:py-12">
+          <div className="container mx-auto px-4">
+            <div className="mb-4 sm:mb-6 text-center animate-fade-in-up">
+              <div className="inline-flex items-center gap-1.5 px-3 py-1.5 sm:px-4 sm:py-2 bg-white/90 text-amber-700 text-[10px] sm:text-xs font-medium mb-3 rounded-full shadow-md backdrop-blur-sm">
+                <Star className="h-3 w-3 sm:h-3.5 sm:w-3.5 fill-amber-400 text-amber-400" />
+                Trusted by Musicians Worldwide
+              </div>
+              <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold text-white mb-2 sm:mb-3 drop-shadow-lg">
+                What Our Customers Say
+              </h2>
+              <div className="flex items-center justify-center gap-2">
+                <div className="flex">
+                  {[...Array(5)].map((_, i) => (
+                    <Star key={i} className="h-4 w-4 sm:h-5 sm:w-5 fill-amber-400 text-amber-400 drop-shadow-md" />
+                  ))}
                 </div>
-                <p className="font-semibold text-secondary">{item.title}</p>
-                <p className="text-xs text-muted-foreground">{item.desc}</p>
+                <span className="text-lg sm:text-xl font-bold text-white ml-1 drop-shadow-md">5.0</span>
               </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* Customer Reviews Section - Compact */}
-      <section className="bg-gradient-to-br from-amber-50 via-white to-blue-50 py-4 sm:py-6 md:py-8">
-        <div className="container mx-auto px-4">
-          <div className="mb-3 sm:mb-4 text-center animate-fade-in-up">
-            <div className="inline-flex items-center gap-1.5 px-2.5 py-1 sm:px-3 sm:py-1.5 bg-amber-100 text-amber-800 text-[10px] sm:text-xs font-medium mb-2">
-              <Star className="h-3 w-3 sm:h-3.5 sm:w-3.5 fill-amber-400 text-amber-400" />
-              Trusted by Musicians Worldwide
             </div>
-            <h2 className="text-xl sm:text-2xl md:text-3xl font-bold text-secondary mb-1 sm:mb-2">
-              What Our Customers Say
-            </h2>
-            <div className="flex items-center justify-center gap-1.5 sm:gap-2">
-              <div className="flex">
-                {[...Array(5)].map((_, i) => (
-                  <Star key={i} className="h-3.5 w-3.5 sm:h-4 sm:w-4 fill-amber-400 text-amber-400" />
-                ))}
-              </div>
-              <span className="text-base sm:text-lg font-bold text-secondary ml-1">5.0</span>
-            </div>
-          </div>
 
-          {/* Reviews Grid - Auto-scrolling Carousel */}
-          <ReviewsCarousel reviews={reviews} productImages={allProducts.slice(0, 10).map(p => p.images[0])} />
+            {/* Reviews Carousel */}
+            <ReviewsCarousel reviews={reviews} productImages={allProducts.slice(0, 10).map(p => p.images[0])} />
+          </div>
         </div>
       </section>
 
