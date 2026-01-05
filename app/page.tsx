@@ -544,15 +544,13 @@ export default function HomePage() {
         {/* Customer Reviews - Same Background */}
         <div className="relative py-8 sm:py-10 md:py-12">
           {/* View All Reviews Button - Absolute positioned at bottom right corner */}
-          <Button
-            size="sm"
-            variant="outline"
-            className="absolute bottom-2 right-2 sm:bottom-3 sm:right-3 md:bottom-4 md:right-4 bg-white/95 backdrop-blur-sm border border-gray-200 text-secondary hover:bg-primary hover:text-white hover:border-primary font-medium px-4 text-xs h-8 rounded-full shadow-md transition-all z-10"
+          <button
+            className="absolute bottom-2 right-2 sm:bottom-3 sm:right-3 md:bottom-4 md:right-4 text-secondary hover:text-primary font-medium text-xs underline underline-offset-2 transition-all z-10 flex items-center gap-1"
             onClick={() => setShowTestimonials(true)}
           >
             View All Reviews
-            <ChevronRight className="ml-1 h-3.5 w-3.5" />
-          </Button>
+            <ChevronRight className="h-3.5 w-3.5" />
+          </button>
 
           <div className="container mx-auto px-4">
             <div className="mb-4 sm:mb-6 text-center animate-fade-in-up">
