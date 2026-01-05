@@ -157,3 +157,65 @@ model Review {
   @@index([productId])
   @@index([date])
 }
+
+model Banner {
+  id         String   @id @default(auto()) @map("_id") @db.ObjectId
+  title      String
+  subtitle   String?
+  image      String
+  link       String?
+  buttonText String?
+  order      Int      @default(0)
+  isActive   Boolean  @default(true)
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+}
+
+model FAQ {
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  question  String
+  answer    String
+  category  String   @default("General")
+  order     Int      @default(0)
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Testimonial {
+  id          String   @id @default(auto()) @map("_id") @db.ObjectId
+  authorName  String
+  message     String
+  rating      Int      @default(5)
+  productName String?
+  date        DateTime @default(now())
+  isVisible   Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model SiteSettings {
+  id            String   @id @default(auto()) @map("_id") @db.ObjectId
+  companyName   String   @default("James Sax Corner")
+  address       String   @default("Ha Noi, Viet Nam")
+  phone         String   @default("")
+  email         String   @default("")
+  workingHours  String   @default("24/7")
+  socialLinks   Json     @default("{}")
+  footerText    String   @default("")
+  copyrightText String   @default("")
+  updatedAt     DateTime @updatedAt
+}
+
+model HomepageContent {
+  id         String   @id @default(auto()) @map("_id") @db.ObjectId
+  sectionKey String   @unique
+  title      String?
+  subtitle   String?
+  content    String?
+  image      String?
+  isVisible  Boolean  @default(true)
+  order      Int      @default(0)
+  metadata   Json?
+  updatedAt  DateTime @updatedAt
+}

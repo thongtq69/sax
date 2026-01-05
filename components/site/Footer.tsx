@@ -51,7 +51,7 @@ export function Footer() {
             <div className="text-[10px] text-white/70 space-y-0.5 min-w-0">
               <p className="flex items-center gap-1">
                 <MapPin className="h-2.5 w-2.5 text-[#D4AF37] flex-shrink-0" />
-                Las Vegas, NV
+                Ha Noi, Viet Nam
               </p>
               <p className="flex items-center gap-1">
                 <Phone className="h-2.5 w-2.5 text-[#D4AF37] flex-shrink-0" />
@@ -69,8 +69,8 @@ export function Footer() {
                 Hours
               </h4>
               <div className="text-white/70 space-y-0">
-                <p>M-F: 10-6</p>
-                <p>Sat: 10-5</p>
+                <p>24/7</p>
+                <p>Always Open</p>
               </div>
             </div>
             
@@ -150,7 +150,7 @@ export function Footer() {
               <div className="space-y-1.5 text-sm text-white/80">
                 <div className="flex items-start gap-2 group cursor-default">
                   <MapPin className="h-4 w-4 text-[#D4AF37] mt-0.5 flex-shrink-0 transition-transform group-hover:scale-110" />
-                  <span className="group-hover:text-white transition-colors">Las Vegas, NV 89101</span>
+                  <span className="group-hover:text-white transition-colors">Ha Noi, Viet Nam</span>
                 </div>
                 <Link href="tel:+17025551234" className="flex items-center gap-2 hover:text-white transition-all duration-300 group">
                   <Phone className="h-4 w-4 text-[#D4AF37] flex-shrink-0 transition-transform group-hover:rotate-12 group-hover:scale-110" />
@@ -170,9 +170,8 @@ export function Footer() {
                 Hours
               </h4>
               <ul className="space-y-1.5 text-sm text-white/80">
-                <li className="hover:text-white transition-colors cursor-default">Mon-Fri: 10AM - 6PM</li>
-                <li className="hover:text-white transition-colors cursor-default">Sat: 10AM - 5PM</li>
-                <li className="hover:text-white transition-colors cursor-default">Sun: Closed</li>
+                <li className="hover:text-white transition-colors cursor-default">24/7 Available</li>
+                <li className="hover:text-white transition-colors cursor-default">Always Open</li>
               </ul>
             </div>
 
@@ -240,13 +239,13 @@ export function Footer() {
               <h4 className="font-semibold mb-3 text-white">Follow Us</h4>
               <div className="flex gap-2 mb-3">
                 {[
-                  { href: 'https://facebook.com', icon: 'f', label: 'Facebook' },
+                  { href: 'https://www.facebook.com/jamessaxcorner', icon: 'f', label: 'Facebook' },
                   { href: 'https://instagram.com', icon: '📷', label: 'Instagram' },
-                  { href: 'https://youtube.com', icon: '▶', label: 'YouTube' },
+                  { href: 'https://www.youtube.com/@jamessaxcorner', icon: '▶', label: 'YouTube' },
                   { href: 'https://twitter.com', icon: '𝕏', label: 'Twitter' },
                 ].map((social, i) => (
                   <Link
-                    key={social.href}
+                    key={social.label}
                     href={social.href}
                     className="w-7 h-7 rounded-full bg-white/10 hover:bg-[#D4AF37] flex items-center justify-center text-white hover:text-[#2f3f4f] transition-all duration-300 text-xs hover:scale-110 hover:rotate-6"
                     target="_blank"

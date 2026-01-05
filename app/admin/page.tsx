@@ -1,47 +1,49 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { Package, FileText, ShoppingCart, DollarSign, TrendingUp, Users, Plus, ArrowUpRight, ArrowDownRight, Eye, Star } from 'lucide-react'
-import { getProducts, getBlogPosts, getPromoBanners } from '@/lib/api'
+import { 
+  Package, FileText, ShoppingCart, TrendingUp, Users, Plus, 
+  ArrowUpRight, ArrowDownRight, Eye, Star, Image as ImageIcon,
+  HelpCircle, MessageSquare, Settings, Home
+} from 'lucide-react'
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
 import Image from 'next/image'
 
+interface DashboardStats {
+  banners: number
+  faqs: number
+  testimonials: number
+  products: number
+  orders: number
+  users: number
+  blogPosts: number
+  reviews: number
+  pendingOrders: number
+  totalRevenue: number
+}
+
+interface RecentOrder {
+  id: string
+  status: string
+  total: number
+  createdAt: string
+}
+
 export default function AdminDashboard() {
-  const [stats, setStats] = useState({
-    totalProducts: 0,
-    totalBlogPosts: 0,
-    totalPromos: 0,
-    totalOrders: 0,
-    totalRevenue: 0,
-    lowStockProducts: 0,
-    recentProducts: [] as any[],
-    recentPosts: [] as any[],
-  })
+  const [stats, setStats] = useState<DashboardStats | null>(null)
+  const [recentOrders, setRecentOrders] = useState<RecentOrder[]>([])
   const [isLoading, setIsLoading] = useState(true)
 
   useEffect(() => {
     async function fetchStats() {
       try {
-        const [productsResponse, blogResponse, promosResponse] = await Promise.all([
-          getProducts({ limit: 1000 }),
-          getBlogPosts({ limit: 1000 }),
-          getPromoBanners(),
-        ])
-        
-        const products = productsResponse.products
-        const lowStock = products.filter((p: any) => (p.stock || 0) < 5 && p.inStock).length
-        
-        setStats({
-          totalProducts: products.length,
-          totalBlogPosts: blogResponse.posts.length,
-          totalPromos: promosResponse.length,
-          totalOrders: 0,
-          totalRevenue: 0,
-          lowStockProducts: lowStock,
-          recentProducts: products.slice(0, 5),
-          recentPosts: blogResponse.posts.slice(0, 3),
-        })
+        const response = await fetch('/api/admin/stats')
+        if (response.ok) {
+          const data = await response.json()
+          setStats(data.stats)
+          setRecentOrders(data.recentOrders || [])
+        }
       } catch (error) {
         console.error('Error fetching stats:', error)
       } finally {
@@ -53,48 +55,76 @@ export default function AdminDashboard() {
 
   const statCards = [
     {
-      title: 'Total Products',
-      value: stats.totalProducts,
+      title: 'Products',
+      value: stats?.products || 0,
       icon: Package,
-      color: 'from-blue-500 to-blue-600',
       bgColor: 'bg-blue-500/10',
       textColor: 'text-blue-600',
       href: '/admin/products',
-      change: '+12%',
-      trend: 'up',
+    },
+    {
+      title: 'Orders',
+      value: stats?.orders || 0,
+      icon: ShoppingCart,
+      bgColor: 'bg-emerald-500/10',
+      textColor: 'text-emerald-600',
+      href: '/admin/orders',
+      badge: stats?.pendingOrders ? `${stats.pendingOrders} pending` : undefined,
     },
     {
       title: 'Blog Posts',
-      value: stats.totalBlogPosts,
+      value: stats?.blogPosts || 0,
       icon: FileText,
-      color: 'from-emerald-500 to-emerald-600',
-      bgColor: 'bg-emerald-500/10',
-      textColor: 'text-emerald-600',
-      href: '/admin/blog',
-      change: '+5%',
-      trend: 'up',
-    },
-    {
-      title: 'Promo Banners',
-      value: stats.totalPromos,
-      icon: TrendingUp,
-      color: 'from-purple-500 to-purple-600',
       bgColor: 'bg-purple-500/10',
       textColor: 'text-purple-600',
-      href: '/admin/promos',
-      change: '0%',
-      trend: 'neutral',
+      href: '/admin/blog',
     },
     {
-      title: 'Low Stock Items',
-      value: stats.lowStockProducts,
-      icon: Package,
-      color: 'from-amber-500 to-amber-600',
+      title: 'Reviews',
+      value: stats?.reviews || 0,
+      icon: Star,
       bgColor: 'bg-amber-500/10',
       textColor: 'text-amber-600',
-      href: '/admin/products?filter=low-stock',
-      change: stats.lowStockProducts > 0 ? 'Needs attention' : 'All good',
-      trend: stats.lowStockProducts > 0 ? 'down' : 'up',
+      href: '/admin/reviews',
+    },
+  ]
+
+  const cmsCards = [
+    {
+      title: 'Banners',
+      value: stats?.banners || 0,
+      icon: ImageIcon,
+      bgColor: 'bg-pink-500/10',
+      textColor: 'text-pink-600',
+      href: '/admin/banners',
+      description: 'Homepage banners',
+    },
+    {
+      title: 'FAQs',
+      value: stats?.faqs || 0,
+      icon: HelpCircle,
+      bgColor: 'bg-cyan-500/10',
+      textColor: 'text-cyan-600',
+      href: '/admin/faqs',
+      description: 'Frequently asked questions',
+    },
+    {
+      title: 'Testimonials',
+      value: stats?.testimonials || 0,
+      icon: MessageSquare,
+      bgColor: 'bg-indigo-500/10',
+      textColor: 'text-indigo-600',
+      href: '/admin/testimonials',
+      description: 'Customer reviews',
+    },
+    {
+      title: 'Users',
+      value: stats?.users || 0,
+      icon: Users,
+      bgColor: 'bg-orange-500/10',
+      textColor: 'text-orange-600',
+      href: '/admin/users',
+      description: 'Registered users',
     },
   ]
 
@@ -116,7 +146,7 @@ export default function AdminDashboard() {
         <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
           <div>
             <h1 className="text-2xl md:text-3xl font-bold">Welcome back, Admin! 👋</h1>
-            <p className="text-white/80 mt-2">Here&apos;s what&apos;s happening with your store today.</p>
+            <p className="text-white/80 mt-2">Manage your website content from here.</p>
           </div>
           <div className="flex gap-3">
             <Link href="/admin/products">
@@ -135,8 +165,8 @@ export default function AdminDashboard() {
         </div>
       </div>
 
-      {/* Stats Grid */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
+      {/* Main Stats Grid */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         {statCards.map((stat) => {
           const Icon = stat.icon
           return (
@@ -146,14 +176,11 @@ export default function AdminDashboard() {
                   <div className={`${stat.bgColor} p-3 rounded-xl`}>
                     <Icon className={`h-6 w-6 ${stat.textColor}`} />
                   </div>
-                  <div className={`flex items-center gap-1 text-xs font-medium ${
-                    stat.trend === 'up' ? 'text-emerald-600' : 
-                    stat.trend === 'down' ? 'text-red-600' : 'text-gray-500'
-                  }`}>
-                    {stat.trend === 'up' && <ArrowUpRight className="h-3 w-3" />}
-                    {stat.trend === 'down' && <ArrowDownRight className="h-3 w-3" />}
-                    {stat.change}
-                  </div>
+                  {stat.badge && (
+                    <span className="text-xs font-medium text-amber-600 bg-amber-50 px-2 py-1 rounded-full">
+                      {stat.badge}
+                    </span>
+                  )}
                 </div>
                 <div className="mt-4">
                   <p className="text-3xl font-bold text-gray-900">{stat.value}</p>
@@ -165,102 +192,106 @@ export default function AdminDashboard() {
         })}
       </div>
 
-      {/* Quick Actions & Recent Items */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      {/* CMS Content Section */}
+      <div>
+        <h2 className="text-lg font-semibold text-gray-900 mb-4">Content Management</h2>
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+          {cmsCards.map((card) => {
+            const Icon = card.icon
+            return (
+              <Link key={card.title} href={card.href}>
+                <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-5 hover:shadow-md transition-all duration-200 cursor-pointer group h-full">
+                  <div className={`${card.bgColor} p-3 rounded-xl w-fit`}>
+                    <Icon className={`h-6 w-6 ${card.textColor}`} />
+                  </div>
+                  <div className="mt-4">
+                    <p className="text-2xl font-bold text-gray-900">{card.value}</p>
+                    <p className="text-sm font-medium text-gray-900 mt-1 group-hover:text-primary transition-colors">{card.title}</p>
+                    <p className="text-xs text-gray-500 mt-1">{card.description}</p>
+                  </div>
+                </div>
+              </Link>
+            )
+          })}
+        </div>
+      </div>
+
+      {/* Quick Actions & Recent Orders */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Quick Actions */}
         <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
           <h2 className="text-lg font-semibold text-gray-900 mb-4">Quick Actions</h2>
-          <div className="space-y-3">
-            <Link href="/admin/products" className="block">
+          <div className="grid grid-cols-2 gap-3">
+            <Link href="/admin/banners">
               <Button className="w-full justify-start" variant="outline">
-                <Package className="h-4 w-4 mr-3" />
-                Add New Product
+                <ImageIcon className="h-4 w-4 mr-3" />
+                Manage Banners
               </Button>
             </Link>
-            <Link href="/admin/blog" className="block">
+            <Link href="/admin/faqs">
               <Button className="w-full justify-start" variant="outline">
-                <FileText className="h-4 w-4 mr-3" />
-                Create Blog Post
+                <HelpCircle className="h-4 w-4 mr-3" />
+                Manage FAQs
               </Button>
             </Link>
-            <Link href="/admin/promos" className="block">
+            <Link href="/admin/testimonials">
+              <Button className="w-full justify-start" variant="outline">
+                <MessageSquare className="h-4 w-4 mr-3" />
+                Testimonials
+              </Button>
+            </Link>
+            <Link href="/admin/content">
+              <Button className="w-full justify-start" variant="outline">
+                <Home className="h-4 w-4 mr-3" />
+                Homepage Content
+              </Button>
+            </Link>
+            <Link href="/admin/settings">
+              <Button className="w-full justify-start" variant="outline">
+                <Settings className="h-4 w-4 mr-3" />
+                Site Settings
+              </Button>
+            </Link>
+            <Link href="/admin/promos">
               <Button className="w-full justify-start" variant="outline">
                 <TrendingUp className="h-4 w-4 mr-3" />
-                Add Promo Banner
-              </Button>
-            </Link>
-            <Link href="/admin/categories" className="block">
-              <Button className="w-full justify-start" variant="outline">
-                <Package className="h-4 w-4 mr-3" />
-                Manage Categories
-              </Button>
-            </Link>
-            <Link href="/admin/reviews" className="block">
-              <Button className="w-full justify-start" variant="outline">
-                <Star className="h-4 w-4 mr-3" />
-                Manage Reviews
+                Promo Banners
               </Button>
             </Link>
           </div>
         </div>
 
-        {/* Recent Products */}
+        {/* Recent Orders */}
         <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
           <div className="flex items-center justify-between mb-4">
-            <h2 className="text-lg font-semibold text-gray-900">Recent Products</h2>
-            <Link href="/admin/products" className="text-sm text-primary hover:underline">
+            <h2 className="text-lg font-semibold text-gray-900">Recent Orders</h2>
+            <Link href="/admin/orders" className="text-sm text-primary hover:underline">
               View all
             </Link>
           </div>
-          {stats.recentProducts.length === 0 ? (
-            <p className="text-gray-500 text-center py-8">No products yet</p>
+          {recentOrders.length === 0 ? (
+            <p className="text-gray-500 text-center py-8">No orders yet</p>
           ) : (
             <div className="space-y-3">
-              {stats.recentProducts.map((product: any) => (
-                <div key={product.id} className="flex items-center gap-3 p-2 rounded-lg hover:bg-gray-50 transition-colors">
-                  <div className="w-12 h-12 rounded-lg overflow-hidden bg-gray-100 flex-shrink-0">
-                    {product.images?.[0] ? (
-                      <Image
-                        src={product.images[0]}
-                        alt={product.name}
-                        width={48}
-                        height={48}
-                        className="object-cover w-full h-full"
-                      />
-                    ) : (
-                      <div className="w-full h-full flex items-center justify-center">
-                        <Package className="h-5 w-5 text-gray-400" />
-                      </div>
-                    )}
+              {recentOrders.map((order) => (
+                <div key={order.id} className="flex items-center justify-between p-3 rounded-lg hover:bg-gray-50 transition-colors">
+                  <div>
+                    <p className="text-sm font-medium text-gray-900">Order #{order.id.slice(-6)}</p>
+                    <p className="text-xs text-gray-500">
+                      {new Date(order.createdAt).toLocaleDateString()}
+                    </p>
                   </div>
-                  <div className="flex-1 min-w-0">
-                    <p className="text-sm font-medium text-gray-900 truncate">{product.name}</p>
-                    <p className="text-xs text-gray-500">${product.price?.toLocaleString()}</p>
+                  <div className="text-right">
+                    <p className="text-sm font-medium text-gray-900">${order.total.toLocaleString()}</p>
+                    <span className={`text-xs px-2 py-0.5 rounded-full ${
+                      order.status === 'delivered' ? 'bg-green-100 text-green-700' :
+                      order.status === 'pending' ? 'bg-amber-100 text-amber-700' :
+                      order.status === 'processing' ? 'bg-blue-100 text-blue-700' :
+                      'bg-gray-100 text-gray-700'
+                    }`}>
+                      {order.status}
+                    </span>
                   </div>
-                </div>
-              ))}
-            </div>
-          )}
-        </div>
-
-        {/* Recent Blog Posts */}
-        <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-          <div className="flex items-center justify-between mb-4">
-            <h2 className="text-lg font-semibold text-gray-900">Recent Posts</h2>
-            <Link href="/admin/blog" className="text-sm text-primary hover:underline">
-              View all
-            </Link>
-          </div>
-          {stats.recentPosts.length === 0 ? (
-            <p className="text-gray-500 text-center py-8">No posts yet</p>
-          ) : (
-            <div className="space-y-3">
-              {stats.recentPosts.map((post: any) => (
-                <div key={post.id} className="p-3 rounded-lg hover:bg-gray-50 transition-colors">
-                  <p className="text-sm font-medium text-gray-900 line-clamp-1">{post.title}</p>
-                  <p className="text-xs text-gray-500 mt-1">
-                    {post.author} • {new Date(post.date).toLocaleDateString()}
-                  </p>
                 </div>
               ))}
             </div>
@@ -268,24 +299,20 @@ export default function AdminDashboard() {
         </div>
       </div>
 
-      {/* System Info */}
-      <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-        <h2 className="text-lg font-semibold text-gray-900 mb-4">System Information</h2>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          <div>
-            <p className="text-sm text-gray-500">Database</p>
-            <p className="text-sm font-medium text-gray-900 mt-1">MongoDB Atlas</p>
-          </div>
-          <div>
-            <p className="text-sm text-gray-500">Image Storage</p>
-            <p className="text-sm font-medium text-gray-900 mt-1">Cloudinary</p>
-          </div>
-          <div>
-            <p className="text-sm text-gray-500">Framework</p>
-            <p className="text-sm font-medium text-gray-900 mt-1">Next.js 14</p>
+      {/* Revenue Card */}
+      {stats?.totalRevenue !== undefined && stats.totalRevenue > 0 && (
+        <div className="bg-gradient-to-r from-emerald-500 to-emerald-600 rounded-xl p-6 text-white">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-emerald-100">Total Revenue</p>
+              <p className="text-3xl font-bold mt-1">${stats.totalRevenue.toLocaleString()}</p>
+            </div>
+            <div className="bg-white/20 p-4 rounded-xl">
+              <TrendingUp className="h-8 w-8" />
+            </div>
           </div>
         </div>
-      </div>
+      )}
     </div>
   )
 }

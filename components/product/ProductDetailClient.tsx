@@ -272,7 +272,7 @@ const handleAddToCart = async () => {
         </div>
       )}
 
-      <div className="flex flex-col gap-6 md:gap-8 lg:gap-10 lg:grid lg:grid-cols-10">
+      <div className="flex flex-col gap-6 md:gap-8 lg:gap-10 lg:grid lg:grid-cols-10 lg:items-start">
         {/* Image Gallery */}
         <div className="animate-fade-in-left lg:col-span-6">
           {/* Main Display - Video or Image */}
@@ -457,8 +457,8 @@ const handleAddToCart = async () => {
           </div>
         </div>
 
-        {/* Product Info */}
-        <div className="space-y-4 md:space-y-6 animate-fade-in-right lg:col-span-4">
+        {/* Product Info - Sticky on desktop */}
+        <div className="space-y-4 md:space-y-6 animate-fade-in-right lg:col-span-4 lg:sticky lg:top-24 lg:self-start">
           {/* Header */}
           <div>
             <div className="flex items-center gap-1.5 md:gap-2 mb-2 flex-wrap">
