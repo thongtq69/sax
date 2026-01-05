@@ -498,14 +498,14 @@ export default function HomePage() {
         <div className="relative min-h-[280px] md:min-h-[350px] lg:min-h-[420px]">
           <div className="container mx-auto flex min-h-[280px] md:min-h-[350px] lg:min-h-[420px] items-center justify-center px-4 py-8 md:py-12">
             <div className="text-center space-y-4 md:space-y-6">
-              {/* Logo Image */}
+              {/* Logo Image - Original colors, no background */}
               <div className="hero-title flex justify-center">
                 <Image
-                  src="/jsc-logo-cropped.svg"
+                  src="/jsc-logo-transparent.svg"
                   alt="James Sax Corner"
                   width={760}
                   height={220}
-                  className="h-[60px] md:h-[75px] lg:h-[95px] w-auto"
+                  className="h-[70px] md:h-[90px] lg:h-[110px] w-auto drop-shadow-[0_2px_4px_rgba(255,255,255,0.8)]"
                   priority
                 />
               </div>
@@ -561,14 +561,6 @@ export default function HomePage() {
               <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold text-white mb-2 sm:mb-3 drop-shadow-lg">
                 What Our Customers Say
               </h2>
-              <div className="flex items-center justify-center gap-2">
-                <div className="flex">
-                  {[...Array(5)].map((_, i) => (
-                    <Star key={i} className="h-4 w-4 sm:h-5 sm:w-5 fill-amber-400 text-amber-400 drop-shadow-md" />
-                  ))}
-                </div>
-                <span className="text-lg sm:text-xl font-bold text-white ml-1 drop-shadow-md">5.0</span>
-              </div>
             </div>
 
             {/* Reviews Carousel */}
@@ -584,13 +576,17 @@ export default function HomePage() {
       {/* NEW ARRIVALS Section */}
       {saleProducts.length > 0 && (
         <section>
-          {/* Section Header - Left aligned */}
+          {/* Section Header - Centered */}
           <div className="container mx-auto px-4 py-3 sm:py-4">
-            <div className="flex items-center gap-3">
+            <div className="flex items-center justify-center gap-3">
+              <div className="flex-1 h-px bg-primary/30" />
               <span className="text-2xl sm:text-3xl text-primary">♪</span>
-              <h2 className="text-lg sm:text-xl md:text-2xl font-bold text-secondary tracking-wide">NEW ARRIVALS</h2>
-              <div className="flex-1 h-px bg-primary/30 ml-4" />
-              <Link href="/shop?badge=coming-soon" className="text-xs sm:text-sm text-primary hover:text-secondary transition-colors flex items-center gap-1">
+              <h2 className="text-lg sm:text-xl md:text-2xl font-bold text-secondary tracking-wide uppercase">NEW ARRIVALS</h2>
+              <span className="text-2xl sm:text-3xl text-primary">♪</span>
+              <div className="flex-1 h-px bg-primary/30" />
+            </div>
+            <div className="text-center mt-2">
+              <Link href="/shop?badge=coming-soon" className="text-xs sm:text-sm text-primary hover:text-secondary transition-colors inline-flex items-center gap-1">
                 View All <ChevronRight className="h-3 w-3 sm:h-4 sm:w-4" />
               </Link>
             </div>
@@ -605,13 +601,17 @@ export default function HomePage() {
 
       {/* Featured Products */}
       <section>
-        {/* Section Header - Left aligned */}
+        {/* Section Header - Centered */}
         <div className="container mx-auto px-4 py-3 sm:py-4">
-          <div className="flex items-center gap-3">
+          <div className="flex items-center justify-center gap-3">
+            <div className="flex-1 h-px bg-primary/30" />
             <span className="text-2xl sm:text-3xl text-primary">♫</span>
-            <h2 className="text-lg sm:text-xl md:text-2xl font-bold text-secondary tracking-wide">Featured Instruments</h2>
-            <div className="flex-1 h-px bg-primary/30 ml-4" />
-            <Link href="/shop?badge=new" className="text-xs sm:text-sm text-primary hover:text-secondary transition-colors flex items-center gap-1">
+            <h2 className="text-lg sm:text-xl md:text-2xl font-bold text-secondary tracking-wide uppercase">FEATURED INSTRUMENTS</h2>
+            <span className="text-2xl sm:text-3xl text-primary">♫</span>
+            <div className="flex-1 h-px bg-primary/30" />
+          </div>
+          <div className="text-center mt-2">
+            <Link href="/shop?badge=new" className="text-xs sm:text-sm text-primary hover:text-secondary transition-colors inline-flex items-center gap-1">
               View All <ChevronRight className="h-3 w-3 sm:h-4 sm:w-4" />
             </Link>
           </div>
@@ -625,13 +625,17 @@ export default function HomePage() {
 
       {/* Shop by Category - Simple Cards */}
       <section className="bg-gradient-to-br from-amber-50/50 via-white to-blue-50/50">
-        {/* Section Header - Left aligned */}
+        {/* Section Header - Centered */}
         <div className="container mx-auto px-4 py-3 sm:py-4">
-          <div className="flex items-center gap-3">
+          <div className="flex items-center justify-center gap-3">
+            <div className="flex-1 h-px bg-primary/30" />
             <span className="text-2xl sm:text-3xl text-primary">♬</span>
-            <h2 className="text-lg sm:text-xl md:text-2xl font-bold text-secondary tracking-wide">Shop by Category</h2>
-            <div className="flex-1 h-px bg-primary/30 ml-4" />
-            <Link href="/shop" className="text-xs sm:text-sm text-primary hover:text-secondary transition-colors flex items-center gap-1">
+            <h2 className="text-lg sm:text-xl md:text-2xl font-bold text-secondary tracking-wide uppercase">SHOP BY CATEGORY</h2>
+            <span className="text-2xl sm:text-3xl text-primary">♬</span>
+            <div className="flex-1 h-px bg-primary/30" />
+          </div>
+          <div className="text-center mt-2">
+            <Link href="/shop" className="text-xs sm:text-sm text-primary hover:text-secondary transition-colors inline-flex items-center gap-1">
               View All <ChevronRight className="h-3 w-3 sm:h-4 sm:w-4" />
             </Link>
           </div>
@@ -653,16 +657,14 @@ export default function HomePage() {
                     className="group bg-secondary hover:bg-secondary/90 rounded-lg p-4 sm:p-5 transition-all duration-300 hover:shadow-2xl hover:scale-105 hover:-translate-y-1 animate-fade-in-up"
                     style={{ animationDelay: `${0.1 * i}s` }}
                   >
-                    <div className="flex items-center gap-3">
+                    <div className="flex items-center justify-center gap-3">
                       {/* Music Note Icon with animation */}
                       <span className="text-amber-400 text-2xl sm:text-3xl group-hover:animate-bounce transition-transform duration-300">{noteIcon}</span>
                       
-                      {/* Category Info */}
-                      <div>
-                        <h3 className="text-base sm:text-lg md:text-xl font-bold text-white group-hover:text-amber-300 transition-colors duration-300">
-                          {displayName}
-                        </h3>
-                      </div>
+                      {/* Category Name */}
+                      <h3 className="text-base sm:text-lg md:text-xl font-bold text-white group-hover:text-amber-300 transition-colors duration-300">
+                        {displayName}
+                      </h3>
                     </div>
                   </Link>
                 )
@@ -675,16 +677,14 @@ export default function HomePage() {
                   className="group bg-secondary hover:bg-secondary/90 rounded-lg p-4 sm:p-5 transition-all duration-300 hover:shadow-2xl hover:scale-105 hover:-translate-y-1 animate-fade-in-up"
                   style={{ animationDelay: `${0.1 * subcategories.length}s` }}
                 >
-                  <div className="flex items-center gap-3">
+                  <div className="flex items-center justify-center gap-3">
                     {/* Music Note Icon with animation */}
                     <span className="text-amber-400 text-2xl sm:text-3xl group-hover:animate-bounce transition-transform duration-300">𝄞</span>
                     
-                    {/* Category Info */}
-                    <div>
-                      <h3 className="text-base sm:text-lg md:text-xl font-bold text-white group-hover:text-amber-300 transition-colors duration-300">
-                        Baritone
-                      </h3>
-                    </div>
+                    {/* Category Name */}
+                    <h3 className="text-base sm:text-lg md:text-xl font-bold text-white group-hover:text-amber-300 transition-colors duration-300">
+                      Baritone
+                    </h3>
                   </div>
                 </Link>
               )}
@@ -698,8 +698,8 @@ export default function HomePage() {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-10 items-stretch">
             {/* Left: Why Musicians Choose Us */}
             <div className="animate-fade-in-left">
-              <h2 className="text-xl sm:text-2xl md:text-3xl font-bold text-secondary mb-4 sm:mb-6">
-                Why Musicians Choose Us
+              <h2 className="text-xl sm:text-2xl md:text-3xl font-bold text-secondary mb-4 sm:mb-6 uppercase tracking-wide">
+                WHY MUSICIANS CHOOSE US
               </h2>
               <div className="space-y-3 sm:space-y-4">
                 {[

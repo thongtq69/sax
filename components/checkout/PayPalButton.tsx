@@ -3,7 +3,8 @@
 import { PayPalButtons, usePayPalScriptReducer, SCRIPT_LOADING_STATE } from '@paypal/react-paypal-js'
 import { useRouter } from 'next/navigation'
 import { useCartStore } from '@/lib/store/cart'
-import { Loader2, AlertCircle } from 'lucide-react'
+import { Loader2, AlertCircle, ExternalLink } from 'lucide-react'
+import { Button } from '@/components/ui/button'
 
 interface PayPalButtonProps {
   shippingInfo: {
@@ -20,14 +21,23 @@ interface PayPalButtonProps {
   } | null
   onSuccess?: (details: any) => void
   onError?: (error: any) => void
+  total?: number
 }
 
 // Inner component that uses PayPal hooks - only rendered when PayPal is configured
-function PayPalButtonInner({ shippingInfo, onSuccess, onError }: PayPalButtonProps) {
+function PayPalButtonInner({ shippingInfo, onSuccess, onError, total }: PayPalButtonProps) {
   const [{ isPending, isRejected }] = usePayPalScriptReducer()
   const router = useRouter()
   const items = useCartStore((state) => state.items)
   const clearCart = useCartStore((state) => state.clearCart)
+  const storeTotal = useCartStore((state) => {
+    const subtotal = state.getSubtotal()
+    const shipping = subtotal > 500 ? 0 : 25
+    const tax = subtotal * 0.08
+    return subtotal + shipping + tax
+  })
+  
+  const finalTotal = total ?? storeTotal
 
   const createOrder = async () => {
     try {
@@ -97,24 +107,49 @@ function PayPalButtonInner({ shippingInfo, onSuccess, onError }: PayPalButtonPro
   }
 
   return (
-    <PayPalButtons
-      style={{
-        layout: 'vertical',
-        color: 'gold',
-        shape: 'rect',
-        label: 'paypal',
-        height: 48,
-      }}
-      createOrder={createOrder}
-      onApprove={onApprove}
-      onError={(err) => {
-        console.error('PayPal error:', err)
-        onError?.(err)
-      }}
-      onCancel={() => {
-        console.log('Payment cancelled')
-      }}
-    />
+    <div className="space-y-4">
+      <PayPalButtons
+        style={{
+          layout: 'vertical',
+          color: 'gold',
+          shape: 'rect',
+          label: 'paypal',
+          height: 48,
+        }}
+        createOrder={createOrder}
+        onApprove={onApprove}
+        onError={(err) => {
+          console.error('PayPal error:', err)
+          onError?.(err)
+        }}
+        onCancel={() => {
+          console.log('Payment cancelled')
+        }}
+      />
+      
+      <div className="relative py-2">
+        <div className="absolute inset-0 flex items-center">
+          <span className="w-full border-t" />
+        </div>
+        <div className="relative flex justify-center text-xs uppercase">
+          <span className="bg-white px-2 text-muted-foreground">Or pay directly</span>
+        </div>
+      </div>
+
+      <Button
+        className="w-full h-12 bg-[#0070ba] hover:bg-[#003087] text-white font-semibold"
+        onClick={() => {
+          const paypalMeUrl = `https://www.paypal.com/paypalme/thymetruong/${finalTotal.toFixed(2)}`
+          window.open(paypalMeUrl, '_blank')
+        }}
+      >
+        <ExternalLink className="h-4 w-4 mr-2" />
+        Pay with PayPal.me (${finalTotal.toFixed(2)})
+      </Button>
+      <p className="text-xs text-center text-muted-foreground">
+        Opens PayPal.me in a new tab for manual payment
+      </p>
+    </div>
   )
 }
 

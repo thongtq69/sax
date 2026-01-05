@@ -100,7 +100,7 @@ export function TestimonialsPopup({ isOpen, onClose }: TestimonialsPopupProps) {
       <div className="relative bg-[#FAFAF8] w-full max-w-4xl max-h-[90vh] overflow-hidden shadow-2xl rounded-lg">
         
         {/* Header - với hiệu ứng nhạc */}
-        <div className="relative bg-gradient-to-br from-[#AFA65F] via-[#9a9254] to-[#8a8347] px-8 py-8 overflow-hidden">
+        <div className="relative bg-gradient-to-br from-[#AFA65F] via-[#9a9254] to-[#8a8347] px-8 py-6 overflow-hidden">
           {/* Floating musical notes - hiệu ứng liên quan đến nhạc cụ */}
           <div className="absolute inset-0 overflow-hidden pointer-events-none">
             <span className="absolute top-3 left-6 text-white/10 text-4xl animate-pulse">♪</span>
@@ -125,22 +125,9 @@ export function TestimonialsPopup({ isOpen, onClose }: TestimonialsPopupProps) {
 
           {/* Title */}
           <div className="text-center relative z-10">
-            <div className="inline-flex items-center gap-2 mb-3">
-              <Music className="h-5 w-5 text-white/80" />
-              <span className="text-white/80 text-sm font-medium uppercase tracking-wider">Verified Reviews</span>
-              <Music className="h-5 w-5 text-white/80" />
-            </div>
-            <h2 className="text-2xl md:text-3xl font-bold text-white font-display mb-2">
+            <h2 className="text-2xl md:text-3xl font-bold text-white font-display mb-4">
               Testimonials
             </h2>
-            <div className="flex items-center justify-center gap-2 mb-4">
-              <div className="flex items-center gap-0.5">
-                {[...Array(5)].map((_, i) => (
-                  <Star key={i} className="h-4 w-4 fill-white text-white drop-shadow-sm" />
-                ))}
-              </div>
-              <span className="text-white font-semibold">{avgRating}</span>
-            </div>
           </div>
 
           {/* Intro Text */}
@@ -170,7 +157,7 @@ export function TestimonialsPopup({ isOpen, onClose }: TestimonialsPopupProps) {
                   {/* Decorative quote icon */}
                   <Quote className="absolute -top-2 -right-2 h-16 w-16 text-[#AFA65F]/5 rotate-12 group-hover:text-[#AFA65F]/10 transition-colors" />
                   
-                  {/* Top Row: Avatar + Name + Rating */}
+                  {/* Top Row: Avatar + Name */}
                   <div className="flex items-center justify-between mb-3 relative z-10">
                     <div className="flex items-center gap-3">
                       <div className={`w-11 h-11 ${getAvatarColor(review.buyerName)} rounded-full flex items-center justify-center text-white font-semibold text-sm shadow-md group-hover:scale-110 transition-transform duration-300`}>
@@ -186,18 +173,6 @@ export function TestimonialsPopup({ isOpen, onClose }: TestimonialsPopupProps) {
                         </div>
                         <p className="text-xs text-gray-500">{review.product?.name || ''}</p>
                       </div>
-                    </div>
-                    <div className="flex gap-0.5">
-                      {[...Array(5)].map((_, i) => (
-                        <Star
-                          key={i}
-                          className={`h-3.5 w-3.5 transition-transform group-hover:scale-110 ${
-                            i < review.rating
-                              ? 'fill-[#D4AF37] text-[#D4AF37]'
-                              : 'fill-gray-200 text-gray-200'
-                          }`}
-                        />
-                      ))}
                     </div>
                   </div>
 

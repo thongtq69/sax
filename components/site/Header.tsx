@@ -3,7 +3,7 @@
 import { useState, useEffect, useRef } from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
-import { Search, ShoppingCart, Menu, X, User, Facebook, Instagram, Youtube, Twitter, LogIn, Eye, EyeOff, Star, MessageCircle } from 'lucide-react'
+import { Search, ShoppingCart, Menu, X, User, Facebook, Instagram, Youtube, Twitter, LogIn, Eye, EyeOff, MessageCircle } from 'lucide-react'
 import { useCartStore } from '@/lib/store/cart'
 import { Button } from '@/components/ui/button'
 import { SearchBar } from './SearchBar'
@@ -308,9 +308,8 @@ export function Header() {
                 </Link>
                 <button 
                   onClick={() => setIsTestimonialsOpen(true)}
-                  className="text-[#2c3e50] hover:text-[#1a252f] transition-all duration-300 relative group/nav font-body flex items-center gap-1"
+                  className="text-[#2c3e50] hover:text-[#1a252f] transition-all duration-300 relative group/nav font-body"
                 >
-                  <Star className="h-3.5 w-3.5 fill-amber-400 text-amber-400" />
                   Testimonials
                   <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-[#2c3e50] transition-all duration-300 group-hover/nav:w-full" />
                 </button>
@@ -480,9 +479,8 @@ export function Header() {
                   setIsMobileMenuOpen(false)
                   setIsTestimonialsOpen(true)
                 }}
-                className="flex items-center gap-2 text-[#2c3e50] font-medium py-2 w-full text-left font-body"
+                className="block text-[#2c3e50] font-medium py-2 w-full text-left font-body"
               >
-                <Star className="h-4 w-4 fill-amber-400 text-amber-400" />
                 Testimonials
               </button>
               <Link
