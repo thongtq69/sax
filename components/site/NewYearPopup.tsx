@@ -3,14 +3,13 @@
 import { useState, useEffect } from 'react'
 import Image from 'next/image'
 import Link from 'next/link'
-import { X, Clock, ChevronRight, Gift } from 'lucide-react'
+import { X, Clock, ChevronRight } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { getProducts, transformProduct } from '@/lib/api'
 import type { Product } from '@/lib/data'
 
 export function NewYearPopup() {
   const [isOpen, setIsOpen] = useState(false)
-  const [isMinimized, setIsMinimized] = useState(false)
   const [products, setProducts] = useState<Product[]>([])
   const [timeLeft, setTimeLeft] = useState({
     days: 0,
@@ -43,10 +42,8 @@ export function NewYearPopup() {
         sessionStorage.setItem('newYear2026PopupSeen', 'true')
       }, 2000)
       return () => clearTimeout(timer)
-    } else {
-      // If already seen, show minimized version
-      setIsMinimized(true)
     }
+    // If already seen, don't show anything
   }, [])
 
   // Countdown timer - ends Jan 15, 2026
@@ -72,64 +69,13 @@ export function NewYearPopup() {
     return () => clearInterval(interval)
   }, [])
 
-  // Handle close - minimize instead of fully closing
+  // Handle close - completely close the popup
   const handleClose = () => {
     setIsOpen(false)
-    setIsMinimized(true)
-  }
-
-  // Handle open from minimized
-  const handleOpenFromMinimized = () => {
-    setIsMinimized(false)
-    setIsOpen(true)
   }
 
   return (
     <>
-      {/* Minimized Floating Widget - Bottom Left - Elegant Design */}
-      {isMinimized && !isOpen && (
-        <button
-          onClick={handleOpenFromMinimized}
-          className="fixed bottom-6 left-6 z-[90] group"
-        >
-          <div className="relative flex items-center">
-            {/* Main Container - Elegant Card Style */}
-            <div className="flex items-center gap-3 bg-gradient-to-r from-secondary via-secondary to-secondary/95 rounded-2xl shadow-2xl px-4 py-3 border border-amber-400/30 transition-all duration-500 group-hover:shadow-amber-400/20 group-hover:border-amber-400/50 group-hover:scale-105">
-              
-              {/* Saxophone Icon - Large, overflow visible */}
-              <div className="relative w-14 h-14 flex-shrink-0 overflow-visible">
-                <div className="absolute inset-0 bg-gradient-to-br from-amber-400/20 to-amber-600/20 rounded-full" />
-                <div className="absolute inset-0 flex items-center justify-center">
-                  <Image
-                    src="/saxophone-icon.svg"
-                    alt="Sale"
-                    width={160}
-                    height={160}
-                    className="w-[56px] h-[56px] transition-transform duration-500 group-hover:rotate-12 group-hover:scale-110"
-                    style={{ filter: 'brightness(0) saturate(100%) invert(69%) sepia(96%) saturate(1467%) hue-rotate(3deg) brightness(104%) contrast(95%)' }}
-                  />
-                </div>
-              </div>
-              
-              {/* Text Content */}
-              <div className="pr-2">
-                <p className="text-amber-400 text-[10px] font-medium tracking-wider uppercase">New Year 2026</p>
-                <p className="text-white font-bold text-lg leading-tight">Flash Sale</p>
-                <p className="text-white/60 text-xs">Up to 30% OFF</p>
-              </div>
-
-              {/* Arrow Indicator */}
-              <div className="w-8 h-8 rounded-full bg-amber-400/20 flex items-center justify-center transition-all duration-300 group-hover:bg-amber-400/30">
-                <ChevronRight className="w-4 h-4 text-amber-400 transition-transform duration-300 group-hover:translate-x-0.5" />
-              </div>
-            </div>
-            
-            {/* Pulse Ring Effect */}
-            <div className="absolute -inset-1 bg-gradient-to-r from-amber-400/20 to-amber-600/20 rounded-2xl opacity-0 group-hover:opacity-100 blur-sm transition-opacity duration-500 -z-10" />
-          </div>
-        </button>
-      )}
-
       {/* Full Popup */}
       {isOpen && (
         <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">

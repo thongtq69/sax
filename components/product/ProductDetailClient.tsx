@@ -15,7 +15,7 @@ import { ProductCard } from './ProductCard'
 import { useCartStore } from '@/lib/store/cart'
 import { SmartImage } from '@/components/ui/smart-image'
 import { InquiryFormContent } from '@/components/inquiry/InquiryFormContent'
-import { Star, ChevronRight, ChevronLeft, Heart, Share2, Shield, Truck, CreditCard, Award, Check, X, ZoomIn, Loader2, MessageCircle } from 'lucide-react'
+import { Star, ChevronRight, ChevronLeft, Heart, Share2, Check, X, ZoomIn, Loader2, MessageCircle, Truck } from 'lucide-react'
 
 interface ProductDetailClientProps {
   product: Product
@@ -231,9 +231,9 @@ const handleAddToCart = async () => {
   const savings = product.retailPrice ? product.retailPrice - product.price : 0
   const savingsPercent = product.retailPrice ? Math.round((savings / product.retailPrice) * 100) : 0
 
-  const handleNavigation = (slug: string) => {
+  const handleNavigation = (sku: string) => {
     // Use router.push for instant navigation with Next.js prefetching
-    router.push(`/product/${slug}`)
+    router.push(`/product/sku/${sku}`)
   }
 
   return (
@@ -246,7 +246,7 @@ const handleAddToCart = async () => {
             <Button
               variant="outline"
               size="sm"
-              onClick={() => handleNavigation(navigationProducts.prev!.slug)}
+              onClick={() => handleNavigation(navigationProducts.prev!.sku)}
               className="group flex items-center gap-2 transition-all hover:scale-105"
             >
               <ChevronLeft className="h-4 w-4 transition-transform group-hover:-translate-x-1" />
@@ -261,7 +261,7 @@ const handleAddToCart = async () => {
             <Button
               variant="outline"
               size="sm"
-              onClick={() => handleNavigation(navigationProducts.next!.slug)}
+              onClick={() => handleNavigation(navigationProducts.next!.sku)}
               className="group flex items-center gap-2 transition-all hover:scale-105"
             >
               <span className="hidden sm:inline">Next Product</span>
@@ -516,15 +516,11 @@ const handleAddToCart = async () => {
               )}
             </div>
 
-            {/* Financing */}
-            {product.price > 500 && (
-              <div className="flex items-center gap-2 mt-2 md:mt-3 text-xs md:text-sm">
-                <CreditCard className="h-3.5 w-3.5 md:h-4 md:w-4 text-accent flex-shrink-0" />
-                <span className="text-gray-600">
-                  Or <span className="font-semibold text-accent">${(product.price / 12).toFixed(0)}/month</span> with 0% APR financing
-                </span>
-              </div>
-            )}
+            {/* Free Shipping */}
+            <div className="flex items-center gap-2 mt-2 md:mt-3 text-xs md:text-sm text-green-600 font-medium">
+              <Truck className="h-4 w-4 flex-shrink-0" />
+              <span>Free Shipping</span>
+            </div>
           </div>
 
           {/* Stock Status */}
@@ -539,25 +535,59 @@ const handleAddToCart = async () => {
             ) : (
               <span>Currently Out of Stock</span>
             )}
-            {product.stock && product.stock <= 5 && product.inStock && (
-              <Badge variant="outline" className="ml-2 text-orange-600 border-orange-300 animate-pulse">
-                Only {product.stock} left!
-              </Badge>
-            )}
           </div>
-          <p className="text-xs md:text-sm text-muted-foreground">
-            Each listing is a single instrument; quantity is fixed at one.
-          </p>
 
 
-          {/* Product Inquiry - Compact Link */}
-          <button
-            onClick={() => setIsInquiryOpen(true)}
-            className="flex items-center gap-2 text-sm text-primary hover:text-primary/80 hover:underline transition-colors"
-          >
-            <MessageCircle className="h-4 w-4" />
-            <span>Product Inquiry - Ask about this item</span>
-          </button>
+          {/* Action Buttons */}
+          <div className="flex gap-2 md:gap-3">
+            <Button
+              size="lg"
+              className={`flex-1 text-sm md:text-base font-semibold transition-all duration-300 ${
+                isAddedToCart 
+                  ? 'bg-green-500 hover:bg-green-600' 
+                  : 'hover:shadow-lg hover:scale-[1.02]'
+              }`}
+              onClick={handleAddToCart}
+              disabled={!product.inStock || isAddingToCart}
+            >
+              {isAddingToCart ? (
+                <span className="flex items-center gap-2">
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                  Adding...
+                </span>
+              ) : isAddedToCart ? (
+                <span className="flex items-center gap-2">
+                  <Check className="h-4 w-4 animate-bounce" />
+                  Added!
+                </span>
+              ) : (
+                'Add to Cart'
+              )}
+            </Button>
+            
+            <Button
+              size="lg"
+              variant="outline"
+              onClick={() => setIsWishlisted(!isWishlisted)}
+              className={`px-3 transition-all duration-300 ${
+                isWishlisted ? 'border-red-300 bg-red-50 text-red-500' : ''
+              }`}
+            >
+              <Heart className={`h-5 w-5 transition-all ${isWishlisted ? 'fill-current scale-110' : ''}`} />
+            </Button>
+            
+            <Button 
+              size="lg" 
+              onClick={() => setIsInquiryOpen(true)}
+              className="px-4 bg-accent hover:bg-accent/90 text-white"
+            >
+              <MessageCircle className="h-5 w-5" />
+            </Button>
+            
+            <Button size="lg" variant="outline" className="px-3">
+              <Share2 className="h-5 w-5" />
+            </Button>
+          </div>
 
           <Dialog open={isInquiryOpen} onOpenChange={setIsInquiryOpen}>
             <DialogContent className="max-w-lg w-[95vw] max-h-[90vh] overflow-y-auto p-0 border-0 bg-transparent shadow-none">
@@ -569,72 +599,7 @@ const handleAddToCart = async () => {
             </DialogContent>
           </Dialog>
 
-          {/* Action Buttons */}
-          <div className="flex gap-2 md:gap-3">
-            <Button
-              size="lg"
-              className={`flex-1 text-base md:text-lg font-semibold transition-all duration-300 ${
-                isAddedToCart 
-                  ? 'bg-green-500 hover:bg-green-600' 
-                  : 'hover:shadow-lg hover:scale-[1.02]'
-              }`}
-              onClick={handleAddToCart}
-              disabled={!product.inStock || isAddingToCart}
-            >
-              {isAddingToCart ? (
-                <span className="flex items-center gap-2">
-                  <Loader2 className="h-5 w-5 animate-spin" />
-                  Adding...
-                </span>
-              ) : isAddedToCart ? (
-                <span className="flex items-center gap-2">
-                  <Check className="h-5 w-5 animate-bounce" />
-                  Added to Cart!
-                </span>
-              ) : (
-                'Add to Cart'
-              )}
-            </Button>
-            
-            <Button
-              size="lg"
-              variant="outline"
-              onClick={() => setIsWishlisted(!isWishlisted)}
-              className={`px-4 transition-all duration-300 ${
-                isWishlisted ? 'border-red-300 bg-red-50 text-red-500' : ''
-              }`}
-            >
-              <Heart className={`h-5 w-5 transition-all ${isWishlisted ? 'fill-current scale-110' : ''}`} />
-            </Button>
-            
-            <Button size="lg" variant="outline" className="px-4">
-              <Share2 className="h-5 w-5" />
-            </Button>
-          </div>
 
-          {/* Trust Badges */}
-          <div className="grid grid-cols-2 gap-2 md:gap-4">
-            {[
-              { icon: Truck, title: 'Free Shipping', desc: 'On orders over $500' },
-              { icon: Shield, title: '30-Day Returns', desc: 'Hassle-free policy' },
-              { icon: Award, title: 'Pro Setup', desc: 'Included free' },
-              { icon: CreditCard, title: '0% Financing', desc: '12 month terms' },
-            ].map((item, i) => (
-              <div 
-                key={i} 
-                className="flex items-center gap-2 md:gap-3 p-2 md:p-3 rounded-lg md:rounded-xl bg-gray-50 border transition-all duration-300 hover:shadow-md hover:border-primary/30"
-                style={{ animationDelay: `${0.1 * i}s` }}
-              >
-                <div className="p-1.5 md:p-2 rounded-lg bg-primary/10 flex-shrink-0">
-                  <item.icon className="h-4 w-4 md:h-5 md:w-5 text-primary" />
-                </div>
-                <div className="min-w-0">
-                  <p className="font-semibold text-xs md:text-sm text-secondary truncate">{item.title}</p>
-                  <p className="text-[10px] md:text-xs text-muted-foreground truncate">{item.desc}</p>
-                </div>
-              </div>
-            ))}
-          </div>
         </div>
       </div>
 
@@ -642,16 +607,13 @@ const handleAddToCart = async () => {
       <div className="mt-8 md:mt-12 lg:mt-16 animate-fade-in-up" style={{ animationDelay: '0.3s' }}>
         <Tabs defaultValue="description" className="w-full">
           <TabsList className="w-full justify-start border-b rounded-none bg-transparent h-auto p-0 gap-4 md:gap-8 overflow-x-auto">
-            {['description', 'specs', 'reviews'].map((tab) => (
+            {['description', 'specs', 'reviews', 'faq'].map((tab) => (
               <TabsTrigger 
                 key={tab}
                 value={tab} 
                 className="product-tabs-trigger relative capitalize text-sm md:text-base lg:text-lg pb-3 md:pb-4 px-2 md:px-0 rounded-none bg-transparent data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:text-primary font-medium text-gray-500 hover:text-gray-700 transition-colors whitespace-nowrap after:absolute after:bottom-0 after:left-0 after:right-0 after:h-0.5 after:bg-primary after:scale-x-0 data-[state=active]:after:scale-x-100 after:transition-transform after:duration-300"
               >
-                {tab === 'description' && '📝 '}
-                {tab === 'specs' && '📋 '}
-                {tab === 'reviews' && '⭐ '}
-                {tab}
+                {tab === 'faq' ? 'FAQ' : tab}
               </TabsTrigger>
             ))}
           </TabsList>
@@ -662,8 +624,8 @@ const handleAddToCart = async () => {
               
               {product.included && (
                 <div className="mt-6 md:mt-8 p-4 md:p-6 bg-gradient-to-br from-green-50 to-emerald-50 rounded-xl md:rounded-2xl border border-green-100">
-                  <h3 className="text-lg md:text-xl font-bold text-secondary mb-3 md:mb-4 flex items-center gap-2">
-                    <span className="text-xl md:text-2xl">📦</span> What's Included
+                  <h3 className="text-lg md:text-xl font-bold text-secondary mb-3 md:mb-4">
+                    What's Included
                   </h3>
                   <ul className="space-y-2">
                     {product.included.map((item, index) => (
@@ -823,6 +785,31 @@ const handleAddToCart = async () => {
               )}
             </div>
           </TabsContent>
+          
+          <TabsContent value="faq" className="mt-4 md:mt-6 lg:mt-8 animate-fade-in">
+            <div className="space-y-4">
+              <div className="p-5 bg-white rounded-xl border">
+                <h3 className="font-semibold text-secondary mb-2">Is this a beginner saxophone?</h3>
+                <p className="text-gray-600 leading-relaxed">No. We sell professional models only, intended for serious students and working musicians.</p>
+              </div>
+              <div className="p-5 bg-white rounded-xl border">
+                <h3 className="font-semibold text-secondary mb-2">Is this instrument ready to ship?</h3>
+                <p className="text-gray-600 leading-relaxed">Yes. All listed saxophones are fully prepared and ready for immediate shipment.</p>
+              </div>
+              <div className="p-5 bg-white rounded-xl border">
+                <h3 className="font-semibold text-secondary mb-2">How long does delivery to the U.S. take?</h3>
+                <p className="text-gray-600 leading-relaxed">We use FedEx, DHL, or UPS express international shipping, with delivery typically in 3–4 business days.</p>
+              </div>
+              <div className="p-5 bg-white rounded-xl border">
+                <h3 className="font-semibold text-secondary mb-2">Is payment secure?</h3>
+                <p className="text-gray-600 leading-relaxed">Yes. All payments are processed via PayPal with full buyer protection.</p>
+              </div>
+              <div className="p-5 bg-white rounded-xl border">
+                <h3 className="font-semibold text-secondary mb-2">Can I ask questions before buying?</h3>
+                <p className="text-gray-600 leading-relaxed">Absolutely. We encourage you to contact us before purchase for detailed guidance.</p>
+              </div>
+            </div>
+          </TabsContent>
         </Tabs>
       </div>
 
@@ -844,7 +831,7 @@ const handleAddToCart = async () => {
               {relatedProducts.map((item, index) => (
                 <Link
                   key={`${item.id}-${index}`}
-                  href={`/product/${item.slug}`}
+                  href={`/product/sku/${item.sku}`}
                   className="group snap-start bg-white rounded-2xl border border-gray-100 shadow-sm hover:shadow-lg transition-all duration-300 overflow-hidden min-w-[220px] w-[220px] sm:min-w-[240px] sm:w-[240px] md:min-w-0 md:w-auto"
                 >
                   <div className="relative aspect-[4/5] overflow-hidden">

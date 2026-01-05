@@ -21,10 +21,11 @@ export async function GET(
     }
 
     return NextResponse.json(section)
-  } catch (error: any) {
+  } catch (error: unknown) {
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error'
     console.error('Error fetching homepage section:', error)
     return NextResponse.json(
-      { error: 'Failed to fetch homepage section', message: error?.message },
+      { error: 'Failed to fetch homepage section', message: errorMessage },
       { status: 500 }
     )
   }
@@ -66,16 +67,18 @@ export async function PUT(
     })
 
     return NextResponse.json(section)
-  } catch (error: any) {
+  } catch (error: unknown) {
+    const prismaError = error as { code?: string }
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error'
     console.error('Error updating homepage section:', error)
-    if (error.code === 'P2025') {
+    if (prismaError.code === 'P2025') {
       return NextResponse.json(
         { error: 'Section not found' },
         { status: 404 }
       )
     }
     return NextResponse.json(
-      { error: 'Failed to update homepage section', message: error?.message },
+      { error: 'Failed to update homepage section', message: errorMessage },
       { status: 500 }
     )
   }

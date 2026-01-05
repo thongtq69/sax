@@ -86,10 +86,10 @@ export function ProductCardEnhanced({
 
   // Prefetch product page on hover
   const handleMouseEnter = useCallback(() => {
-    router.prefetch(`/product/${product.slug}`)
+    router.prefetch(`/product/sku/${product.sku}`)
     setIsHovered(true)
     if (enableSpotlight) spotlightMouseEnter()
-  }, [router, product.slug, enableSpotlight, spotlightMouseEnter])
+  }, [router, product.sku, enableSpotlight, spotlightMouseEnter])
 
   const handleMouseLeave = useCallback(() => {
     setIsHovered(false)
@@ -300,7 +300,7 @@ export function ProductCardEnhanced({
 
             {/* Title with hover effect */}
             <Link
-              href={`/product/${product.slug}`}
+              href={`/product/sku/${product.sku}`}
               className="block group/title"
               prefetch={true}
             >

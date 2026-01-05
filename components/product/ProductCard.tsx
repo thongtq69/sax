@@ -41,7 +41,7 @@ export function ProductCard({ product, index = 0 }: ProductCardProps) {
   
   // Prefetch product page on hover
   const handleMouseEnter = () => {
-    router.prefetch(`/product/${product.slug}`)
+    router.prefetch(`/product/sku/${product.sku}`)
   }
 
   // Get rating from hardcoded reviews
@@ -172,12 +172,7 @@ export function ProductCard({ product, index = 0 }: ProductCardProps) {
             </Button>
           </div>
 
-          {/* Category tag */}
-          <div className="absolute bottom-2 sm:bottom-3 left-2 sm:left-3 z-20 opacity-0 group-hover:opacity-100 transition-all duration-300 transform translate-y-2 group-hover:translate-y-0">
-            <span className="text-[10px] sm:text-xs font-medium px-1.5 sm:px-2 py-0.5 sm:py-1 rounded bg-white/90 backdrop-blur-sm text-secondary capitalize">
-              {product.subcategory?.replace('-', ' ') || product.category}
-            </span>
-          </div>
+
         </div>
 
         <CardContent className="p-3 sm:p-4 relative">
@@ -192,7 +187,7 @@ export function ProductCard({ product, index = 0 }: ProductCardProps) {
 
             {/* Title with hover effect */}
             <Link
-              href={`/product/${product.slug}`}
+              href={`/product/sku/${product.sku}`}
               className="block group/title"
               prefetch={true}
             >
