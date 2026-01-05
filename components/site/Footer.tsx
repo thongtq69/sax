@@ -3,7 +3,7 @@
 import { useState } from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
-import { Phone, MapPin, Clock, Music, Heart, Mail, ArrowRight, MessageSquare } from 'lucide-react'
+import { Phone, MapPin, Clock, Music, Heart, Mail, MessageCircle } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { TestimonialsPopup } from './TestimonialsPopup'
 
@@ -124,9 +124,9 @@ export function Footer() {
             </div>
             <div className="flex gap-2 flex-shrink-0">
               <Button size="sm" className="bg-[#D4AF37] hover:bg-[#c4a030] text-[#2f3f4f] font-semibold text-xs md:text-sm px-4 h-8 md:h-9 hover:scale-105 hover:shadow-lg transition-all duration-300 group" asChild>
-                <Link href="/contact">
-                  <Phone className="mr-1.5 h-3.5 w-3.5 transition-transform group-hover:rotate-12" />
-                  Ask Now
+                <Link href="/inquiry">
+                  <MessageCircle className="mr-1.5 h-3.5 w-3.5 transition-transform group-hover:scale-110" />
+                  Inquiry
                 </Link>
               </Button>
             </div>

@@ -1,8 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { X, Star, Quote } from 'lucide-react'
-import { Button } from '@/components/ui/button'
+import { X, Star, Quote, CheckCircle } from 'lucide-react'
 
 interface Review {
   message: string
@@ -26,7 +25,6 @@ export function TestimonialsPopup({ isOpen, onClose }: TestimonialsPopupProps) {
       fetch('/api/reviews')
         .then(res => res.json())
         .then(data => {
-          // Filter reviews with messages only
           const filtered = data.filter((r: Review) => r.message && r.message.trim() !== '')
           setReviews(filtered)
           setIsLoading(false)
@@ -35,78 +33,123 @@ export function TestimonialsPopup({ isOpen, onClose }: TestimonialsPopupProps) {
     }
   }, [isOpen])
 
+  const avgRating = reviews.length > 0 
+    ? (reviews.reduce((sum, r) => sum + r.rating, 0) / reviews.length).toFixed(1)
+    : '5.0'
+
+  const getInitials = (name: string) => {
+    return name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2)
+  }
+
   if (!isOpen) return null
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+    <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
       {/* Backdrop */}
       <div 
-        className="absolute inset-0 bg-black/60 backdrop-blur-sm"
+        className="absolute inset-0 bg-black/50 backdrop-blur-sm"
         onClick={onClose}
       />
       
-      {/* Modal */}
-      <div className="relative bg-white rounded-2xl shadow-2xl w-full max-w-4xl max-h-[85vh] overflow-hidden animate-fade-in-up">
-        {/* Header */}
-        <div className="sticky top-0 bg-gradient-to-r from-amber-500 to-amber-600 px-6 py-4 flex items-center justify-between z-10">
-          <div className="flex items-center gap-3">
-            <Quote className="h-6 w-6 text-white" />
-            <div>
-              <h2 className="text-xl font-bold text-white">Customer Testimonials</h2>
-              <p className="text-white/80 text-sm">{reviews.length} verified reviews</p>
-            </div>
-          </div>
+      {/* Modal - Clean & Minimal */}
+      <div className="relative bg-[#FAFAF8] w-full max-w-4xl max-h-[90vh] overflow-hidden shadow-2xl">
+        
+        {/* Header - Simple & Elegant */}
+        <div className="relative bg-[#AFA65F] px-8 py-8">
+          {/* Close Button */}
           <button
             onClick={onClose}
-            className="p-2 hover:bg-white/20 rounded-full transition-colors"
+            className="absolute top-4 right-4 p-2 hover:bg-black/10 rounded-full transition-colors"
           >
             <X className="h-5 w-5 text-white" />
           </button>
+
+          {/* Title */}
+          <div className="text-center">
+            <h2 className="text-2xl md:text-3xl font-bold text-white font-display mb-2">
+              Testimonials
+            </h2>
+            <div className="flex items-center justify-center gap-2 mb-4">
+              <div className="flex items-center gap-0.5">
+                {[...Array(5)].map((_, i) => (
+                  <Star key={i} className="h-4 w-4 fill-white text-white" />
+                ))}
+              </div>
+              <span className="text-white font-semibold">{avgRating}</span>
+              <span className="text-white/70">({reviews.length} reviews)</span>
+            </div>
+          </div>
+
+          {/* Intro Text */}
+          <p className="text-white/90 text-sm md:text-base text-center max-w-2xl mx-auto leading-relaxed font-body">
+            Our reputation has been built over the years through consistent quality and trust earned from musicians worldwide. 
+            All testimonials come from verified buyers and students, reflecting real experiences with our instruments, 
+            repair services, and lessons.
+          </p>
         </div>
 
-        {/* Reviews List */}
-        <div className="overflow-y-auto max-h-[calc(85vh-80px)] p-6">
+        {/* Reviews List - Clean Cards */}
+        <div className="overflow-y-auto max-h-[calc(90vh-220px)] p-6">
           {isLoading ? (
-            <div className="flex items-center justify-center py-12">
-              <div className="animate-spin rounded-full h-8 w-8 border-2 border-amber-500 border-t-transparent" />
+            <div className="flex items-center justify-center py-16">
+              <div className="animate-spin rounded-full h-8 w-8 border-2 border-[#AFA65F] border-t-transparent" />
             </div>
           ) : (
-            <div className="grid gap-4">
+            <div className="grid md:grid-cols-2 gap-4">
               {reviews.map((review, index) => (
                 <div
                   key={index}
-                  className="bg-gray-50 rounded-xl p-5 hover:shadow-md transition-shadow border border-gray-100"
+                  className="bg-white p-5 border border-gray-100 hover:border-[#AFA65F]/30 hover:shadow-md transition-all duration-300"
                 >
-                  <div className="flex items-start justify-between gap-4 mb-3">
-                    <div>
-                      <div className="flex items-center gap-2 mb-1">
-                        <span className="font-semibold text-secondary">{review.author_name}</span>
-                        <span className="text-gray-400">•</span>
-                        <span className="text-sm text-gray-500">
-                          {new Date(review.created_at).toLocaleDateString('en-US', { 
-                            month: 'short', 
-                            year: 'numeric' 
-                          })}
-                        </span>
+                  {/* Top Row: Avatar + Name + Rating */}
+                  <div className="flex items-center justify-between mb-3">
+                    <div className="flex items-center gap-3">
+                      <div className="w-10 h-10 bg-[#AFA65F] rounded-full flex items-center justify-center text-white font-semibold text-sm">
+                        {getInitials(review.author_name)}
                       </div>
-                      <p className="text-xs text-gray-500">{review.order_title}</p>
+                      <div>
+                        <div className="flex items-center gap-2">
+                          <span className="font-semibold text-gray-900 text-sm">{review.author_name}</span>
+                          <CheckCircle className="h-3.5 w-3.5 text-[#AFA65F]" />
+                        </div>
+                        <p className="text-xs text-gray-500">{review.order_title}</p>
+                      </div>
                     </div>
-                    <div className="flex gap-0.5 shrink-0">
+                    <div className="flex gap-0.5">
                       {[...Array(5)].map((_, i) => (
                         <Star
                           key={i}
-                          className={`h-4 w-4 ${
+                          className={`h-3.5 w-3.5 ${
                             i < review.rating
-                              ? 'fill-amber-400 text-amber-400'
+                              ? 'fill-[#D4AF37] text-[#D4AF37]'
                               : 'fill-gray-200 text-gray-200'
                           }`}
                         />
                       ))}
                     </div>
                   </div>
-                  <p className="text-gray-700 leading-relaxed">{review.message}</p>
+
+                  {/* Review Text */}
+                  <p className="text-gray-600 text-sm leading-relaxed font-body">
+                    "{review.message}"
+                  </p>
+
+                  {/* Date */}
+                  <p className="text-xs text-gray-400 mt-3">
+                    {new Date(review.created_at).toLocaleDateString('en-US', { 
+                      month: 'short',
+                      year: 'numeric' 
+                    })}
+                  </p>
                 </div>
               ))}
+            </div>
+          )}
+
+          {!isLoading && reviews.length === 0 && (
+            <div className="text-center py-16">
+              <Quote className="h-10 w-10 text-gray-300 mx-auto mb-3" />
+              <p className="text-gray-500">No testimonials available yet.</p>
             </div>
           )}
         </div>
