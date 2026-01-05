@@ -137,7 +137,8 @@ export function TestimonialsPopup({ isOpen, onClose }: TestimonialsPopupProps) {
                   {/* Date */}
                   <p className="text-xs text-gray-400 mt-3">
                     {new Date(review.created_at).toLocaleDateString('en-US', { 
-                      month: 'short',
+                      day: 'numeric',
+                      month: 'long',
                       year: 'numeric' 
                     })}
                   </p>

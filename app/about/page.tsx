@@ -12,16 +12,28 @@ import {
 
 const faqs = [
   {
+    q: "Is this a beginner saxophone?",
+    a: "No. We sell professional models only, intended for serious students and working musicians."
+  },
+  {
+    q: "Is this instrument ready to ship?",
+    a: "Yes. All listed saxophones are fully prepared and ready for immediate shipment."
+  },
+  {
+    q: "How long does delivery to the U.S. take?",
+    a: "We use FedEx, DHL, or UPS express international shipping, with delivery typically in 3–4 business days."
+  },
+  {
+    q: "Is payment secure?",
+    a: "Yes. All payments are processed via PayPal with full buyer protection."
+  },
+  {
+    q: "Can I ask questions before buying?",
+    a: "Absolutely. We encourage you to contact us before purchase for detailed guidance."
+  },
+  {
     q: "What saxophones do you sell?",
     a: "We specialize exclusively in professional-level saxophones. We do not sell beginner or entry-level models. All instruments are selected for serious students, advanced players, and working musicians. If you cannot find the exact model you are looking for, we also accept tailor-made sourcing requests and will assist in locating the right instrument whenever possible."
-  },
-  {
-    q: "Are the instruments ready to ship?",
-    a: "Yes. All saxophones listed on our website are fully prepared and ready to ship immediately after purchase."
-  },
-  {
-    q: "How long does shipping take to the United States?",
-    a: "We ship using international express services only via FedEx, DHL, or UPS. Each instrument is carefully packed and documented, and delivery to the United States typically takes 3–4 business days."
   },
   {
     q: "What shipping carriers do you use?",
@@ -38,10 +50,6 @@ const faqs = [
   {
     q: "Are your reviews from real buyers?",
     a: "Yes. All testimonials come from verified customers and reflect real experiences with our instruments and services."
-  },
-  {
-    q: "Can I contact you before purchasing?",
-    a: "Absolutely. We encourage customers to contact us before ordering to ensure the instrument meets their expectations and playing needs."
   },
   {
     q: "Do you ship internationally?",

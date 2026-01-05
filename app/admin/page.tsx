@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { Package, FileText, ShoppingCart, DollarSign, TrendingUp, Users, Plus, ArrowUpRight, ArrowDownRight, Eye } from 'lucide-react'
+import { Package, FileText, ShoppingCart, DollarSign, TrendingUp, Users, Plus, ArrowUpRight, ArrowDownRight, Eye, Star } from 'lucide-react'
 import { getProducts, getBlogPosts, getPromoBanners } from '@/lib/api'
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
@@ -193,6 +193,12 @@ export default function AdminDashboard() {
               <Button className="w-full justify-start" variant="outline">
                 <Package className="h-4 w-4 mr-3" />
                 Manage Categories
+              </Button>
+            </Link>
+            <Link href="/admin/reviews" className="block">
+              <Button className="w-full justify-start" variant="outline">
+                <Star className="h-4 w-4 mr-3" />
+                Manage Reviews
               </Button>
             </Link>
           </div>
