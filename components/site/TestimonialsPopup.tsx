@@ -177,7 +177,7 @@ export function TestimonialsPopup({ isOpen, onClose }: TestimonialsPopupProps) {
                 </div>
               ))}
             </div>
-          )}}
+          )}
 
           {!isLoading && reviews.length === 0 && (
             <div className="text-center py-16">
