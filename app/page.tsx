@@ -705,10 +705,11 @@ export default function HomePage() {
               </h2>
               <div className="space-y-3 sm:space-y-4">
                 {[
-                  { title: '40+ Years of Expertise', desc: 'Trusted by professional musicians since 1985' },
-                  { title: 'Professional Setup', desc: 'Every instrument is play-tested and adjusted' },
-                  { title: 'Expert Consultation', desc: 'Our staff includes professional players' },
-                  { title: 'Lifetime Support', desc: 'We\'re here throughout your musical journey' },
+                  { title: 'Saxophone Specialists', desc: 'We focus exclusively on saxophones, allowing us to maintain high standards in selection and preparation.' },
+                  { title: 'Individually Prepared Instruments', desc: 'Each instrument is inspected and adjusted before sale to ensure reliable playability.' },
+                  { title: 'Honest & Clear Listings', desc: 'Every saxophone is listed as a unique instrument with accurate descriptions.' },
+                  { title: 'Secure Purchasing', desc: 'All payments are processed through PayPal with full buyer protection.' },
+                  { title: 'Trusted by Musicians Worldwide', desc: 'Serving players from different countries and musical backgrounds.' },
                 ].map((item, i) => (
                   <div key={i} className="flex gap-3 sm:gap-4 p-3 sm:p-4 bg-white border border-transparent hover:border-primary/30 transition-all duration-500 hover:shadow-lg">
                     <div className="flex-shrink-0 w-10 h-10 sm:w-12 sm:h-12 bg-primary/10 flex items-center justify-center">
