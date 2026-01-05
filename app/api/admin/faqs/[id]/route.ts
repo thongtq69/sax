@@ -3,8 +3,8 @@ import { prisma } from '@/lib/prisma'
 
 // GET /api/admin/faqs/[id] - Get a single FAQ
 export async function GET(
-  request: NextRequest,
-  { params }: { params: { id: string } }
+  _request: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const { id } = await params
@@ -33,7 +33,7 @@ export async function GET(
 // PUT /api/admin/faqs/[id] - Update a FAQ
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const { id } = await params
@@ -78,10 +78,11 @@ export async function PUT(
   }
 }
 
+
 // DELETE /api/admin/faqs/[id] - Delete a FAQ
 export async function DELETE(
-  request: NextRequest,
-  { params }: { params: { id: string } }
+  _request: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const { id } = await params
@@ -119,8 +120,8 @@ export async function DELETE(
 
 // PATCH /api/admin/faqs/[id] - Toggle FAQ active status
 export async function PATCH(
-  request: NextRequest,
-  { params }: { params: { id: string } }
+  _request: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const { id } = await params

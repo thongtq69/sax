@@ -1,53 +1,62 @@
 import { NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 
-// Default homepage sections
+// Default homepage sections - based on actual website content
 const defaultSections = [
   {
     sectionKey: 'hero',
-    title: 'Premium Saxophones & Woodwinds',
-    subtitle: 'Discover our curated collection of professional instruments',
+    title: 'James Sax Corner',
+    subtitle: 'Premium Japanese saxophones, expertly maintained for peak performance. Trusted by musicians worldwide, backed by outstanding reviews. Unmatched customer service—your satisfaction comes first! Buy with confidence.',
     content: '',
-    image: '',
+    image: '/homepage3.png',
     isVisible: true,
     order: 0,
-    metadata: { buttonText: 'Shop Now', buttonLink: '/shop' },
+    metadata: { 
+      buttonText: 'Buy with confidence!', 
+      buttonLink: '/shop',
+      logoImage: '/jsc-logo-cropped.svg'
+    },
   },
   {
-    sectionKey: 'about',
-    title: 'About James Sax Corner',
-    subtitle: 'Your trusted source for quality instruments',
-    content: 'We specialize in premium saxophones, flutes, clarinets, and other woodwind instruments. With years of experience, we provide musicians with the finest instruments and exceptional service.',
-    image: '',
-    isVisible: true,
-    order: 1,
-    metadata: {},
-  },
-  {
-    sectionKey: 'features',
-    title: 'Why Choose Us',
+    sectionKey: 'why-choose-us',
+    title: 'Why Musicians Choose Us',
     subtitle: '',
     content: '',
     image: '',
     isVisible: true,
-    order: 2,
+    order: 1,
     metadata: {
       features: [
-        { icon: 'Shield', title: 'Quality Guaranteed', description: 'All instruments are professionally inspected' },
-        { icon: 'Truck', title: 'Free Shipping', description: 'On orders over $500' },
-        { icon: 'HeadphonesIcon', title: 'Expert Support', description: '24/7 customer service' },
+        { title: 'Saxophone Specialists', description: 'We focus exclusively on saxophones, allowing us to maintain high standards in selection and preparation.' },
+        { title: 'Individually Prepared Instruments', description: 'Each instrument is inspected and adjusted before sale to ensure reliable playability.' },
+        { title: 'Honest & Clear Listings', description: 'Every saxophone is listed as a unique instrument with accurate descriptions.' },
+        { title: 'Secure Purchasing', description: 'All payments are processed through PayPal with full buyer protection.' },
+        { title: 'Trusted by Musicians Worldwide', description: 'Serving players from different countries and musical backgrounds.' },
       ],
     },
   },
   {
-    sectionKey: 'cta',
-    title: 'Ready to Find Your Perfect Instrument?',
-    subtitle: 'Browse our collection or contact us for personalized recommendations',
+    sectionKey: 'featured-review',
+    title: 'Featured Review',
+    subtitle: '',
+    content: 'This was the single best transaction I\'ve had with an online seller. James sent me a 10 minute video minutes after contacting him detailing the horn and exhibiting the condition. Shipping from Vietnam to the US east coast took 3 days and the packaging was impeccable. The horn arrived exactly as described and plays just as well as it should; James did an excellent job replacing pads and adjusting. There are no visible or audible leaks. I would purchase from him again in a heartbeat.',
+    image: '',
+    isVisible: true,
+    order: 2,
+    metadata: { 
+      authorName: 'Zach E.',
+      rating: 5
+    },
+  },
+  {
+    sectionKey: 'newsletter',
+    title: 'Join Our Musical Community',
+    subtitle: 'Get exclusive deals, tips, and industry news',
     content: '',
     image: '',
     isVisible: true,
     order: 3,
-    metadata: { buttonText: 'Contact Us', buttonLink: '/inquiry' },
+    metadata: { buttonText: 'Subscribe' },
   },
 ]
 

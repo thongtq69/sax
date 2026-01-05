@@ -4,7 +4,7 @@ import { prisma } from '@/lib/prisma'
 // GET /api/admin/testimonials/[id] - Get a single review/testimonial
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const { id } = await params
@@ -42,7 +42,7 @@ export async function GET(
 // PUT /api/admin/testimonials/[id] - Update a review/testimonial
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const { id } = await params
@@ -156,7 +156,7 @@ export async function PUT(
 // DELETE /api/admin/testimonials/[id] - Delete a review/testimonial
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const { id } = await params

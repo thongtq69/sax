@@ -4,11 +4,14 @@ import { useState, useEffect } from 'react'
 import { X, Star, Quote, CheckCircle, Music } from 'lucide-react'
 
 interface Review {
+  id: string
   message: string
   rating: number
-  author_name: string
-  order_title: string
-  created_at: string
+  buyerName: string
+  date: string
+  product?: {
+    name: string
+  }
 }
 
 interface TestimonialsPopupProps {
@@ -22,14 +25,50 @@ export function TestimonialsPopup({ isOpen, onClose }: TestimonialsPopupProps) {
 
   useEffect(() => {
     if (isOpen) {
-      fetch('/api/reviews')
+      // Try database first, fallback to JSON file
+      fetch('/api/admin/testimonials?limit=100')
         .then(res => res.json())
         .then(data => {
-          const filtered = data.filter((r: Review) => r.message && r.message.trim() !== '')
-          setReviews(filtered)
+          if (data.reviews && data.reviews.length > 0) {
+            const filtered = data.reviews.filter((r: Review) => r.message && r.message.trim() !== '')
+            setReviews(filtered)
+          } else {
+            // Fallback to JSON file
+            return fetch('/api/reviews')
+              .then(res => res.json())
+              .then(jsonData => {
+                const filtered = jsonData.filter((r: any) => r.message && r.message.trim() !== '')
+                // Transform JSON format to match our interface
+                setReviews(filtered.map((r: any) => ({
+                  id: r.feedback_url || String(Math.random()),
+                  message: r.message,
+                  rating: r.rating,
+                  buyerName: r.author_name,
+                  date: r.created_at,
+                  product: r.order_title ? { name: r.order_title } : undefined,
+                })))
+              })
+          }
           setIsLoading(false)
         })
-        .catch(() => setIsLoading(false))
+        .catch(() => {
+          // Fallback to JSON file on error
+          fetch('/api/reviews')
+            .then(res => res.json())
+            .then(jsonData => {
+              const filtered = jsonData.filter((r: any) => r.message && r.message.trim() !== '')
+              setReviews(filtered.map((r: any) => ({
+                id: r.feedback_url || String(Math.random()),
+                message: r.message,
+                rating: r.rating,
+                buyerName: r.author_name,
+                date: r.created_at,
+                product: r.order_title ? { name: r.order_title } : undefined,
+              })))
+              setIsLoading(false)
+            })
+            .catch(() => setIsLoading(false))
+        })
     }
   }, [isOpen])
 
@@ -38,12 +77,13 @@ export function TestimonialsPopup({ isOpen, onClose }: TestimonialsPopupProps) {
     : '5.0'
 
   const getInitials = (name: string) => {
+    if (!name) return '?'
     return name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2)
   }
 
   const getAvatarColor = (name: string) => {
     const colors = ['bg-amber-600', 'bg-emerald-600', 'bg-blue-600', 'bg-purple-600', 'bg-rose-600', 'bg-cyan-600']
-    return colors[name.charCodeAt(0) % colors.length]
+    return colors[(name?.charCodeAt(0) || 0) % colors.length]
   }
 
   if (!isOpen) return null
@@ -133,18 +173,18 @@ export function TestimonialsPopup({ isOpen, onClose }: TestimonialsPopupProps) {
                   {/* Top Row: Avatar + Name + Rating */}
                   <div className="flex items-center justify-between mb-3 relative z-10">
                     <div className="flex items-center gap-3">
-                      <div className={`w-11 h-11 ${getAvatarColor(review.author_name)} rounded-full flex items-center justify-center text-white font-semibold text-sm shadow-md group-hover:scale-110 transition-transform duration-300`}>
-                        {getInitials(review.author_name)}
+                      <div className={`w-11 h-11 ${getAvatarColor(review.buyerName)} rounded-full flex items-center justify-center text-white font-semibold text-sm shadow-md group-hover:scale-110 transition-transform duration-300`}>
+                        {getInitials(review.buyerName)}
                       </div>
                       <div>
                         <div className="flex items-center gap-2">
-                          <span className="font-semibold text-gray-900 text-sm">{review.author_name}</span>
+                          <span className="font-semibold text-gray-900 text-sm">{review.buyerName}</span>
                           <div className="flex items-center gap-1 bg-emerald-50 text-emerald-600 px-1.5 py-0.5 rounded-full">
                             <CheckCircle className="h-3 w-3" />
                             <span className="text-xs font-medium">Verified</span>
                           </div>
                         </div>
-                        <p className="text-xs text-gray-500">{review.order_title}</p>
+                        <p className="text-xs text-gray-500">{review.product?.name || ''}</p>
                       </div>
                     </div>
                     <div className="flex gap-0.5">
@@ -168,7 +208,7 @@ export function TestimonialsPopup({ isOpen, onClose }: TestimonialsPopupProps) {
 
                   {/* Date */}
                   <p className="text-xs text-gray-400 mt-3 relative z-10">
-                    {new Date(review.created_at).toLocaleDateString('en-US', { 
+                    {new Date(review.date).toLocaleDateString('en-US', { 
                       day: 'numeric',
                       month: 'long',
                       year: 'numeric' 

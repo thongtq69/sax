@@ -4,7 +4,7 @@ import { prisma } from '@/lib/prisma'
 // GET /api/admin/banners/[id] - Get a single banner
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const { id } = await params
@@ -33,7 +33,7 @@ export async function GET(
 // PUT /api/admin/banners/[id] - Update a banner
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const { id } = await params
@@ -84,7 +84,7 @@ export async function PUT(
 // DELETE /api/admin/banners/[id] - Delete a banner
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const { id } = await params
@@ -124,7 +124,7 @@ export async function DELETE(
 // PATCH /api/admin/banners/[id] - Toggle banner active status
 export async function PATCH(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const { id } = await params

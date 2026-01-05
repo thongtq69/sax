@@ -83,12 +83,12 @@ Triển khai hệ thống Admin CMS Dashboard cho phép quản trị viên quả
     - **Property 5: Settings Validation Rejects Invalid Data**
     - **Validates: Requirements 5.6**
 
-- [ ] 8. Homepage Content Management
-  - [-] 8.1 Create Homepage Content API routes
+- [x] 8. Homepage Content Management
+  - [x] 8.1 Create Homepage Content API routes
     - Create app/api/admin/homepage-content/route.ts (GET)
     - Create app/api/admin/homepage-content/[key]/route.ts (PUT)
     - _Requirements: 6.1, 6.2, 6.3, 6.4, 6.5_
-  - [ ] 8.2 Create Homepage Content management page
+  - [x] 8.2 Create Homepage Content management page
     - Create app/admin/content/page.tsx
     - Include editable sections for hero, about, features
     - _Requirements: 6.1, 6.2, 6.3, 6.4, 6.5, 6.6_
@@ -96,18 +96,18 @@ Triển khai hệ thống Admin CMS Dashboard cho phép quản trị viên quả
 - [ ] 9. Checkpoint - Ensure all tests pass
   - Ensure all tests pass, ask the user if questions arise.
 
-- [ ] 10. Frontend Integration
-  - [ ] 10.1 Update homepage to fetch dynamic content from database
+- [x] 10. Frontend Integration
+  - [x] 10.1 Update homepage to fetch dynamic content from database
     - Modify app/page.tsx to use HomepageContent
     - _Requirements: 6.5_
-  - [ ] 10.2 Update Footer to use SiteSettings from database
+  - [x] 10.2 Update Footer to use SiteSettings from database
     - Modify components/site/Footer.tsx
     - _Requirements: 5.2, 5.3, 5.4_
-  - [ ] 10.3 Update TestimonialsPopup to use database testimonials
+  - [x] 10.3 Update TestimonialsPopup to use database testimonials
     - Modify components/site/TestimonialsPopup.tsx
     - _Requirements: 4.1_
 
-- [ ] 11. Final Checkpoint
+- [x] 11. Final Checkpoint
   - Ensure all tests pass, ask the user if questions arise.
   - Verify all admin pages are functional
   - Test CRUD operations for all entities
