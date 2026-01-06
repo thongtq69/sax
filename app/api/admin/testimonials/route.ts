@@ -76,12 +76,12 @@ export async function GET(request: NextRequest) {
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json()
-    const { buyerName, message, rating, productId, date } = body
+    const { buyerName, message, rating, productId, customProductName, date } = body
 
-    // Validate required fields
-    if (!buyerName || !message || !productId) {
+    // Validate required fields - either productId or customProductName is required
+    if (!buyerName || !message || (!productId && !customProductName)) {
       return NextResponse.json(
-        { error: 'Validation failed', details: ['buyerName, message, and productId are required'] },
+        { error: 'Validation failed', details: ['buyerName, message, and either productId or customProductName are required'] },
         { status: 400 }
       )
     }
@@ -95,16 +95,18 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    // Check if product exists
-    const product = await prisma.product.findUnique({
-      where: { id: productId },
-    })
+    // If productId is provided, check if product exists
+    if (productId) {
+      const product = await prisma.product.findUnique({
+        where: { id: productId },
+      })
 
-    if (!product) {
-      return NextResponse.json(
-        { error: 'Product not found' },
-        { status: 404 }
-      )
+      if (!product) {
+        return NextResponse.json(
+          { error: 'Product not found' },
+          { status: 404 }
+        )
+      }
     }
 
     const review = await prisma.review.create({
@@ -112,7 +114,8 @@ export async function POST(request: NextRequest) {
         buyerName,
         message,
         rating: ratingValue,
-        productId,
+        productId: productId || null,
+        customProductName: customProductName || null,
         date: date ? new Date(date) : new Date(),
       },
       include: {
@@ -126,21 +129,23 @@ export async function POST(request: NextRequest) {
       },
     })
 
-    // Update product review count and rating
-    const productReviews = await prisma.review.findMany({
-      where: { productId },
-      select: { rating: true },
-    })
-    
-    const avgRating = productReviews.reduce((sum, r) => sum + r.rating, 0) / productReviews.length
-    
-    await prisma.product.update({
-      where: { id: productId },
-      data: {
-        reviewCount: productReviews.length,
-        rating: Math.round(avgRating * 10) / 10,
-      },
-    })
+    // Update product review count and rating if productId is provided
+    if (productId) {
+      const productReviews = await prisma.review.findMany({
+        where: { productId },
+        select: { rating: true },
+      })
+      
+      const avgRating = productReviews.reduce((sum, r) => sum + r.rating, 0) / productReviews.length
+      
+      await prisma.product.update({
+        where: { id: productId },
+        data: {
+          reviewCount: productReviews.length,
+          rating: Math.round(avgRating * 10) / 10,
+        },
+      })
+    }
 
     return NextResponse.json(review, { status: 201 })
   } catch (error: any) {

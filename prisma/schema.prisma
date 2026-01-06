@@ -51,6 +51,7 @@ model Product {
   badge       String?      // 'new' | 'sale' | 'limited' | 'coming-soon' | 'out-of-stock'
   inStock     Boolean      @default(true)
   stock       Int?         @default(0)
+  stockStatus String?      @default("in-stock") // 'in-stock' | 'sold-out' | 'pre-order'
   description String
   specs       Json?        // Record<string, string>
   included    String[]     @default([])
@@ -143,8 +144,9 @@ model OrderItem {
 
 model Review {
   id          String   @id @default(auto()) @map("_id") @db.ObjectId
-  productId   String   @db.ObjectId
-  product     Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+  productId   String?  @db.ObjectId
+  product     Product? @relation(fields: [productId], references: [id], onDelete: Cascade)
+  customProductName String? // For reviews from external channels (Reverb, eBay, etc.)
   buyerName   String
   rating      Int      // 1-5 stars
   message     String

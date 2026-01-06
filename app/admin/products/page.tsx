@@ -38,7 +38,7 @@ export default function ProductsManagement() {
   const [editingProduct, setEditingProduct] = useState<Product | null>(null)
   const [viewMode, setViewMode] = useState<'table' | 'grid'>('table')
   const [activeTab, setActiveTab] = useState('basic')
-  const [formData, setFormData] = useState<Partial<Product>>({
+  const [formData, setFormData] = useState<Partial<Product> & { stockStatus?: string }>({
     name: '',
     slug: '',
     brand: '',
@@ -50,6 +50,7 @@ export default function ProductsManagement() {
     badge: undefined,
     inStock: true,
     stock: 0,
+    stockStatus: 'in-stock',
     description: '',
     specs: {},
     included: [],
@@ -115,7 +116,10 @@ export default function ProductsManagement() {
   const handleOpenDialog = (product?: Product) => {
     if (product) {
       setEditingProduct(product)
-      setFormData(product)
+      setFormData({
+        ...product,
+        stockStatus: (product as any).stockStatus || 'in-stock',
+      })
     } else {
       setEditingProduct(null)
       setFormData({
@@ -130,6 +134,7 @@ export default function ProductsManagement() {
         badge: undefined,
         inStock: true,
         stock: 0,
+        stockStatus: 'in-stock',
         description: '',
         specs: {},
         included: [],
@@ -175,8 +180,9 @@ export default function ProductsManagement() {
         subcategoryId: subcategoryObj?.id || formData.subcategory || null,
         images: formData.images || [],
         badge: formData.badge || null,
-        inStock: formData.inStock !== undefined ? formData.inStock : true,
+        inStock: formData.stockStatus === 'in-stock',
         stock: formData.stock || 0,
+        stockStatus: formData.stockStatus || 'in-stock',
         description: formData.description,
         specs: formData.specs || null,
         included: formData.included || [],
@@ -427,7 +433,7 @@ export default function ProductsManagement() {
                       </td>
                       <td className="px-6 py-4">
                         <div className="flex items-center justify-end gap-1">
-                          <Link href={`/product/${product.slug}`} target="_blank">
+                          <Link href={`/product/sku/${product.sku}`} target="_blank">
                             <Button variant="ghost" size="sm" title="View">
                               <Eye className="h-4 w-4" />
                             </Button>
@@ -484,7 +490,7 @@ export default function ProductsManagement() {
                     </span>
                   )}
                   <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
-                    <Link href={`/product/${product.slug}`} target="_blank">
+                    <Link href={`/product/sku/${product.sku}`} target="_blank">
                       <Button size="sm" variant="secondary">
                         <Eye className="h-4 w-4" />
                       </Button>
@@ -528,10 +534,11 @@ export default function ProductsManagement() {
           </DialogHeader>
 
           <Tabs value={activeTab} onValueChange={setActiveTab} className="mt-4">
-            <TabsList className="grid grid-cols-4 w-full">
+            <TabsList className="grid grid-cols-5 w-full">
               <TabsTrigger value="basic">Basic Info</TabsTrigger>
               <TabsTrigger value="images">Images</TabsTrigger>
               <TabsTrigger value="pricing">Pricing & Stock</TabsTrigger>
+              <TabsTrigger value="specs">Specs</TabsTrigger>
               <TabsTrigger value="details">Details</TabsTrigger>
             </TabsList>
 
@@ -707,17 +714,90 @@ export default function ProductsManagement() {
                     min="0"
                   />
                 </div>
-                <div className="flex items-center gap-3 pt-8">
-                  <input
-                    type="checkbox"
-                    id="inStock"
-                    checked={formData.inStock}
-                    onChange={(e) => setFormData({ ...formData, inStock: e.target.checked })}
-                    className="h-5 w-5 rounded border-gray-300 text-primary focus:ring-primary"
-                  />
-                  <label htmlFor="inStock" className="text-sm font-medium text-gray-700">
-                    Available for purchase
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Stock Status <span className="text-red-500">*</span>
                   </label>
+                  <Select
+                    value={formData.stockStatus || 'in-stock'}
+                    onValueChange={(value) => setFormData({ ...formData, stockStatus: value, inStock: value === 'in-stock' })}
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select stock status" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="in-stock">In Stock - Ships within 1-2 business days</SelectItem>
+                      <SelectItem value="sold-out">Sold Out - This item is currently unavailable</SelectItem>
+                      <SelectItem value="pre-order">Pre-Order - Ready to ship in 7-10 days</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+            </TabsContent>
+
+            {/* Specs Tab */}
+            <TabsContent value="specs" className="space-y-4 mt-6">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Product Specifications
+                </label>
+                <p className="text-sm text-gray-500 mb-4">
+                  Add key-value pairs for product specifications (e.g., Material: Brass, Finish: Gold Lacquer)
+                </p>
+                <div className="space-y-3">
+                  {Object.entries(formData.specs || {}).map(([key, value], index) => (
+                    <div key={index} className="flex gap-2 items-center">
+                      <Input
+                        value={key}
+                        onChange={(e) => {
+                          const newSpecs = { ...formData.specs }
+                          const oldValue = newSpecs[key]
+                          delete newSpecs[key]
+                          if (e.target.value) {
+                            newSpecs[e.target.value] = oldValue
+                          }
+                          setFormData({ ...formData, specs: newSpecs })
+                        }}
+                        placeholder="Key (e.g., Material)"
+                        className="flex-1"
+                      />
+                      <Input
+                        value={value as string}
+                        onChange={(e) => {
+                          const newSpecs = { ...formData.specs, [key]: e.target.value }
+                          setFormData({ ...formData, specs: newSpecs })
+                        }}
+                        placeholder="Value (e.g., Brass)"
+                        className="flex-1"
+                      />
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => {
+                          const newSpecs = { ...formData.specs }
+                          delete newSpecs[key]
+                          setFormData({ ...formData, specs: newSpecs })
+                        }}
+                        className="text-red-500 hover:text-red-700 hover:bg-red-50 px-2"
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  ))}
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={() => {
+                      const newSpecs = { ...formData.specs, '': '' }
+                      setFormData({ ...formData, specs: newSpecs })
+                    }}
+                    className="w-full"
+                  >
+                    <Plus className="h-4 w-4 mr-2" />
+                    Add Specification
+                  </Button>
                 </div>
               </div>
             </TabsContent>

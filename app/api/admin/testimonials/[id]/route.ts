@@ -47,7 +47,7 @@ export async function PUT(
   try {
     const { id } = await params
     const body = await request.json()
-    const { buyerName, message, rating, productId, date } = body
+    const { buyerName, message, rating, productId, customProductName, date } = body
 
     // Check if review exists
     const existingReview = await prisma.review.findUnique({
@@ -85,15 +85,25 @@ export async function PUT(
       }
     }
 
+    // Build update data - handle customProductName clearing productId and vice versa
+    const updateData: any = {}
+    if (buyerName !== undefined) updateData.buyerName = buyerName
+    if (message !== undefined) updateData.message = message
+    if (rating !== undefined) updateData.rating = parseInt(rating)
+    if (date !== undefined) updateData.date = new Date(date)
+    
+    // Handle productId and customProductName - they are mutually exclusive
+    if (customProductName) {
+      updateData.customProductName = customProductName
+      updateData.productId = null
+    } else if (productId) {
+      updateData.productId = productId
+      updateData.customProductName = null
+    }
+
     const review = await prisma.review.update({
       where: { id },
-      data: {
-        ...(buyerName !== undefined && { buyerName }),
-        ...(message !== undefined && { message }),
-        ...(rating !== undefined && { rating: parseInt(rating) }),
-        ...(productId !== undefined && { productId }),
-        ...(date !== undefined && { date: new Date(date) }),
-      },
+      data: updateData,
       include: {
         product: {
           select: {
@@ -106,12 +116,14 @@ export async function PUT(
     })
 
     // Update product review stats for both old and new product if changed
-    const productsToUpdate = [review.productId]
-    if (productId && productId !== existingReview.productId) {
+    const productsToUpdate: string[] = []
+    if (review.productId) productsToUpdate.push(review.productId)
+    if (existingReview.productId && existingReview.productId !== review.productId) {
       productsToUpdate.push(existingReview.productId)
     }
 
     for (const pid of productsToUpdate) {
+      if (!pid) continue
       const productReviews = await prisma.review.findMany({
         where: { productId: pid },
         select: { rating: true },
@@ -179,29 +191,31 @@ export async function DELETE(
       where: { id },
     })
 
-    // Update product review stats
-    const productReviews = await prisma.review.findMany({
-      where: { productId },
-      select: { rating: true },
-    })
-    
-    if (productReviews.length > 0) {
-      const avgRating = productReviews.reduce((sum, r) => sum + r.rating, 0) / productReviews.length
-      await prisma.product.update({
-        where: { id: productId },
-        data: {
-          reviewCount: productReviews.length,
-          rating: Math.round(avgRating * 10) / 10,
-        },
+    // Update product review stats only if productId exists
+    if (productId) {
+      const productReviews = await prisma.review.findMany({
+        where: { productId },
+        select: { rating: true },
       })
-    } else {
-      await prisma.product.update({
-        where: { id: productId },
-        data: {
-          reviewCount: 0,
-          rating: 0,
-        },
-      })
+      
+      if (productReviews.length > 0) {
+        const avgRating = productReviews.reduce((sum, r) => sum + r.rating, 0) / productReviews.length
+        await prisma.product.update({
+          where: { id: productId },
+          data: {
+            reviewCount: productReviews.length,
+            rating: Math.round(avgRating * 10) / 10,
+          },
+        })
+      } else {
+        await prisma.product.update({
+          where: { id: productId },
+          data: {
+            reviewCount: 0,
+            rating: 0,
+          },
+        })
+      }
     }
 
     return NextResponse.json({ message: 'Testimonial deleted successfully' })

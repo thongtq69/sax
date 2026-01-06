@@ -119,6 +119,7 @@ export function ProductCardEnhanced({
       productId: product.id,
       name: product.name,
       slug: product.slug,
+      sku: product.sku,
       price: product.price,
       image: product.images[0],
     })

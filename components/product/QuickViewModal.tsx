@@ -39,9 +39,9 @@ export function QuickViewModal({
   // Prefetch product page when modal opens
   useEffect(() => {
     if (open) {
-      router.prefetch(`/product/${product.slug}`)
+      router.prefetch(`/product/sku/${product.sku}`)
     }
-  }, [open, product.slug, router])
+  }, [open, product.sku, router])
   
   // Get rating from hardcoded reviews
   const reviewStats = getProductRatingStats(product.name)
@@ -66,6 +66,7 @@ export function QuickViewModal({
       productId: product.id,
       name: product.name,
       slug: product.slug,
+      sku: product.sku,
       price: product.price,
       image: product.images[0],
     })
@@ -385,7 +386,7 @@ export function QuickViewModal({
                   // Close modal immediately for better UX
                   onOpenChange(false)
                   // Navigate using router for faster client-side navigation
-                  router.push(`/product/${product.slug}`)
+                  router.push(`/product/sku/${product.sku}`)
                 }}
               >
                 <span className="relative z-10">View Full Details</span>

@@ -12,6 +12,7 @@ export interface Product {
   badge?: 'new' | 'sale' | 'limited' | 'coming-soon' | 'out-of-stock'
   inStock: boolean
   stock?: number
+  stockStatus?: 'in-stock' | 'sold-out' | 'pre-order'
   description: string
   specs?: Record<string, string>
   included?: string[]

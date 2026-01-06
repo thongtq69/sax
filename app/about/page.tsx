@@ -15,15 +15,6 @@ interface FAQ {
   isActive: boolean
 }
 
-// Quick FAQs - always shown at top
-const quickFaqs = [
-  { q: "Is this a beginner saxophone?", a: "No. We sell professional models only, intended for serious students and working musicians." },
-  { q: "Is this instrument ready to ship?", a: "Yes. All listed saxophones are fully prepared and ready for immediate shipment." },
-  { q: "How long does delivery to the U.S. take?", a: "We use FedEx, DHL, or UPS express international shipping, with delivery typically in 3–4 business days." },
-  { q: "Is payment secure?", a: "Yes. All payments are processed via PayPal with full buyer protection." },
-  { q: "Can I ask questions before buying?", a: "Absolutely. We encourage you to contact us before purchase for detailed guidance." }
-]
-
 // Fallback FAQs in case database is unavailable
 const fallbackFaqs = [
   { q: "What saxophones do you sell?", a: "We specialize exclusively in professional-level saxophones. We do not sell beginner or entry-level models." },
@@ -49,13 +40,12 @@ export default function AboutPage() {
   useEffect(() => {
     async function fetchFaqs() {
       try {
-        const response = await fetch('/api/admin/faqs')
+        const response = await fetch('/api/admin/faqs?activeOnly=true')
         if (response.ok) {
-          const data: FAQ[] = await response.json()
-          const activeFaqs = data
-            .filter(faq => faq.isActive)
-            .sort((a, b) => a.order - b.order)
-            .map(faq => ({ q: faq.question, a: faq.answer }))
+          const data = await response.json()
+          const activeFaqs = (data.faqs || [])
+            .sort((a: FAQ, b: FAQ) => a.order - b.order)
+            .map((faq: FAQ) => ({ q: faq.question, a: faq.answer }))
           if (activeFaqs.length > 0) {
             setFaqs(activeFaqs)
           }
@@ -84,23 +74,6 @@ export default function AboutPage() {
             <p className="text-lg md:text-xl text-white/80 leading-relaxed">
               A specialized saxophone shop dedicated to musicians who value quality, precision, and professional standards.
             </p>
-          </div>
-        </div>
-      </section>
-
-      {/* Quick FAQ Section */}
-      <section className="py-12 md:py-16 bg-primary/5 border-b">
-        <div className="container mx-auto px-4">
-          <div className="max-w-4xl mx-auto">
-            <h2 className="text-2xl md:text-3xl font-bold text-secondary mb-8 text-center">Quick FAQ</h2>
-            <div className="grid md:grid-cols-1 gap-4">
-              {quickFaqs.map((faq, i) => (
-                <div key={i} className="bg-white p-5 rounded-xl border shadow-sm">
-                  <h3 className="font-semibold text-secondary mb-2">{faq.q}</h3>
-                  <p className="text-gray-600 leading-relaxed">{faq.a}</p>
-                </div>
-              ))}
-            </div>
           </div>
         </div>
       </section>

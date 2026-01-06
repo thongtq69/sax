@@ -15,7 +15,16 @@ import { ProductCard } from './ProductCard'
 import { useCartStore } from '@/lib/store/cart'
 import { SmartImage } from '@/components/ui/smart-image'
 import { InquiryFormContent } from '@/components/inquiry/InquiryFormContent'
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion'
 import { Star, ChevronRight, ChevronLeft, Heart, Share2, Check, X, ZoomIn, Loader2, MessageCircle, Truck } from 'lucide-react'
+
+interface FAQ {
+  id: string
+  question: string
+  answer: string
+  category: string
+  isActive: boolean
+}
 
 interface ProductDetailClientProps {
   product: Product
@@ -34,6 +43,7 @@ export function ProductDetailClient({ product }: ProductDetailClientProps) {
   const [navigationProducts, setNavigationProducts] = useState<{prev: Product | null, next: Product | null}>({prev: null, next: null})
   const [showAllReviews, setShowAllReviews] = useState(false)
   const [isInquiryOpen, setIsInquiryOpen] = useState(false)
+  const [faqs, setFaqs] = useState<FAQ[]>([])
   const router = useRouter()
   const addItem = useCartStore((state) => state.addItem)
   
@@ -148,6 +158,22 @@ export function ProductDetailClient({ product }: ProductDetailClientProps) {
     setIsLoaded(true)
   }, [])
 
+  // Fetch FAQs from database
+  useEffect(() => {
+    const fetchFaqs = async () => {
+      try {
+        const response = await fetch('/api/admin/faqs?activeOnly=true')
+        if (response.ok) {
+          const data = await response.json()
+          setFaqs(data.faqs || [])
+        }
+      } catch (error) {
+        console.error('Error fetching FAQs:', error)
+      }
+    }
+    fetchFaqs()
+  }, [])
+
 // Fetch related products and navigation products - use API products only
 useEffect(() => {
   const buildRelated = (catalog: Product[]) => {
@@ -220,6 +246,7 @@ const handleAddToCart = async () => {
       productId: product.id,
       name: product.name,
       slug: product.slug,
+      sku: product.sku,
       price: product.price,
       image: product.images[0],
     })
@@ -272,11 +299,12 @@ const handleAddToCart = async () => {
         </div>
       )}
 
-      <div className="flex flex-col gap-6 md:gap-8 lg:gap-10 lg:grid lg:grid-cols-10 lg:items-start">
-        {/* Image Gallery */}
-        <div className="animate-fade-in-left lg:col-span-6">
-          {/* Main Display - Video or Image */}
-          <div className="relative aspect-[4/3] sm:aspect-[4/5] md:aspect-[4/5] lg:aspect-[4/5] overflow-hidden rounded-xl md:rounded-2xl border-2 border-gray-100 bg-gradient-to-br from-gray-50 to-gray-100 group">
+      <div className="bg-white rounded-2xl border shadow-sm overflow-hidden">
+        <div className="flex flex-col lg:grid lg:grid-cols-10 lg:items-start">
+          {/* Image Gallery */}
+          <div className="animate-fade-in-left lg:col-span-6 p-4 md:p-6">
+            {/* Main Display - Video or Image */}
+            <div className="relative aspect-[4/3] sm:aspect-[4/5] md:aspect-[4/5] lg:aspect-[4/5] overflow-hidden rounded-xl md:rounded-2xl border-2 border-gray-100 bg-gradient-to-br from-gray-50 to-gray-100 group">
             {showVideo && videoId ? (
               <div className="relative w-full h-full">
                 <iframe
@@ -458,7 +486,7 @@ const handleAddToCart = async () => {
         </div>
 
         {/* Product Info - Sticky on desktop */}
-        <div className="space-y-4 md:space-y-6 animate-fade-in-right lg:col-span-4 lg:sticky lg:top-24 lg:self-start">
+        <div className="space-y-4 md:space-y-6 animate-fade-in-right lg:col-span-4 lg:sticky lg:top-24 lg:self-start p-4 md:p-6 lg:border-l">
           {/* Header */}
           <div>
             <div className="flex items-center gap-1.5 md:gap-2 mb-2 flex-wrap">
@@ -527,14 +555,35 @@ const handleAddToCart = async () => {
           <div className={`flex items-center gap-2 text-xs md:text-sm font-medium ${
             product.inStock ? 'text-green-600' : 'text-red-600'
           }`}>
-            {product.inStock ? (
-              <>
-                <Check className="h-5 w-5" />
-                <span>In Stock - Ships within 2-3 business days</span>
-              </>
-            ) : (
-              <span>Currently Out of Stock</span>
-            )}
+            {(() => {
+              const stockStatus = (product as any).stockStatus || (product.inStock ? 'in-stock' : 'sold-out')
+              switch (stockStatus) {
+                case 'in-stock':
+                  return (
+                    <>
+                      <Check className="h-5 w-5" />
+                      <span>In Stock - Ships within 1-2 business days</span>
+                    </>
+                  )
+                case 'sold-out':
+                  return (
+                    <span className="text-red-600">Sold Out - This item is currently unavailable</span>
+                  )
+                case 'pre-order':
+                  return (
+                    <span className="text-amber-600">Pre-Order - This item is under maintenance, ready to ship in 7-10 days</span>
+                  )
+                default:
+                  return product.inStock ? (
+                    <>
+                      <Check className="h-5 w-5" />
+                      <span>In Stock - Ships within 1-2 business days</span>
+                    </>
+                  ) : (
+                    <span>Currently Out of Stock</span>
+                  )
+              }
+            })()}
           </div>
 
 
@@ -579,9 +628,11 @@ const handleAddToCart = async () => {
             <Button 
               size="lg" 
               onClick={() => setIsInquiryOpen(true)}
-              className="px-4 bg-accent hover:bg-accent/90 text-white"
+              className="px-4 bg-accent hover:bg-accent/90 text-white gap-2"
+              title={`Inquiry about ${product.name}`}
             >
               <MessageCircle className="h-5 w-5" />
+              <span className="hidden sm:inline">Inquiry</span>
             </Button>
             
             <Button size="lg" variant="outline" className="px-3">
@@ -600,6 +651,7 @@ const handleAddToCart = async () => {
           </Dialog>
 
 
+        </div>
         </div>
       </div>
 
@@ -787,28 +839,28 @@ const handleAddToCart = async () => {
           </TabsContent>
           
           <TabsContent value="faq" className="mt-4 md:mt-6 lg:mt-8 animate-fade-in">
-            <div className="space-y-4">
-              <div className="p-5 bg-white rounded-xl border">
-                <h3 className="font-semibold text-secondary mb-2">Is this a beginner saxophone?</h3>
-                <p className="text-gray-600 leading-relaxed">No. We sell professional models only, intended for serious students and working musicians.</p>
+            {faqs.length > 0 ? (
+              <Accordion type="single" collapsible className="space-y-3">
+                {faqs.map((faq) => (
+                  <AccordionItem 
+                    key={faq.id} 
+                    value={faq.id}
+                    className="bg-white rounded-xl border px-5 data-[state=open]:shadow-md transition-shadow"
+                  >
+                    <AccordionTrigger className="text-left font-semibold text-secondary hover:no-underline py-4">
+                      {faq.question}
+                    </AccordionTrigger>
+                    <AccordionContent className="text-gray-600 leading-relaxed pb-4">
+                      {faq.answer}
+                    </AccordionContent>
+                  </AccordionItem>
+                ))}
+              </Accordion>
+            ) : (
+              <div className="text-center py-8 text-gray-500">
+                <p>No FAQs available at the moment.</p>
               </div>
-              <div className="p-5 bg-white rounded-xl border">
-                <h3 className="font-semibold text-secondary mb-2">Is this instrument ready to ship?</h3>
-                <p className="text-gray-600 leading-relaxed">Yes. All listed saxophones are fully prepared and ready for immediate shipment.</p>
-              </div>
-              <div className="p-5 bg-white rounded-xl border">
-                <h3 className="font-semibold text-secondary mb-2">How long does delivery to the U.S. take?</h3>
-                <p className="text-gray-600 leading-relaxed">We use FedEx, DHL, or UPS express international shipping, with delivery typically in 3–4 business days.</p>
-              </div>
-              <div className="p-5 bg-white rounded-xl border">
-                <h3 className="font-semibold text-secondary mb-2">Is payment secure?</h3>
-                <p className="text-gray-600 leading-relaxed">Yes. All payments are processed via PayPal with full buyer protection.</p>
-              </div>
-              <div className="p-5 bg-white rounded-xl border">
-                <h3 className="font-semibold text-secondary mb-2">Can I ask questions before buying?</h3>
-                <p className="text-gray-600 leading-relaxed">Absolutely. We encourage you to contact us before purchase for detailed guidance.</p>
-              </div>
-            </div>
+            )}
           </TabsContent>
         </Tabs>
       </div>
@@ -852,7 +904,6 @@ const handleAddToCart = async () => {
                       <span className="text-lg md:text-xl font-bold text-primary">
                         ${item.price.toLocaleString()}
                       </span>
-                      <span className="text-xs text-muted-foreground">Details →</span>
                     </div>
                   </div>
                 </Link>

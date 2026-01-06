@@ -504,12 +504,12 @@ function ShopPageContent() {
                   <SelectValue placeholder="Sort by" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="featured">⭐ Featured</SelectItem>
-                  <SelectItem value="price-low">💰 Price: Low to High</SelectItem>
-                  <SelectItem value="price-high">💎 Price: High to Low</SelectItem>
-                  <SelectItem value="newest">✨ Newest</SelectItem>
-                  <SelectItem value="rating">🏆 Best Rated</SelectItem>
-                  <SelectItem value="name">🔤 Name A-Z</SelectItem>
+                  <SelectItem value="featured">Featured</SelectItem>
+                  <SelectItem value="price-low">Price: Low to High</SelectItem>
+                  <SelectItem value="price-high">Price: High to Low</SelectItem>
+                  <SelectItem value="newest">Newest</SelectItem>
+                  <SelectItem value="rating">Best Rated</SelectItem>
+                  <SelectItem value="name">Name A-Z</SelectItem>
                 </SelectContent>
               </Select>
             </div>

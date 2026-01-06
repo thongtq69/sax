@@ -123,6 +123,7 @@ export function transformProduct(apiProduct: any) {
     badge: apiProduct.badge,
     inStock: apiProduct.inStock,
     stock: apiProduct.stock,
+    stockStatus: apiProduct.stockStatus || (apiProduct.inStock ? 'in-stock' : 'sold-out'),
     description: apiProduct.description,
     specs: apiProduct.specs || {},
     included: apiProduct.included || [],

@@ -7,7 +7,6 @@ export async function GET() {
     const [
       bannersCount,
       faqsCount,
-      testimonialsCount,
       productsCount,
       ordersCount,
       usersCount,
@@ -18,7 +17,6 @@ export async function GET() {
     ] = await Promise.all([
       prisma.banner.count(),
       prisma.fAQ.count(),
-      prisma.testimonial.count(),
       prisma.product.count(),
       prisma.order.count(),
       prisma.user.count(),
@@ -47,7 +45,7 @@ export async function GET() {
       stats: {
         banners: bannersCount,
         faqs: faqsCount,
-        testimonials: testimonialsCount,
+        testimonials: reviewsCount, // Reviews are used as testimonials
         products: productsCount,
         orders: ordersCount,
         users: usersCount,

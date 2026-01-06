@@ -37,6 +37,7 @@ export default function TestimonialsPage() {
     message: '',
     rating: 5,
     productId: '',
+    customProductName: '',
     date: new Date().toISOString().split('T')[0],
   })
   const [isSaving, setIsSaving] = useState(false)
@@ -119,7 +120,8 @@ export default function TestimonialsPage() {
       buyerName: review.buyerName,
       message: review.message,
       rating: review.rating,
-      productId: review.productId,
+      productId: review.productId || '',
+      customProductName: (review as any).customProductName || '',
       date: new Date(review.date).toISOString().split('T')[0],
     })
     setShowForm(true)
@@ -147,6 +149,7 @@ export default function TestimonialsPage() {
       message: '',
       rating: 5,
       productId: '',
+      customProductName: '',
       date: new Date().toISOString().split('T')[0],
     })
   }
@@ -258,21 +261,30 @@ export default function TestimonialsPage() {
                 />
               </div>
               <div>
-                <Label htmlFor="productId">Product *</Label>
+                <Label htmlFor="productId">Product</Label>
                 <select
                   id="productId"
                   value={formData.productId}
-                  onChange={(e) => setFormData({ ...formData, productId: e.target.value })}
-                  required
+                  onChange={(e) => setFormData({ ...formData, productId: e.target.value, customProductName: '' })}
                   className="w-full px-3 py-2 border border-gray-300 rounded-md"
                 >
-                  <option value="">Select a product</option>
+                  <option value="">Select a product (or enter custom below)</option>
                   {products.map(product => (
                     <option key={product.id} value={product.id}>
                       {product.name}
                     </option>
                   ))}
                 </select>
+              </div>
+              <div>
+                <Label htmlFor="customProductName">Or Enter Custom Product Name</Label>
+                <Input
+                  id="customProductName"
+                  value={formData.customProductName}
+                  onChange={(e) => setFormData({ ...formData, customProductName: e.target.value, productId: '' })}
+                  placeholder="e.g., Yamaha YAS-62 (from Reverb)"
+                />
+                <p className="text-xs text-gray-500 mt-1">Use this for reviews from external channels (Reverb, eBay, etc.)</p>
               </div>
               <div>
                 <Label htmlFor="rating">Rating *</Label>
@@ -323,7 +335,7 @@ export default function TestimonialsPage() {
                 </Button>
                 <Button 
                   type="submit" 
-                  disabled={isSaving || !formData.buyerName || !formData.message || !formData.productId} 
+                  disabled={isSaving || !formData.buyerName || !formData.message || (!formData.productId && !formData.customProductName)} 
                   className="flex-1 gap-2"
                 >
                   <Save className="h-4 w-4" />
@@ -379,9 +391,9 @@ export default function TestimonialsPage() {
                       </span>
                     </div>
                     <p className="text-gray-600 line-clamp-2">{review.message}</p>
-                    {review.product && (
+                    {(review.product || (review as any).customProductName) && (
                       <p className="text-sm text-primary mt-1">
-                        Product: {review.product.name}
+                        Product: {review.product?.name || (review as any).customProductName}
                       </p>
                     )}
                   </div>

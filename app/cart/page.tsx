@@ -56,12 +56,12 @@ export default function CartPage() {
                   <div className="flex items-start justify-between">
                     <div>
                       <Link
-                        href={`/product/${item.slug}`}
+                        href={`/product/sku/${item.sku}`}
                         className="font-medium hover:text-primary"
                       >
                         {item.name}
                       </Link>
-                      <p className="text-sm text-gray-500">SKU: {item.id}</p>
+                      <p className="text-sm text-gray-500">SKU: {item.sku}</p>
                     </div>
                     <Button
                       variant="ghost"

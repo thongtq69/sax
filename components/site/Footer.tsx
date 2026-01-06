@@ -3,9 +3,16 @@
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
-import { Phone, MapPin, Clock, Music, Heart, Mail, MessageCircle } from 'lucide-react'
+import { Phone, MapPin, Clock, Music, Heart, Mail, MessageCircle, Facebook, Instagram, Youtube } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { TestimonialsPopup } from './TestimonialsPopup'
+
+// X (Twitter) icon component
+const XIcon = ({ className }: { className?: string }) => (
+  <svg viewBox="0 0 24 24" className={className} fill="currentColor">
+    <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z" />
+  </svg>
+)
 
 interface SocialLinks {
   facebook?: string
@@ -70,10 +77,10 @@ export function Footer() {
   }, [])
 
   const socialLinks = [
-    { href: settings.socialLinks.facebook, icon: 'f', label: 'Facebook' },
-    { href: settings.socialLinks.instagram, icon: '📷', label: 'Instagram' },
-    { href: settings.socialLinks.youtube, icon: '▶', label: 'YouTube' },
-    { href: settings.socialLinks.twitter, icon: '𝕏', label: 'Twitter' },
+    { href: settings.socialLinks.facebook, icon: Facebook, label: 'Facebook' },
+    { href: settings.socialLinks.instagram, icon: Instagram, label: 'Instagram' },
+    { href: settings.socialLinks.youtube, icon: Youtube, label: 'YouTube' },
+    { href: settings.socialLinks.twitter, icon: XIcon, label: 'X' },
   ].filter(s => s.href)
 
   return (
@@ -254,12 +261,12 @@ export function Footer() {
                   <Link
                     key={social.label}
                     href={social.href || '#'}
-                    className="w-7 h-7 rounded-full bg-white/10 hover:bg-[#D4AF37] flex items-center justify-center text-white hover:text-[#2f3f4f] transition-all text-xs"
+                    className="w-7 h-7 rounded-full bg-white/10 hover:bg-[#D4AF37] flex items-center justify-center text-white hover:text-[#2f3f4f] transition-all"
                     target="_blank"
                     rel="noopener noreferrer"
                     aria-label={social.label}
                   >
-                    {social.icon}
+                    <social.icon className="h-3.5 w-3.5" />
                   </Link>
                 ))}
               </div>
