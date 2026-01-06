@@ -204,6 +204,7 @@ model SiteSettings {
   email         String   @default("")
   workingHours  String   @default("24/7")
   socialLinks   Json     @default("{}")
+  quickFaq      Json?    // Quick FAQ for product pages
   footerText    String   @default("")
   copyrightText String   @default("")
   updatedAt     DateTime @updatedAt

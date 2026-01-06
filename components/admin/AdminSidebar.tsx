@@ -19,6 +19,7 @@ import {
   MessageSquare,
   Home,
   Star,
+  CircleHelp,
 } from 'lucide-react'
 
 interface AdminSidebarProps {
@@ -36,6 +37,7 @@ export const menuItems = [
   { href: '/admin/categories', label: 'Categories', icon: FolderTree },
   { href: '/admin/banners', label: 'Banners', icon: Image },
   { href: '/admin/faqs', label: 'FAQs', icon: HelpCircle },
+  { href: '/admin/quick-faq', label: 'Quick FAQ (Product)', icon: CircleHelp },
   { href: '/admin/testimonials', label: 'Testimonials', icon: MessageSquare },
   { href: '/admin/promos', label: 'Promo Banners', icon: Megaphone },
   { href: '/admin/content', label: 'Homepage Content', icon: Home },

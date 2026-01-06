@@ -58,13 +58,21 @@ export function Footer() {
         const response = await fetch('/api/admin/site-settings')
         if (response.ok) {
           const data = await response.json()
+          // Merge socialLinks with defaults - use database value if exists, otherwise use default
+          const dbSocialLinks = data.socialLinks || {}
+          const mergedSocialLinks = {
+            facebook: dbSocialLinks.facebook || defaultSettings.socialLinks.facebook,
+            youtube: dbSocialLinks.youtube || defaultSettings.socialLinks.youtube,
+            instagram: dbSocialLinks.instagram || defaultSettings.socialLinks.instagram,
+            twitter: dbSocialLinks.twitter || defaultSettings.socialLinks.twitter,
+          }
           setSettings({
             companyName: data.companyName || defaultSettings.companyName,
             address: data.address || defaultSettings.address,
             phone: data.phone || defaultSettings.phone,
             email: data.email || defaultSettings.email,
             workingHours: data.workingHours || defaultSettings.workingHours,
-            socialLinks: data.socialLinks || defaultSettings.socialLinks,
+            socialLinks: mergedSocialLinks,
             footerText: data.footerText || '',
             copyrightText: data.copyrightText || defaultSettings.copyrightText,
           })

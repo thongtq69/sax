@@ -18,14 +18,6 @@ import { InquiryFormContent } from '@/components/inquiry/InquiryFormContent'
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion'
 import { Star, ChevronRight, ChevronLeft, Heart, Share2, Check, X, ZoomIn, Loader2, MessageCircle, Truck } from 'lucide-react'
 
-interface FAQ {
-  id: string
-  question: string
-  answer: string
-  category: string
-  isActive: boolean
-}
-
 interface ProductDetailClientProps {
   product: Product
 }
@@ -43,7 +35,7 @@ export function ProductDetailClient({ product }: ProductDetailClientProps) {
   const [navigationProducts, setNavigationProducts] = useState<{prev: Product | null, next: Product | null}>({prev: null, next: null})
   const [showAllReviews, setShowAllReviews] = useState(false)
   const [isInquiryOpen, setIsInquiryOpen] = useState(false)
-  const [faqs, setFaqs] = useState<FAQ[]>([])
+  const [quickFaqs, setQuickFaqs] = useState<{id: string, question: string, answer: string, category: string, isActive: boolean}[]>([])
   const router = useRouter()
   const addItem = useCartStore((state) => state.addItem)
   
@@ -158,20 +150,66 @@ export function ProductDetailClient({ product }: ProductDetailClientProps) {
     setIsLoaded(true)
   }, [])
 
-  // Fetch FAQs from database
+  // Default Quick FAQ (fallback)
+  const defaultQuickFaqs = [
+    {
+      id: '1',
+      question: 'Is this a beginner saxophone?',
+      answer: 'No. We sell professional models only, intended for serious students and working musicians.',
+      category: 'Product',
+      isActive: true
+    },
+    {
+      id: '2',
+      question: 'Is this instrument ready to ship?',
+      answer: 'Yes. All listed saxophones are fully prepared and ready for immediate shipment.',
+      category: 'Shipping',
+      isActive: true
+    },
+    {
+      id: '3',
+      question: 'How long does delivery to the U.S. take?',
+      answer: 'We use FedEx, DHL, or UPS express international shipping, with delivery typically in 3–4 business days.',
+      category: 'Shipping',
+      isActive: true
+    },
+    {
+      id: '4',
+      question: 'Is payment secure?',
+      answer: 'Yes. All payments are processed via PayPal with full buyer protection.',
+      category: 'Payment',
+      isActive: true
+    },
+    {
+      id: '5',
+      question: 'Can I ask questions before buying?',
+      answer: 'Absolutely. We encourage you to contact us before purchase for detailed guidance.',
+      category: 'Support',
+      isActive: true
+    }
+  ]
+
+  // Fetch Quick FAQ from API
   useEffect(() => {
-    const fetchFaqs = async () => {
+    const fetchQuickFaqs = async () => {
       try {
-        const response = await fetch('/api/admin/faqs?activeOnly=true')
+        const response = await fetch('/api/admin/quick-faq')
         if (response.ok) {
           const data = await response.json()
-          setFaqs(data.faqs || [])
+          if (data && data.length > 0) {
+            setQuickFaqs(data.filter((faq: any) => faq.isActive))
+          } else {
+            setQuickFaqs(defaultQuickFaqs)
+          }
+        } else {
+          setQuickFaqs(defaultQuickFaqs)
         }
       } catch (error) {
-        console.error('Error fetching FAQs:', error)
+        console.error('Error fetching quick FAQs:', error)
+        setQuickFaqs(defaultQuickFaqs)
       }
     }
-    fetchFaqs()
+    fetchQuickFaqs()
   }, [])
 
 // Fetch related products and navigation products - use API products only
@@ -839,28 +877,25 @@ const handleAddToCart = async () => {
           </TabsContent>
           
           <TabsContent value="faq" className="mt-4 md:mt-6 lg:mt-8 animate-fade-in">
-            {faqs.length > 0 ? (
-              <Accordion type="single" collapsible className="space-y-3">
-                {faqs.map((faq) => (
-                  <AccordionItem 
-                    key={faq.id} 
-                    value={faq.id}
-                    className="bg-white rounded-xl border px-5 data-[state=open]:shadow-md transition-shadow"
-                  >
-                    <AccordionTrigger className="text-left font-semibold text-secondary hover:no-underline py-4">
-                      {faq.question}
-                    </AccordionTrigger>
-                    <AccordionContent className="text-gray-600 leading-relaxed pb-4">
-                      {faq.answer}
-                    </AccordionContent>
-                  </AccordionItem>
-                ))}
-              </Accordion>
-            ) : (
-              <div className="text-center py-8 text-gray-500">
-                <p>No FAQs available at the moment.</p>
-              </div>
-            )}
+            <div className="mb-4">
+              <h3 className="text-lg font-bold text-secondary uppercase text-center">QUICK FAQ</h3>
+            </div>
+            <Accordion type="single" collapsible className="space-y-3">
+              {quickFaqs.map((faq) => (
+                <AccordionItem 
+                  key={faq.id} 
+                  value={faq.id}
+                  className="bg-white rounded-xl border px-5 data-[state=open]:shadow-md transition-shadow"
+                >
+                  <AccordionTrigger className="text-left font-semibold text-secondary hover:no-underline py-4">
+                    {faq.question}
+                  </AccordionTrigger>
+                  <AccordionContent className="text-gray-600 leading-relaxed pb-4">
+                    {faq.answer}
+                  </AccordionContent>
+                </AccordionItem>
+              ))}
+            </Accordion>
           </TabsContent>
         </Tabs>
       </div>
