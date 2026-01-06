@@ -84,6 +84,13 @@ export default function SettingsPage() {
     setSuccessMessage('')
 
     try {
+      // Build socialLinks object - use empty string for empty fields to ensure they're saved
+      const socialLinksData: Record<string, string> = {}
+      if (formData.facebook.trim()) socialLinksData.facebook = formData.facebook.trim()
+      if (formData.youtube.trim()) socialLinksData.youtube = formData.youtube.trim()
+      if (formData.instagram.trim()) socialLinksData.instagram = formData.instagram.trim()
+      if (formData.twitter.trim()) socialLinksData.twitter = formData.twitter.trim()
+
       const response = await fetch('/api/admin/site-settings', {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
@@ -93,12 +100,7 @@ export default function SettingsPage() {
           phone: formData.phone,
           email: formData.email,
           workingHours: formData.workingHours,
-          socialLinks: {
-            facebook: formData.facebook || undefined,
-            youtube: formData.youtube || undefined,
-            instagram: formData.instagram || undefined,
-            twitter: formData.twitter || undefined,
-          },
+          socialLinks: socialLinksData,
           footerText: formData.footerText,
           copyrightText: formData.copyrightText,
         }),

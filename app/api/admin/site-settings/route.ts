@@ -7,6 +7,14 @@ export async function GET() {
     // Get the first (and should be only) settings record
     let settings = await prisma.siteSettings.findFirst()
 
+    // Default social links
+    const defaultSocialLinks = {
+      facebook: 'https://www.facebook.com/jamessaxcorner',
+      youtube: 'https://www.youtube.com/@jamessaxcorner',
+      instagram: '',
+      twitter: '',
+    }
+
     // If no settings exist, create default settings
     if (!settings) {
       settings = await prisma.siteSettings.create({
@@ -16,7 +24,7 @@ export async function GET() {
           phone: '',
           email: '',
           workingHours: '24/7',
-          socialLinks: {},
+          socialLinks: defaultSocialLinks,
           footerText: '',
           copyrightText: '© 2024 James Sax Corner. All rights reserved.',
         },
