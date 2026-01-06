@@ -139,7 +139,7 @@ function PayPalButtonInner({ shippingInfo, onSuccess, onError, total }: PayPalBu
       <Button
         className="w-full h-12 bg-[#0070ba] hover:bg-[#003087] text-white font-semibold"
         onClick={() => {
-          const paypalMeUrl = `https://www.paypal.com/paypalme/thymetruong/${finalTotal.toFixed(2)}`
+          const paypalMeUrl = `https://www.paypal.me/jamescuongle/${finalTotal.toFixed(2)}`
           window.open(paypalMeUrl, '_blank')
         }}
       >
