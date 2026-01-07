@@ -46,6 +46,7 @@ export function ProductDetailClient({ product }: ProductDetailClientProps) {
   const [isCalculatingShipping, setIsCalculatingShipping] = useState(false)
   const router = useRouter()
   const addItem = useCartStore((state) => state.addItem)
+  const clearCart = useCartStore((state) => state.clearCart)
   
   // Fetch reviews from API on mount
   useEffect(() => {
@@ -731,8 +732,18 @@ const handleAddToCart = async () => {
               size="lg"
               className="w-full text-sm md:text-base font-semibold bg-primary hover:bg-primary/90 text-white transition-all duration-300 hover:shadow-lg hover:scale-[1.01]"
               onClick={() => {
-                handleAddToCart()
-                setTimeout(() => router.push('/checkout'), 300)
+                // Clear cart first, then add only this product for immediate checkout
+                clearCart()
+                addItem({
+                  id: `${product.id}-default`,
+                  productId: product.id,
+                  name: product.name,
+                  slug: product.slug,
+                  sku: product.sku,
+                  price: product.price,
+                  image: product.images[0],
+                })
+                router.push('/checkout')
               }}
               disabled={!product.inStock || isAddingToCart}
             >

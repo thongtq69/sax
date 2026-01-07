@@ -5,6 +5,43 @@ import { useCartStore } from '@/lib/store/cart'
 import { Button } from '@/components/ui/button'
 import { Loader2 } from 'lucide-react'
 
+// Country name to ISO 3166-1 alpha-2 code mapping
+const countryCodeMap: Record<string, string> = {
+  'Vietnam': 'VN',
+  'United States': 'US',
+  'Canada': 'CA',
+  'United Kingdom': 'GB',
+  'Australia': 'AU',
+  'Germany': 'DE',
+  'France': 'FR',
+  'Japan': 'JP',
+  'South Korea': 'KR',
+  'Singapore': 'SG',
+  'Thailand': 'TH',
+  'Malaysia': 'MY',
+  'Indonesia': 'ID',
+  'Philippines': 'PH',
+  'China': 'CN',
+  'Taiwan': 'TW',
+  'Hong Kong': 'HK',
+  'India': 'IN',
+  'Netherlands': 'NL',
+  'Belgium': 'BE',
+  'Switzerland': 'CH',
+  'Italy': 'IT',
+  'Spain': 'ES',
+  'Sweden': 'SE',
+  'Norway': 'NO',
+  'Denmark': 'DK',
+  'New Zealand': 'NZ',
+  'Brazil': 'BR',
+  'Mexico': 'MX',
+}
+
+function getCountryCode(countryName: string): string {
+  return countryCodeMap[countryName] || 'US'
+}
+
 interface PayPalStandardButtonProps {
   shippingInfo: {
     email: string
@@ -96,13 +133,13 @@ export function PayPalStandardButton({ shippingInfo, shippingCost, onError }: Pa
         custom: orderId,
         invoice: orderId,
         
-        // URLs
-        return: `${baseUrl}/checkout/success?orderId=${orderId}&source=paypal`,
+        // URLs - Use API route to handle PayPal return (supports both GET and POST)
+        return: `${baseUrl}/api/paypal/return?orderId=${orderId}&source=paypal`,
         cancel_return: `${baseUrl}/checkout?cancelled=true`,
         notify_url: `${baseUrl}/api/paypal/ipn`,
         
         // Settings
-        rm: '2', // Return method: 2 = POST
+        rm: '2', // Return method: 2 = POST (API route will handle and redirect)
         no_shipping: '0', // 0 = prompt for address
         no_note: '1',
         charset: 'utf-8',
@@ -141,9 +178,13 @@ export function PayPalStandardButton({ shippingInfo, shippingCost, onError }: Pa
         params.city = shippingInfo.city
         params.state = shippingInfo.state
         params.zip = shippingInfo.zip
-        params.country = shippingInfo.country
+        // Convert country name to ISO 3166-1 alpha-2 code for PayPal
+        params.country = getCountryCode(shippingInfo.country)
         params.email = shippingInfo.email
         params.night_phone_b = shippingInfo.phone
+        
+        // Also set no_shipping to 2 to use provided address without prompting
+        params.no_shipping = '2'
       }
 
       console.log('PayPal Cart params:', { 

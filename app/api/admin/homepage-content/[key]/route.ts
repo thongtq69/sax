@@ -17,7 +17,7 @@ export async function GET(
 
     if (!section) {
       return NextResponse.json(
-        { error: 'Section not found' },
+        { error: 'Không tìm thấy section', message: 'Section với key này không tồn tại trong hệ thống' },
         { status: 404 }
       )
     }
@@ -27,7 +27,7 @@ export async function GET(
     const errorMessage = error instanceof Error ? error.message : 'Unknown error'
     console.error('Error fetching homepage section:', error)
     return NextResponse.json(
-      { error: 'Failed to fetch homepage section', message: errorMessage },
+      { error: 'Lỗi tải section', message: 'Không thể tải thông tin section. Vui lòng thử lại sau.' },
       { status: 500 }
     )
   }
@@ -50,7 +50,7 @@ export async function PUT(
 
     if (!existingSection) {
       return NextResponse.json(
-        { error: 'Section not found' },
+        { error: 'Không tìm thấy section', message: 'Section với key này không tồn tại trong hệ thống' },
         { status: 404 }
       )
     }
@@ -75,12 +75,12 @@ export async function PUT(
     console.error('Error updating homepage section:', error)
     if (prismaError.code === 'P2025') {
       return NextResponse.json(
-        { error: 'Section not found' },
+        { error: 'Không tìm thấy section', message: 'Section với key này không tồn tại trong hệ thống' },
         { status: 404 }
       )
     }
     return NextResponse.json(
-      { error: 'Failed to update homepage section', message: errorMessage },
+      { error: 'Lỗi cập nhật section', message: 'Không thể cập nhật section. Vui lòng thử lại sau.' },
       { status: 500 }
     )
   }

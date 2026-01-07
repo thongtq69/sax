@@ -56,9 +56,8 @@ export async function GET(request: NextRequest) {
     console.error('Error fetching blog posts:', error)
     return NextResponse.json(
       { 
-        error: 'Failed to fetch blog posts',
-        message: error?.message || 'Unknown error',
-        code: error?.code || 'UNKNOWN_ERROR',
+        error: 'Lỗi tải bài viết',
+        message: 'Không thể tải danh sách bài viết. Vui lòng thử lại sau.',
       },
       { status: 500 }
     )
@@ -72,8 +71,20 @@ export async function POST(request: NextRequest) {
     const { title, slug, excerpt, content, date, author, categories, image, readTime } = body
 
     if (!title || !slug || !excerpt || !content || !date || !author) {
+      const missingFields = []
+      if (!title) missingFields.push('Tiêu đề (title)')
+      if (!slug) missingFields.push('Đường dẫn (slug)')
+      if (!excerpt) missingFields.push('Tóm tắt (excerpt)')
+      if (!content) missingFields.push('Nội dung (content)')
+      if (!date) missingFields.push('Ngày đăng (date)')
+      if (!author) missingFields.push('Tác giả (author)')
+      
       return NextResponse.json(
-        { error: 'Missing required fields' },
+        { 
+          error: 'Thiếu thông tin bắt buộc', 
+          message: `Vui lòng điền đầy đủ các trường: ${missingFields.join(', ')}`,
+          missingFields 
+        },
         { status: 400 }
       )
     }
@@ -97,12 +108,12 @@ export async function POST(request: NextRequest) {
     console.error('Error creating blog post:', error)
     if (error.code === 'P2002') {
       return NextResponse.json(
-        { error: 'Blog post with this slug already exists' },
+        { error: 'Đường dẫn đã tồn tại', message: 'Bài viết với đường dẫn (slug) này đã tồn tại. Vui lòng chọn đường dẫn khác.' },
         { status: 409 }
       )
     }
     return NextResponse.json(
-      { error: 'Failed to create blog post' },
+      { error: 'Lỗi tạo bài viết', message: 'Không thể tạo bài viết. Vui lòng thử lại sau.' },
       { status: 500 }
     )
   }

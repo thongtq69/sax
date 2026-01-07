@@ -17,7 +17,7 @@ export async function GET(
 
     if (!banner) {
       return NextResponse.json(
-        { error: 'Banner not found' },
+        { error: 'Không tìm thấy banner', message: 'Banner với ID này không tồn tại trong hệ thống' },
         { status: 404 }
       )
     }
@@ -26,7 +26,7 @@ export async function GET(
   } catch (error: any) {
     console.error('Error fetching banner:', error)
     return NextResponse.json(
-      { error: 'Failed to fetch banner', message: error?.message },
+      { error: 'Lỗi tải banner', message: 'Không thể tải thông tin banner. Vui lòng thử lại sau.' },
       { status: 500 }
     )
   }
@@ -49,8 +49,24 @@ export async function PUT(
 
     if (!existingBanner) {
       return NextResponse.json(
-        { error: 'Banner not found' },
+        { error: 'Không tìm thấy banner', message: 'Banner với ID này không tồn tại trong hệ thống' },
         { status: 404 }
+      )
+    }
+
+    // Validate title if provided
+    if (title !== undefined && (!title || title.trim() === '')) {
+      return NextResponse.json(
+        { error: 'Dữ liệu không hợp lệ', message: 'Tiêu đề banner không được để trống' },
+        { status: 400 }
+      )
+    }
+
+    // Validate image if provided
+    if (image !== undefined && (!image || image.trim() === '')) {
+      return NextResponse.json(
+        { error: 'Dữ liệu không hợp lệ', message: 'Hình ảnh banner không được để trống' },
+        { status: 400 }
       )
     }
 
@@ -72,12 +88,12 @@ export async function PUT(
     console.error('Error updating banner:', error)
     if (error.code === 'P2025') {
       return NextResponse.json(
-        { error: 'Banner not found' },
+        { error: 'Không tìm thấy banner', message: 'Banner với ID này không tồn tại trong hệ thống' },
         { status: 404 }
       )
     }
     return NextResponse.json(
-      { error: 'Failed to update banner', message: error?.message },
+      { error: 'Lỗi cập nhật banner', message: 'Không thể cập nhật banner. Vui lòng thử lại sau.' },
       { status: 500 }
     )
   }
@@ -98,7 +114,7 @@ export async function DELETE(
 
     if (!existingBanner) {
       return NextResponse.json(
-        { error: 'Banner not found' },
+        { error: 'Không tìm thấy banner', message: 'Banner với ID này không tồn tại trong hệ thống' },
         { status: 404 }
       )
     }
@@ -107,17 +123,17 @@ export async function DELETE(
       where: { id },
     })
 
-    return NextResponse.json({ message: 'Banner deleted successfully' })
+    return NextResponse.json({ message: 'Xóa banner thành công' })
   } catch (error: any) {
     console.error('Error deleting banner:', error)
     if (error.code === 'P2025') {
       return NextResponse.json(
-        { error: 'Banner not found' },
+        { error: 'Không tìm thấy banner', message: 'Banner với ID này không tồn tại trong hệ thống' },
         { status: 404 }
       )
     }
     return NextResponse.json(
-      { error: 'Failed to delete banner', message: error?.message },
+      { error: 'Lỗi xóa banner', message: 'Không thể xóa banner. Vui lòng thử lại sau.' },
       { status: 500 }
     )
   }
@@ -138,7 +154,7 @@ export async function PATCH(
 
     if (!existingBanner) {
       return NextResponse.json(
-        { error: 'Banner not found' },
+        { error: 'Không tìm thấy banner', message: 'Banner với ID này không tồn tại trong hệ thống' },
         { status: 404 }
       )
     }
@@ -156,12 +172,12 @@ export async function PATCH(
     console.error('Error toggling banner status:', error)
     if (error.code === 'P2025') {
       return NextResponse.json(
-        { error: 'Banner not found' },
+        { error: 'Không tìm thấy banner', message: 'Banner với ID này không tồn tại trong hệ thống' },
         { status: 404 }
       )
     }
     return NextResponse.json(
-      { error: 'Failed to toggle banner status', message: error?.message },
+      { error: 'Lỗi thay đổi trạng thái', message: 'Không thể thay đổi trạng thái banner. Vui lòng thử lại sau.' },
       { status: 500 }
     )
   }

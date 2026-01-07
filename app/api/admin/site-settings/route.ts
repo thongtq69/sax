@@ -38,7 +38,7 @@ export async function GET() {
   } catch (error: any) {
     console.error('Error fetching site settings:', error)
     return NextResponse.json(
-      { error: 'Failed to fetch site settings', message: error?.message },
+      { error: 'Lỗi tải cài đặt', message: 'Không thể tải cài đặt trang web. Vui lòng thử lại sau.' },
       { status: 500 }
     )
   }
@@ -62,7 +62,7 @@ export async function PUT(request: NextRequest) {
     // Validate required fields
     if (!companyName || companyName.trim() === '') {
       return NextResponse.json(
-        { error: 'Validation failed', details: ['companyName is required'] },
+        { error: 'Thiếu thông tin bắt buộc', message: 'Tên công ty không được để trống' },
         { status: 400 }
       )
     }
@@ -72,7 +72,7 @@ export async function PUT(request: NextRequest) {
       const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
       if (!emailRegex.test(email)) {
         return NextResponse.json(
-          { error: 'Validation failed', details: ['Invalid email format'] },
+          { error: 'Email không hợp lệ', message: 'Vui lòng nhập địa chỉ email đúng định dạng (ví dụ: example@domain.com)' },
           { status: 400 }
         )
       }
@@ -116,7 +116,7 @@ export async function PUT(request: NextRequest) {
   } catch (error: any) {
     console.error('Error updating site settings:', error)
     return NextResponse.json(
-      { error: 'Failed to update site settings', message: error?.message },
+      { error: 'Lỗi cập nhật cài đặt', message: 'Không thể cập nhật cài đặt trang web. Vui lòng thử lại sau.' },
       { status: 500 }
     )
   }

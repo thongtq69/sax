@@ -15,7 +15,7 @@ export async function GET(
 
     if (!promo) {
       return NextResponse.json(
-        { error: 'Promo banner not found' },
+        { error: 'Không tìm thấy promo banner', message: 'Promo banner với ID này không tồn tại trong hệ thống' },
         { status: 404 }
       )
     }
@@ -24,7 +24,7 @@ export async function GET(
   } catch (error) {
     console.error('Error fetching promo banner:', error)
     return NextResponse.json(
-      { error: 'Failed to fetch promo banner' },
+      { error: 'Lỗi tải promo banner', message: 'Không thể tải thông tin promo banner. Vui lòng thử lại sau.' },
       { status: 500 }
     )
   }
@@ -55,12 +55,12 @@ export async function PUT(
     console.error('Error updating promo banner:', error)
     if (error.code === 'P2025') {
       return NextResponse.json(
-        { error: 'Promo banner not found' },
+        { error: 'Không tìm thấy promo banner', message: 'Promo banner với ID này không tồn tại trong hệ thống' },
         { status: 404 }
       )
     }
     return NextResponse.json(
-      { error: 'Failed to update promo banner' },
+      { error: 'Lỗi cập nhật promo banner', message: 'Không thể cập nhật promo banner. Vui lòng thử lại sau.' },
       { status: 500 }
     )
   }
@@ -76,17 +76,17 @@ export async function DELETE(
       where: { id: params.id },
     })
 
-    return NextResponse.json({ message: 'Promo banner deleted successfully' })
+    return NextResponse.json({ message: 'Xóa promo banner thành công' })
   } catch (error: any) {
     console.error('Error deleting promo banner:', error)
     if (error.code === 'P2025') {
       return NextResponse.json(
-        { error: 'Promo banner not found' },
+        { error: 'Không tìm thấy promo banner', message: 'Promo banner với ID này không tồn tại trong hệ thống' },
         { status: 404 }
       )
     }
     return NextResponse.json(
-      { error: 'Failed to delete promo banner' },
+      { error: 'Lỗi xóa promo banner', message: 'Không thể xóa promo banner. Vui lòng thử lại sau.' },
       { status: 500 }
     )
   }

@@ -15,7 +15,7 @@ export async function GET(
 
     if (!post) {
       return NextResponse.json(
-        { error: 'Blog post not found' },
+        { error: 'Không tìm thấy bài viết', message: 'Bài viết với ID này không tồn tại trong hệ thống' },
         { status: 404 }
       )
     }
@@ -24,7 +24,7 @@ export async function GET(
   } catch (error) {
     console.error('Error fetching blog post:', error)
     return NextResponse.json(
-      { error: 'Failed to fetch blog post' },
+      { error: 'Lỗi tải bài viết', message: 'Không thể tải thông tin bài viết. Vui lòng thử lại sau.' },
       { status: 500 }
     )
   }
@@ -59,18 +59,18 @@ export async function PUT(
     console.error('Error updating blog post:', error)
     if (error.code === 'P2025') {
       return NextResponse.json(
-        { error: 'Blog post not found' },
+        { error: 'Không tìm thấy bài viết', message: 'Bài viết với ID này không tồn tại trong hệ thống' },
         { status: 404 }
       )
     }
     if (error.code === 'P2002') {
       return NextResponse.json(
-        { error: 'Blog post with this slug already exists' },
+        { error: 'Đường dẫn đã tồn tại', message: 'Bài viết với đường dẫn (slug) này đã tồn tại. Vui lòng chọn đường dẫn khác.' },
         { status: 409 }
       )
     }
     return NextResponse.json(
-      { error: 'Failed to update blog post' },
+      { error: 'Lỗi cập nhật bài viết', message: 'Không thể cập nhật bài viết. Vui lòng thử lại sau.' },
       { status: 500 }
     )
   }
@@ -86,17 +86,17 @@ export async function DELETE(
       where: { id: params.id },
     })
 
-    return NextResponse.json({ message: 'Blog post deleted successfully' })
+    return NextResponse.json({ message: 'Xóa bài viết thành công' })
   } catch (error: any) {
     console.error('Error deleting blog post:', error)
     if (error.code === 'P2025') {
       return NextResponse.json(
-        { error: 'Blog post not found' },
+        { error: 'Không tìm thấy bài viết', message: 'Bài viết với ID này không tồn tại trong hệ thống' },
         { status: 404 }
       )
     }
     return NextResponse.json(
-      { error: 'Failed to delete blog post' },
+      { error: 'Lỗi xóa bài viết', message: 'Không thể xóa bài viết. Vui lòng thử lại sau.' },
       { status: 500 }
     )
   }

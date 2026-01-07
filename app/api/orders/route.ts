@@ -47,7 +47,7 @@ export async function GET(request: NextRequest) {
     })
   } catch (error) {
     console.error('Error fetching orders:', error)
-    return NextResponse.json({ error: 'Failed to fetch orders' }, { status: 500 })
+    return NextResponse.json({ error: 'Lỗi tải đơn hàng', message: 'Không thể tải danh sách đơn hàng. Vui lòng thử lại sau.' }, { status: 500 })
   }
 }
 
@@ -55,14 +55,42 @@ export async function PATCH(request: NextRequest) {
   try {
     const { id, status } = await request.json()
 
+    if (!id) {
+      return NextResponse.json(
+        { error: 'Thiếu thông tin', message: 'Vui lòng cung cấp ID đơn hàng' },
+        { status: 400 }
+      )
+    }
+
+    if (!status) {
+      return NextResponse.json(
+        { error: 'Thiếu thông tin', message: 'Vui lòng chọn trạng thái đơn hàng' },
+        { status: 400 }
+      )
+    }
+
+    const validStatuses = ['pending', 'processing', 'shipped', 'delivered', 'cancelled']
+    if (!validStatuses.includes(status)) {
+      return NextResponse.json(
+        { error: 'Trạng thái không hợp lệ', message: `Trạng thái phải là một trong: ${validStatuses.join(', ')}` },
+        { status: 400 }
+      )
+    }
+
     const order = await prisma.order.update({
       where: { id },
       data: { status },
     })
 
     return NextResponse.json(order)
-  } catch (error) {
+  } catch (error: any) {
     console.error('Error updating order:', error)
-    return NextResponse.json({ error: 'Failed to update order' }, { status: 500 })
+    if (error.code === 'P2025') {
+      return NextResponse.json(
+        { error: 'Không tìm thấy đơn hàng', message: 'Đơn hàng với ID này không tồn tại trong hệ thống' },
+        { status: 404 }
+      )
+    }
+    return NextResponse.json({ error: 'Lỗi cập nhật đơn hàng', message: 'Không thể cập nhật trạng thái đơn hàng. Vui lòng thử lại sau.' }, { status: 500 })
   }
 }

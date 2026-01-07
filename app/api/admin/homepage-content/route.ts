@@ -85,7 +85,7 @@ export async function GET() {
   } catch (error: any) {
     console.error('Error fetching homepage content:', error)
     return NextResponse.json(
-      { error: 'Failed to fetch homepage content', message: error?.message },
+      { error: 'Lỗi tải nội dung trang chủ', message: 'Không thể tải nội dung trang chủ. Vui lòng thử lại sau.' },
       { status: 500 }
     )
   }

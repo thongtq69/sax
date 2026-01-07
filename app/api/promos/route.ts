@@ -18,9 +18,8 @@ export async function GET(request: NextRequest) {
     console.error('Error fetching promo banners:', error)
     return NextResponse.json(
       { 
-        error: 'Failed to fetch promo banners',
-        message: error?.message || 'Unknown error',
-        code: error?.code || 'UNKNOWN_ERROR',
+        error: 'Lỗi tải promo banners',
+        message: 'Không thể tải danh sách promo banners. Vui lòng thử lại sau.',
       },
       { status: 500 }
     )
@@ -34,8 +33,19 @@ export async function POST(request: NextRequest) {
     const { title, description, image, ctaText, ctaLink } = body
 
     if (!title || !description || !image || !ctaText || !ctaLink) {
+      const missingFields = []
+      if (!title) missingFields.push('Tiêu đề (title)')
+      if (!description) missingFields.push('Mô tả (description)')
+      if (!image) missingFields.push('Hình ảnh (image)')
+      if (!ctaText) missingFields.push('Nút CTA (ctaText)')
+      if (!ctaLink) missingFields.push('Link CTA (ctaLink)')
+      
       return NextResponse.json(
-        { error: 'Missing required fields' },
+        { 
+          error: 'Thiếu thông tin bắt buộc', 
+          message: `Vui lòng điền đầy đủ các trường: ${missingFields.join(', ')}`,
+          missingFields 
+        },
         { status: 400 }
       )
     }
@@ -54,7 +64,7 @@ export async function POST(request: NextRequest) {
   } catch (error) {
     console.error('Error creating promo banner:', error)
     return NextResponse.json(
-      { error: 'Failed to create promo banner' },
+      { error: 'Lỗi tạo promo banner', message: 'Không thể tạo promo banner. Vui lòng thử lại sau.' },
       { status: 500 }
     )
   }

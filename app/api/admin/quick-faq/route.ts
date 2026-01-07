@@ -68,9 +68,28 @@ export async function PUT(request: NextRequest) {
 
     if (!faqs || !Array.isArray(faqs)) {
       return NextResponse.json(
-        { error: 'Invalid FAQ data' },
+        { error: 'Dữ liệu không hợp lệ', message: 'Dữ liệu FAQ phải là một danh sách' },
         { status: 400 }
       )
+    }
+
+    // Validate each FAQ item
+    for (let i = 0; i < faqs.length; i++) {
+      const faq = faqs[i]
+      const missingFields = []
+      if (!faq.question || faq.question.trim() === '') missingFields.push('Câu hỏi')
+      if (!faq.answer || faq.answer.trim() === '') missingFields.push('Câu trả lời')
+      
+      if (missingFields.length > 0) {
+        return NextResponse.json(
+          { 
+            error: 'Thiếu thông tin bắt buộc', 
+            message: `FAQ #${i + 1}: Vui lòng điền đầy đủ các trường: ${missingFields.join(', ')}`,
+            missingFields 
+          },
+          { status: 400 }
+        )
+      }
     }
 
     // Get existing settings or create new
@@ -98,7 +117,7 @@ export async function PUT(request: NextRequest) {
   } catch (error: any) {
     console.error('Error updating quick FAQ:', error)
     return NextResponse.json(
-      { error: 'Failed to update quick FAQ', message: error?.message },
+      { error: 'Lỗi cập nhật FAQ', message: 'Không thể cập nhật Quick FAQ. Vui lòng thử lại sau.' },
       { status: 500 }
     )
   }
