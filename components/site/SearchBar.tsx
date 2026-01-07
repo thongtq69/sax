@@ -49,7 +49,7 @@ export function SearchBar({ open, onOpenChange }: SearchBarProps) {
               <Search className={`absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 transition-all duration-300 ${isTyping ? 'text-primary scale-110' : 'text-gray-400'}`} />
               <Input
                 type="text"
-                placeholder="Search for saxophones, brands, accessories..."
+                placeholder="Search..."
                 value={query}
                 onChange={(e) => setQuery(e.target.value)}
                 className="pl-12 pr-12 h-14 text-lg border-2 border-primary/20 focus:border-primary rounded-xl bg-white/80 backdrop-blur-sm shadow-lg transition-all duration-300 focus:shadow-xl focus:scale-[1.01]"
@@ -131,7 +131,7 @@ export function SearchBar({ open, onOpenChange }: SearchBarProps) {
                 filteredProducts.slice(0, 10).map((product, index) => (
                   <Link
                     key={product.id}
-                    href={getProductUrl(product.sku, product.name)}
+                    href={getProductUrl(product.sku, product.slug)}
                     onClick={() => onOpenChange(false)}
                     className="flex items-center space-x-4 rounded-xl p-3 hover:bg-gradient-to-r hover:from-primary/5 hover:to-accent/5 transition-all duration-300 group border border-transparent hover:border-primary/20 hover:shadow-lg animate-fade-in-up"
                     style={{ animationDelay: `${index * 0.03}s` }}

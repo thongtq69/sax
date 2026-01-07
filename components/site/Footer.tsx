@@ -211,20 +211,20 @@ export function Footer() {
         {/* Desktop Layout */}
         <div className="hidden sm:block">
           <div className="flex items-center justify-between gap-3 pb-6 mb-6 border-b border-white/10">
-            <div>
-              <h3 className="text-sm md:text-lg font-bold text-white flex items-center gap-2">
-                <span className="text-[#D4AF37] animate-pulse">★</span>
-                Need Help Choosing the Right Instrument?
-              </h3>
-              <p className="text-xs md:text-sm text-white/70 mt-0.5">
-                Our team of professional musicians is ready to help you find the perfect saxophone.
-              </p>
-            </div>
-            <div className="flex gap-2 flex-shrink-0">
-              <Button size="sm" className="bg-[#D4AF37] hover:bg-[#c4a030] text-[#2f3f4f] font-semibold text-xs md:text-sm px-4 h-8 md:h-9" asChild>
+            <div className="flex items-center gap-4">
+              <div>
+                <h3 className="text-sm md:text-lg font-bold text-white flex items-center gap-2">
+                  <span className="text-[#D4AF37] animate-pulse">★</span>
+                  Need Help Choosing the Right Instrument?
+                </h3>
+                <p className="text-xs md:text-sm text-white/70 mt-0.5">
+                  Our team of professional musicians is ready to help you find the perfect saxophone.
+                </p>
+              </div>
+              <Button size="sm" className="bg-[#D4AF37] hover:bg-[#c4a030] text-[#2f3f4f] font-semibold text-xs md:text-sm px-4 h-8 md:h-9 flex-shrink-0" asChild>
                 <Link href="/inquiry">
                   <MessageCircle className="mr-1.5 h-3.5 w-3.5" />
-                  Inquiry
+                  Ask Now
                 </Link>
               </Button>
             </div>

@@ -503,7 +503,7 @@ export default function ProductsManagement() {
                       </td>
                       <td className="px-6 py-4">
                         <div className="flex items-center justify-end gap-1">
-                          <Link href={getProductUrl(product.sku, product.name)} target="_blank">
+                          <Link href={getProductUrl(product.sku, product.slug)} target="_blank">
                             <Button variant="ghost" size="sm" title="View">
                               <Eye className="h-4 w-4" />
                             </Button>
@@ -560,7 +560,7 @@ export default function ProductsManagement() {
                     </span>
                   )}
                   <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
-                    <Link href={getProductUrl(product.sku, product.name)} target="_blank">
+                    <Link href={getProductUrl(product.sku, product.slug)} target="_blank">
                       <Button size="sm" variant="secondary">
                         <Eye className="h-4 w-4" />
                       </Button>

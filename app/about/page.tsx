@@ -54,17 +54,17 @@ export default function AboutPage() {
   return (
     <div className="min-h-screen">
       {/* Hero Section - Compact with Logo */}
-      <section className="relative bg-secondary text-white py-4 md:py-5 overflow-hidden">
+      <section className="relative bg-secondary text-white py-3 md:py-4 overflow-hidden">
         <div className="container mx-auto px-4 relative z-10">
           <div className="max-w-3xl mx-auto text-center">
             {/* Logo Banner */}
-            <div className="flex justify-center mb-2">
+            <div className="flex justify-center mb-1.5">
               <Image
                 src="/74249d1e1cf393adcae2.jpg"
                 alt="James Sax Corner"
-                width={450}
-                height={115}
-                className="w-[300px] md:w-[380px] lg:w-[450px] h-auto"
+                width={350}
+                height={90}
+                className="w-[220px] md:w-[280px] lg:w-[350px] h-auto"
                 style={{ objectFit: 'contain' }}
                 priority
               />
@@ -138,6 +138,24 @@ export default function AboutPage() {
         </div>
       </section>
 
+      {/* CTA Section */}
+      <section className="py-5 md:py-6 bg-gradient-to-br from-primary/5 via-white to-primary/10">
+        <div className="container mx-auto px-4">
+          <div className="max-w-3xl mx-auto text-center">
+            <h2 className="text-lg md:text-xl font-bold text-secondary mb-2">Ready to Find Your Perfect Saxophone?</h2>
+            <p className="text-gray-600 text-sm mb-4">Browse our collection of premium instruments or contact us for personalized assistance.</p>
+            <div className="flex flex-wrap justify-center gap-3">
+              <Button asChild size="default" className="px-6">
+                <Link href="/shop">Browse Instruments</Link>
+              </Button>
+              <Button asChild variant="outline" size="default" className="px-6">
+                <Link href="/inquiry">Contact Us</Link>
+              </Button>
+            </div>
+          </div>
+        </div>
+      </section>
+
       {/* Full FAQ Section */}
       <section className="py-8 md:py-12 bg-white">
         <div className="container mx-auto px-4">
@@ -197,24 +215,6 @@ export default function AboutPage() {
               <div className="px-4 py-2 bg-white/10 rounded-full">
                 <span className="font-medium text-sm">Trust</span>
               </div>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* CTA Section */}
-      <section className="py-8 md:py-12 bg-gradient-to-br from-primary/5 via-white to-primary/10">
-        <div className="container mx-auto px-4">
-          <div className="max-w-3xl mx-auto text-center">
-            <h2 className="text-xl md:text-2xl font-bold text-secondary mb-3">Ready to Find Your Perfect Saxophone?</h2>
-            <p className="text-gray-600 text-sm mb-5">Browse our collection of premium instruments or contact us for personalized assistance.</p>
-            <div className="flex flex-wrap justify-center gap-3">
-              <Button asChild size="default" className="px-6">
-                <Link href="/shop">Browse Instruments</Link>
-              </Button>
-              <Button asChild variant="outline" size="default" className="px-6">
-                <Link href="/inquiry">Contact Us</Link>
-              </Button>
             </div>
           </div>
         </div>

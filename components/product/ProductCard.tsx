@@ -43,7 +43,7 @@ export function ProductCard({ product, index = 0 }: ProductCardProps) {
   const router = useRouter()
   
   // Product URL with SEO-friendly slug
-  const productUrl = getProductUrl(product.sku, product.name)
+  const productUrl = getProductUrl(product.sku, product.slug)
   
   // Prefetch product page on hover
   const handleMouseEnter = () => {

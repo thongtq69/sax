@@ -362,7 +362,7 @@ export function Header() {
               >
                 <input
                   type="text"
-                  placeholder="Search saxophones..."
+                  placeholder="Search..."
                   className="w-full h-9 pl-10 pr-4 rounded-full bg-white/80 border border-[#2c3e50]/20 text-sm text-[#2c3e50] placeholder-[#2c3e50]/50 focus:outline-none focus:ring-2 focus:ring-[#2c3e50]/30 focus:bg-white transition-all font-body cursor-pointer"
                   readOnly
                 />

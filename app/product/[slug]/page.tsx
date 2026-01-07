@@ -1,7 +1,7 @@
 import { notFound } from 'next/navigation'
 import Link from 'next/link'
 import { prisma } from '@/lib/prisma'
-import { transformProduct } from '@/lib/api'
+import { transformProduct, extractSkuFromParam } from '@/lib/api'
 import { ProductDetailClient } from '@/components/product/ProductDetailClient'
 import { ChevronRight, Home } from 'lucide-react'
 
@@ -11,8 +11,13 @@ export default async function ProductPage({
   params: { slug: string }
 }) {
   try {
-    const apiProduct = await prisma.product.findUnique({
-      where: { slug: params.slug },
+    // New URL format: /product/SKU-slug (e.g., /product/JSC-C143LF-yamaha-yts-62-tenor-saxophone)
+    // Extract SKU from the param and look up product by SKU
+    const sku = extractSkuFromParam(params.slug)
+    
+    // First try to find by SKU (new format)
+    let apiProduct = await prisma.product.findUnique({
+      where: { sku },
       include: {
         category: {
           include: {
@@ -22,6 +27,21 @@ export default async function ProductPage({
         subcategory: true,
       },
     })
+
+    // Fallback: try to find by slug (old format for backwards compatibility)
+    if (!apiProduct) {
+      apiProduct = await prisma.product.findUnique({
+        where: { slug: params.slug },
+        include: {
+          category: {
+            include: {
+              subcategories: true,
+            },
+          },
+          subcategory: true,
+        },
+      })
+    }
 
     if (!apiProduct) {
       notFound()

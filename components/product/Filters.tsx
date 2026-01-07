@@ -652,12 +652,14 @@ export function Filters({
   }
 
   return (
-    <aside className="w-72 space-y-6 border-r pr-6 sticky top-24 h-fit">
-      <div className="flex items-center gap-2">
+    <aside className="w-72 border-r pr-6 sticky top-24 h-fit max-h-[calc(100vh-8rem)] flex flex-col">
+      <div className="flex items-center gap-2 pb-4 flex-shrink-0">
         <Filter className="w-5 h-5 text-primary" />
         <h2 className="text-lg font-display font-semibold text-secondary">Filters</h2>
       </div>
-      {content}
+      <div className="overflow-y-auto flex-1 pr-2 space-y-6 scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-transparent hover:scrollbar-thumb-gray-400">
+        {content}
+      </div>
     </aside>
   )
 }

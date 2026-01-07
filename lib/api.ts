@@ -13,9 +13,9 @@ export function generateProductSlug(name: string): string {
 }
 
 // Helper function to generate product URL with SKU and slug
-export function getProductUrl(sku: string, name: string): string {
-  const slug = generateProductSlug(name)
-  return `/product/sku/${sku}-${slug}`
+// Format: /product/SKU-slug (e.g., /product/JSC-C143LF-yamaha-yts-62-tenor-saxophone)
+export function getProductUrl(sku: string, slug: string): string {
+  return `/product/${sku}-${slug}`
 }
 
 // Helper function to extract SKU from URL parameter (handles both old and new format)

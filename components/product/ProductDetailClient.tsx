@@ -336,9 +336,9 @@ const handleAddToCart = async () => {
   const savings = product.retailPrice ? product.retailPrice - product.price : 0
   const savingsPercent = product.retailPrice ? Math.round((savings / product.retailPrice) * 100) : 0
 
-  const handleNavigation = (sku: string, name: string) => {
+  const handleNavigation = (sku: string, slug: string) => {
     // Use router.push for instant navigation with Next.js prefetching
-    router.push(getProductUrl(sku, name))
+    router.push(getProductUrl(sku, slug))
   }
 
   return (
@@ -351,7 +351,7 @@ const handleAddToCart = async () => {
             <Button
               variant="outline"
               size="sm"
-              onClick={() => handleNavigation(navigationProducts.prev!.sku, navigationProducts.prev!.name)}
+              onClick={() => handleNavigation(navigationProducts.prev!.sku, navigationProducts.prev!.slug)}
               className="group flex items-center gap-2 transition-all hover:scale-105"
             >
               <ChevronLeft className="h-4 w-4 transition-transform group-hover:-translate-x-1" />
@@ -366,7 +366,7 @@ const handleAddToCart = async () => {
             <Button
               variant="outline"
               size="sm"
-              onClick={() => handleNavigation(navigationProducts.next!.sku, navigationProducts.next!.name)}
+              onClick={() => handleNavigation(navigationProducts.next!.sku, navigationProducts.next!.slug)}
               className="group flex items-center gap-2 transition-all hover:scale-105"
             >
               <span className="hidden sm:inline">Next Product</span>
@@ -725,60 +725,61 @@ const handleAddToCart = async () => {
           )}
 
 
-          {/* Action Buttons - New Layout */}
+          {/* Action Buttons - 2 Rows Layout */}
           <div className="space-y-3">
-            {/* Row 1: Buy Now - Full Width */}
-            <Button
-              size="lg"
-              className="w-full text-sm md:text-base font-semibold bg-primary hover:bg-primary/90 text-white transition-all duration-300 hover:shadow-lg hover:scale-[1.01]"
-              onClick={() => {
-                // Clear cart first, then add only this product for immediate checkout
-                clearCart()
-                addItem({
-                  id: `${product.id}-default`,
-                  productId: product.id,
-                  name: product.name,
-                  slug: product.slug,
-                  sku: product.sku,
-                  price: product.price,
-                  image: product.images[0],
-                })
-                router.push('/checkout')
-              }}
-              disabled={!product.inStock || isAddingToCart}
-            >
-              Buy Now
-            </Button>
+            {/* Row 1: Buy Now + Add to Cart */}
+            <div className="flex gap-2">
+              <Button
+                size="lg"
+                className="flex-1 text-sm md:text-base font-semibold bg-primary hover:bg-primary/90 text-white transition-all duration-300 hover:shadow-lg hover:scale-[1.01]"
+                onClick={() => {
+                  // Clear cart first, then add only this product for immediate checkout
+                  clearCart()
+                  addItem({
+                    id: `${product.id}-default`,
+                    productId: product.id,
+                    name: product.name,
+                    slug: product.slug,
+                    sku: product.sku,
+                    price: product.price,
+                    image: product.images[0],
+                  })
+                  router.push('/checkout')
+                }}
+                disabled={!product.inStock || isAddingToCart}
+              >
+                Buy Now
+              </Button>
+              
+              <Button
+                size="lg"
+                variant="outline"
+                className={`flex-1 text-sm md:text-base font-semibold transition-all duration-300 ${
+                  isAddedToCart 
+                    ? 'bg-green-500 hover:bg-green-600 text-white border-green-500' 
+                    : 'bg-white hover:bg-gray-50 text-primary border-primary hover:shadow-lg hover:scale-[1.01]'
+                }`}
+                onClick={handleAddToCart}
+                disabled={!product.inStock || isAddingToCart}
+              >
+                {isAddingToCart ? (
+                  <span className="flex items-center gap-2">
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                    Adding...
+                  </span>
+                ) : isAddedToCart ? (
+                  <span className="flex items-center gap-2">
+                    <Check className="h-4 w-4 animate-bounce" />
+                    Added!
+                  </span>
+                ) : (
+                  'Add to Cart'
+                )}
+              </Button>
+            </div>
             
-            {/* Row 2: Add to Cart - Full Width - White background */}
-            <Button
-              size="lg"
-              variant="outline"
-              className={`w-full text-sm md:text-base font-semibold transition-all duration-300 ${
-                isAddedToCart 
-                  ? 'bg-green-500 hover:bg-green-600 text-white border-green-500' 
-                  : 'bg-white hover:bg-gray-50 text-primary border-primary hover:shadow-lg hover:scale-[1.01]'
-              }`}
-              onClick={handleAddToCart}
-              disabled={!product.inStock || isAddingToCart}
-            >
-              {isAddingToCart ? (
-                <span className="flex items-center gap-2">
-                  <Loader2 className="h-4 w-4 animate-spin" />
-                  Adding...
-                </span>
-              ) : isAddedToCart ? (
-                <span className="flex items-center gap-2">
-                  <Check className="h-4 w-4 animate-bounce" />
-                  Added!
-                </span>
-              ) : (
-                'Add to Cart'
-              )}
-            </Button>
-            
-            {/* Row 3: Inquiry + Favorite/Share (hover to show) */}
-            <div className="flex gap-2 group/actions">
+            {/* Row 2: Inquiry + Favorite + Share */}
+            <div className="flex gap-2">
               {/* Inquiry Button */}
               <Button 
                 size="lg" 
@@ -790,29 +791,28 @@ const handleAddToCart = async () => {
                 <span>Inquiry</span>
               </Button>
               
-              {/* Favorite & Share - Show on hover/tap */}
-              <div className="flex gap-2 opacity-0 max-w-0 overflow-hidden group-hover/actions:opacity-100 group-hover/actions:max-w-[120px] transition-all duration-300 ease-out sm:opacity-100 sm:max-w-none">
-                <Button
-                  size="lg"
-                  variant="outline"
-                  onClick={() => setIsWishlisted(!isWishlisted)}
-                  className={`px-3 shrink-0 transition-all duration-300 ${
-                    isWishlisted ? 'border-red-300 bg-red-50 text-red-500' : ''
-                  }`}
-                  title="Add to Wishlist"
-                >
-                  <Heart className={`h-5 w-5 transition-all ${isWishlisted ? 'fill-current scale-110' : ''}`} />
-                </Button>
-                
-                <Button 
-                  size="lg" 
-                  variant="outline" 
-                  className="px-3 shrink-0"
-                  title="Share"
-                >
-                  <Share2 className="h-5 w-5" />
-                </Button>
-              </div>
+              {/* Favorite Button */}
+              <Button
+                size="lg"
+                variant="outline"
+                onClick={() => setIsWishlisted(!isWishlisted)}
+                className={`px-4 shrink-0 transition-all duration-300 ${
+                  isWishlisted ? 'border-red-300 bg-red-50 text-red-500' : ''
+                }`}
+                title="Add to Wishlist"
+              >
+                <Heart className={`h-5 w-5 transition-all ${isWishlisted ? 'fill-current scale-110' : ''}`} />
+              </Button>
+              
+              {/* Share Button */}
+              <Button 
+                size="lg" 
+                variant="outline" 
+                className="px-4 shrink-0"
+                title="Share"
+              >
+                <Share2 className="h-5 w-5" />
+              </Button>
             </div>
           </div>
 
@@ -1056,7 +1056,7 @@ const handleAddToCart = async () => {
               {relatedProducts.map((item, index) => (
                 <Link
                   key={`${item.id}-${index}`}
-                  href={getProductUrl(item.sku, item.name)}
+                  href={getProductUrl(item.sku, item.slug)}
                   className="group snap-start bg-white rounded-2xl border border-gray-100 shadow-sm hover:shadow-lg transition-all duration-300 overflow-hidden min-w-[220px] w-[220px] sm:min-w-[240px] sm:w-[240px] md:min-w-0 md:w-auto"
                 >
                   <div className="relative aspect-[4/5] overflow-hidden">

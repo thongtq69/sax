@@ -133,7 +133,7 @@ export function MiniCartDrawer({ open, onOpenChange }: MiniCartDrawerProps) {
                   <div className="flex flex-1 flex-col min-w-0">
                     <div className="flex justify-between items-start gap-2">
                       <Link
-                        href={getProductUrl(item.sku, item.name)}
+                        href={getProductUrl(item.sku, item.slug)}
                         onClick={() => onOpenChange(false)}
                         className="font-semibold text-secondary hover:text-primary transition-colors line-clamp-2 text-sm"
                       >

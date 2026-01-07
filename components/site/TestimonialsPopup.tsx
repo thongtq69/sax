@@ -12,6 +12,8 @@ interface Review {
   product?: {
     name: string
   }
+  customProductName?: string
+  productName?: string
 }
 
 interface TestimonialsPopupProps {
@@ -30,8 +32,19 @@ export function TestimonialsPopup({ isOpen, onClose }: TestimonialsPopupProps) {
         .then(res => res.json())
         .then(data => {
           if (data.reviews && data.reviews.length > 0) {
-            const filtered = data.reviews.filter((r: Review) => r.message && r.message.trim() !== '')
-            setReviews(filtered)
+            const filtered = data.reviews.filter((r: any) => r.message && r.message.trim() !== '')
+            // Transform API data to ensure product name is properly mapped
+            const transformedReviews = filtered.map((r: any) => ({
+              id: r.id,
+              message: r.message,
+              rating: r.rating,
+              buyerName: r.buyerName,
+              date: r.date,
+              product: r.product ? { name: r.product.name } : undefined,
+              customProductName: r.customProductName,
+              productName: r.product?.name || r.customProductName || undefined,
+            }))
+            setReviews(transformedReviews)
           } else {
             // Fallback to JSON file
             return fetch('/api/reviews')
@@ -171,7 +184,7 @@ export function TestimonialsPopup({ isOpen, onClose }: TestimonialsPopupProps) {
                             <span className="text-xs font-medium">Verified</span>
                           </div>
                         </div>
-                        <p className="text-xs text-gray-500">{review.product?.name || ''}</p>
+                        <p className="text-xs text-gray-500">{review.product?.name || review.customProductName || review.productName || 'General Review'}</p>
                       </div>
                     </div>
                   </div>

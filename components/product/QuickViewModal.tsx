@@ -38,7 +38,7 @@ export function QuickViewModal({
   const router = useRouter()
   
   // Product URL with SEO-friendly slug
-  const productUrl = getProductUrl(product.sku, product.name)
+  const productUrl = getProductUrl(product.sku, product.slug)
   
   // Prefetch product page when modal opens
   useEffect(() => {

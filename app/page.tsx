@@ -766,23 +766,23 @@ export default function HomePage() {
                   e.currentTarget.reset()
                 }
               }}
-              className="flex gap-1.5 w-full sm:w-auto"
+              className="flex items-center gap-2 w-full sm:w-auto"
             >
               <input
                 type="email"
                 name="email"
                 placeholder="Enter your email"
-                className="bg-white/20 border border-white/30 placeholder:text-white/60 text-white min-w-0 flex-1 sm:min-w-[160px] px-2.5 py-1.5 transition-all duration-300 focus:bg-white/30 focus:outline-none focus:border-white/50 text-[11px] sm:text-xs"
+                className="bg-white/20 border border-white/30 placeholder:text-white/60 text-white flex-1 sm:flex-initial sm:w-[200px] px-3 py-2 transition-all duration-300 focus:bg-white/30 focus:outline-none focus:border-white/50 text-xs sm:text-sm h-9"
                 required
               />
               <Button
                 type="submit"
                 size="sm"
-                className="bg-secondary hover:bg-secondary/90 text-white px-3 transition-all duration-300 text-[11px] sm:text-xs h-7"
+                className="bg-secondary hover:bg-secondary/90 text-white px-4 transition-all duration-300 text-xs sm:text-sm h-9 whitespace-nowrap"
               >
                 <span className="flex items-center gap-0.5">
                   Subscribe
-                  <ChevronRight className="h-3 w-3" />
+                  <ChevronRight className="h-4 w-4" />
                 </span>
               </Button>
             </form>
