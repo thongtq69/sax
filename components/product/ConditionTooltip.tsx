@@ -59,24 +59,25 @@ export function ConditionTooltip({ condition, className = '' }: ConditionTooltip
           )}
           
           <div
-            className={`absolute z-50 w-72 p-3 bg-white rounded-lg shadow-xl border-2 border-gray-200 text-sm text-gray-700 leading-relaxed ${
+            className={`absolute z-50 w-72 p-4 bg-white rounded-lg shadow-xl border-2 border-gray-200 text-sm text-gray-700 leading-relaxed ${
               isMobile
-                ? 'left-1/2 -translate-x-1/2 top-full mt-2'
-                : 'left-1/2 -translate-x-1/2 bottom-full mb-2'
+                ? 'left-0 top-full mt-2'
+                : 'left-0 bottom-full mb-2'
             } animate-fade-in`}
+            style={{ minWidth: '280px' }}
           >
             {/* Arrow */}
             <div
-              className={`absolute left-1/2 -translate-x-1/2 w-3 h-3 bg-white border-gray-200 rotate-45 ${
+              className={`absolute left-6 w-3 h-3 bg-white border-gray-200 rotate-45 ${
                 isMobile ? '-top-1.5 border-t-2 border-l-2' : '-bottom-1.5 border-b-2 border-r-2'
               }`}
             />
             
             <div className="relative">
-              <div className="font-semibold text-gray-900 mb-1">
+              <div className="font-semibold text-gray-900 mb-2">
                 {getConditionDisplay(condition)} Condition
               </div>
-              <div>{getConditionDescription(condition)}</div>
+              <div className="text-gray-600">{getConditionDescription(condition)}</div>
             </div>
           </div>
         </>
