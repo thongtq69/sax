@@ -160,10 +160,23 @@ export async function POST(request: NextRequest) {
       reviewCount,
     } = body
 
-    // Validate required fields
-    if (!name || !slug || !brand || !price || !categoryId || !description || !sku) {
+    // Validate required fields with specific messages
+    const missingFields: string[] = []
+    if (!name) missingFields.push('Product Name')
+    if (!slug) missingFields.push('Slug')
+    if (!brand) missingFields.push('Brand')
+    if (!price && price !== 0) missingFields.push('Price')
+    if (!categoryId) missingFields.push('Category')
+    if (!description) missingFields.push('Description')
+    if (!sku) missingFields.push('SKU')
+    
+    if (missingFields.length > 0) {
       return NextResponse.json(
-        { error: 'Missing required fields' },
+        { 
+          error: 'Missing required fields',
+          message: `Please fill in the following required fields: ${missingFields.join(', ')}`,
+          missingFields 
+        },
         { status: 400 }
       )
     }
@@ -221,13 +234,21 @@ export async function POST(request: NextRequest) {
   } catch (error: any) {
     console.error('Error creating product:', error)
     if (error.code === 'P2002') {
+      // Unique constraint violation
+      const field = error.meta?.target?.[0] || 'field'
       return NextResponse.json(
-        { error: 'Product with this slug or SKU already exists' },
+        { 
+          error: 'Duplicate entry',
+          message: `A product with this ${field === 'sku' ? 'SKU' : field === 'slug' ? 'Slug' : field} already exists. Please use a different value.`
+        },
         { status: 409 }
       )
     }
     return NextResponse.json(
-      { error: 'Failed to create product' },
+      { 
+        error: 'Failed to create product',
+        message: error?.message || 'An unexpected error occurred. Please try again.'
+      },
       { status: 500 }
     )
   }

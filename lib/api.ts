@@ -54,7 +54,14 @@ async function fetchAPI<T>(endpoint: string, options?: RequestInit): Promise<T> 
   })
 
   if (!response.ok) {
-    throw new Error(`API Error: ${response.status} ${response.statusText}`)
+    // Try to get detailed error message from response body
+    try {
+      const errorData = await response.json()
+      throw new Error(errorData.message || errorData.error || `API Error: ${response.status} ${response.statusText}`)
+    } catch (parseError) {
+      // If parsing fails, use status text
+      throw new Error(`API Error: ${response.status} ${response.statusText}`)
+    }
   }
 
   return response.json()

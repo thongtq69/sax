@@ -232,9 +232,15 @@ export function Header() {
   const [isTestimonialsOpen, setIsTestimonialsOpen] = useState(false)
   const [cartBounce, setCartBounce] = useState(false)
   const [socialLinks, setSocialLinks] = useState<SocialLinks>(defaultSocialLinks)
+  const [isMounted, setIsMounted] = useState(false)
   const lastScrollY = useRef(0)
   const itemCount = useCartStore(state => state.getItemCount())
   const subtotal = useCartStore(state => state.getSubtotal())
+
+  // Prevent hydration mismatch by only rendering cart values on client
+  useEffect(() => {
+    setIsMounted(true)
+  }, [])
 
   // Fetch social links from database
   useEffect(() => {
@@ -422,12 +428,16 @@ export function Header() {
                 aria-label="Shopping cart"
               >
                 <ShoppingCart className={`h-4 w-4 mr-1 transition-transform ${cartBounce ? 'scale-125' : ''}`} />
-                {itemCount > 0 && (
+                {isMounted && itemCount > 0 && (
                   <span className={`flex h-4 w-4 items-center justify-center rounded-full bg-[#2c3e50] text-[10px] font-bold text-white mr-1 transition-all duration-300 ${cartBounce ? 'scale-125 animate-bounce' : ''}`}>
                     {itemCount > 9 ? '9+' : itemCount}
                   </span>
                 )}
-                <span className="font-semibold text-xs font-body">${subtotal.toFixed(0)}</span>
+                {isMounted ? (
+                  <span className="font-semibold text-xs font-body">${subtotal.toFixed(0)}</span>
+                ) : (
+                  <span className="font-semibold text-xs font-body">$0</span>
+                )}
               </Button>
 
               {/* Login Button */}
@@ -472,7 +482,7 @@ export function Header() {
                 className="header-icon-button relative text-[#2c3e50] hover:bg-[#2c3e50]/10"
               >
                 <ShoppingCart className="h-5 w-5" />
-                {itemCount > 0 && (
+                {isMounted && itemCount > 0 && (
                   <span className="absolute -right-1 -top-1 flex h-4 w-4 items-center justify-center rounded-full bg-[#2c3e50] text-xs font-bold text-white">
                     {itemCount > 9 ? '9+' : itemCount}
                   </span>

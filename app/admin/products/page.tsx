@@ -187,10 +187,8 @@ export default function ProductsManagement() {
       alert('SKU is required')
       return
     }
-    // Validate SKU format - should start with JSC- followed by alphanumeric characters
-    const skuPattern = /^JSC-[A-Z0-9]+$/i
-    if (!skuPattern.test(formData.sku.trim())) {
-      alert('SKU must follow format: JSC-XXXXXX (e.g., JSC-A3WIIU). This ensures proper URL generation.')
+    if (!formData.brand?.trim()) {
+      alert('Brand is required')
       return
     }
     if (!formData.category) {
@@ -248,7 +246,9 @@ export default function ProductsManagement() {
       setEditingProduct(null)
     } catch (error: any) {
       console.error('Error saving product:', error)
-      alert(error.message || 'Failed to save product. Please try again.')
+      // Show detailed error message from API
+      const errorMessage = error.message || 'Failed to save product. Please try again.'
+      alert(errorMessage)
     } finally {
       setIsSaving(false)
     }
