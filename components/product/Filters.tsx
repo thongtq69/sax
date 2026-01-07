@@ -22,10 +22,12 @@ interface FiltersProps {
   selectedBrands: string[]
   selectedSubcategories: string[]
   selectedBadges: string[]
+  selectedConditions: string[]
   inStockOnly: boolean
   onBrandChange: (brands: string[]) => void
   onSubcategoryChange: (subcats: string[]) => void
   onBadgeChange: (badges: string[]) => void
+  onConditionChange: (conditions: string[]) => void
   onInStockChange: (value: boolean) => void
   priceRange: [number, number]
   onPriceRangeChange: (range: [number, number]) => void
@@ -40,21 +42,50 @@ export function Filters({
   selectedBrands,
   selectedSubcategories,
   selectedBadges,
+  selectedConditions,
   inStockOnly,
   onBrandChange,
   onSubcategoryChange,
   onBadgeChange,
+  onConditionChange,
   onInStockChange,
   priceRange,
   onPriceRangeChange,
   mobile = false,
 }: FiltersProps) {
   const [isOpen, setIsOpen] = useState(false)
-  const [brandExpanded, setBrandExpanded] = useState(true)
-  const [priceExpanded, setPriceExpanded] = useState(true)
-  const [subcategoryExpanded, setSubcategoryExpanded] = useState(true)
-  const [badgeExpanded, setBadgeExpanded] = useState(true)
-  const [availabilityExpanded, setAvailabilityExpanded] = useState(true)
+  const [brandExpanded, setBrandExpanded] = useState(false)
+  const [priceExpanded, setPriceExpanded] = useState(false)
+  const [subcategoryExpanded, setSubcategoryExpanded] = useState(false)
+  const [badgeExpanded, setBadgeExpanded] = useState(false)
+  const [conditionExpanded, setConditionExpanded] = useState(false)
+  const [availabilityExpanded, setAvailabilityExpanded] = useState(false)
+
+  // Condition options
+  const conditionOptions = [
+    { value: 'mint', label: 'Mint' },
+    { value: 'excellent', label: 'Excellent' },
+    { value: 'very-good', label: 'Very Good' },
+    { value: 'good', label: 'Good' },
+    { value: 'fair', label: 'Fair' },
+  ]
+
+  // Count products by condition
+  const conditionCounts = useMemo(() => {
+    const counts: Record<string, number> = {}
+    allProducts.forEach((p) => {
+      if ((p as any).productType === 'used' && (p as any).condition) {
+        const condition = (p as any).condition
+        counts[condition] = (counts[condition] || 0) + 1
+      }
+    })
+    return counts
+  }, [allProducts])
+
+  // Check if there are any used products
+  const hasUsedProducts = useMemo(() => {
+    return allProducts.some((p) => (p as any).productType === 'used')
+  }, [allProducts])
 
   const stripSaxophones = (value: string) =>
     value.replace(/\s+saxophones?/gi, '').replace(/\s+/g, ' ').trim()
@@ -99,6 +130,7 @@ export function Filters({
     selectedBrands.length > 0 ||
     selectedSubcategories.length > 0 ||
     selectedBadges.length > 0 ||
+    selectedConditions.length > 0 ||
     inStockOnly ||
     priceRange[0] > 0 ||
     priceRange[1] < maxPrice
@@ -127,6 +159,14 @@ export function Filters({
     }
   }
 
+  const handleConditionToggle = (condition: string) => {
+    if (selectedConditions.includes(condition)) {
+      onConditionChange(selectedConditions.filter((c) => c !== condition))
+    } else {
+      onConditionChange([...selectedConditions, condition])
+    }
+  }
+
   const content = (
     <div className="space-y-6">
       {/* Active Filters Preview */}
@@ -139,6 +179,7 @@ export function Filters({
                 onBrandChange([])
                 onSubcategoryChange([])
                 onBadgeChange([])
+                onConditionChange([])
                 onInStockChange(false)
                 onPriceRangeChange([0, maxPrice])
               }}
@@ -176,6 +217,16 @@ export function Filters({
                 onClick={() => handleBadgeToggle(badge)}
               >
                 {badge}
+                <X className="w-3 h-3" />
+              </span>
+            ))}
+            {selectedConditions.map((condition) => (
+              <span
+                key={condition}
+                className="inline-flex items-center gap-1 px-2 py-1 text-xs bg-emerald-100 text-emerald-700 rounded-full cursor-pointer hover:bg-emerald-200 transition-colors capitalize"
+                onClick={() => handleConditionToggle(condition)}
+              >
+                {condition.replace('-', ' ')}
                 <X className="w-3 h-3" />
               </span>
             ))}
@@ -365,6 +416,73 @@ export function Filters({
         </>
       )}
 
+      {/* Condition Filter (for used products) */}
+      {hasUsedProducts && (
+        <>
+          <div className="space-y-3">
+            <button
+              onClick={() => setConditionExpanded(!conditionExpanded)}
+              className="flex items-center justify-between w-full group"
+            >
+              <h3 className="font-display font-semibold text-secondary group-hover:text-primary transition-colors">
+                Condition
+              </h3>
+              <ChevronDown
+                className={`w-4 h-4 text-muted-foreground transition-transform duration-300 ${
+                  conditionExpanded ? 'rotate-180' : ''
+                }`}
+              />
+            </button>
+
+            <div
+              className={`space-y-2 overflow-hidden transition-all duration-300 ${
+                conditionExpanded ? 'max-h-96 opacity-100' : 'max-h-0 opacity-0'
+              }`}
+            >
+              {conditionOptions.map((option, index) => {
+                const count = conditionCounts[option.value] || 0
+                return (
+                  <label
+                    key={option.value}
+                    className="flex items-center space-x-3 cursor-pointer group p-2 rounded-lg hover:bg-muted transition-colors"
+                    style={{ animationDelay: `${index * 50}ms` }}
+                  >
+                    <div className="relative">
+                      <input
+                        type="checkbox"
+                        checked={selectedConditions.includes(option.value)}
+                        onChange={() => handleConditionToggle(option.value)}
+                        className="peer sr-only"
+                      />
+                      <div className="h-5 w-5 rounded border-2 border-gray-300 transition-all duration-200 peer-checked:border-primary peer-checked:bg-primary flex items-center justify-center">
+                        <svg
+                          className={`w-3 h-3 text-white transition-all duration-200 ${
+                            selectedConditions.includes(option.value) ? 'opacity-100 scale-100' : 'opacity-0 scale-0'
+                          }`}
+                          fill="none"
+                          viewBox="0 0 24 24"
+                          stroke="currentColor"
+                        >
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
+                        </svg>
+                      </div>
+                    </div>
+                    <span className="text-sm font-body group-hover:text-primary transition-colors">
+                      {option.label}
+                    </span>
+                    {count > 0 && (
+                      <span className="text-xs text-muted-foreground ml-auto">({count})</span>
+                    )}
+                  </label>
+                )
+              })}
+            </div>
+          </div>
+
+          <Separator />
+        </>
+      )}
+
       {/* Availability */}
       <div className="space-y-3">
         <button
@@ -495,6 +613,7 @@ export function Filters({
           onBrandChange([])
           onSubcategoryChange([])
           onBadgeChange([])
+          onConditionChange([])
           onInStockChange(false)
           onPriceRangeChange([0, maxPrice])
         }}

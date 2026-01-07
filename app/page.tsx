@@ -8,7 +8,7 @@ import { ProductCard } from '@/components/product/ProductCard'
 import { getProducts, getCategories, transformProduct, transformCategory } from '@/lib/api'
 import type { Product } from '@/lib/data'
 import { Phone, Shield, Truck, CreditCard, Award, Headphones, ChevronRight, ChevronLeft, Star, Sparkles } from 'lucide-react'
-import { reviews, type Review } from '@/lib/reviews'
+import { getAllReviewsAsync, type Review } from '@/lib/reviews'
 import { ScrollAnimations } from '@/components/site/ScrollAnimations'
 import { TestimonialsPopup } from '@/components/site/TestimonialsPopup'
 
@@ -34,7 +34,7 @@ function ReviewsCarousel({ reviews, productImages = [], onViewAll }: ReviewsCaro
   const intervalRef = useRef<NodeJS.Timeout | null>(null)
 
   useEffect(() => {
-    if (reviews.length === 0 || isPaused) return
+    if (!reviews || reviews.length === 0 || isPaused) return
 
     intervalRef.current = setInterval(() => {
       setIsAnimating(true)
@@ -49,9 +49,9 @@ function ReviewsCarousel({ reviews, productImages = [], onViewAll }: ReviewsCaro
         clearInterval(intervalRef.current)
       }
     }
-  }, [reviews.length, isPaused])
+  }, [reviews, isPaused])
 
-  if (reviews.length === 0) return null
+  if (!reviews || reviews.length === 0) return null
 
   const currentReview = reviews[currentIndex]
 
@@ -376,11 +376,16 @@ export default function HomePage() {
   const [isLoading, setIsLoading] = useState(true)
   const [currentReviewIndex, setCurrentReviewIndex] = useState(0)
   const [showTestimonials, setShowTestimonials] = useState(false)
+  const [reviews, setReviews] = useState<Review[]>([])
 
   // Fetch data
   useEffect(() => {
     async function fetchData() {
       try {
+        // Fetch reviews first
+        const reviewsData = await getAllReviewsAsync()
+        setReviews(reviewsData)
+
         const featuredResponse = await getProducts({ badge: 'new', limit: 8 })
         const featured = featuredResponse.products.map(transformProduct)
         setFeaturedProducts(featured)

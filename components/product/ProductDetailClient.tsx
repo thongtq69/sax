@@ -6,7 +6,7 @@ import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { Product } from '@/lib/data'
 import { getProducts, transformProduct, getProductUrl } from '@/lib/api'
-import { getAllReviews, getProductRatingStats } from '@/lib/reviews'
+import { getAllReviewsAsync, getProductRatingStats, type Review } from '@/lib/reviews'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
@@ -17,6 +17,8 @@ import { SmartImage } from '@/components/ui/smart-image'
 import { InquiryFormContent } from '@/components/inquiry/InquiryFormContent'
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion'
 import { Star, ChevronRight, ChevronLeft, Heart, Share2, Check, X, ZoomIn, Loader2, MessageCircle, Truck } from 'lucide-react'
+import { ConditionTooltip } from './ConditionTooltip'
+import { ConditionRating } from '@/lib/product-conditions'
 
 interface ProductDetailClientProps {
   product: Product
@@ -36,11 +38,15 @@ export function ProductDetailClient({ product }: ProductDetailClientProps) {
   const [showAllReviews, setShowAllReviews] = useState(false)
   const [isInquiryOpen, setIsInquiryOpen] = useState(false)
   const [quickFaqs, setQuickFaqs] = useState<{id: string, question: string, answer: string, category: string, isActive: boolean}[]>([])
+  const [reviews, setReviews] = useState<Review[]>([])
   const router = useRouter()
   const addItem = useCartStore((state) => state.addItem)
   
-  // Get all reviews from hardcoded data - all products show all 35 reviews
-  const reviews = useMemo(() => getAllReviews(), [])
+  // Fetch reviews from API on mount
+  useEffect(() => {
+    getAllReviewsAsync().then(setReviews)
+  }, [])
+  
   const reviewStats = useMemo(() => getProductRatingStats(product.name), [product.name])
   const displayRating = useMemo(() => 
     reviews.length > 0 ? reviewStats.rating : product.rating || 0,
@@ -624,15 +630,34 @@ const handleAddToCart = async () => {
             })()}
           </div>
 
+          {/* Condition Badge for Used Products */}
+          {product.productType === 'used' && product.condition && (
+            <div className="space-y-3">
+              <div className="flex items-center gap-3">
+                <ConditionTooltip condition={product.condition as ConditionRating} />
+                <span className="text-sm text-amber-600 font-medium">Only 1 available</span>
+              </div>
+              {product.conditionNotes && (
+                <div className="p-3 bg-gray-50 rounded-lg border border-gray-200">
+                  <p className="text-sm text-gray-600">
+                    <span className="font-medium text-gray-700">Seller Notes: </span>
+                    {product.conditionNotes}
+                  </p>
+                </div>
+              )}
+            </div>
+          )}
+
 
           {/* Action Buttons */}
-          <div className="flex gap-2 md:gap-3">
+          <div className="flex flex-wrap gap-2 md:gap-3">
+            {/* Main action buttons - same color */}
             <Button
               size="lg"
-              className={`flex-1 text-sm md:text-base font-semibold transition-all duration-300 ${
+              className={`flex-1 min-w-[120px] text-sm md:text-base font-semibold transition-all duration-300 ${
                 isAddedToCart 
-                  ? 'bg-green-500 hover:bg-green-600' 
-                  : 'hover:shadow-lg hover:scale-[1.02]'
+                  ? 'bg-green-500 hover:bg-green-600 text-white' 
+                  : 'bg-primary hover:bg-primary/90 text-white hover:shadow-lg hover:scale-[1.02]'
               }`}
               onClick={handleAddToCart}
               disabled={!product.inStock || isAddingToCart}
@@ -654,26 +679,39 @@ const handleAddToCart = async () => {
             
             <Button
               size="lg"
-              variant="outline"
-              onClick={() => setIsWishlisted(!isWishlisted)}
-              className={`px-3 transition-all duration-300 ${
-                isWishlisted ? 'border-red-300 bg-red-50 text-red-500' : ''
-              }`}
+              className="flex-1 min-w-[120px] text-sm md:text-base font-semibold bg-primary hover:bg-primary/90 text-white transition-all duration-300 hover:shadow-lg hover:scale-[1.02]"
+              onClick={() => {
+                handleAddToCart()
+                setTimeout(() => router.push('/checkout'), 300)
+              }}
+              disabled={!product.inStock || isAddingToCart}
             >
-              <Heart className={`h-5 w-5 transition-all ${isWishlisted ? 'fill-current scale-110' : ''}`} />
+              Buy Now
             </Button>
             
             <Button 
               size="lg" 
               onClick={() => setIsInquiryOpen(true)}
-              className="px-4 bg-accent hover:bg-accent/90 text-white gap-2"
+              className="flex-1 min-w-[100px] bg-primary hover:bg-primary/90 text-white gap-2"
               title={`Inquiry about ${product.name}`}
             >
               <MessageCircle className="h-5 w-5" />
               <span className="hidden sm:inline">Inquiry</span>
             </Button>
             
-            <Button size="lg" variant="outline" className="px-3">
+            {/* Secondary buttons */}
+            <Button
+              size="lg"
+              variant="outline"
+              onClick={() => setIsWishlisted(!isWishlisted)}
+              className={`px-3 shrink-0 transition-all duration-300 ${
+                isWishlisted ? 'border-red-300 bg-red-50 text-red-500' : ''
+              }`}
+            >
+              <Heart className={`h-5 w-5 transition-all ${isWishlisted ? 'fill-current scale-110' : ''}`} />
+            </Button>
+            
+            <Button size="lg" variant="outline" className="px-3 shrink-0">
               <Share2 className="h-5 w-5" />
             </Button>
           </div>

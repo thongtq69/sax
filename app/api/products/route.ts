@@ -148,6 +148,9 @@ export async function POST(request: NextRequest) {
       inStock,
       stock,
       stockStatus,
+      productType,
+      condition,
+      conditionNotes,
       description,
       specs,
       included,
@@ -165,6 +168,23 @@ export async function POST(request: NextRequest) {
       )
     }
 
+    // Validate product type
+    const validProductType = productType === 'used' ? 'used' : 'new'
+    
+    // Validate condition for used products
+    const validConditions = ['mint', 'excellent', 'very-good', 'good', 'fair']
+    let validCondition = null
+    if (validProductType === 'used') {
+      if (!condition || !validConditions.includes(condition)) {
+        validCondition = 'excellent' // Default condition for used products
+      } else {
+        validCondition = condition
+      }
+    }
+
+    // Auto-set stock to 1 for used products
+    const finalStock = validProductType === 'used' ? 1 : (stock ? parseInt(stock) : 0)
+
     const product = await prisma.product.create({
       data: {
         name,
@@ -178,8 +198,11 @@ export async function POST(request: NextRequest) {
         videoUrl: videoUrl || null,
         badge: badge || null,
         inStock: inStock !== undefined ? inStock : true,
-        stock: stock ? parseInt(stock) : 0,
+        stock: finalStock,
         stockStatus: stockStatus || 'in-stock',
+        productType: validProductType,
+        condition: validCondition,
+        conditionNotes: validProductType === 'used' ? (conditionNotes || null) : null,
         description,
         specs: specs || null,
         included: included || [],

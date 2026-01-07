@@ -20,6 +20,9 @@ export interface Product {
   sku: string
   rating?: number
   reviewCount?: number
+  productType?: 'new' | 'used'
+  condition?: 'mint' | 'excellent' | 'very-good' | 'good' | 'fair'
+  conditionNotes?: string
 }
 
 export interface Category {

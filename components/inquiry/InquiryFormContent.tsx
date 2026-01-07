@@ -1,9 +1,16 @@
 'use client'
 
-import { useMemo, useState } from 'react'
+import { useMemo, useState, useEffect } from 'react'
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
-import { MessageCircle, Phone, Mail, MapPin, Send, Loader2, CheckCircle } from 'lucide-react'
+import { MessageCircle, Phone, Mail, MapPin, Send, Loader2, CheckCircle, ChevronDown } from 'lucide-react'
+
+interface InquiryTitle {
+  id: string
+  title: string
+  isActive: boolean
+  order: number
+}
 
 interface InquiryFormContentProps {
   prefillProduct?: string
@@ -20,16 +27,39 @@ export function InquiryFormContent({
 }: InquiryFormContentProps) {
   const [name, setName] = useState('')
   const [email, setEmail] = useState('')
+  const [selectedTitle, setSelectedTitle] = useState('')
+  const [inquiryTitles, setInquiryTitles] = useState<InquiryTitle[]>([])
   const [message, setMessage] = useState(
     `Hi, I'm interested in${prefillProduct ? ` ${prefillProduct}` : ' this instrument'}.`
   )
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [focusedField, setFocusedField] = useState<string | null>(null)
 
+  // Fetch inquiry titles from API
+  useEffect(() => {
+    const fetchTitles = async () => {
+      try {
+        const response = await fetch('/api/admin/inquiry-titles')
+        if (response.ok) {
+          const data = await response.json()
+          const activeTitles = data.filter((t: InquiryTitle) => t.isActive).sort((a: InquiryTitle, b: InquiryTitle) => a.order - b.order)
+          setInquiryTitles(activeTitles)
+          if (activeTitles.length > 0) {
+            setSelectedTitle(activeTitles[0].title)
+          }
+        }
+      } catch (error) {
+        console.error('Error fetching inquiry titles:', error)
+      }
+    }
+    fetchTitles()
+  }, [])
+
   const subject = useMemo(() => {
-    const base = prefillProduct ? `Product Inquiry: ${prefillProduct}` : 'Product Inquiry'
+    const titlePart = selectedTitle ? `[${selectedTitle}] ` : ''
+    const base = prefillProduct ? `${titlePart}Product Inquiry: ${prefillProduct}` : `${titlePart}Product Inquiry`
     return prefillSku ? `${base} (${prefillSku})` : base
-  }, [prefillProduct, prefillSku])
+  }, [prefillProduct, prefillSku, selectedTitle])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -57,20 +87,20 @@ export function InquiryFormContent({
 
   return (
     <div className="bg-white shadow-2xl rounded-2xl border border-gray-100 overflow-hidden animate-fade-in-up">
-      {/* Header with gradient */}
-      <div className="bg-gradient-to-r from-secondary via-secondary/95 to-secondary text-white px-5 py-5 flex items-center gap-3 relative overflow-hidden">
+      {/* Header with gold/primary gradient */}
+      <div className="bg-gradient-to-r from-primary via-primary/95 to-amber-500 text-white px-5 py-5 flex items-center gap-3 relative overflow-hidden">
         {/* Decorative pattern */}
-        <div className="absolute inset-0 opacity-10">
+        <div className="absolute inset-0 opacity-20">
           <div className="absolute top-2 right-10 text-2xl animate-float">♪</div>
           <div className="absolute bottom-2 right-20 text-xl animate-float" style={{ animationDelay: '0.5s' }}>♫</div>
         </div>
         
-        <div className="w-12 h-12 rounded-full bg-white/20 flex items-center justify-center animate-pulse-soft">
+        <div className="w-12 h-12 rounded-full bg-white/30 flex items-center justify-center animate-pulse-soft">
           <MessageCircle className="h-6 w-6" />
         </div>
         <div className="relative z-10">
           <h1 className="text-xl md:text-2xl font-bold">Inquiry</h1>
-          <p className="text-sm text-white/80">Ask about availability, setup, or shipping.</p>
+          <p className="text-sm text-white/90">Ask about availability, setup, or shipping.</p>
         </div>
       </div>
 
@@ -130,6 +160,37 @@ export function InquiryFormContent({
             </div>
           </div>
         </div>
+
+        {/* Inquiry Title dropdown */}
+        {inquiryTitles.length > 0 && (
+          <div className="space-y-1 animate-fade-in-up" style={{ animationDelay: '0.17s' }}>
+            <label className="text-sm font-medium text-secondary flex items-center gap-1">
+              Inquiry Type
+              <span className="text-red-500">*</span>
+            </label>
+            <div className={`relative transition-all duration-300 ${focusedField === 'title' ? 'scale-[1.01]' : ''}`}>
+              <select
+                required
+                value={selectedTitle}
+                onChange={(e) => setSelectedTitle(e.target.value)}
+                onFocus={() => setFocusedField('title')}
+                onBlur={() => setFocusedField(null)}
+                className={`w-full rounded-xl border-2 px-4 py-3 text-sm transition-all duration-300 focus:outline-none appearance-none bg-white cursor-pointer ${
+                  focusedField === 'title' 
+                    ? 'border-primary shadow-lg shadow-primary/20' 
+                    : 'border-gray-200 hover:border-primary/50'
+                }`}
+              >
+                {inquiryTitles.map((title) => (
+                  <option key={title.id} value={title.title}>
+                    {title.title}
+                  </option>
+                ))}
+              </select>
+              <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400 pointer-events-none" />
+            </div>
+          </div>
+        )}
 
         {/* Message field */}
         <div className="space-y-1 animate-fade-in-up" style={{ animationDelay: '0.2s' }}>

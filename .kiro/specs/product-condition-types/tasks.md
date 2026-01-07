@@ -37,57 +37,57 @@ This implementation plan covers fixing Vietnamese text in filters, fixing stock 
   - Export ProductType and ConditionRating types
   - _Requirements: 5.2, 6.2, 6.3, 6.4, 6.5, 6.6_
 
-- [ ] 5. Create ConditionTooltip component
+- [x] 5. Create ConditionTooltip component
   - Create components/product/ConditionTooltip.tsx
   - Implement hover tooltip for desktop
   - Implement tap tooltip for mobile
   - Style badge with condition colors
   - _Requirements: 6.1, 6.7_
 
-- [ ] 6. Update Admin Products page
-  - [ ] 6.1 Add product type selector to form
+- [x] 6. Update Admin Products page
+  - [x] 6.1 Add product type selector to form
     - Add radio/select for New vs Used
     - Show condition selector when Used is selected
     - _Requirements: 3.2, 7.1, 7.2_
-  - [ ] 6.2 Implement stock auto-set logic for used products
+  - [x] 6.2 Implement stock auto-set logic for used products
     - Auto-set stock to 1 when Used is selected
     - Disable stock input for Used products
     - _Requirements: 5.3, 5.4, 7.3, 7.4_
-  - [ ] 6.3 Add condition notes textarea
+  - [x] 6.3 Add condition notes textarea
     - Show only for Used products
     - Optional field for additional notes
     - _Requirements: 5.1_
-  - [ ] 6.4 Add product type and condition filters
+  - [x] 6.4 Add product type and condition filters
     - Add filter dropdown for product type
     - Add filter dropdown for condition
     - _Requirements: 7.5, 7.6_
 
-- [ ] 7. Update Product API routes
-  - [ ] 7.1 Update create product endpoint
+- [x] 7. Update Product API routes
+  - [x] 7.1 Update create product endpoint
     - Handle productType field
     - Handle condition field
     - Validate condition required for used products
     - Auto-set stock to 1 for used products
     - _Requirements: 3.1, 5.2, 5.3_
-  - [ ] 7.2 Update update product endpoint
+  - [x] 7.2 Update update product endpoint
     - Handle productType changes
     - Handle condition updates
     - Enforce stock = 1 for used products
     - _Requirements: 7.2, 7.3, 7.4_
 
-- [ ] 8. Update Product Card component
+- [x] 8. Update Product Card component
   - Add condition badge display for used products
   - Show "Used - [Condition]" badge
   - Integrate ConditionTooltip
   - _Requirements: 8.1, 8.2, 8.3_
 
-- [ ] 9. Update Product Detail page
+- [x] 9. Update Product Detail page
   - Display product type indicator
   - Show condition badge with tooltip for used products
   - Show "Only 1 available" for used products
   - _Requirements: 8.4, 8.5_
 
-- [ ] 10. Checkpoint - Test all functionality
+- [x] 10. Checkpoint - Test all functionality
   - Ensure all tests pass
   - Verify filter text is in English
   - Verify stock status saves correctly

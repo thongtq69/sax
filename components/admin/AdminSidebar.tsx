@@ -20,6 +20,7 @@ import {
   Home,
   Star,
   CircleHelp,
+  MessageSquareText,
 } from 'lucide-react'
 
 interface AdminSidebarProps {
@@ -38,11 +39,11 @@ export const menuItems = [
   { href: '/admin/banners', label: 'Banners', icon: Image },
   { href: '/admin/faqs', label: 'FAQs', icon: HelpCircle },
   { href: '/admin/quick-faq', label: 'Quick FAQ (Product)', icon: CircleHelp },
-  { href: '/admin/testimonials', label: 'Testimonials', icon: MessageSquare },
+  { href: '/admin/inquiry-titles', label: 'Inquiry Titles', icon: MessageSquareText },
+  { href: '/admin/testimonials', label: 'Testimonials & Reviews', icon: MessageSquare },
   { href: '/admin/promos', label: 'Promo Banners', icon: Megaphone },
   { href: '/admin/content', label: 'Homepage Content', icon: Home },
   { href: '/admin/orders', label: 'Orders', icon: ShoppingCart },
-  { href: '/admin/reviews', label: 'Reviews', icon: Star },
   { href: '/admin/users', label: 'Users', icon: Users },
   { href: '/admin/settings', label: 'Site Settings', icon: Settings },
 ]

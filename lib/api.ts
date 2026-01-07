@@ -170,6 +170,9 @@ export function transformProduct(apiProduct: any) {
     sku: apiProduct.sku,
     rating: apiProduct.rating,
     reviewCount: apiProduct.reviewCount,
+    productType: apiProduct.productType || 'new',
+    condition: apiProduct.condition,
+    conditionNotes: apiProduct.conditionNotes,
   }
 }
 

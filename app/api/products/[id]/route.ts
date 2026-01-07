@@ -54,6 +54,9 @@ export async function PUT(
       inStock,
       stock,
       stockStatus,
+      productType,
+      condition,
+      conditionNotes,
       description,
       specs,
       included,
@@ -78,7 +81,6 @@ export async function PUT(
     if (videoUrl !== undefined) updateData.videoUrl = videoUrl || null
     if (badge !== undefined) updateData.badge = badge || null
     if (inStock !== undefined) updateData.inStock = inStock
-    if (stock !== undefined) updateData.stock = parseInt(stock)
     if (stockStatus !== undefined) updateData.stockStatus = stockStatus || 'in-stock'
     if (description) updateData.description = description
     if (specs !== undefined) updateData.specs = specs
@@ -87,6 +89,44 @@ export async function PUT(
     if (sku) updateData.sku = sku
     if (rating !== undefined) updateData.rating = parseFloat(rating)
     if (reviewCount !== undefined) updateData.reviewCount = parseInt(reviewCount)
+
+    // Handle product type and condition
+    if (productType !== undefined) {
+      const validProductType = productType === 'used' ? 'used' : 'new'
+      updateData.productType = validProductType
+      
+      if (validProductType === 'used') {
+        // Auto-set stock to 1 for used products
+        updateData.stock = 1
+        
+        // Validate and set condition
+        const validConditions = ['mint', 'excellent', 'very-good', 'good', 'fair']
+        if (condition && validConditions.includes(condition)) {
+          updateData.condition = condition
+        } else if (!condition) {
+          updateData.condition = 'excellent' // Default
+        }
+        
+        // Set condition notes
+        if (conditionNotes !== undefined) {
+          updateData.conditionNotes = conditionNotes || null
+        }
+      } else {
+        // Clear condition fields for new products
+        updateData.condition = null
+        updateData.conditionNotes = null
+        
+        // Allow custom stock for new products
+        if (stock !== undefined) {
+          updateData.stock = parseInt(stock)
+        }
+      }
+    } else {
+      // If productType not being updated, just update stock normally
+      if (stock !== undefined) updateData.stock = parseInt(stock)
+      if (condition !== undefined) updateData.condition = condition || null
+      if (conditionNotes !== undefined) updateData.conditionNotes = conditionNotes || null
+    }
 
     const product = await prisma.product.update({
       where: { id: params.id },

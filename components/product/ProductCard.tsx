@@ -13,6 +13,8 @@ import { useCartStore } from '@/lib/store/cart'
 import { SmartImage } from '@/components/ui/smart-image'
 import { getProductRatingStats } from '@/lib/reviews'
 import { getProductUrl } from '@/lib/api'
+import { ConditionTooltip } from './ConditionTooltip'
+import { ConditionRating } from '@/lib/product-conditions'
 
 interface ProductCardProps {
   product: Product
@@ -148,6 +150,13 @@ export function ProductCard({ product, index = 0 }: ProductCardProps) {
               <Badge variant="destructive" className="stock-warning shadow-lg text-xs">
                 Only {product.stock} left!
               </Badge>
+            )}
+            {/* Condition badge for used products */}
+            {product.productType === 'used' && product.condition && (
+              <ConditionTooltip 
+                condition={product.condition as ConditionRating} 
+                className="shadow-lg"
+              />
             )}
           </div>
 

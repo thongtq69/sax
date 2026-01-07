@@ -18,14 +18,16 @@ interface PayPalStandardButtonProps {
     country: string
     phone: string
   } | null
+  shippingCost?: number | null
   onError?: (error: any) => void
 }
 
-export function PayPalStandardButton({ shippingInfo, onError }: PayPalStandardButtonProps) {
+export function PayPalStandardButton({ shippingInfo, shippingCost, onError }: PayPalStandardButtonProps) {
   const [isLoading, setIsLoading] = useState(false)
   const items = useCartStore((state) => state.items)
   const subtotal = useCartStore((state) => state.getSubtotal())
-  const shipping = subtotal > 500 ? 0 : 25
+  // Use calculated shipping cost if provided, otherwise default logic
+  const shipping = shippingCost ?? (subtotal > 500 ? 0 : 25)
   const tax = subtotal * 0.08
   const total = subtotal + shipping + tax
 

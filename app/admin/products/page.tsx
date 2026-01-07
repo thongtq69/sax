@@ -32,13 +32,21 @@ export default function ProductsManagement() {
   const [searchTerm, setSearchTerm] = useState('')
   const [selectedCategory, setSelectedCategory] = useState<string>('all')
   const [selectedBadge, setSelectedBadge] = useState<string>('all')
+  const [selectedProductType, setSelectedProductType] = useState<string>('all')
+  const [selectedCondition, setSelectedCondition] = useState<string>('all')
   const [isDialogOpen, setIsDialogOpen] = useState(false)
   const [isLoading, setIsLoading] = useState(true)
   const [isSaving, setIsSaving] = useState(false)
   const [editingProduct, setEditingProduct] = useState<Product | null>(null)
   const [viewMode, setViewMode] = useState<'table' | 'grid'>('table')
   const [activeTab, setActiveTab] = useState('basic')
-  const [formData, setFormData] = useState<Partial<Product> & { stockStatus?: string }>({
+  const [formData, setFormData] = useState<Partial<Product> & { 
+    stockStatus?: string
+    productType?: string
+    condition?: string
+    conditionNotes?: string
+    videoUrl?: string
+  }>({
     name: '',
     slug: '',
     brand: '',
@@ -51,6 +59,10 @@ export default function ProductsManagement() {
     inStock: true,
     stock: 0,
     stockStatus: 'in-stock',
+    productType: 'new',
+    condition: undefined,
+    conditionNotes: '',
+    videoUrl: '',
     description: '',
     specs: {},
     included: [],
@@ -110,8 +122,16 @@ export default function ProductsManagement() {
       }
     }
 
+    if (selectedProductType !== 'all') {
+      filtered = filtered.filter((p) => (p as any).productType === selectedProductType)
+    }
+
+    if (selectedCondition !== 'all') {
+      filtered = filtered.filter((p) => (p as any).condition === selectedCondition)
+    }
+
     setFilteredProducts(filtered)
-  }, [searchTerm, selectedCategory, selectedBadge, productList])
+  }, [searchTerm, selectedCategory, selectedBadge, selectedProductType, selectedCondition, productList])
 
   const handleOpenDialog = (product?: Product) => {
     if (product) {
@@ -120,6 +140,10 @@ export default function ProductsManagement() {
         ...product,
         images: product.images || [],
         stockStatus: (product as any).stockStatus || 'in-stock',
+        productType: (product as any).productType || 'new',
+        condition: (product as any).condition || undefined,
+        conditionNotes: (product as any).conditionNotes || '',
+        videoUrl: (product as any).videoUrl || '',
       })
     } else {
       setEditingProduct(null)
@@ -136,6 +160,10 @@ export default function ProductsManagement() {
         inStock: true,
         stock: 0,
         stockStatus: 'in-stock',
+        productType: 'new',
+        condition: undefined,
+        conditionNotes: '',
+        videoUrl: '',
         description: '',
         specs: {},
         included: [],
@@ -188,8 +216,12 @@ export default function ProductsManagement() {
         images: formData.images || [],
         badge: formData.badge || null,
         inStock: formData.stockStatus === 'in-stock',
-        stock: formData.stock || 0,
+        stock: formData.productType === 'used' ? 1 : (formData.stock || 0),
         stockStatus: formData.stockStatus || 'in-stock',
+        productType: formData.productType || 'new',
+        condition: formData.productType === 'used' ? (formData.condition || 'excellent') : null,
+        conditionNotes: formData.productType === 'used' ? (formData.conditionNotes || null) : null,
+        videoUrl: formData.videoUrl || null,
         description: formData.description,
         specs: formData.specs || null,
         included: formData.included || [],
@@ -321,6 +353,35 @@ export default function ProductsManagement() {
               <SelectItem value="coming-soon">Coming Soon</SelectItem>
             </SelectContent>
           </Select>
+
+          {/* Product Type Filter */}
+          <Select value={selectedProductType} onValueChange={setSelectedProductType}>
+            <SelectTrigger className="w-full lg:w-[130px]">
+              <SelectValue placeholder="All Types" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All Types</SelectItem>
+              <SelectItem value="new">New</SelectItem>
+              <SelectItem value="used">Used</SelectItem>
+            </SelectContent>
+          </Select>
+
+          {/* Condition Filter (only show when used is selected) */}
+          {selectedProductType === 'used' && (
+            <Select value={selectedCondition} onValueChange={setSelectedCondition}>
+              <SelectTrigger className="w-full lg:w-[150px]">
+                <SelectValue placeholder="All Conditions" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All Conditions</SelectItem>
+                <SelectItem value="mint">Mint</SelectItem>
+                <SelectItem value="excellent">Excellent</SelectItem>
+                <SelectItem value="very-good">Very Good</SelectItem>
+                <SelectItem value="good">Good</SelectItem>
+                <SelectItem value="fair">Fair</SelectItem>
+              </SelectContent>
+            </Select>
+          )}
 
           {/* View Mode Toggle */}
           <div className="flex border rounded-lg overflow-hidden">
@@ -660,7 +721,68 @@ export default function ProductsManagement() {
                     </SelectContent>
                   </Select>
                 </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Product Type <span className="text-red-500">*</span>
+                  </label>
+                  <Select
+                    value={formData.productType || 'new'}
+                    onValueChange={(value) => {
+                      const updates: any = { productType: value }
+                      if (value === 'used') {
+                        updates.stock = 1
+                        if (!formData.condition) {
+                          updates.condition = 'excellent'
+                        }
+                      }
+                      setFormData({ ...formData, ...updates })
+                    }}
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select product type" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="new">New</SelectItem>
+                      <SelectItem value="used">Used</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                {formData.productType === 'used' && (
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Condition <span className="text-red-500">*</span>
+                    </label>
+                    <Select
+                      value={formData.condition || 'excellent'}
+                      onValueChange={(value) => setFormData({ ...formData, condition: value as 'mint' | 'excellent' | 'very-good' | 'good' | 'fair' })}
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select condition" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="mint">Mint - Essentially new, opened/played</SelectItem>
+                        <SelectItem value="excellent">Excellent - Almost no blemishes</SelectItem>
+                        <SelectItem value="very-good">Very Good - Few slight marks</SelectItem>
+                        <SelectItem value="good">Good - Moderate wear</SelectItem>
+                        <SelectItem value="fair">Fair - Noticeable cosmetic damage</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                )}
               </div>
+              {formData.productType === 'used' && (
+                <div className="col-span-2">
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Condition Notes (Optional)
+                  </label>
+                  <textarea
+                    className="w-full min-h-[80px] rounded-lg border border-gray-300 bg-white px-4 py-3 text-sm focus:border-primary focus:ring-1 focus:ring-primary"
+                    value={formData.conditionNotes || ''}
+                    onChange={(e) => setFormData({ ...formData, conditionNotes: e.target.value })}
+                    placeholder="Additional notes about the item's condition..."
+                  />
+                </div>
+              )}
             </TabsContent>
 
             {/* Images Tab */}
@@ -675,7 +797,6 @@ export default function ProductsManagement() {
                 <ImageUpload
                   images={formData.images || []}
                   onChange={(images) => setFormData({ ...formData, images })}
-                  maxImages={10}
                   folder="sax/products"
                 />
               </div>
@@ -721,7 +842,11 @@ export default function ProductsManagement() {
                     onChange={(e) => setFormData({ ...formData, stock: parseInt(e.target.value) || 0 })}
                     placeholder="0"
                     min="0"
+                    disabled={formData.productType === 'used'}
                   />
+                  {formData.productType === 'used' && (
+                    <p className="text-xs text-gray-500 mt-1">Stock is automatically set to 1 for used products</p>
+                  )}
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -823,6 +948,17 @@ export default function ProductsManagement() {
                   onChange={(e) => setFormData({ ...formData, description: e.target.value })}
                   placeholder="Enter product description..."
                 />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  YouTube Video URL
+                </label>
+                <Input
+                  value={formData.videoUrl || ''}
+                  onChange={(e) => setFormData({ ...formData, videoUrl: e.target.value })}
+                  placeholder="e.g., https://www.youtube.com/watch?v=..."
+                />
+                <p className="text-xs text-gray-500 mt-1">Add a YouTube video to showcase the product (supports youtube.com/watch, youtu.be, shorts)</p>
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">

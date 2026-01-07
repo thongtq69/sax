@@ -8,23 +8,89 @@ import { useCartStore } from '@/lib/store/cart'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Separator } from '@/components/ui/separator'
-import { ShieldCheck, Lock, Package, Truck, ArrowLeft, AlertCircle, Loader2 } from 'lucide-react'
+import { ShieldCheck, Lock, Package, Truck, ArrowLeft, AlertCircle, Loader2, MapPin, Calculator } from 'lucide-react'
 import { PayPalStandardButton } from '@/components/checkout/PayPalStandardButton'
 import { PayPalMeButton } from '@/components/checkout/PayPalMeButton'
+
+// Vietnam postal codes start with these prefixes (6 digits)
+const VIETNAM_POSTAL_PREFIXES = [
+  '10', '11', '12', '13', '14', '15', '16', '17', '18', '19', // Hanoi area
+  '70', '71', '72', '73', '74', '75', '76', '77', '78', '79', // Ho Chi Minh area
+  '20', '21', '22', '23', '24', '25', '26', '27', '28', '29', // Northern provinces
+  '30', '31', '32', '33', '34', '35', '36', '37', '38', '39', // Central provinces
+  '40', '41', '42', '43', '44', '45', '46', '47', '48', '49', // Central provinces
+  '50', '51', '52', '53', '54', '55', '56', '57', '58', '59', // Central provinces
+  '60', '61', '62', '63', '64', '65', '66', '67', '68', '69', // Southern provinces
+  '80', '81', '82', '83', '84', '85', '86', '87', '88', '89', // Mekong Delta
+  '90', '91', '92', '93', '94', '95', '96', '97', '98', '99', // Mekong Delta
+]
+
+function isVietnamZipCode(zip: string): boolean {
+  const cleanZip = zip.replace(/\s/g, '')
+  // Vietnam postal codes are 6 digits
+  if (cleanZip.length !== 6 || !/^\d+$/.test(cleanZip)) {
+    return false
+  }
+  const prefix = cleanZip.substring(0, 2)
+  return VIETNAM_POSTAL_PREFIXES.includes(prefix)
+}
 
 function CheckoutContent() {
   const searchParams = useSearchParams()
   const [paymentError, setPaymentError] = useState<string | null>(null)
   const items = useCartStore((state) => state.items)
   const subtotal = useCartStore((state) => state.getSubtotal())
-  const shipping = subtotal > 500 ? 0 : 25
-  const tax = subtotal * 0.08
-  const total = subtotal + shipping + tax
-
+  
   const [shippingInfo, setShippingInfo] = useState({
     email: '', firstName: '', lastName: '', address1: '', address2: '',
     city: '', state: '', zip: '', country: 'United States', phone: '',
   })
+  
+  // Shipping calculation based on zipcode
+  const [shippingCost, setShippingCost] = useState<number | null>(null)
+  const [isCalculatingShipping, setIsCalculatingShipping] = useState(false)
+  const [shippingMessage, setShippingMessage] = useState<string>('')
+
+  const calculateShipping = () => {
+    if (!shippingInfo.zip.trim()) {
+      setShippingMessage('Please enter a ZIP/Postal code')
+      return
+    }
+    
+    setIsCalculatingShipping(true)
+    
+    // Simulate API call delay
+    setTimeout(() => {
+      const isVietnam = isVietnamZipCode(shippingInfo.zip)
+      
+      if (isVietnam) {
+        setShippingCost(25)
+        setShippingMessage('Domestic shipping (Vietnam): $25')
+      } else {
+        setShippingCost(200)
+        setShippingMessage('International shipping: $200')
+      }
+      
+      setIsCalculatingShipping(false)
+    }, 500)
+  }
+
+  // Auto-calculate shipping when zip changes
+  useEffect(() => {
+    if (shippingInfo.zip.length >= 5) {
+      const timer = setTimeout(() => {
+        calculateShipping()
+      }, 800)
+      return () => clearTimeout(timer)
+    } else {
+      setShippingCost(null)
+      setShippingMessage('')
+    }
+  }, [shippingInfo.zip])
+
+  const shipping = shippingCost ?? (subtotal > 500 ? 0 : 25)
+  const tax = subtotal * 0.08
+  const total = subtotal + shipping + tax
 
   // Check if payment was cancelled
   useEffect(() => {
@@ -97,9 +163,56 @@ function CheckoutContent() {
                 <div className="grid grid-cols-3 gap-4">
                   <Input placeholder="City *" value={shippingInfo.city} onChange={(e) => handleChange('city', e.target.value)} />
                   <Input placeholder="State *" value={shippingInfo.state} onChange={(e) => handleChange('state', e.target.value)} />
-                  <Input placeholder="ZIP *" value={shippingInfo.zip} onChange={(e) => handleChange('zip', e.target.value)} />
+                  <div className="relative">
+                    <Input 
+                      placeholder="ZIP/Postal *" 
+                      value={shippingInfo.zip} 
+                      onChange={(e) => handleChange('zip', e.target.value)} 
+                    />
+                    {isCalculatingShipping && (
+                      <Loader2 className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 animate-spin text-primary" />
+                    )}
+                  </div>
                 </div>
                 <Input placeholder="Phone *" value={shippingInfo.phone} onChange={(e) => handleChange('phone', e.target.value)} />
+              </div>
+              
+              {/* Shipping Calculator */}
+              <div className="mt-6 p-4 bg-gradient-to-r from-primary/5 to-amber-50 rounded-lg border border-primary/20">
+                <div className="flex items-center gap-2 mb-3">
+                  <Calculator className="h-5 w-5 text-primary" />
+                  <h3 className="font-semibold text-secondary">Shipping Calculator</h3>
+                </div>
+                <div className="flex items-center gap-3">
+                  <div className="flex-1">
+                    <div className="flex items-center gap-2">
+                      <MapPin className="h-4 w-4 text-gray-400" />
+                      <span className="text-sm text-gray-600">
+                        {shippingInfo.zip ? `ZIP: ${shippingInfo.zip}` : 'Enter ZIP code above'}
+                      </span>
+                    </div>
+                    {shippingMessage && (
+                      <p className={`text-sm mt-1 font-medium ${shippingCost === 25 ? 'text-green-600' : 'text-amber-600'}`}>
+                        {shippingMessage}
+                      </p>
+                    )}
+                  </div>
+                  <Button 
+                    variant="outline" 
+                    size="sm" 
+                    onClick={calculateShipping}
+                    disabled={isCalculatingShipping || !shippingInfo.zip}
+                  >
+                    {isCalculatingShipping ? (
+                      <Loader2 className="h-4 w-4 animate-spin" />
+                    ) : (
+                      'Calculate'
+                    )}
+                  </Button>
+                </div>
+                <p className="text-xs text-gray-500 mt-2">
+                  Vietnam: $25 | International: $200
+                </p>
               </div>
             </div>
           </div>
@@ -124,7 +237,19 @@ function CheckoutContent() {
               <Separator />
               <div className="space-y-2 text-sm">
                 <div className="flex justify-between"><span>Subtotal</span><span>${subtotal.toLocaleString()}</span></div>
-                <div className="flex justify-between"><span>Shipping</span><span className={shipping === 0 ? "text-green-600" : ""}>{shipping === 0 ? "FREE" : "$" + shipping}</span></div>
+                <div className="flex justify-between">
+                  <span className="flex items-center gap-1">
+                    Shipping
+                    {shippingCost !== null && (
+                      <span className={`text-xs px-1.5 py-0.5 rounded ${shippingCost === 25 ? 'bg-green-100 text-green-700' : 'bg-amber-100 text-amber-700'}`}>
+                        {shippingCost === 25 ? 'VN' : 'INT'}
+                      </span>
+                    )}
+                  </span>
+                  <span className={shipping === 0 ? "text-green-600" : ""}>
+                    {shipping === 0 ? "FREE" : "$" + shipping}
+                  </span>
+                </div>
                 <div className="flex justify-between"><span>Tax (8%)</span><span>${tax.toFixed(2)}</span></div>
                 <Separator />
                 <div className="flex justify-between text-lg font-bold"><span>Total</span><span className="text-primary">${total.toFixed(2)}</span></div>
@@ -138,12 +263,14 @@ function CheckoutContent() {
               {/* PayPal Standard Button */}
               <PayPalStandardButton
                 shippingInfo={allFieldsFilled ? shippingInfo : null}
+                shippingCost={shippingCost}
                 onError={(error) => setPaymentError(error.message || 'Payment failed. Please try again.')}
               />
 
               {/* PayPal.me Button */}
               <PayPalMeButton
                 shippingInfo={allFieldsFilled ? shippingInfo : null}
+                shippingCost={shippingCost}
                 onError={(error) => setPaymentError(error.message || 'Payment failed. Please try again.')}
               />
               

@@ -226,3 +226,12 @@ model HomepageContent {
   metadata   Json?
   updatedAt  DateTime @updatedAt
 }
+
+model InquiryTitle {
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  title     String
+  order     Int      @default(0)
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}

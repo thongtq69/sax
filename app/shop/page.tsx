@@ -33,6 +33,7 @@ function ShopPageContent() {
   const [selectedBrands, setSelectedBrands] = useState<string[]>([])
   const [selectedSubcategories, setSelectedSubcategories] = useState<string[]>([])
   const [selectedBadges, setSelectedBadges] = useState<string[]>([])
+  const [selectedConditions, setSelectedConditions] = useState<string[]>([])
   const [inStockOnly, setInStockOnly] = useState(false)
   const [priceRange, setPriceRange] = useState<[number, number]>([0, 50000000])
   const [sortBy, setSortBy] = useState<SortOption>('featured')
@@ -133,6 +134,7 @@ function ShopPageContent() {
     const parsedSubcategories = parseListParam('subcategory')
     const parsedBrands = parseListParam('brand')
     const parsedBadges = parseListParam('badge')
+    const parsedConditions = parseListParam('condition')
     const parsedInStock = ['1', 'true', 'yes'].includes(
       (searchParams.get('inStock') || '').toLowerCase()
     )
@@ -147,6 +149,7 @@ function ShopPageContent() {
       parsedSubcategories.length > 0 ||
       parsedBrands.length > 0 ||
       parsedBadges.length > 0 ||
+      parsedConditions.length > 0 ||
       parsedInStock ||
       Number.isFinite(parsedMin) ||
       Number.isFinite(parsedMax) ||
@@ -158,6 +161,7 @@ function ShopPageContent() {
       setSelectedSubcategories(parsedSubcategories)
       setSelectedBrands(parsedBrands)
       setSelectedBadges(parsedBadges)
+      setSelectedConditions(parsedConditions)
       setInStockOnly(parsedInStock)
       if (
         parsedSort &&
@@ -192,7 +196,7 @@ function ShopPageContent() {
     setIsFiltering(true)
     const timer = setTimeout(() => setIsFiltering(false), 300)
     return () => clearTimeout(timer)
-  }, [selectedBrands, selectedSubcategories, selectedBadges, inStockOnly, priceRange, sortBy])
+  }, [selectedBrands, selectedSubcategories, selectedBadges, selectedConditions, inStockOnly, priceRange, sortBy])
 
   useEffect(() => {
     if (!hasInitializedRef.current) return
@@ -206,6 +210,9 @@ function ShopPageContent() {
     }
     if (selectedBadges.length > 0) {
       params.set('badge', selectedBadges.join(','))
+    }
+    if (selectedConditions.length > 0) {
+      params.set('condition', selectedConditions.join(','))
     }
     if (inStockOnly) {
       params.set('inStock', '1')
@@ -229,6 +236,7 @@ function ShopPageContent() {
     selectedBrands,
     selectedSubcategories,
     selectedBadges,
+    selectedConditions,
     inStockOnly,
     priceRange,
     sortBy,
@@ -253,6 +261,14 @@ function ShopPageContent() {
     // Badge filter
     if (selectedBadges.length > 0) {
       filtered = filtered.filter((p) => p.badge && selectedBadges.includes(p.badge))
+    }
+
+    // Condition filter (for used products)
+    if (selectedConditions.length > 0) {
+      filtered = filtered.filter((p) => {
+        const product = p as any
+        return product.productType === 'used' && product.condition && selectedConditions.includes(product.condition)
+      })
     }
 
     // Availability
@@ -297,26 +313,13 @@ function ShopPageContent() {
     }
 
     return filtered
-  }, [products, selectedBrands, selectedSubcategories, selectedBadges, inStockOnly, priceRange, sortBy])
+  }, [products, selectedBrands, selectedSubcategories, selectedBadges, selectedConditions, inStockOnly, priceRange, sortBy])
 
   const totalPages = Math.ceil(filteredProducts.length / itemsPerPage)
   const paginatedProducts = filteredProducts.slice(
     (currentPage - 1) * itemsPerPage,
     currentPage * itemsPerPage
   )
-
-  // Group products by subcategory for display
-  const groupedByCategory = useMemo(() => {
-    if (selectedSubcategories.length > 0) return null
-    
-    const groups = new Map<string, Product[]>()
-    filteredProducts.forEach(p => {
-      const key = p.subcategory || 'other'
-      const current = groups.get(key) || []
-      groups.set(key, [...current, p])
-    })
-    return groups
-  }, [filteredProducts, selectedSubcategories])
 
   if (isLoading) {
     return (
@@ -437,10 +440,12 @@ function ShopPageContent() {
                 selectedBrands={selectedBrands}
                 selectedSubcategories={selectedSubcategories}
                 selectedBadges={selectedBadges}
+                selectedConditions={selectedConditions}
                 inStockOnly={inStockOnly}
                 onBrandChange={setSelectedBrands}
                 onSubcategoryChange={setSelectedSubcategories}
                 onBadgeChange={setSelectedBadges}
+                onConditionChange={setSelectedConditions}
                 onInStockChange={setInStockOnly}
                 priceRange={priceRange}
                 onPriceRangeChange={setPriceRange}
@@ -460,10 +465,12 @@ function ShopPageContent() {
                 selectedBrands={selectedBrands}
                 selectedSubcategories={selectedSubcategories}
                 selectedBadges={selectedBadges}
+                selectedConditions={selectedConditions}
                 inStockOnly={inStockOnly}
                 onBrandChange={setSelectedBrands}
                 onSubcategoryChange={setSelectedSubcategories}
                 onBadgeChange={setSelectedBadges}
+                onConditionChange={setSelectedConditions}
                 onInStockChange={setInStockOnly}
                 priceRange={priceRange}
                 onPriceRangeChange={setPriceRange}
@@ -526,6 +533,7 @@ function ShopPageContent() {
                     setSelectedBrands([])
                     setSelectedSubcategories([])
                     setSelectedBadges([])
+                    setSelectedConditions([])
                     setInStockOnly(false)
                     setPriceRange([0, maxPrice])
                   }}
