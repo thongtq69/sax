@@ -132,6 +132,8 @@ export function PayPalStandardButton({ shippingInfo, shippingCost, onError }: Pa
 
       // Add shipping info if provided
       if (shippingInfo) {
+        // Override PayPal's default address with user-provided address
+        params.address_override = '1' // Force use of provided address
         params.first_name = shippingInfo.firstName
         params.last_name = shippingInfo.lastName
         params.address1 = shippingInfo.address1

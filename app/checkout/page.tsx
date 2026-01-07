@@ -10,7 +10,7 @@ import { Input } from '@/components/ui/input'
 import { Separator } from '@/components/ui/separator'
 import { ShieldCheck, Lock, Package, Truck, ArrowLeft, AlertCircle, Loader2, MapPin, Calculator } from 'lucide-react'
 import { PayPalStandardButton } from '@/components/checkout/PayPalStandardButton'
-import { PayPalMeButton } from '@/components/checkout/PayPalMeButton'
+// import { PayPalMeButton } from '@/components/checkout/PayPalMeButton' // Temporarily hidden
 
 // Vietnam postal codes start with these prefixes (6 digits)
 const VIETNAM_POSTAL_PREFIXES = [
@@ -304,12 +304,12 @@ function CheckoutContent() {
                 onError={(error) => setPaymentError(error.message || 'Payment failed. Please try again.')}
               />
 
-              {/* PayPal.me Button */}
-              <PayPalMeButton
+              {/* PayPal.me Button - Temporarily hidden */}
+              {/* <PayPalMeButton
                 shippingInfo={allFieldsFilled ? shippingInfo : null}
                 shippingCost={shippingCost}
                 onError={(error) => setPaymentError(error.message || 'Payment failed. Please try again.')}
-              />
+              /> */}
               
               <div className="flex items-center justify-center gap-2 text-xs text-gray-400 pt-2">
                 <Lock className="h-3 w-3" /><span>Powered by PayPal</span>

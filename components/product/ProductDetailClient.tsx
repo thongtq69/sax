@@ -376,7 +376,7 @@ const handleAddToCart = async () => {
         </div>
       )}
 
-      <div className="bg-white rounded-2xl border shadow-sm overflow-hidden">
+      <div className="bg-white rounded-2xl border shadow-sm">
         <div className="flex flex-col lg:grid lg:grid-cols-10 lg:items-start">
           {/* Image Gallery */}
           <div className="animate-fade-in-left lg:col-span-6 p-4 md:p-6">
@@ -563,7 +563,7 @@ const handleAddToCart = async () => {
         </div>
 
         {/* Product Info - Sticky on desktop */}
-        <div className="space-y-4 md:space-y-6 animate-fade-in-right lg:col-span-4 lg:sticky lg:top-24 lg:self-start p-4 md:p-6 lg:border-l">
+        <div className="space-y-4 md:space-y-6 animate-fade-in-right lg:col-span-4 lg:sticky lg:top-4 lg:self-start lg:h-fit lg:max-h-[calc(100vh-2rem)] lg:overflow-y-auto p-4 md:p-6 lg:border-l">
           {/* Header */}
           <div>
             <div className="flex items-center gap-1.5 md:gap-2 mb-2 flex-wrap">
