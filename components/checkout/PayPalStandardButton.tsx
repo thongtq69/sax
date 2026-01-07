@@ -76,27 +76,57 @@ export function PayPalStandardButton({ shippingInfo, onError }: PayPalStandardBu
       form.action = paypalUrl
       form.target = '_self'
 
-      // PayPal Standard Button parameters
-      // Using _xclick for single item purchase
+      // Using _cart command to send detailed cart with multiple items
+      // This shows each product separately + shipping + tax in PayPal
       const params: Record<string, string> = {
-        cmd: '_xclick',
+        cmd: '_cart',
+        upload: '1', // Required for _cart command
         business: paypalEmail,
-        item_name: `James Sax Corner Order #${orderId.slice(-8)}`,
-        item_number: orderId,
-        amount: total.toFixed(2),
         currency_code: 'USD',
-        no_shipping: '0', // 0 = prompt for address, 1 = don't prompt, 2 = require
-        no_note: '1',
-        custom: orderId, // Pass order ID for IPN
+        
+        // Shipping cost (shown separately in PayPal)
+        shipping_1: shipping.toFixed(2),
+        
+        // Tax (shown separately in PayPal)
+        tax_cart: tax.toFixed(2),
+        
+        // Order tracking
+        custom: orderId,
         invoice: orderId,
+        
+        // URLs
         return: `${baseUrl}/checkout/success?orderId=${orderId}&source=paypal`,
         cancel_return: `${baseUrl}/checkout?cancelled=true`,
         notify_url: `${baseUrl}/api/paypal/ipn`,
+        
+        // Settings
         rm: '2', // Return method: 2 = POST
+        no_shipping: '0', // 0 = prompt for address
+        no_note: '1',
         charset: 'utf-8',
-        lc: 'US', // Locale
-        bn: 'JSC_BuyNow_WPS_US', // Button source
+        lc: 'US',
+        bn: 'JSC_ShoppingCart_WPS_US',
       }
+
+      // Add each cart item with detailed info
+      // PayPal _cart uses item_name_X, amount_X, quantity_X format
+      items.forEach((item, index) => {
+        const itemNum = index + 1
+        // Product name with details (brand, model, condition if available)
+        let itemName = item.name
+        if (item.name.length > 127) {
+          itemName = item.name.substring(0, 124) + '...'
+        }
+        
+        params[`item_name_${itemNum}`] = itemName
+        params[`amount_${itemNum}`] = item.price.toFixed(2)
+        params[`quantity_${itemNum}`] = item.quantity.toString()
+        
+        // Optional: Add item number/SKU if available
+        if (item.productId) {
+          params[`item_number_${itemNum}`] = item.productId
+        }
+      })
 
       // Add shipping info if provided
       if (shippingInfo) {
@@ -112,9 +142,14 @@ export function PayPalStandardButton({ shippingInfo, onError }: PayPalStandardBu
         params.night_phone_b = shippingInfo.phone
       }
 
-      console.log('PayPal params:', { 
+      console.log('PayPal Cart params:', { 
         ...params, 
-        business: params.business.replace(/(.{3}).*(@.*)/, '$1***$2') 
+        business: params.business.replace(/(.{3}).*(@.*)/, '$1***$2'),
+        itemCount: items.length,
+        subtotal: subtotal.toFixed(2),
+        shipping: shipping.toFixed(2),
+        tax: tax.toFixed(2),
+        total: total.toFixed(2),
       })
 
       // Create hidden inputs
