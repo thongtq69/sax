@@ -41,9 +41,11 @@ export function TestimonialsPopup({ isOpen, onClose }: TestimonialsPopupProps) {
               buyerName: r.buyerName,
               date: r.date,
               product: r.product ? { name: r.product.name } : undefined,
-              customProductName: r.customProductName,
+              customProductName: r.customProductName || undefined,
+              // Compute productName from either product relation or customProductName
               productName: r.product?.name || r.customProductName || undefined,
             }))
+            console.log('Testimonials loaded:', transformedReviews.slice(0, 2)) // Debug log - remove in production
             setReviews(transformedReviews)
           } else {
             // Fallback to JSON file
@@ -59,6 +61,7 @@ export function TestimonialsPopup({ isOpen, onClose }: TestimonialsPopupProps) {
                   buyerName: r.author_name,
                   date: r.created_at,
                   product: r.order_title ? { name: r.order_title } : undefined,
+                  productName: r.order_title || undefined,
                 })))
               })
           }
@@ -77,6 +80,7 @@ export function TestimonialsPopup({ isOpen, onClose }: TestimonialsPopupProps) {
                 buyerName: r.author_name,
                 date: r.created_at,
                 product: r.order_title ? { name: r.order_title } : undefined,
+                productName: r.order_title || undefined,
               })))
               setIsLoading(false)
             })
@@ -184,7 +188,9 @@ export function TestimonialsPopup({ isOpen, onClose }: TestimonialsPopupProps) {
                             <span className="text-xs font-medium">Verified</span>
                           </div>
                         </div>
-                        <p className="text-xs text-gray-500">{review.product?.name || review.customProductName || review.productName || 'General Review'}</p>
+                        {review.productName && (
+                          <p className="text-xs text-[#AFA65F] font-medium">Product: {review.productName}</p>
+                        )}
                       </div>
                     </div>
                   </div>
