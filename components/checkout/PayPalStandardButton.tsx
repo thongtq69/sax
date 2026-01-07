@@ -3,7 +3,7 @@
 import { useState } from 'react'
 import { useCartStore } from '@/lib/store/cart'
 import { Button } from '@/components/ui/button'
-import { Loader2, CreditCard } from 'lucide-react'
+import { Loader2 } from 'lucide-react'
 
 interface PayPalStandardButtonProps {
   shippingInfo: {
@@ -30,18 +30,24 @@ export function PayPalStandardButton({ shippingInfo, onError }: PayPalStandardBu
   const total = subtotal + shipping + tax
 
   // PayPal Business Email (Sandbox or Live)
-  const paypalEmail = process.env.NEXT_PUBLIC_PAYPAL_BUSINESS_EMAIL || 'sb-merchant@business.example.com'
+  const paypalEmail = process.env.NEXT_PUBLIC_PAYPAL_BUSINESS_EMAIL || 'sb-stwky48264789@business.example.com'
   const isSandbox = process.env.NEXT_PUBLIC_PAYPAL_MODE !== 'live'
+  
+  // PayPal Standard Button URL
   const paypalUrl = isSandbox 
     ? 'https://www.sandbox.paypal.com/cgi-bin/webscr'
     : 'https://www.paypal.com/cgi-bin/webscr'
 
   // Get the base URL for return/cancel/notify URLs
-  const baseUrl = typeof window !== 'undefined' 
-    ? window.location.origin 
-    : process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000'
+  const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 
+    (typeof window !== 'undefined' ? window.location.origin : 'http://localhost:3000')
 
   const handlePayPalSubmit = async () => {
+    if (items.length === 0) {
+      onError?.({ message: 'Your cart is empty' })
+      return
+    }
+
     setIsLoading(true)
     
     try {
@@ -62,6 +68,7 @@ export function PayPalStandardButton({ shippingInfo, onError }: PayPalStandardBu
       }
 
       const { orderId } = await response.json()
+      console.log('Order created:', orderId)
 
       // Create and submit PayPal form
       const form = document.createElement('form')
@@ -70,22 +77,25 @@ export function PayPalStandardButton({ shippingInfo, onError }: PayPalStandardBu
       form.target = '_self'
 
       // PayPal Standard Button parameters
+      // Using _xclick for single item purchase
       const params: Record<string, string> = {
-        cmd: '_xclick', // Single item purchase
+        cmd: '_xclick',
         business: paypalEmail,
         item_name: `James Sax Corner Order #${orderId.slice(-8)}`,
         item_number: orderId,
         amount: total.toFixed(2),
         currency_code: 'USD',
-        no_shipping: '0', // Prompt for shipping address
+        no_shipping: '0', // 0 = prompt for address, 1 = don't prompt, 2 = require
         no_note: '1',
         custom: orderId, // Pass order ID for IPN
         invoice: orderId,
-        return: `${baseUrl}/checkout/success?orderId=${orderId}`,
+        return: `${baseUrl}/checkout/success?orderId=${orderId}&source=paypal`,
         cancel_return: `${baseUrl}/checkout?cancelled=true`,
         notify_url: `${baseUrl}/api/paypal/ipn`,
-        rm: '2', // POST data to return URL
+        rm: '2', // Return method: 2 = POST
         charset: 'utf-8',
+        lc: 'US', // Locale
+        bn: 'JSC_BuyNow_WPS_US', // Button source
       }
 
       // Add shipping info if provided
@@ -101,6 +111,11 @@ export function PayPalStandardButton({ shippingInfo, onError }: PayPalStandardBu
         params.email = shippingInfo.email
         params.night_phone_b = shippingInfo.phone
       }
+
+      console.log('PayPal params:', { 
+        ...params, 
+        business: params.business.replace(/(.{3}).*(@.*)/, '$1***$2') 
+      })
 
       // Create hidden inputs
       Object.entries(params).forEach(([key, value]) => {
@@ -126,7 +141,7 @@ export function PayPalStandardButton({ shippingInfo, onError }: PayPalStandardBu
       <Button
         onClick={handlePayPalSubmit}
         disabled={isLoading || items.length === 0}
-        className="w-full h-12 bg-[#ffc439] hover:bg-[#f0b72d] text-[#003087] font-bold text-base"
+        className="w-full h-12 bg-[#0070ba] hover:bg-[#003087] text-white font-bold text-base"
       >
         {isLoading ? (
           <>
@@ -144,9 +159,11 @@ export function PayPalStandardButton({ shippingInfo, onError }: PayPalStandardBu
         )}
       </Button>
       
-      <p className="text-xs text-center text-gray-500">
-        {isSandbox ? '🧪 Sandbox Mode - Use test credentials' : 'Secure payment via PayPal'}
-      </p>
+      {isSandbox && (
+        <p className="text-xs text-center text-amber-600 bg-amber-50 p-2 rounded">
+          🧪 Sandbox Mode - Use test buyer account to complete payment
+        </p>
+      )}
     </div>
   )
 }
