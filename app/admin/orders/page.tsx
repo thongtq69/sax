@@ -30,17 +30,37 @@ interface Order {
   status: string
   total: number
   shippingAddress: {
-    email: string
-    firstName: string
-    lastName: string
-    address1: string
+    name?: string
+    email?: string
+    firstName?: string
+    lastName?: string
+    address1?: string
     address2?: string
-    city: string
-    state: string
-    zip: string
-    phone: string
+    city?: string
+    state?: string
+    zip?: string
+    country?: string
+    countryCode?: string
+    phone?: string
+    addressStatus?: string // confirmed/unconfirmed from PayPal
   } | null
   billingAddress: {
+    // PayPal Payer Info
+    payerId?: string
+    payerEmail?: string
+    payerStatus?: string // verified/unverified
+    firstName?: string
+    lastName?: string
+    // Payment Details
+    txnId?: string
+    paymentStatus?: string
+    mcGross?: string
+    mcFee?: string
+    mcShipping?: string
+    tax?: string
+    currency?: string
+    paymentDate?: string
+    // Legacy fields
     paypalOrderId?: string
     paypalPayerId?: string
     paypalEmail?: string
@@ -218,10 +238,14 @@ export default function OrdersManagement() {
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
                       <div className="text-sm font-medium text-gray-900">
-                        {order.shippingAddress?.firstName} {order.shippingAddress?.lastName}
+                        {order.shippingAddress?.name || 
+                         `${order.shippingAddress?.firstName || ''} ${order.shippingAddress?.lastName || ''}`.trim() ||
+                         (order.billingAddress?.firstName && order.billingAddress?.lastName 
+                           ? `${order.billingAddress?.firstName} ${order.billingAddress?.lastName}`
+                           : 'N/A')}
                       </div>
                       <div className="text-sm text-gray-500">
-                        {order.shippingAddress?.email}
+                        {order.shippingAddress?.email || order.billingAddress?.payerEmail || 'No email'}
                       </div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
@@ -280,7 +304,7 @@ export default function OrdersManagement() {
             <div className="space-y-6">
               {/* Status & Date */}
               <div className="flex items-center justify-between">
-                <span className={`px-3 py-1 text-sm font-medium ${getStatusColor(selectedOrder.status)}`}>
+                <span className={`px-3 py-1 text-sm font-medium rounded ${getStatusColor(selectedOrder.status)}`}>
                   {selectedOrder.status.toUpperCase()}
                 </span>
                 <span className="text-sm text-gray-500">
@@ -288,48 +312,177 @@ export default function OrdersManagement() {
                 </span>
               </div>
 
-              {/* Shipping Address */}
-              {selectedOrder.shippingAddress && (
+              {/* Customer Info from PayPal */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {/* Shipping Address */}
                 <div>
-                  <h4 className="font-semibold mb-2">Shipping Address</h4>
-                  <div className="bg-gray-50 p-4 text-sm">
-                    <p className="font-medium">
-                      {selectedOrder.shippingAddress.firstName} {selectedOrder.shippingAddress.lastName}
-                    </p>
-                    <p>{selectedOrder.shippingAddress.address1}</p>
-                    {selectedOrder.shippingAddress.address2 && (
-                      <p>{selectedOrder.shippingAddress.address2}</p>
+                  <h4 className="font-semibold mb-2 flex items-center gap-2">
+                    <Truck className="h-4 w-4" />
+                    Shipping Address
+                    {selectedOrder.shippingAddress?.addressStatus && (
+                      <span className={`text-xs px-2 py-0.5 rounded ${
+                        selectedOrder.shippingAddress.addressStatus === 'confirmed' 
+                          ? 'bg-green-100 text-green-700' 
+                          : 'bg-yellow-100 text-yellow-700'
+                      }`}>
+                        {selectedOrder.shippingAddress.addressStatus}
+                      </span>
                     )}
-                    <p>
-                      {selectedOrder.shippingAddress.city}, {selectedOrder.shippingAddress.state} {selectedOrder.shippingAddress.zip}
-                    </p>
-                    <p className="mt-2 text-gray-600">
-                      📧 {selectedOrder.shippingAddress.email}
-                    </p>
-                    <p className="text-gray-600">
-                      📞 {selectedOrder.shippingAddress.phone}
-                    </p>
+                  </h4>
+                  <div className="bg-gray-50 p-4 rounded-lg text-sm space-y-1">
+                    {selectedOrder.shippingAddress ? (
+                      <>
+                        <p className="font-medium text-gray-900">
+                          {selectedOrder.shippingAddress.name || 
+                           `${selectedOrder.shippingAddress.firstName || ''} ${selectedOrder.shippingAddress.lastName || ''}`.trim() ||
+                           'N/A'}
+                        </p>
+                        {selectedOrder.shippingAddress.address1 && (
+                          <p className="text-gray-600">{selectedOrder.shippingAddress.address1}</p>
+                        )}
+                        {selectedOrder.shippingAddress.address2 && (
+                          <p className="text-gray-600">{selectedOrder.shippingAddress.address2}</p>
+                        )}
+                        {(selectedOrder.shippingAddress.city || selectedOrder.shippingAddress.state || selectedOrder.shippingAddress.zip) && (
+                          <p className="text-gray-600">
+                            {[
+                              selectedOrder.shippingAddress.city,
+                              selectedOrder.shippingAddress.state,
+                              selectedOrder.shippingAddress.zip
+                            ].filter(Boolean).join(', ')}
+                          </p>
+                        )}
+                        {selectedOrder.shippingAddress.country && (
+                          <p className="text-gray-600">{selectedOrder.shippingAddress.country}</p>
+                        )}
+                        <div className="pt-2 border-t mt-2 space-y-1">
+                          {selectedOrder.shippingAddress.email && (
+                            <p className="text-gray-700">
+                              📧 {selectedOrder.shippingAddress.email}
+                            </p>
+                          )}
+                          {selectedOrder.shippingAddress.phone && (
+                            <p className="text-gray-700">
+                              📞 {selectedOrder.shippingAddress.phone}
+                            </p>
+                          )}
+                        </div>
+                      </>
+                    ) : (
+                      <p className="text-gray-400 italic">No shipping address</p>
+                    )}
                   </div>
                 </div>
-              )}
 
-              {/* PayPal Info */}
-              {selectedOrder.billingAddress?.paypalOrderId && (
+                {/* Payment Info from PayPal */}
                 <div>
-                  <h4 className="font-semibold mb-2">Payment Info</h4>
-                  <div className="bg-blue-50 p-4 text-sm">
-                    <p><span className="text-gray-600">PayPal Order:</span> {selectedOrder.billingAddress.paypalOrderId}</p>
-                    {selectedOrder.billingAddress.paypalEmail && (
-                      <p><span className="text-gray-600">PayPal Email:</span> {selectedOrder.billingAddress.paypalEmail}</p>
+                  <h4 className="font-semibold mb-2 flex items-center gap-2">
+                    <CheckCircle className="h-4 w-4" />
+                    Payment Info
+                    {selectedOrder.billingAddress?.payerStatus && (
+                      <span className={`text-xs px-2 py-0.5 rounded ${
+                        selectedOrder.billingAddress.payerStatus === 'verified' 
+                          ? 'bg-green-100 text-green-700' 
+                          : 'bg-yellow-100 text-yellow-700'
+                      }`}>
+                        {selectedOrder.billingAddress.payerStatus}
+                      </span>
+                    )}
+                  </h4>
+                  <div className="bg-blue-50 p-4 rounded-lg text-sm space-y-2">
+                    {selectedOrder.billingAddress ? (
+                      <>
+                        {/* Transaction ID */}
+                        {selectedOrder.billingAddress.txnId && (
+                          <div className="flex justify-between">
+                            <span className="text-gray-600">Transaction ID:</span>
+                            <span className="font-mono text-xs">{selectedOrder.billingAddress.txnId}</span>
+                          </div>
+                        )}
+                        
+                        {/* PayPal Email */}
+                        {(selectedOrder.billingAddress.payerEmail || selectedOrder.billingAddress.paypalEmail) && (
+                          <div className="flex justify-between">
+                            <span className="text-gray-600">PayPal Email:</span>
+                            <span className="text-blue-600">
+                              {selectedOrder.billingAddress.payerEmail || selectedOrder.billingAddress.paypalEmail}
+                            </span>
+                          </div>
+                        )}
+                        
+                        {/* Payer Name */}
+                        {(selectedOrder.billingAddress.firstName || selectedOrder.billingAddress.lastName) && (
+                          <div className="flex justify-between">
+                            <span className="text-gray-600">Payer Name:</span>
+                            <span>
+                              {`${selectedOrder.billingAddress.firstName || ''} ${selectedOrder.billingAddress.lastName || ''}`.trim()}
+                            </span>
+                          </div>
+                        )}
+                        
+                        {/* Payment Status */}
+                        {selectedOrder.billingAddress.paymentStatus && (
+                          <div className="flex justify-between">
+                            <span className="text-gray-600">Payment Status:</span>
+                            <span className={`font-medium ${
+                              selectedOrder.billingAddress.paymentStatus === 'Completed' 
+                                ? 'text-green-600' 
+                                : 'text-yellow-600'
+                            }`}>
+                              {selectedOrder.billingAddress.paymentStatus}
+                            </span>
+                          </div>
+                        )}
+                        
+                        {/* Amount Details */}
+                        <div className="pt-2 border-t border-blue-200 mt-2 space-y-1">
+                          {selectedOrder.billingAddress.mcGross && (
+                            <div className="flex justify-between">
+                              <span className="text-gray-600">Gross Amount:</span>
+                              <span className="font-medium">${selectedOrder.billingAddress.mcGross}</span>
+                            </div>
+                          )}
+                          {selectedOrder.billingAddress.mcShipping && parseFloat(selectedOrder.billingAddress.mcShipping) > 0 && (
+                            <div className="flex justify-between">
+                              <span className="text-gray-600">Shipping:</span>
+                              <span>${selectedOrder.billingAddress.mcShipping}</span>
+                            </div>
+                          )}
+                          {selectedOrder.billingAddress.tax && parseFloat(selectedOrder.billingAddress.tax) > 0 && (
+                            <div className="flex justify-between">
+                              <span className="text-gray-600">Tax:</span>
+                              <span>${selectedOrder.billingAddress.tax}</span>
+                            </div>
+                          )}
+                          {selectedOrder.billingAddress.mcFee && (
+                            <div className="flex justify-between text-red-600">
+                              <span>PayPal Fee:</span>
+                              <span>-${selectedOrder.billingAddress.mcFee}</span>
+                            </div>
+                          )}
+                        </div>
+                        
+                        {/* Payment Date */}
+                        {selectedOrder.billingAddress.paymentDate && (
+                          <div className="text-xs text-gray-500 pt-2">
+                            Paid: {formatDate(selectedOrder.billingAddress.paymentDate)}
+                          </div>
+                        )}
+                      </>
+                    ) : (
+                      <p className="text-gray-400 italic">No payment info</p>
                     )}
                   </div>
                 </div>
-              )}
+              </div>
 
               {/* Order Items */}
               <div>
-                <h4 className="font-semibold mb-2">Order Items ({selectedOrder.items.length})</h4>
-                <div className="border divide-y">
+                <h4 className="font-semibold mb-2 flex items-center gap-2">
+                  <Package className="h-4 w-4" />
+                  Order Items ({selectedOrder.items.length})
+                </h4>
+                <div className="border rounded-lg divide-y">
                   {selectedOrder.items.map((item) => (
                     <div key={item.id} className="p-3 flex justify-between items-center">
                       <div>

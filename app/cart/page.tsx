@@ -3,6 +3,7 @@
 import Link from 'next/link'
 import Image from 'next/image'
 import { useCartStore } from '@/lib/store/cart'
+import { getProductUrl } from '@/lib/api'
 import { Button } from '@/components/ui/button'
 import { Separator } from '@/components/ui/separator'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
@@ -56,7 +57,7 @@ export default function CartPage() {
                   <div className="flex items-start justify-between">
                     <div>
                       <Link
-                        href={`/product/sku/${item.sku}`}
+                        href={getProductUrl(item.sku, item.name)}
                         className="font-medium hover:text-primary"
                       >
                         {item.name}

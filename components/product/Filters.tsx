@@ -145,7 +145,7 @@ export function Filters({
               className="text-xs text-destructive hover:underline flex items-center gap-1"
             >
               <X className="w-3 h-3" />
-              Xóa tất cả
+              Clear all
             </button>
           </div>
           <div className="flex flex-wrap gap-2">
@@ -261,7 +261,7 @@ export function Filters({
           className="flex items-center justify-between w-full group"
         >
           <h3 className="font-display font-semibold text-secondary group-hover:text-primary transition-colors">
-            Thương hiệu
+            Brand
           </h3>
           <ChevronDown className={`w-4 h-4 text-muted-foreground transition-transform duration-300 ${brandExpanded ? 'rotate-180' : ''}`} />
         </button>
@@ -421,7 +421,7 @@ export function Filters({
           className="flex items-center justify-between w-full group"
         >
           <h3 className="font-display font-semibold text-secondary group-hover:text-primary transition-colors">
-            Khoảng giá
+            Price Range
           </h3>
           <ChevronDown className={`w-4 h-4 text-muted-foreground transition-transform duration-300 ${priceExpanded ? 'rotate-180' : ''}`} />
         </button>
@@ -432,7 +432,7 @@ export function Filters({
               <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground text-sm">$</span>
               <Input
                 type="number"
-                placeholder="Từ"
+                placeholder="From"
                 value={priceRange[0] || ''}
                 onChange={(e) =>
                   onPriceRangeChange([
@@ -448,7 +448,7 @@ export function Filters({
               <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground text-sm">$</span>
               <Input
                 type="number"
-                placeholder="Đến"
+                placeholder="To"
                 value={priceRange[1] || ''}
                 onChange={(e) =>
                   onPriceRangeChange([
@@ -480,7 +480,7 @@ export function Filters({
 
           <p className="text-xs text-muted-foreground flex items-center gap-1">
             <Sparkles className="w-3 h-3" />
-            Giá cao nhất: ${maxPrice.toLocaleString()}
+            Max price: ${maxPrice.toLocaleString()}
           </p>
         </div>
       </div>

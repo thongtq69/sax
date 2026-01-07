@@ -12,6 +12,7 @@ import { QuickViewModal } from './QuickViewModal'
 import { useCartStore } from '@/lib/store/cart'
 import { SmartImage } from '@/components/ui/smart-image'
 import { getProductRatingStats } from '@/lib/reviews'
+import { getProductUrl } from '@/lib/api'
 
 interface ProductCardProps {
   product: Product
@@ -39,9 +40,12 @@ export function ProductCard({ product, index = 0 }: ProductCardProps) {
   const addItem = useCartStore((state) => state.addItem)
   const router = useRouter()
   
+  // Product URL with SEO-friendly slug
+  const productUrl = getProductUrl(product.sku, product.name)
+  
   // Prefetch product page on hover
   const handleMouseEnter = () => {
-    router.prefetch(`/product/sku/${product.sku}`)
+    router.prefetch(productUrl)
   }
 
   // Get rating from hardcoded reviews
@@ -187,7 +191,7 @@ export function ProductCard({ product, index = 0 }: ProductCardProps) {
 
             {/* Title with hover effect */}
             <Link
-              href={`/product/sku/${product.sku}`}
+              href={productUrl}
               className="block group/title"
               prefetch={true}
             >

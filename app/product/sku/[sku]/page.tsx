@@ -1,7 +1,7 @@
 import { notFound } from 'next/navigation'
 import Link from 'next/link'
 import { prisma } from '@/lib/prisma'
-import { transformProduct } from '@/lib/api'
+import { transformProduct, extractSkuFromParam } from '@/lib/api'
 import { ProductDetailClient } from '@/components/product/ProductDetailClient'
 import { ChevronRight, Home } from 'lucide-react'
 
@@ -11,8 +11,11 @@ export default async function ProductBySKUPage({
   params: { sku: string }
 }) {
   try {
+    // Extract SKU from param (handles both old /sku/JSC-XXX and new /sku/JSC-XXX-product-name format)
+    const sku = extractSkuFromParam(params.sku)
+    
     const apiProduct = await prisma.product.findUnique({
-      where: { sku: params.sku },
+      where: { sku: sku },
       include: {
         category: {
           include: {

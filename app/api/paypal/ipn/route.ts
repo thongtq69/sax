@@ -21,26 +21,62 @@ export async function POST(request: NextRequest) {
     const paymentStatus = params.get('payment_status')
     const txnId = params.get('txn_id')
     const receiverEmail = params.get('receiver_email')
-    const payerEmail = params.get('payer_email')
     const mcGross = params.get('mc_gross')
     const mcCurrency = params.get('mc_currency')
+    const mcShipping = params.get('mc_shipping')
+    const mcFee = params.get('mc_fee')
+    const tax = params.get('tax')
     const custom = params.get('custom') // Order ID
     const invoice = params.get('invoice') // Also Order ID
-    const itemName = params.get('item_name')
+    
+    // Payer Information from PayPal
+    const payerEmail = params.get('payer_email')
     const payerFirstName = params.get('first_name')
     const payerLastName = params.get('last_name')
+    const payerId = params.get('payer_id')
+    const payerStatus = params.get('payer_status') // verified/unverified
+    
+    // Shipping Address from PayPal (what buyer entered/confirmed)
+    const addressName = params.get('address_name')
+    const addressStreet = params.get('address_street')
+    const addressCity = params.get('address_city')
+    const addressState = params.get('address_state')
+    const addressZip = params.get('address_zip')
+    const addressCountry = params.get('address_country')
+    const addressCountryCode = params.get('address_country_code')
+    const addressStatus = params.get('address_status') // confirmed/unconfirmed
+    const contactPhone = params.get('contact_phone')
 
     console.log('Parsed IPN Data:', {
       paymentStatus,
       txnId,
       receiverEmail,
-      payerEmail,
       mcGross,
       mcCurrency,
+      mcShipping,
+      mcFee,
+      tax,
       custom,
       invoice,
-      itemName,
+    })
+    
+    console.log('Payer Info:', {
+      payerEmail,
       payerName: `${payerFirstName} ${payerLastName}`,
+      payerId,
+      payerStatus,
+    })
+    
+    console.log('Shipping Address:', {
+      addressName,
+      addressStreet,
+      addressCity,
+      addressState,
+      addressZip,
+      addressCountry,
+      addressCountryCode,
+      addressStatus,
+      contactPhone,
     })
 
     // Verify the IPN with PayPal
@@ -129,17 +165,84 @@ export async function POST(request: NextRequest) {
           console.log(`Unknown payment status: ${paymentStatus}`)
       }
 
-      // Update order if status changed
-      if (newStatus !== existingOrder.status) {
-        await prisma.order.update({
-          where: { id: orderId },
-          data: { 
-            status: newStatus,
-            // You could also store txnId in a metadata field if needed
-          },
-        })
-        console.log(`Order ${orderId} status updated to: ${newStatus}`)
+      // Build shipping address from PayPal data
+      const paypalShippingAddress = {
+        name: addressName || `${payerFirstName || ''} ${payerLastName || ''}`.trim(),
+        firstName: payerFirstName || '',
+        lastName: payerLastName || '',
+        email: payerEmail || '',
+        phone: contactPhone || '',
+        address1: addressStreet || '',
+        address2: '',
+        city: addressCity || '',
+        state: addressState || '',
+        zip: addressZip || '',
+        country: addressCountry || '',
+        countryCode: addressCountryCode || '',
+        addressStatus: addressStatus || '', // confirmed/unconfirmed
       }
+      
+      // Build billing/payer info
+      const paypalPayerInfo = {
+        payerId: payerId || '',
+        payerEmail: payerEmail || '',
+        payerStatus: payerStatus || '', // verified/unverified
+        firstName: payerFirstName || '',
+        lastName: payerLastName || '',
+      }
+      
+      // Payment details
+      const paymentDetails = {
+        txnId: txnId || '',
+        paymentStatus: paymentStatus || '',
+        mcGross: mcGross || '',
+        mcFee: mcFee || '',
+        mcShipping: mcShipping || '',
+        tax: tax || '',
+        currency: mcCurrency || 'USD',
+        paymentDate: new Date().toISOString(),
+      }
+
+      // Update order with PayPal customer info
+      const updateData: any = {
+        status: newStatus,
+      }
+      
+      // Only update shipping address if we got data from PayPal
+      if (addressStreet || addressCity || payerEmail) {
+        updateData.shippingAddress = {
+          ...paypalShippingAddress,
+          // Merge with existing if any
+          ...(existingOrder.shippingAddress as object || {}),
+          // PayPal data takes priority for these fields
+          email: payerEmail || (existingOrder.shippingAddress as any)?.email || '',
+          name: addressName || `${payerFirstName || ''} ${payerLastName || ''}`.trim() || (existingOrder.shippingAddress as any)?.name || '',
+          address1: addressStreet || (existingOrder.shippingAddress as any)?.address1 || '',
+          city: addressCity || (existingOrder.shippingAddress as any)?.city || '',
+          state: addressState || (existingOrder.shippingAddress as any)?.state || '',
+          zip: addressZip || (existingOrder.shippingAddress as any)?.zip || '',
+          country: addressCountry || (existingOrder.shippingAddress as any)?.country || '',
+          phone: contactPhone || (existingOrder.shippingAddress as any)?.phone || '',
+        }
+      }
+      
+      // Store billing/payment info
+      updateData.billingAddress = {
+        ...paypalPayerInfo,
+        ...paymentDetails,
+      }
+
+      await prisma.order.update({
+        where: { id: orderId },
+        data: updateData,
+      })
+      
+      console.log(`Order ${orderId} updated:`, {
+        status: newStatus,
+        hasShippingAddress: !!updateData.shippingAddress,
+        payerEmail,
+        txnId,
+      })
 
     } catch (dbError: any) {
       console.error('Database error:', dbError.message)

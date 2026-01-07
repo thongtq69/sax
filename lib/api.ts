@@ -2,6 +2,45 @@
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL || ''
 
+// Helper function to generate URL-friendly slug from product name
+export function generateProductSlug(name: string): string {
+  return name
+    .toLowerCase()
+    .replace(/[^a-z0-9\s-]/g, '') // Remove special characters
+    .replace(/\s+/g, '-') // Replace spaces with hyphens
+    .replace(/-+/g, '-') // Replace multiple hyphens with single
+    .trim()
+}
+
+// Helper function to generate product URL with SKU and slug
+export function getProductUrl(sku: string, name: string): string {
+  const slug = generateProductSlug(name)
+  return `/product/sku/${sku}-${slug}`
+}
+
+// Helper function to extract SKU from URL parameter (handles both old and new format)
+export function extractSkuFromParam(param: string): string {
+  // Decode URL-encoded characters first
+  const decoded = decodeURIComponent(param)
+  
+  // If param contains JSC- prefix, extract just the SKU part
+  // SKU format: JSC-XXXXXX (JSC- followed by alphanumeric)
+  const jscMatch = decoded.match(/^(JSC-[A-Z0-9]+)/i)
+  if (jscMatch) {
+    return jscMatch[1]
+  }
+  
+  // For non-JSC SKUs (like TEST-PRODUCT-10), try to match the SKU pattern
+  // Look for pattern like WORD-WORD-NUMBER at the start
+  const genericMatch = decoded.match(/^([A-Z]+-[A-Z]+-\d+)/i)
+  if (genericMatch) {
+    return genericMatch[1]
+  }
+  
+  // Fallback: return the whole param (for old URLs or simple SKUs)
+  return decoded
+}
+
 // Helper function to fetch from API
 async function fetchAPI<T>(endpoint: string, options?: RequestInit): Promise<T> {
   const url = `${API_BASE}${endpoint}`

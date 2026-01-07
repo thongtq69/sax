@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { getProducts, getCategories, createProduct, updateProduct, deleteProduct, transformProduct, transformCategory } from '@/lib/api'
+import { getProducts, getCategories, createProduct, updateProduct, deleteProduct, transformProduct, transformCategory, getProductUrl } from '@/lib/api'
 import type { Product } from '@/lib/data'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -157,6 +157,12 @@ export default function ProductsManagement() {
     }
     if (!formData.sku?.trim()) {
       alert('SKU is required')
+      return
+    }
+    // Validate SKU format - should start with JSC- followed by alphanumeric characters
+    const skuPattern = /^JSC-[A-Z0-9]+$/i
+    if (!skuPattern.test(formData.sku.trim())) {
+      alert('SKU must follow format: JSC-XXXXXX (e.g., JSC-A3WIIU). This ensures proper URL generation.')
       return
     }
     if (!formData.category) {
@@ -436,7 +442,7 @@ export default function ProductsManagement() {
                       </td>
                       <td className="px-6 py-4">
                         <div className="flex items-center justify-end gap-1">
-                          <Link href={`/product/sku/${product.sku}`} target="_blank">
+                          <Link href={getProductUrl(product.sku, product.name)} target="_blank">
                             <Button variant="ghost" size="sm" title="View">
                               <Eye className="h-4 w-4" />
                             </Button>
@@ -493,7 +499,7 @@ export default function ProductsManagement() {
                     </span>
                   )}
                   <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
-                    <Link href={`/product/sku/${product.sku}`} target="_blank">
+                    <Link href={getProductUrl(product.sku, product.name)} target="_blank">
                       <Button size="sm" variant="secondary">
                         <Eye className="h-4 w-4" />
                       </Button>
@@ -566,7 +572,7 @@ export default function ProductsManagement() {
                   <Input
                     value={formData.sku}
                     onChange={(e) => setFormData({ ...formData, sku: e.target.value })}
-                    placeholder="e.g., SAX-001"
+                    placeholder="e.g., JSC-A3WIIU"
                   />
                 </div>
                 <div>

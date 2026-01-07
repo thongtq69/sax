@@ -5,7 +5,7 @@ import Image from 'next/image'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { Product } from '@/lib/data'
-import { getProducts, transformProduct } from '@/lib/api'
+import { getProducts, transformProduct, getProductUrl } from '@/lib/api'
 import { getAllReviews, getProductRatingStats } from '@/lib/reviews'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
@@ -296,9 +296,9 @@ const handleAddToCart = async () => {
   const savings = product.retailPrice ? product.retailPrice - product.price : 0
   const savingsPercent = product.retailPrice ? Math.round((savings / product.retailPrice) * 100) : 0
 
-  const handleNavigation = (sku: string) => {
+  const handleNavigation = (sku: string, name: string) => {
     // Use router.push for instant navigation with Next.js prefetching
-    router.push(`/product/sku/${sku}`)
+    router.push(getProductUrl(sku, name))
   }
 
   return (
@@ -311,7 +311,7 @@ const handleAddToCart = async () => {
             <Button
               variant="outline"
               size="sm"
-              onClick={() => handleNavigation(navigationProducts.prev!.sku)}
+              onClick={() => handleNavigation(navigationProducts.prev!.sku, navigationProducts.prev!.name)}
               className="group flex items-center gap-2 transition-all hover:scale-105"
             >
               <ChevronLeft className="h-4 w-4 transition-transform group-hover:-translate-x-1" />
@@ -326,7 +326,7 @@ const handleAddToCart = async () => {
             <Button
               variant="outline"
               size="sm"
-              onClick={() => handleNavigation(navigationProducts.next!.sku)}
+              onClick={() => handleNavigation(navigationProducts.next!.sku, navigationProducts.next!.name)}
               className="group flex items-center gap-2 transition-all hover:scale-105"
             >
               <span className="hidden sm:inline">Next Product</span>
@@ -918,7 +918,7 @@ const handleAddToCart = async () => {
               {relatedProducts.map((item, index) => (
                 <Link
                   key={`${item.id}-${index}`}
-                  href={`/product/sku/${item.sku}`}
+                  href={getProductUrl(item.sku, item.name)}
                   className="group snap-start bg-white rounded-2xl border border-gray-100 shadow-sm hover:shadow-lg transition-all duration-300 overflow-hidden min-w-[220px] w-[220px] sm:min-w-[240px] sm:w-[240px] md:min-w-0 md:w-auto"
                 >
                   <div className="relative aspect-[4/5] overflow-hidden">

@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button'
 import { products } from '@/lib/data'
 import Link from 'next/link'
 import { Dialog, DialogContent } from '@/components/ui/dialog'
+import { getProductUrl } from '@/lib/api'
 
 interface SearchBarProps {
   open: boolean
@@ -130,7 +131,7 @@ export function SearchBar({ open, onOpenChange }: SearchBarProps) {
                 filteredProducts.slice(0, 10).map((product, index) => (
                   <Link
                     key={product.id}
-                    href={`/product/sku/${product.sku}`}
+                    href={getProductUrl(product.sku, product.name)}
                     onClick={() => onOpenChange(false)}
                     className="flex items-center space-x-4 rounded-xl p-3 hover:bg-gradient-to-r hover:from-primary/5 hover:to-accent/5 transition-all duration-300 group border border-transparent hover:border-primary/20 hover:shadow-lg animate-fade-in-up"
                     style={{ animationDelay: `${index * 0.03}s` }}

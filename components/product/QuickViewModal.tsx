@@ -16,6 +16,7 @@ import { useCartStore } from '@/lib/store/cart'
 import { SmartImage } from '@/components/ui/smart-image'
 import { Star, Heart, Check, ExternalLink, Truck, Shield, Award, X, Loader2, ChevronLeft, ChevronRight } from 'lucide-react'
 import { getProductRatingStats } from '@/lib/reviews'
+import { getProductUrl } from '@/lib/api'
 
 interface QuickViewModalProps {
   product: Product
@@ -36,12 +37,15 @@ export function QuickViewModal({
   const addItem = useCartStore((state) => state.addItem)
   const router = useRouter()
   
+  // Product URL with SEO-friendly slug
+  const productUrl = getProductUrl(product.sku, product.name)
+  
   // Prefetch product page when modal opens
   useEffect(() => {
     if (open) {
-      router.prefetch(`/product/sku/${product.sku}`)
+      router.prefetch(productUrl)
     }
-  }, [open, product.sku, router])
+  }, [open, productUrl, router])
   
   // Get rating from hardcoded reviews
   const reviewStats = getProductRatingStats(product.name)
@@ -379,7 +383,7 @@ export function QuickViewModal({
                   // Close modal immediately for better UX
                   onOpenChange(false)
                   // Navigate using router for faster client-side navigation
-                  router.push(`/product/sku/${product.sku}`)
+                  router.push(productUrl)
                 }}
               >
                 <span className="relative z-10">View Full Details</span>

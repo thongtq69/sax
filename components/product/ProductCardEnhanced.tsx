@@ -16,6 +16,7 @@ import { useTiltEffect } from '@/hooks/use-tilt-effect'
 import { useCursorSpotlight } from '@/hooks/use-cursor-spotlight'
 import { useReducedMotion } from '@/hooks/use-reduced-motion'
 import { cn } from '@/lib/utils'
+import { getProductUrl } from '@/lib/api'
 
 interface ProductCardEnhancedProps {
   product: Product
@@ -56,6 +57,9 @@ export function ProductCardEnhanced({
   const addItem = useCartStore((state) => state.addItem)
   const router = useRouter()
   const prefersReducedMotion = useReducedMotion()
+  
+  // Product URL with SEO-friendly slug
+  const productUrl = getProductUrl(product.sku, product.name)
 
   // Tilt effect hook
   const { 
@@ -86,10 +90,10 @@ export function ProductCardEnhanced({
 
   // Prefetch product page on hover
   const handleMouseEnter = useCallback(() => {
-    router.prefetch(`/product/sku/${product.sku}`)
+    router.prefetch(productUrl)
     setIsHovered(true)
     if (enableSpotlight) spotlightMouseEnter()
-  }, [router, product.sku, enableSpotlight, spotlightMouseEnter])
+  }, [router, productUrl, enableSpotlight, spotlightMouseEnter])
 
   const handleMouseLeave = useCallback(() => {
     setIsHovered(false)
@@ -300,7 +304,7 @@ export function ProductCardEnhanced({
 
             {/* Title with hover effect */}
             <Link
-              href={`/product/sku/${product.sku}`}
+              href={productUrl}
               className="block group/title"
               prefetch={true}
             >

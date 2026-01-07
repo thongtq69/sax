@@ -53,6 +53,7 @@ export async function PUT(
       badge,
       inStock,
       stock,
+      stockStatus,
       description,
       specs,
       included,
@@ -78,6 +79,7 @@ export async function PUT(
     if (badge !== undefined) updateData.badge = badge || null
     if (inStock !== undefined) updateData.inStock = inStock
     if (stock !== undefined) updateData.stock = parseInt(stock)
+    if (stockStatus !== undefined) updateData.stockStatus = stockStatus || 'in-stock'
     if (description) updateData.description = description
     if (specs !== undefined) updateData.specs = specs
     if (included !== undefined) updateData.included = included
