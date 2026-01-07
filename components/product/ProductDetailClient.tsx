@@ -1210,20 +1210,21 @@ const handleAddToCart = async () => {
             onClick={(e) => e.stopPropagation()}
           >
             <div className="flex gap-2 justify-center overflow-x-auto max-w-full pb-2">
-              {/* Video Thumbnail */}
-              {videoId && (
+              {/* Video Thumbnails */}
+              {videoIds.map((vId, vIndex) => (
                 <button
-                  onClick={() => setLightboxIndex(VIDEO_INDEX)}
+                  key={`lightbox-video-${vIndex}`}
+                  onClick={() => setLightboxIndex(-1 - vIndex)}
                   className={`relative h-16 w-16 md:h-20 md:w-20 flex-shrink-0 overflow-hidden rounded-lg transition-all duration-300 ${
-                    lightboxIndex === VIDEO_INDEX
+                    lightboxIndex === -1 - vIndex
                       ? 'ring-2 ring-white scale-110 opacity-100'
                       : 'opacity-50 hover:opacity-80'
                   }`}
                 >
                   <div className="relative w-full h-full bg-black">
                     <img
-                      src={`https://img.youtube.com/vi/${videoId}/mqdefault.jpg`}
-                      alt="Video thumbnail"
+                      src={`https://img.youtube.com/vi/${vId}/mqdefault.jpg`}
+                      alt={`Video ${vIndex + 1} thumbnail`}
                       className="w-full h-full object-cover opacity-75"
                     />
                     <div className="absolute inset-0 flex items-center justify-center">
@@ -1233,9 +1234,15 @@ const handleAddToCart = async () => {
                         </svg>
                       </div>
                     </div>
+                    {/* Video number badge */}
+                    {videoIds.length > 1 && (
+                      <span className="absolute bottom-1 right-1 bg-black/70 text-white text-[10px] px-1 rounded">
+                        {vIndex + 1}
+                      </span>
+                    )}
                   </div>
                 </button>
-              )}
+              ))}
               
               {/* Image Thumbnails */}
               {product.images.map((image, index) => (

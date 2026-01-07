@@ -64,7 +64,7 @@ export async function PUT(
       sku,
       rating,
       reviewCount,
-      videoUrl,
+      videoUrls,
     } = body
 
     // Build update data - always include images if provided (even empty array)
@@ -78,7 +78,7 @@ export async function PUT(
     if (categoryId) updateData.categoryId = categoryId
     if (subcategoryId !== undefined) updateData.subcategoryId = subcategoryId || null
     if (images !== undefined) updateData.images = images || []
-    if (videoUrl !== undefined) updateData.videoUrl = videoUrl || null
+    if (videoUrls !== undefined) updateData.videoUrls = videoUrls || []
     if (badge !== undefined) updateData.badge = badge || null
     if (inStock !== undefined) updateData.inStock = inStock
     if (stockStatus !== undefined) updateData.stockStatus = stockStatus || 'in-stock'

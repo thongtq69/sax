@@ -143,7 +143,8 @@ export async function POST(request: NextRequest) {
       categoryId,
       subcategoryId,
       images,
-      videoUrl,
+      videoUrls,
+      videoUrl, // Support legacy singular field name
       badge,
       inStock,
       stock,
@@ -208,7 +209,7 @@ export async function POST(request: NextRequest) {
         categoryId,
         subcategoryId: subcategoryId || null,
         images: images || [],
-        videoUrl: videoUrl || null,
+        videoUrls: videoUrls || (videoUrl ? [videoUrl] : []),
         badge: badge || null,
         inStock: inStock !== undefined ? inStock : true,
         stock: finalStock,
