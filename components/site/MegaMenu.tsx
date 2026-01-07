@@ -113,12 +113,6 @@ export function MegaMenu({ mobile = false }: MegaMenuProps) {
         {/* More Links */}
         <div className="border-b">
           <Link
-            href="/financing"
-            className="block px-4 py-3 font-medium hover:bg-gray-50"
-          >
-            Financing
-          </Link>
-          <Link
             href="/rentals"
             className="block px-4 py-3 font-medium hover:bg-gray-50"
           >
@@ -241,12 +235,6 @@ export function MegaMenu({ mobile = false }: MegaMenuProps) {
               <div className="px-4 py-2 text-xs font-semibold text-gray-500 uppercase tracking-wider">
                 Information
               </div>
-              <Link
-                href="/financing"
-                className="block rounded-md px-4 py-2 hover:bg-gray-50"
-              >
-                Financing
-              </Link>
               <Link
                 href="/contact"
                 className="block rounded-md px-4 py-2 hover:bg-gray-50"

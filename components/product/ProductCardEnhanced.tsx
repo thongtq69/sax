@@ -108,7 +108,6 @@ export function ProductCardEnhanced({
   const displayReviewCount = reviewStats.reviewCount > 0 ? reviewStats.reviewCount : product.reviewCount || 0
 
   const finishes = getProductFinishes(product.id)
-  const monthlyPayment = product.price > 500 ? (product.price / 12).toFixed(0) : null
   const savings = product.retailPrice ? product.retailPrice - product.price : 0
 
   const handleAddToCart = async () => {
@@ -368,14 +367,6 @@ export function ProductCardEnhanced({
                   </span>
                 )}
               </div>
-
-              {/* Financing */}
-              {monthlyPayment && (
-                <p className="mt-1.5 text-xs text-accent font-semibold flex items-center gap-1">
-                  <span className="inline-block w-1.5 h-1.5 rounded-full bg-accent animate-pulse" />
-                  Or ${monthlyPayment}/mo with 0% APR
-                </p>
-              )}
             </div>
 
             {/* Add to Cart Button */}

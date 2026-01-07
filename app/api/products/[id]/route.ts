@@ -61,29 +61,32 @@ export async function PUT(
       videoUrl,
     } = body
 
+    // Build update data - always include images if provided (even empty array)
+    const updateData: any = {}
+    
+    if (name) updateData.name = name
+    if (slug) updateData.slug = slug
+    if (brand) updateData.brand = brand
+    if (price !== undefined) updateData.price = parseFloat(price)
+    if (retailPrice !== undefined) updateData.retailPrice = retailPrice ? parseFloat(retailPrice) : null
+    if (categoryId) updateData.categoryId = categoryId
+    if (subcategoryId !== undefined) updateData.subcategoryId = subcategoryId || null
+    if (images !== undefined) updateData.images = images || []
+    if (videoUrl !== undefined) updateData.videoUrl = videoUrl || null
+    if (badge !== undefined) updateData.badge = badge || null
+    if (inStock !== undefined) updateData.inStock = inStock
+    if (stock !== undefined) updateData.stock = parseInt(stock)
+    if (description) updateData.description = description
+    if (specs !== undefined) updateData.specs = specs
+    if (included !== undefined) updateData.included = included
+    if (warranty !== undefined) updateData.warranty = warranty || null
+    if (sku) updateData.sku = sku
+    if (rating !== undefined) updateData.rating = parseFloat(rating)
+    if (reviewCount !== undefined) updateData.reviewCount = parseInt(reviewCount)
+
     const product = await prisma.product.update({
       where: { id: params.id },
-      data: {
-        ...(name && { name }),
-        ...(slug && { slug }),
-        ...(brand && { brand }),
-        ...(price !== undefined && { price: parseFloat(price) }),
-        ...(retailPrice !== undefined && { retailPrice: retailPrice ? parseFloat(retailPrice) : null }),
-        ...(categoryId && { categoryId }),
-        ...(subcategoryId !== undefined && { subcategoryId: subcategoryId || null }),
-        ...(images !== undefined && { images }),
-        ...(videoUrl !== undefined && { videoUrl: videoUrl || null }),
-        ...(badge !== undefined && { badge: badge || null }),
-        ...(inStock !== undefined && { inStock }),
-        ...(stock !== undefined && { stock: parseInt(stock) }),
-        ...(description && { description }),
-        ...(specs !== undefined && { specs }),
-        ...(included !== undefined && { included }),
-        ...(warranty !== undefined && { warranty: warranty || null }),
-        ...(sku && { sku }),
-        ...(rating !== undefined && { rating: parseFloat(rating) }),
-        ...(reviewCount !== undefined && { reviewCount: parseInt(reviewCount) }),
-      },
+      data: updateData,
       include: {
         category: true,
         subcategory: true,

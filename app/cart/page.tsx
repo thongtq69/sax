@@ -135,15 +135,6 @@ export default function CartPage() {
                 </div>
               </div>
 
-              {subtotal > 500 && (
-                <div className="rounded-lg border bg-gray-50 p-4 text-sm">
-                  <div className="font-semibold">Financing Available</div>
-                  <div className="text-gray-600">
-                    ${(total / 12).toFixed(2)}/month (12 mo @ 0% APR)
-                  </div>
-                </div>
-              )}
-
               <Button className="w-full" size="lg" asChild>
                 <Link href="/checkout">Proceed to Checkout</Link>
               </Button>

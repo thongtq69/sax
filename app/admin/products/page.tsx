@@ -118,6 +118,7 @@ export default function ProductsManagement() {
       setEditingProduct(product)
       setFormData({
         ...product,
+        images: product.images || [],
         stockStatus: (product as any).stockStatus || 'in-stock',
       })
     } else {
@@ -191,6 +192,8 @@ export default function ProductsManagement() {
         rating: formData.rating || 0,
         reviewCount: formData.reviewCount || 0,
       }
+      
+      console.log('Saving product with images:', productData.images)
 
       if (editingProduct) {
         await updateProduct(editingProduct.id, productData)
@@ -720,7 +723,7 @@ export default function ProductsManagement() {
                   </label>
                   <Select
                     value={formData.stockStatus || 'in-stock'}
-                    onValueChange={(value) => setFormData({ ...formData, stockStatus: value, inStock: value === 'in-stock' })}
+                    onValueChange={(value) => setFormData({ ...formData, stockStatus: value as 'in-stock' | 'sold-out' | 'pre-order', inStock: value === 'in-stock' })}
                   >
                     <SelectTrigger>
                       <SelectValue placeholder="Select stock status" />

@@ -318,13 +318,6 @@ export function QuickViewModal({
                   </>
                 )}
               </div>
-              
-              {/* Financing */}
-              {product.price > 500 && (
-                <p className="text-xs sm:text-sm text-gray-600 mt-2">
-                  Or <span className="font-semibold text-accent">${(product.price / 12).toFixed(0)}/mo</span> with 0% APR
-                </p>
-              )}
             </div>
 
             {/* Stock Status */}

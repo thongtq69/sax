@@ -70,7 +70,7 @@ export function InquiryFormContent({
         </div>
         <div className="relative z-10">
           <h1 className="text-xl md:text-2xl font-bold">Product Inquiry</h1>
-          <p className="text-sm text-white/80">Ask about availability, setup, financing, or shipping.</p>
+          <p className="text-sm text-white/80">Ask about availability, setup, or shipping.</p>
         </div>
       </div>
 
