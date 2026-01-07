@@ -16,7 +16,7 @@ import { useCartStore } from '@/lib/store/cart'
 import { SmartImage } from '@/components/ui/smart-image'
 import { InquiryFormContent } from '@/components/inquiry/InquiryFormContent'
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion'
-import { Star, ChevronRight, ChevronLeft, Heart, Share2, Check, X, ZoomIn, Loader2, MessageCircle, Truck } from 'lucide-react'
+import { Star, ChevronRight, ChevronLeft, Heart, Share2, Check, X, ZoomIn, Loader2, MessageCircle, Truck, Calculator, MapPin } from 'lucide-react'
 import { ConditionTooltip } from './ConditionTooltip'
 import { ConditionRating } from '@/lib/product-conditions'
 
@@ -39,6 +39,11 @@ export function ProductDetailClient({ product }: ProductDetailClientProps) {
   const [isInquiryOpen, setIsInquiryOpen] = useState(false)
   const [quickFaqs, setQuickFaqs] = useState<{id: string, question: string, answer: string, category: string, isActive: boolean}[]>([])
   const [reviews, setReviews] = useState<Review[]>([])
+  const [showShippingCalc, setShowShippingCalc] = useState(false)
+  const [shippingZip, setShippingZip] = useState('')
+  const [shippingCost, setShippingCost] = useState<number | null>(null)
+  const [shippingMessage, setShippingMessage] = useState('')
+  const [isCalculatingShipping, setIsCalculatingShipping] = useState(false)
   const router = useRouter()
   const addItem = useCartStore((state) => state.addItem)
   
@@ -48,6 +53,34 @@ export function ProductDetailClient({ product }: ProductDetailClientProps) {
   }, [])
   
   const reviewStats = useMemo(() => getProductRatingStats(product.name), [product.name])
+
+  // Vietnam postal codes (6 digits, prefixes 10-99)
+  const isVietnamZipCode = (zip: string): boolean => {
+    const cleanZip = zip.replace(/\s/g, '')
+    if (cleanZip.length !== 6 || !/^\d+$/.test(cleanZip)) return false
+    const prefix = parseInt(cleanZip.substring(0, 2))
+    return prefix >= 10 && prefix <= 99
+  }
+
+  const calculateShipping = () => {
+    if (!shippingZip.trim()) {
+      setShippingMessage('Please enter a ZIP/Postal code')
+      return
+    }
+    
+    setIsCalculatingShipping(true)
+    setTimeout(() => {
+      const isVietnam = isVietnamZipCode(shippingZip)
+      if (isVietnam) {
+        setShippingCost(25)
+        setShippingMessage('Domestic shipping (Vietnam): $25')
+      } else {
+        setShippingCost(200)
+        setShippingMessage('International shipping: $200')
+      }
+      setIsCalculatingShipping(false)
+    }, 500)
+  }
   const displayRating = useMemo(() => 
     reviews.length > 0 ? reviewStats.rating : product.rating || 0,
     [reviews.length, reviewStats.rating, product.rating]
@@ -588,10 +621,52 @@ const handleAddToCart = async () => {
               )}
             </div>
 
-            {/* Free Shipping */}
-            <div className="flex items-center gap-2 mt-2 md:mt-3 text-xs md:text-sm text-green-600 font-medium">
-              <Truck className="h-4 w-4 flex-shrink-0" />
-              <span>Free Shipping</span>
+            {/* Shipping - Click to calculate */}
+            <div className="mt-2 md:mt-3">
+              <button
+                onClick={() => setShowShippingCalc(!showShippingCalc)}
+                className="flex items-center gap-2 text-xs md:text-sm text-primary font-medium hover:text-primary/80 transition-colors"
+              >
+                <Truck className="h-4 w-4 flex-shrink-0" />
+                <span>Shipping</span>
+                <Calculator className="h-3.5 w-3.5" />
+                <span className="text-gray-400 text-xs">(Click to calculate)</span>
+              </button>
+              
+              {/* Shipping Calculator Popup */}
+              {showShippingCalc && (
+                <div className="mt-3 p-3 bg-white rounded-lg border border-primary/20 shadow-lg animate-fade-in">
+                  <div className="flex items-center gap-2 mb-2">
+                    <MapPin className="h-4 w-4 text-primary" />
+                    <span className="text-sm font-medium text-secondary">Calculate Shipping Cost</span>
+                  </div>
+                  <div className="flex gap-2">
+                    <input
+                      type="text"
+                      placeholder="Enter ZIP/Postal code"
+                      value={shippingZip}
+                      onChange={(e) => setShippingZip(e.target.value)}
+                      className="flex-1 px-3 py-2 text-sm border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/30"
+                    />
+                    <button
+                      onClick={calculateShipping}
+                      disabled={isCalculatingShipping}
+                      className="px-4 py-2 bg-primary text-white text-sm font-medium rounded-lg hover:bg-primary/90 transition-colors disabled:opacity-50"
+                    >
+                      {isCalculatingShipping ? (
+                        <Loader2 className="h-4 w-4 animate-spin" />
+                      ) : (
+                        'Calculate'
+                      )}
+                    </button>
+                  </div>
+                  {shippingMessage && (
+                    <p className={`mt-2 text-sm font-medium ${shippingCost === 25 ? 'text-green-600' : 'text-amber-600'}`}>
+                      Your shipping cost is ${shippingCost}
+                    </p>
+                  )}
+                </div>
+              )}
             </div>
           </div>
 
@@ -649,15 +724,29 @@ const handleAddToCart = async () => {
           )}
 
 
-          {/* Action Buttons */}
-          <div className="flex flex-wrap gap-2 md:gap-3">
-            {/* Main action buttons - same color */}
+          {/* Action Buttons - New Layout */}
+          <div className="space-y-3">
+            {/* Row 1: Buy Now - Full Width */}
             <Button
               size="lg"
-              className={`flex-1 min-w-[120px] text-sm md:text-base font-semibold transition-all duration-300 ${
+              className="w-full text-sm md:text-base font-semibold bg-primary hover:bg-primary/90 text-white transition-all duration-300 hover:shadow-lg hover:scale-[1.01]"
+              onClick={() => {
+                handleAddToCart()
+                setTimeout(() => router.push('/checkout'), 300)
+              }}
+              disabled={!product.inStock || isAddingToCart}
+            >
+              Buy Now
+            </Button>
+            
+            {/* Row 2: Add to Cart - Full Width - White background */}
+            <Button
+              size="lg"
+              variant="outline"
+              className={`w-full text-sm md:text-base font-semibold transition-all duration-300 ${
                 isAddedToCart 
-                  ? 'bg-green-500 hover:bg-green-600 text-white' 
-                  : 'bg-primary hover:bg-primary/90 text-white hover:shadow-lg hover:scale-[1.02]'
+                  ? 'bg-green-500 hover:bg-green-600 text-white border-green-500' 
+                  : 'bg-white hover:bg-gray-50 text-primary border-primary hover:shadow-lg hover:scale-[1.01]'
               }`}
               onClick={handleAddToCart}
               disabled={!product.inStock || isAddingToCart}
@@ -677,43 +766,43 @@ const handleAddToCart = async () => {
               )}
             </Button>
             
-            <Button
-              size="lg"
-              className="flex-1 min-w-[120px] text-sm md:text-base font-semibold bg-primary hover:bg-primary/90 text-white transition-all duration-300 hover:shadow-lg hover:scale-[1.02]"
-              onClick={() => {
-                handleAddToCart()
-                setTimeout(() => router.push('/checkout'), 300)
-              }}
-              disabled={!product.inStock || isAddingToCart}
-            >
-              Buy Now
-            </Button>
-            
-            <Button 
-              size="lg" 
-              onClick={() => setIsInquiryOpen(true)}
-              className="flex-1 min-w-[100px] bg-primary hover:bg-primary/90 text-white gap-2"
-              title={`Inquiry about ${product.name}`}
-            >
-              <MessageCircle className="h-5 w-5" />
-              <span className="hidden sm:inline">Inquiry</span>
-            </Button>
-            
-            {/* Secondary buttons */}
-            <Button
-              size="lg"
-              variant="outline"
-              onClick={() => setIsWishlisted(!isWishlisted)}
-              className={`px-3 shrink-0 transition-all duration-300 ${
-                isWishlisted ? 'border-red-300 bg-red-50 text-red-500' : ''
-              }`}
-            >
-              <Heart className={`h-5 w-5 transition-all ${isWishlisted ? 'fill-current scale-110' : ''}`} />
-            </Button>
-            
-            <Button size="lg" variant="outline" className="px-3 shrink-0">
-              <Share2 className="h-5 w-5" />
-            </Button>
+            {/* Row 3: Inquiry + Favorite/Share (hover to show) */}
+            <div className="flex gap-2 group/actions">
+              {/* Inquiry Button */}
+              <Button 
+                size="lg" 
+                onClick={() => setIsInquiryOpen(true)}
+                className="flex-1 bg-primary hover:bg-primary/90 text-white gap-2"
+                title={`Inquiry about ${product.name}`}
+              >
+                <MessageCircle className="h-5 w-5" />
+                <span>Inquiry</span>
+              </Button>
+              
+              {/* Favorite & Share - Show on hover/tap */}
+              <div className="flex gap-2 opacity-0 max-w-0 overflow-hidden group-hover/actions:opacity-100 group-hover/actions:max-w-[120px] transition-all duration-300 ease-out sm:opacity-100 sm:max-w-none">
+                <Button
+                  size="lg"
+                  variant="outline"
+                  onClick={() => setIsWishlisted(!isWishlisted)}
+                  className={`px-3 shrink-0 transition-all duration-300 ${
+                    isWishlisted ? 'border-red-300 bg-red-50 text-red-500' : ''
+                  }`}
+                  title="Add to Wishlist"
+                >
+                  <Heart className={`h-5 w-5 transition-all ${isWishlisted ? 'fill-current scale-110' : ''}`} />
+                </Button>
+                
+                <Button 
+                  size="lg" 
+                  variant="outline" 
+                  className="px-3 shrink-0"
+                  title="Share"
+                >
+                  <Share2 className="h-5 w-5" />
+                </Button>
+              </div>
+            </div>
           </div>
 
           <Dialog open={isInquiryOpen} onOpenChange={setIsInquiryOpen}>

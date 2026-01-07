@@ -65,10 +65,10 @@ function CheckoutContent() {
       
       if (isVietnam) {
         setShippingCost(25)
-        setShippingMessage('Domestic shipping (Vietnam): $25')
+        setShippingMessage('Your shipping cost is $25')
       } else {
         setShippingCost(200)
-        setShippingMessage('International shipping: $200')
+        setShippingMessage('Your shipping cost is $200')
       }
       
       setIsCalculatingShipping(false)
@@ -160,12 +160,14 @@ function CheckoutContent() {
                 </div>
                 <Input placeholder="Address *" value={shippingInfo.address1} onChange={(e) => handleChange('address1', e.target.value)} />
                 <Input placeholder="Apt, Suite (optional)" value={shippingInfo.address2} onChange={(e) => handleChange('address2', e.target.value)} />
-                <div className="grid grid-cols-3 gap-4">
+                <div className="grid grid-cols-2 gap-4">
                   <Input placeholder="City *" value={shippingInfo.city} onChange={(e) => handleChange('city', e.target.value)} />
-                  <Input placeholder="State *" value={shippingInfo.state} onChange={(e) => handleChange('state', e.target.value)} />
+                  <Input placeholder="State/Province *" value={shippingInfo.state} onChange={(e) => handleChange('state', e.target.value)} />
+                </div>
+                <div className="grid grid-cols-2 gap-4">
                   <div className="relative">
                     <Input 
-                      placeholder="ZIP/Postal *" 
+                      placeholder="ZIP/Postal Code *" 
                       value={shippingInfo.zip} 
                       onChange={(e) => handleChange('zip', e.target.value)} 
                     />
@@ -173,6 +175,43 @@ function CheckoutContent() {
                       <Loader2 className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 animate-spin text-primary" />
                     )}
                   </div>
+                  <select
+                    value={shippingInfo.country}
+                    onChange={(e) => handleChange('country', e.target.value)}
+                    className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                  >
+                    <option value="">Select Country *</option>
+                    <option value="Vietnam">Vietnam</option>
+                    <option value="United States">United States</option>
+                    <option value="Canada">Canada</option>
+                    <option value="United Kingdom">United Kingdom</option>
+                    <option value="Australia">Australia</option>
+                    <option value="Germany">Germany</option>
+                    <option value="France">France</option>
+                    <option value="Japan">Japan</option>
+                    <option value="South Korea">South Korea</option>
+                    <option value="Singapore">Singapore</option>
+                    <option value="Thailand">Thailand</option>
+                    <option value="Malaysia">Malaysia</option>
+                    <option value="Indonesia">Indonesia</option>
+                    <option value="Philippines">Philippines</option>
+                    <option value="China">China</option>
+                    <option value="Taiwan">Taiwan</option>
+                    <option value="Hong Kong">Hong Kong</option>
+                    <option value="India">India</option>
+                    <option value="Netherlands">Netherlands</option>
+                    <option value="Belgium">Belgium</option>
+                    <option value="Switzerland">Switzerland</option>
+                    <option value="Italy">Italy</option>
+                    <option value="Spain">Spain</option>
+                    <option value="Sweden">Sweden</option>
+                    <option value="Norway">Norway</option>
+                    <option value="Denmark">Denmark</option>
+                    <option value="New Zealand">New Zealand</option>
+                    <option value="Brazil">Brazil</option>
+                    <option value="Mexico">Mexico</option>
+                    <option value="Other">Other</option>
+                  </select>
                 </div>
                 <Input placeholder="Phone *" value={shippingInfo.phone} onChange={(e) => handleChange('phone', e.target.value)} />
               </div>
@@ -210,9 +249,7 @@ function CheckoutContent() {
                     )}
                   </Button>
                 </div>
-                <p className="text-xs text-gray-500 mt-2">
-                  Vietnam: $25 | International: $200
-                </p>
+
               </div>
             </div>
           </div>
