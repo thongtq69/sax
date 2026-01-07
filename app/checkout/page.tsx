@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, Suspense } from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
 import { useSearchParams } from 'next/navigation'
@@ -8,11 +8,11 @@ import { useCartStore } from '@/lib/store/cart'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Separator } from '@/components/ui/separator'
-import { ShieldCheck, Lock, Package, Truck, ArrowLeft, AlertCircle } from 'lucide-react'
+import { ShieldCheck, Lock, Package, Truck, ArrowLeft, AlertCircle, Loader2 } from 'lucide-react'
 import { PayPalStandardButton } from '@/components/checkout/PayPalStandardButton'
 import { PayPalMeButton } from '@/components/checkout/PayPalMeButton'
 
-export default function CheckoutPage() {
+function CheckoutContent() {
   const searchParams = useSearchParams()
   const [paymentError, setPaymentError] = useState<string | null>(null)
   const items = useCartStore((state) => state.items)
@@ -155,5 +155,17 @@ export default function CheckoutPage() {
         </div>
       </div>
     </div>
+  )
+}
+
+export default function CheckoutPage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+      </div>
+    }>
+      <CheckoutContent />
+    </Suspense>
   )
 }

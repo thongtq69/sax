@@ -69,7 +69,7 @@ export function InquiryFormContent({
           <MessageCircle className="h-6 w-6" />
         </div>
         <div className="relative z-10">
-          <h1 className="text-xl md:text-2xl font-bold">Product Inquiry</h1>
+          <h1 className="text-xl md:text-2xl font-bold">Inquiry</h1>
           <p className="text-sm text-white/80">Ask about availability, setup, or shipping.</p>
         </div>
       </div>

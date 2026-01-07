@@ -1,13 +1,13 @@
 'use client'
 
-import { useEffect } from 'react'
+import { useEffect, Suspense } from 'react'
 import { useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 import { useCartStore } from '@/lib/store/cart'
 import { Button } from '@/components/ui/button'
-import { Clock, CheckCircle, ExternalLink, Copy, Mail } from 'lucide-react'
+import { Clock, CheckCircle, ExternalLink, Copy, Loader2 } from 'lucide-react'
 
-export default function PayPalMePendingPage() {
+function PayPalMePendingContent() {
   const searchParams = useSearchParams()
   const orderId = searchParams.get('orderId')
   const amount = searchParams.get('amount')
@@ -104,5 +104,17 @@ export default function PayPalMePendingPage() {
         </div>
       </div>
     </div>
+  )
+}
+
+export default function PayPalMePendingPage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen bg-gradient-to-b from-amber-50 to-white flex items-center justify-center">
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+      </div>
+    }>
+      <PayPalMePendingContent />
+    </Suspense>
   )
 }
