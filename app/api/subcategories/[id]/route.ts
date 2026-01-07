@@ -101,13 +101,19 @@ export async function PUT(
     
     if (error.code === 'P2002') {
       return NextResponse.json(
-        { error: 'A subcategory with this slug already exists' },
+        { 
+          error: 'Duplicate entry', 
+          message: 'A subcategory with this slug already exists. Please use a different name or slug.' 
+        },
         { status: 400 }
       )
     }
     
     return NextResponse.json(
-      { error: 'Failed to update subcategory', message: error?.message },
+      { 
+        error: 'Failed to update subcategory', 
+        message: error?.message || 'An unexpected error occurred. Please try again.' 
+      },
       { status: 500 }
     )
   }

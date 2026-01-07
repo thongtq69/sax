@@ -40,8 +40,16 @@ export async function POST(request: NextRequest) {
     const { name, slug, path, subcategories } = body
 
     if (!name || !slug || !path) {
+      const missingFields: string[] = []
+      if (!name) missingFields.push('Name')
+      if (!slug) missingFields.push('Slug')
+      if (!path) missingFields.push('Path')
       return NextResponse.json(
-        { error: 'Missing required fields' },
+        { 
+          error: 'Missing required fields', 
+          message: `Please fill in the following required fields: ${missingFields.join(', ')}`,
+          missingFields 
+        },
         { status: 400 }
       )
     }
@@ -71,12 +79,18 @@ export async function POST(request: NextRequest) {
     console.error('Error creating category:', error)
     if (error.code === 'P2002') {
       return NextResponse.json(
-        { error: 'Category with this slug already exists' },
+        { 
+          error: 'Duplicate entry', 
+          message: 'A category with this slug already exists. Please use a different slug.' 
+        },
         { status: 409 }
       )
     }
     return NextResponse.json(
-      { error: 'Failed to create category' },
+      { 
+        error: 'Failed to create category', 
+        message: error?.message || 'An unexpected error occurred. Please try again.' 
+      },
       { status: 500 }
     )
   }

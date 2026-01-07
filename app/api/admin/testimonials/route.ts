@@ -82,8 +82,16 @@ export async function POST(request: NextRequest) {
 
     // Validate required fields - either productId or customProductName is required
     if (!buyerName || !message || (!productId && !customProductName)) {
+      const missingFields: string[] = []
+      if (!buyerName) missingFields.push('Buyer Name')
+      if (!message) missingFields.push('Message')
+      if (!productId && !customProductName) missingFields.push('Product (select a product or enter custom product name)')
       return NextResponse.json(
-        { error: 'Validation failed', details: ['buyerName, message, and either productId or customProductName are required'] },
+        { 
+          error: 'Missing required fields', 
+          message: `Please fill in the following required fields: ${missingFields.join(', ')}`,
+          missingFields 
+        },
         { status: 400 }
       )
     }
@@ -92,7 +100,10 @@ export async function POST(request: NextRequest) {
     const ratingValue = rating ? parseInt(rating) : 5
     if (ratingValue < 1 || ratingValue > 5) {
       return NextResponse.json(
-        { error: 'Validation failed', details: ['rating must be between 1 and 5'] },
+        { 
+          error: 'Invalid rating', 
+          message: 'Rating must be between 1 and 5 stars' 
+        },
         { status: 400 }
       )
     }

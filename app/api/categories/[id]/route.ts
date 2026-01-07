@@ -83,13 +83,19 @@ export async function PUT(
     
     if (error.code === 'P2002') {
       return NextResponse.json(
-        { error: 'A category with this slug already exists' },
+        { 
+          error: 'Duplicate entry', 
+          message: 'A category with this slug already exists. Please use a different slug.' 
+        },
         { status: 400 }
       )
     }
     
     return NextResponse.json(
-      { error: 'Failed to update category', message: error?.message },
+      { 
+        error: 'Failed to update category', 
+        message: error?.message || 'An unexpected error occurred. Please try again.' 
+      },
       { status: 500 }
     )
   }

@@ -704,9 +704,9 @@ export default function HomePage() {
             {/* Left: Why Musicians Choose Us */}
             <div className="animate-fade-in-left">
               <h2 className="text-xl sm:text-2xl md:text-3xl font-bold text-secondary mb-4 sm:mb-6 uppercase tracking-wide">
-                WHY MUSICIANS CHOOSE US
+                WHY CHOOSE US
               </h2>
-              <div className="space-y-3 sm:space-y-4">
+              <div className="space-y-1.5 sm:space-y-2">
                 {[
                   { title: 'Saxophone Specialists', desc: 'We focus exclusively on saxophones, allowing us to maintain high standards in selection and preparation.' },
                   { title: 'Individually Prepared Instruments', desc: 'Each instrument is inspected and adjusted before sale to ensure reliable playability.' },
@@ -714,7 +714,7 @@ export default function HomePage() {
                   { title: 'Secure Purchasing', desc: 'All payments are processed through PayPal with full buyer protection.' },
                   { title: 'Trusted by Musicians Worldwide', desc: 'Serving players from different countries and musical backgrounds.' },
                 ].map((item, i) => (
-                  <div key={i} className="flex gap-3 sm:gap-4 p-3 sm:p-4 bg-white border border-transparent hover:border-primary/30 transition-all duration-500 hover:shadow-lg">
+                  <div key={i} className="flex gap-3 sm:gap-4 p-2 sm:p-2.5 bg-white border border-transparent hover:border-primary/30 transition-all duration-500 hover:shadow-lg">
                     <div className="flex-shrink-0 w-10 h-10 sm:w-12 sm:h-12 bg-primary/10 flex items-center justify-center">
                       <Star className="h-4 w-4 sm:h-5 sm:w-5 text-primary" />
                     </div>

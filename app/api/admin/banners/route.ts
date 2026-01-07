@@ -39,8 +39,15 @@ export async function POST(request: NextRequest) {
 
     // Validate required fields
     if (!title || !image) {
+      const missingFields: string[] = []
+      if (!title) missingFields.push('Title')
+      if (!image) missingFields.push('Image')
       return NextResponse.json(
-        { error: 'Validation failed', details: ['title and image are required'] },
+        { 
+          error: 'Missing required fields', 
+          message: `Please fill in the following required fields: ${missingFields.join(', ')}`,
+          missingFields 
+        },
         { status: 400 }
       )
     }

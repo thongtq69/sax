@@ -52,8 +52,15 @@ export async function POST(request: NextRequest) {
     const { question, answer, category, order, isActive } = body
 
     if (!question || !answer) {
+      const missingFields: string[] = []
+      if (!question) missingFields.push('Question')
+      if (!answer) missingFields.push('Answer')
       return NextResponse.json(
-        { error: 'Validation failed', details: ['question and answer are required'] },
+        { 
+          error: 'Missing required fields', 
+          message: `Please fill in the following required fields: ${missingFields.join(', ')}`,
+          missingFields 
+        },
         { status: 400 }
       )
     }

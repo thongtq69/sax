@@ -142,18 +142,28 @@ export async function PUT(
     console.error('Error updating product:', error)
     if (error.code === 'P2025') {
       return NextResponse.json(
-        { error: 'Product not found' },
+        { 
+          error: 'Product not found', 
+          message: 'The product you are trying to update does not exist or has been deleted.' 
+        },
         { status: 404 }
       )
     }
     if (error.code === 'P2002') {
+      const field = error.meta?.target?.[0] || 'field'
       return NextResponse.json(
-        { error: 'Product with this slug or SKU already exists' },
+        { 
+          error: 'Duplicate entry', 
+          message: `A product with this ${field === 'sku' ? 'SKU' : field === 'slug' ? 'Slug' : field} already exists. Please use a different value.` 
+        },
         { status: 409 }
       )
     }
     return NextResponse.json(
-      { error: 'Failed to update product' },
+      { 
+        error: 'Failed to update product', 
+        message: error?.message || 'An unexpected error occurred. Please try again.' 
+      },
       { status: 500 }
     )
   }
@@ -174,12 +184,18 @@ export async function DELETE(
     console.error('Error deleting product:', error)
     if (error.code === 'P2025') {
       return NextResponse.json(
-        { error: 'Product not found' },
+        { 
+          error: 'Product not found', 
+          message: 'The product you are trying to delete does not exist or has already been deleted.' 
+        },
         { status: 404 }
       )
     }
     return NextResponse.json(
-      { error: 'Failed to delete product' },
+      { 
+        error: 'Failed to delete product', 
+        message: error?.message || 'An unexpected error occurred. Please try again.' 
+      },
       { status: 500 }
     )
   }

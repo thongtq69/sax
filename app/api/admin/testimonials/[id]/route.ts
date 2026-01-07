@@ -68,7 +68,10 @@ export async function PUT(
       const ratingValue = parseInt(rating)
       if (ratingValue < 1 || ratingValue > 5) {
         return NextResponse.json(
-          { error: 'Validation failed', details: ['rating must be between 1 and 5'] },
+          { 
+            error: 'Invalid rating', 
+            message: 'Rating must be between 1 and 5 stars' 
+          },
           { status: 400 }
         )
       }

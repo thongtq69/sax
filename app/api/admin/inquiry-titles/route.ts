@@ -21,7 +21,13 @@ export async function POST(request: NextRequest) {
     const { title, order = 0, isActive = true } = body
 
     if (!title) {
-      return NextResponse.json({ error: 'Title is required' }, { status: 400 })
+      return NextResponse.json(
+        { 
+          error: 'Missing required field', 
+          message: 'Please enter a title for the inquiry option' 
+        }, 
+        { status: 400 }
+      )
     }
 
     const newTitle = await prisma.inquiryTitle.create({
