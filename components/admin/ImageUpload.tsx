@@ -16,7 +16,7 @@ interface ImageUploadProps {
 export function ImageUpload({ 
   images, 
   onChange, 
-  maxImages = 10,
+  maxImages = 999, // Unlimited by default
   folder = 'sax/products'
 }: ImageUploadProps) {
   const [isUploading, setIsUploading] = useState(false)
@@ -279,7 +279,7 @@ export function ImageUpload({
 
       {/* Image count */}
       <p className="text-sm text-gray-500">
-        {images.length} / {maxImages} images
+        {images.length} {maxImages < 999 ? `/ ${maxImages}` : ''} images
       </p>
     </div>
   )

@@ -116,7 +116,16 @@ export function ProductDetailClient({ product }: ProductDetailClientProps) {
     return videoId
   }
   
-  const videoId = product.videoUrl ? getYouTubeVideoId(product.videoUrl) : null
+  // Support multiple videos - get array of video IDs
+  const videoUrls = (product as any).videoUrls || ((product as any).videoUrl ? [(product as any).videoUrl] : [])
+  const videoIds = videoUrls.map((url: string) => getYouTubeVideoId(url)).filter(Boolean) as string[]
+  const hasVideos = videoIds.length > 0
+  
+  // For backward compatibility
+  const videoId = videoIds[0] || null
+  
+  // Track which video is currently playing (0-based index into videoIds array)
+  const [currentVideoIndex, setCurrentVideoIndex] = useState(0)
 
   // Lightbox navigation
   const openLightbox = (index: number) => {
@@ -126,9 +135,10 @@ export function ProductDetailClient({ product }: ProductDetailClientProps) {
   }
   
   // Open lightbox with video
-  const openVideoLightbox = () => {
-    if (videoId) {
-      setLightboxIndex(VIDEO_INDEX)
+  const openVideoLightbox = (videoIdx: number = 0) => {
+    if (videoIds[videoIdx]) {
+      setCurrentVideoIndex(videoIdx)
+      setLightboxIndex(-1 - videoIdx) // -1 for first video, -2 for second, etc.
       setIsLightboxOpen(true)
       document.body.style.overflow = 'hidden'
     }
@@ -140,38 +150,52 @@ export function ProductDetailClient({ product }: ProductDetailClientProps) {
     document.body.style.overflow = 'auto'
   }
 
-  // Video index is -1, images start from 0
-  const VIDEO_INDEX = -1
+  // Video indices are negative: -1 for first video, -2 for second, etc.
+  // Images start from 0
+  const isVideoIndex = (idx: number) => idx < 0 && idx >= -videoIds.length
+  const getVideoIndexFromLightbox = (idx: number) => Math.abs(idx) - 1
   
   const goToPrevious = useCallback(() => {
     setLightboxIndex((prev) => {
-      if (prev === VIDEO_INDEX) {
-        // If at video, go to last image
-        return product.images.length - 1
-      } else if (prev === 0 && videoId) {
-        // If at first image and video exists, go to video
-        return VIDEO_INDEX
+      if (isVideoIndex(prev)) {
+        const videoIdx = getVideoIndexFromLightbox(prev)
+        if (videoIdx > 0) {
+          // Go to previous video
+          return -(videoIdx) // -1 becomes 0, so we need -(videoIdx)
+        } else {
+          // At first video, go to last image
+          return product.images.length - 1
+        }
+      } else if (prev === 0 && hasVideos) {
+        // At first image, go to last video
+        return -videoIds.length
       } else {
         // Go to previous image
         return prev - 1
       }
     })
-  }, [product.images.length, videoId])
+  }, [product.images.length, hasVideos, videoIds.length])
 
   const goToNext = useCallback(() => {
     setLightboxIndex((prev) => {
-      if (prev === VIDEO_INDEX) {
-        // If at video, go to first image
-        return 0
-      } else if (prev === product.images.length - 1 && videoId) {
-        // If at last image and video exists, go to video
-        return VIDEO_INDEX
+      if (isVideoIndex(prev)) {
+        const videoIdx = getVideoIndexFromLightbox(prev)
+        if (videoIdx < videoIds.length - 1) {
+          // Go to next video
+          return -(videoIdx + 2)
+        } else {
+          // At last video, go to first image
+          return 0
+        }
+      } else if (prev === product.images.length - 1 && hasVideos) {
+        // At last image, go to first video
+        return -1
       } else {
         // Go to next image
         return prev + 1
       }
     })
-  }, [product.images.length, videoId])
+  }, [product.images.length, hasVideos, videoIds.length])
 
   // Keyboard navigation for lightbox
   useEffect(() => {
@@ -383,14 +407,14 @@ const handleAddToCart = async () => {
           <div className="animate-fade-in-left lg:col-span-6 p-4 md:p-6">
             {/* Main Display - Video or Image */}
             <div className="relative aspect-[4/3] sm:aspect-[4/5] md:aspect-[4/5] lg:aspect-[4/5] overflow-hidden rounded-xl md:rounded-2xl border-2 border-gray-100 bg-gradient-to-br from-gray-50 to-gray-100 group">
-            {showVideo && videoId ? (
+            {showVideo && videoIds[currentVideoIndex] ? (
               <div className="relative w-full h-full">
                 <iframe
-                  src={`https://www.youtube.com/embed/${videoId}?autoplay=1&rel=0`}
+                  src={`https://www.youtube.com/embed/${videoIds[currentVideoIndex]}?autoplay=1&rel=0`}
                   className="absolute inset-0 w-full h-full"
                   allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
                   allowFullScreen
-                  title={`${product.name} video`}
+                  title={`${product.name} video ${currentVideoIndex + 1}`}
                 />
                 <button
                   onClick={() => setShowVideo(false)}
@@ -400,19 +424,40 @@ const handleAddToCart = async () => {
                   <X className="h-4 w-4 text-gray-700" />
                 </button>
                 
-                {/* Navigation to first image */}
-                {product.images.length > 0 && (
+                {/* Navigation between videos and images */}
+                <div className="absolute inset-x-4 top-1/2 -translate-y-1/2 flex justify-between z-10 opacity-0 group-hover:opacity-100">
+                  {/* Previous - go to previous video or last image */}
                   <button
                     onClick={() => {
-                      setShowVideo(false)
-                      setSelectedImageIndex(0)
+                      if (currentVideoIndex > 0) {
+                        setCurrentVideoIndex(currentVideoIndex - 1)
+                      } else {
+                        setShowVideo(false)
+                        setSelectedImageIndex(product.images.length - 1)
+                      }
                     }}
-                    className="absolute right-4 top-1/2 -translate-y-1/2 z-10 p-3 rounded-full bg-white/90 hover:bg-white shadow-lg transition-all hover:scale-110 opacity-0 group-hover:opacity-100"
-                    aria-label="Next to images"
+                    className="p-3 rounded-full bg-white/90 hover:bg-white shadow-lg transition-all hover:scale-110"
+                    aria-label="Previous"
+                  >
+                    <ChevronLeft className="h-5 w-5 text-gray-800" />
+                  </button>
+                  
+                  {/* Next - go to next video or first image */}
+                  <button
+                    onClick={() => {
+                      if (currentVideoIndex < videoIds.length - 1) {
+                        setCurrentVideoIndex(currentVideoIndex + 1)
+                      } else if (product.images.length > 0) {
+                        setShowVideo(false)
+                        setSelectedImageIndex(0)
+                      }
+                    }}
+                    className="p-3 rounded-full bg-white/90 hover:bg-white shadow-lg transition-all hover:scale-110"
+                    aria-label="Next"
                   >
                     <ChevronRight className="h-5 w-5 text-gray-800" />
                   </button>
-                )}
+                </div>
               </div>
             ) : (
               <div 
@@ -428,14 +473,15 @@ const handleAddToCart = async () => {
                 />
                 
                 {/* Navigation Arrows */}
-                {(product.images.length > 1 || videoId) && (
+                {(product.images.length > 1 || hasVideos) && (
                   <>
                     {/* Previous Button */}
                     <button
                       onClick={(e) => {
                         e.stopPropagation()
-                        if (selectedImageIndex === 0 && videoId) {
-                          // If at first image and video exists, go to video
+                        if (selectedImageIndex === 0 && hasVideos) {
+                          // If at first image and videos exist, go to last video
+                          setCurrentVideoIndex(videoIds.length - 1)
                           setShowVideo(true)
                         } else {
                           // Go to previous image
@@ -456,8 +502,9 @@ const handleAddToCart = async () => {
                     <button
                       onClick={(e) => {
                         e.stopPropagation()
-                        if (selectedImageIndex === product.images.length - 1 && videoId) {
-                          // If at last image and video exists, go to video
+                        if (selectedImageIndex === product.images.length - 1 && hasVideos) {
+                          // If at last image and videos exist, go to first video
+                          setCurrentVideoIndex(0)
                           setShowVideo(true)
                         } else {
                           // Go to next image
@@ -503,24 +550,26 @@ const handleAddToCart = async () => {
 
           {/* Thumbnails */}
           <div className="mt-3 md:mt-4 flex gap-1.5 sm:gap-2 md:gap-3 overflow-x-auto pb-2">
-            {/* Video Thumbnail */}
-            {videoId && (
+            {/* Video Thumbnails - show all videos */}
+            {videoIds.map((vId, vIndex) => (
               <button
+                key={`video-${vIndex}`}
                 onClick={() => {
+                  setCurrentVideoIndex(vIndex)
                   setShowVideo(true)
                   setSelectedImageIndex(-1)
                 }}
                 className={`thumb-button relative h-12 w-12 sm:h-16 sm:w-16 md:h-20 md:w-20 flex-shrink-0 overflow-hidden rounded-lg md:rounded-xl border-2 transition-all duration-300 ${
-                  showVideo
+                  showVideo && currentVideoIndex === vIndex
                     ? 'border-primary shadow-lg scale-105 ring-2 ring-primary/30'
                     : 'border-gray-200 hover:border-primary/50 hover:shadow-md'
                 }`}
-                title="Watch video"
+                title={`Watch video ${vIndex + 1}`}
               >
                 <div className="relative w-full h-full bg-black">
                   <img
-                    src={`https://img.youtube.com/vi/${videoId}/mqdefault.jpg`}
-                    alt="Video thumbnail"
+                    src={`https://img.youtube.com/vi/${vId}/mqdefault.jpg`}
+                    alt={`Video ${vIndex + 1} thumbnail`}
                     className="w-full h-full object-cover opacity-75"
                     onError={(e) => {
                       // Fallback if thumbnail fails to load
@@ -534,9 +583,15 @@ const handleAddToCart = async () => {
                       </svg>
                     </div>
                   </div>
+                  {/* Video number badge */}
+                  {videoIds.length > 1 && (
+                    <span className="absolute bottom-1 right-1 bg-black/70 text-white text-[10px] px-1 rounded">
+                      {vIndex + 1}
+                    </span>
+                  )}
                 </div>
               </button>
-            )}
+            ))}
             
             {/* Image Thumbnails */}
             {product.images.map((image, index) => (
@@ -1119,14 +1174,14 @@ const handleAddToCart = async () => {
             </button>
 
             {/* Video or Image */}
-            {lightboxIndex === VIDEO_INDEX && videoId ? (
+            {isVideoIndex(lightboxIndex) && videoIds[getVideoIndexFromLightbox(lightboxIndex)] ? (
               <div className="relative w-full h-full max-w-5xl max-h-[70vh] aspect-video">
                 <iframe
-                  src={`https://www.youtube.com/embed/${videoId}?autoplay=1&rel=0`}
+                  src={`https://www.youtube.com/embed/${videoIds[getVideoIndexFromLightbox(lightboxIndex)]}?autoplay=1&rel=0`}
                   className="absolute inset-0 w-full h-full"
                   allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
                   allowFullScreen
-                  title={`${product.name} video`}
+                  title={`${product.name} video ${getVideoIndexFromLightbox(lightboxIndex) + 1}`}
                 />
               </div>
             ) : (

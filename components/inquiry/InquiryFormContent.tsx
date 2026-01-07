@@ -216,8 +216,8 @@ export function InquiryFormContent({
           <div className="flex flex-wrap items-center gap-3 text-sm text-muted-foreground">
             {[
               { icon: Mail, text: 'sales@jamessaxcorner.com' },
-              { icon: Phone, text: '+84 909 000 000' },
-              { icon: MapPin, text: 'Ha Noi, Viet Nam' },
+              { icon: Phone, text: '+84-82-678-8899' },
+              { icon: MapPin, text: 'Hanoi, Vietnam' },
             ].map((item, i) => (
               <span 
                 key={i} 

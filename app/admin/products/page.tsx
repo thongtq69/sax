@@ -45,7 +45,7 @@ export default function ProductsManagement() {
     productType?: string
     condition?: string
     conditionNotes?: string
-    videoUrl?: string
+    videoUrls?: string[]
   }>({
     name: '',
     slug: '',
@@ -62,7 +62,7 @@ export default function ProductsManagement() {
     productType: 'new',
     condition: undefined,
     conditionNotes: '',
-    videoUrl: '',
+    videoUrls: ['', '', '', ''],
     description: '',
     specs: {},
     included: [],
@@ -143,7 +143,11 @@ export default function ProductsManagement() {
         productType: (product as any).productType || 'new',
         condition: (product as any).condition || undefined,
         conditionNotes: (product as any).conditionNotes || '',
-        videoUrl: (product as any).videoUrl || '',
+        videoUrls: (product as any).videoUrls?.length > 0 
+          ? [...(product as any).videoUrls, '', '', '', ''].slice(0, 4)
+          : (product as any).videoUrl 
+            ? [(product as any).videoUrl, '', '', ''] 
+            : ['', '', '', ''],
       })
     } else {
       setEditingProduct(null)
@@ -163,7 +167,7 @@ export default function ProductsManagement() {
         productType: 'new',
         condition: undefined,
         conditionNotes: '',
-        videoUrl: '',
+        videoUrls: ['', '', '', ''],
         description: '',
         specs: {},
         included: [],
@@ -219,7 +223,7 @@ export default function ProductsManagement() {
         productType: formData.productType || 'new',
         condition: formData.productType === 'used' ? (formData.condition || 'excellent') : null,
         conditionNotes: formData.productType === 'used' ? (formData.conditionNotes || null) : null,
-        videoUrl: formData.videoUrl || null,
+        videoUrls: (formData.videoUrls || []).filter(url => url && url.trim()),
         description: formData.description,
         specs: formData.specs || null,
         included: formData.included || [],
@@ -951,14 +955,24 @@ export default function ProductsManagement() {
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
-                  YouTube Video URL
+                  YouTube Video URLs (up to 4)
                 </label>
-                <Input
-                  value={formData.videoUrl || ''}
-                  onChange={(e) => setFormData({ ...formData, videoUrl: e.target.value })}
-                  placeholder="e.g., https://www.youtube.com/watch?v=..."
-                />
-                <p className="text-xs text-gray-500 mt-1">Add a YouTube video to showcase the product (supports youtube.com/watch, youtu.be, shorts)</p>
+                <div className="space-y-3">
+                  {[0, 1, 2, 3].map((index) => (
+                    <div key={index}>
+                      <Input
+                        value={formData.videoUrls?.[index] || ''}
+                        onChange={(e) => {
+                          const newVideoUrls = [...(formData.videoUrls || ['', '', '', ''])]
+                          newVideoUrls[index] = e.target.value
+                          setFormData({ ...formData, videoUrls: newVideoUrls })
+                        }}
+                        placeholder={`Video ${index + 1}: https://www.youtube.com/watch?v=...`}
+                      />
+                    </div>
+                  ))}
+                </div>
+                <p className="text-xs text-gray-500 mt-2">Add YouTube videos to showcase the product (supports youtube.com/watch, youtu.be, shorts)</p>
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
