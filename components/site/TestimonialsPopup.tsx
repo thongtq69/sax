@@ -20,7 +20,7 @@ interface TestimonialsPopupProps {
 }
 
 // Component for individual review card with expand/collapse functionality
-function ReviewCard({ review, index }: { review: Review; index: number }) {
+function ReviewCard({ review }: { review: Review }) {
   const [isExpanded, setIsExpanded] = useState(false)
   const MAX_LENGTH = 150 // Characters before truncating
 
@@ -224,7 +224,7 @@ export function TestimonialsPopup({ isOpen, onClose }: TestimonialsPopupProps) {
           ) : (
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
               {reviews.map((review, index) => (
-                <ReviewCard key={index} review={review} index={index} />
+                <ReviewCard key={index} review={review} />
               ))}
             </div>
           )}
