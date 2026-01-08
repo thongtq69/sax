@@ -133,14 +133,15 @@ function StaticProductGrid({ products, id }: { products: Product[], id: string }
   const displayProducts = getDisplayProducts()
   const productCount = displayProducts.length
 
-  // Calculate grid columns based on product count
+  // Calculate grid columns - always use full width, products will be evenly distributed
   const getGridClass = () => {
     if (isMobile) return 'grid-cols-2'
-    if (productCount === 1) return 'grid-cols-1 max-w-xs mx-auto'
-    if (productCount === 2) return 'grid-cols-2 max-w-lg mx-auto'
-    if (productCount === 3) return 'grid-cols-3 max-w-2xl mx-auto'
-    if (productCount === 4) return 'grid-cols-4 max-w-4xl mx-auto'
-    if (productCount === 5) return 'grid-cols-5 max-w-5xl mx-auto'
+    // Always use the number of products as columns for even distribution
+    if (productCount === 1) return 'grid-cols-1'
+    if (productCount === 2) return 'grid-cols-2'
+    if (productCount === 3) return 'grid-cols-3'
+    if (productCount === 4) return 'grid-cols-4'
+    if (productCount === 5) return 'grid-cols-5'
     return 'grid-cols-6'
   }
 
@@ -164,12 +165,12 @@ function StaticProductGrid({ products, id }: { products: Product[], id: string }
 
   return (
     <div className="relative">
-      <div className="overflow-hidden">
-        <div className={`grid ${getGridClass()} gap-3 sm:gap-4`}>
+      <div className="overflow-visible">
+        <div className={`grid ${getGridClass()} gap-3 sm:gap-6`}>
           {displayProducts.map((product, index) => (
             <div
               key={`${id}-${product.id}-${currentIndex}-${index}`}
-              className={`transition-all duration-300 ease-out ${isAnimating && showNavigation ? 'opacity-0 scale-95' : 'opacity-100 scale-100'}`}
+              className={`transition-all duration-300 ease-out hover:scale-110 hover:z-10 ${isAnimating && showNavigation ? 'opacity-0 scale-95' : 'opacity-100 scale-100'}`}
               style={{ transitionDelay: isAnimating ? '0ms' : `${index * 30}ms` }}
             >
               <ProductCard product={product} index={index} />
