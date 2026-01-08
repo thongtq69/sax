@@ -1,10 +1,10 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { 
-  Package, FileText, ShoppingCart, TrendingUp, Users, Plus, 
+import {
+  Package, FileText, ShoppingCart, TrendingUp, Users, Plus,
   ArrowUpRight, ArrowDownRight, Eye, Star, Image as ImageIcon,
-  HelpCircle, MessageSquare, Settings, Home, Layers, ListOrdered, 
+  HelpCircle, MessageSquare, Settings, Home, Layers, ListOrdered,
   ClipboardList, Tag
 } from 'lucide-react'
 import Link from 'next/link'
@@ -222,7 +222,7 @@ export default function AdminDashboard() {
         {/* Quick Actions */}
         <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
           <h2 className="text-lg font-semibold text-gray-900 mb-4">Quick Actions</h2>
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <Link href="/admin/products">
               <Button className="w-full justify-start" variant="outline">
                 <Package className="h-4 w-4 mr-3" />
@@ -320,12 +320,11 @@ export default function AdminDashboard() {
                   </div>
                   <div className="text-right">
                     <p className="text-sm font-medium text-gray-900">${order.total.toLocaleString()}</p>
-                    <span className={`text-xs px-2 py-0.5 rounded-full ${
-                      order.status === 'delivered' ? 'bg-green-100 text-green-700' :
-                      order.status === 'pending' ? 'bg-amber-100 text-amber-700' :
-                      order.status === 'processing' ? 'bg-blue-100 text-blue-700' :
-                      'bg-gray-100 text-gray-700'
-                    }`}>
+                    <span className={`text-xs px-2 py-0.5 rounded-full ${order.status === 'delivered' ? 'bg-green-100 text-green-700' :
+                        order.status === 'pending' ? 'bg-amber-100 text-amber-700' :
+                          order.status === 'processing' ? 'bg-blue-100 text-blue-700' :
+                            'bg-gray-100 text-gray-700'
+                      }`}>
                       {order.status}
                     </span>
                   </div>
