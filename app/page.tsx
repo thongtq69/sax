@@ -468,7 +468,7 @@ export default function HomePage() {
           <div className="flex items-center justify-between gap-4">
             <span className="text-sm font-semibold text-white flex items-center gap-1.5 whitespace-nowrap">
               <Sparkles className="h-4 w-4" />
-              Newsletter
+              Join Our Musical Community
             </span>
             <form onSubmit={(e) => { e.preventDefault(); const formData = new FormData(e.currentTarget); const email = formData.get('email'); if (email) { alert('Thank you for subscribing!'); e.currentTarget.reset(); } }} className="flex gap-2 flex-1 max-w-md">
               <input type="email" name="email" placeholder="Enter your email" className="bg-white/20 border border-white/30 placeholder:text-white/60 text-white min-w-0 flex-1 px-4 py-1.5 rounded text-sm h-9" required />
