@@ -95,9 +95,103 @@ function ReviewsCarousel({ reviews, productImages = [], onViewAll }: ReviewsCaro
 interface NewArrivalsCarouselProps {
   products: Product[]
   id: string
+  autoRotate?: boolean // Enable/disable auto rotation
 }
 
-function NewArrivalsCarousel({ products, id }: NewArrivalsCarouselProps) {
+// Static grid for displaying products with manual navigation (for NEW ARRIVALS & FEATURED INSTRUMENTS)
+function StaticProductGrid({ products, id }: { products: Product[], id: string }) {
+  const [currentIndex, setCurrentIndex] = useState(0)
+  const [isAnimating, setIsAnimating] = useState(false)
+  const [isMobile, setIsMobile] = useState(false)
+
+  useEffect(() => {
+    const checkMobile = () => setIsMobile(window.innerWidth < 640)
+    checkMobile()
+    window.addEventListener('resize', checkMobile)
+    return () => window.removeEventListener('resize', checkMobile)
+  }, [])
+
+  if (products.length === 0) return null
+
+  const productsPerView = isMobile ? 2 : 6
+  const showNavigation = products.length > productsPerView
+
+  // Get products to display based on current index
+  const getDisplayProducts = () => {
+    if (products.length <= productsPerView) {
+      return products
+    }
+    // Show a sliding window of products with loop
+    const display: Product[] = []
+    for (let i = 0; i < productsPerView; i++) {
+      const index = (currentIndex + i) % products.length
+      display.push(products[index])
+    }
+    return display
+  }
+
+  const displayProducts = getDisplayProducts()
+  const productCount = displayProducts.length
+
+  // Calculate grid columns based on product count
+  const getGridClass = () => {
+    if (isMobile) return 'grid-cols-2'
+    if (productCount === 1) return 'grid-cols-1 max-w-xs mx-auto'
+    if (productCount === 2) return 'grid-cols-2 max-w-lg mx-auto'
+    if (productCount === 3) return 'grid-cols-3 max-w-2xl mx-auto'
+    if (productCount === 4) return 'grid-cols-4 max-w-4xl mx-auto'
+    if (productCount === 5) return 'grid-cols-5 max-w-5xl mx-auto'
+    return 'grid-cols-6'
+  }
+
+  const goToNext = () => {
+    if (!showNavigation) return
+    setIsAnimating(true)
+    setTimeout(() => {
+      setCurrentIndex((prev) => (prev + 1) % products.length)
+      setTimeout(() => setIsAnimating(false), 50)
+    }, 150)
+  }
+
+  const goToPrev = () => {
+    if (!showNavigation) return
+    setIsAnimating(true)
+    setTimeout(() => {
+      setCurrentIndex((prev) => (prev - 1 + products.length) % products.length)
+      setTimeout(() => setIsAnimating(false), 50)
+    }, 150)
+  }
+
+  return (
+    <div className="relative">
+      <div className="overflow-hidden">
+        <div className={`grid ${getGridClass()} gap-3 sm:gap-4`}>
+          {displayProducts.map((product, index) => (
+            <div
+              key={`${id}-${product.id}-${currentIndex}-${index}`}
+              className={`transition-all duration-300 ease-out ${isAnimating && showNavigation ? 'opacity-0 scale-95' : 'opacity-100 scale-100'}`}
+              style={{ transitionDelay: isAnimating ? '0ms' : `${index * 30}ms` }}
+            >
+              <ProductCard product={product} index={index} />
+            </div>
+          ))}
+        </div>
+      </div>
+      {showNavigation && (
+        <>
+          <button type="button" aria-label="Previous products" onClick={goToPrev} className="hidden sm:flex absolute left-0 top-1/2 -translate-y-1/2 -translate-x-1/2 rounded-full bg-white/95 border-2 border-primary/20 shadow-xl p-3 text-primary hover:bg-primary hover:text-white hover:border-primary hover:scale-110 transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-primary z-10 items-center justify-center">
+            <ChevronLeft className="h-5 w-5" />
+          </button>
+          <button type="button" aria-label="Next products" onClick={goToNext} className="hidden sm:flex absolute right-0 top-1/2 -translate-y-1/2 translate-x-1/2 rounded-full bg-white/95 border-2 border-primary/20 shadow-xl p-3 text-primary hover:bg-primary hover:text-white hover:border-primary hover:scale-110 transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-primary z-10 items-center justify-center">
+            <ChevronRight className="h-5 w-5" />
+          </button>
+        </>
+      )}
+    </div>
+  )
+}
+
+function NewArrivalsCarousel({ products, id, autoRotate = true }: NewArrivalsCarouselProps) {
   const [currentIndex, setCurrentIndex] = useState(0)
   const [isPaused, setIsPaused] = useState(false)
   const [isAnimating, setIsAnimating] = useState(false)
@@ -113,8 +207,9 @@ function NewArrivalsCarousel({ products, id }: NewArrivalsCarouselProps) {
 
   const productsPerView = isMobile ? 2 : 6
 
+  // Only auto-rotate if enabled and we have more products than can be displayed
   useEffect(() => {
-    if (products.length === 0 || isPaused) return
+    if (!autoRotate || products.length <= productsPerView || isPaused) return
     intervalRef.current = setInterval(() => {
       setIsAnimating(true)
       setTimeout(() => {
@@ -125,9 +220,14 @@ function NewArrivalsCarousel({ products, id }: NewArrivalsCarouselProps) {
     return () => {
       if (intervalRef.current) clearInterval(intervalRef.current)
     }
-  }, [products.length, isPaused])
+  }, [products.length, isPaused, autoRotate, productsPerView])
 
   const getDisplayProducts = () => {
+    // If we have fewer products than slots, just show what we have (no duplication)
+    if (products.length <= productsPerView) {
+      return products
+    }
+    // Otherwise, show a sliding window of products
     const display: Product[] = []
     for (let i = 0; i < productsPerView; i++) {
       const index = (currentIndex + i) % products.length
@@ -137,8 +237,22 @@ function NewArrivalsCarousel({ products, id }: NewArrivalsCarouselProps) {
   }
 
   const displayProducts = getDisplayProducts()
+  const productCount = displayProducts.length
+  const showNavigation = products.length > productsPerView
+
+  // Calculate grid columns based on product count (for centering when < 6)
+  const getGridClass = () => {
+    if (isMobile) return 'grid-cols-2'
+    if (productCount === 1) return 'grid-cols-1 max-w-xs mx-auto'
+    if (productCount === 2) return 'grid-cols-2 max-w-lg mx-auto'
+    if (productCount === 3) return 'grid-cols-3 max-w-2xl mx-auto'
+    if (productCount === 4) return 'grid-cols-4 max-w-4xl mx-auto'
+    if (productCount === 5) return 'grid-cols-5 max-w-5xl mx-auto'
+    return 'grid-cols-6'
+  }
 
   const goToNext = () => {
+    if (!showNavigation) return
     setIsAnimating(true)
     setTimeout(() => {
       setCurrentIndex((prev) => (prev + 1) % products.length)
@@ -147,6 +261,7 @@ function NewArrivalsCarousel({ products, id }: NewArrivalsCarouselProps) {
   }
 
   const goToPrev = () => {
+    if (!showNavigation) return
     setIsAnimating(true)
     setTimeout(() => {
       setCurrentIndex((prev) => (prev - 1 + products.length) % products.length)
@@ -159,11 +274,11 @@ function NewArrivalsCarousel({ products, id }: NewArrivalsCarouselProps) {
   return (
     <div className="relative" onMouseEnter={() => setIsPaused(true)} onMouseLeave={() => setIsPaused(false)}>
       <div className="overflow-hidden">
-        <div className={`grid ${isMobile ? 'grid-cols-2' : 'grid-cols-6'} gap-3 sm:gap-4`}>
+        <div className={`grid ${getGridClass()} gap-3 sm:gap-4`}>
           {displayProducts.map((product, index) => (
             <div
               key={`${id}-${product.id}-${currentIndex}-${index}`}
-              className={`transition-all duration-300 ease-out ${isAnimating ? 'opacity-0 scale-95' : 'opacity-100 scale-100'}`}
+              className={`transition-all duration-300 ease-out ${isAnimating && showNavigation ? 'opacity-0 scale-95' : 'opacity-100 scale-100'}`}
               style={{ transitionDelay: isAnimating ? '0ms' : `${index * 30}ms` }}
             >
               <ProductCard product={product} index={index} />
@@ -171,12 +286,16 @@ function NewArrivalsCarousel({ products, id }: NewArrivalsCarouselProps) {
           ))}
         </div>
       </div>
-      <button type="button" aria-label="Previous products" onClick={goToPrev} className="hidden sm:flex absolute left-0 top-1/2 -translate-y-1/2 -translate-x-1/2 rounded-full bg-white/95 border-2 border-primary/20 shadow-xl p-3 text-primary hover:bg-primary hover:text-white hover:border-primary hover:scale-110 transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-primary z-10 items-center justify-center">
-        <ChevronLeft className="h-5 w-5" />
-      </button>
-      <button type="button" aria-label="Next products" onClick={goToNext} className="hidden sm:flex absolute right-0 top-1/2 -translate-y-1/2 translate-x-1/2 rounded-full bg-white/95 border-2 border-primary/20 shadow-xl p-3 text-primary hover:bg-primary hover:text-white hover:border-primary hover:scale-110 transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-primary z-10 items-center justify-center">
-        <ChevronRight className="h-5 w-5" />
-      </button>
+      {showNavigation && (
+        <>
+          <button type="button" aria-label="Previous products" onClick={goToPrev} className="hidden sm:flex absolute left-0 top-1/2 -translate-y-1/2 -translate-x-1/2 rounded-full bg-white/95 border-2 border-primary/20 shadow-xl p-3 text-primary hover:bg-primary hover:text-white hover:border-primary hover:scale-110 transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-primary z-10 items-center justify-center">
+            <ChevronLeft className="h-5 w-5" />
+          </button>
+          <button type="button" aria-label="Next products" onClick={goToNext} className="hidden sm:flex absolute right-0 top-1/2 -translate-y-1/2 translate-x-1/2 rounded-full bg-white/95 border-2 border-primary/20 shadow-xl p-3 text-primary hover:bg-primary hover:text-white hover:border-primary hover:scale-110 transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-primary z-10 items-center justify-center">
+            <ChevronRight className="h-5 w-5" />
+          </button>
+        </>
+      )}
     </div>
   )
 }
@@ -184,6 +303,18 @@ function NewArrivalsCarousel({ products, id }: NewArrivalsCarouselProps) {
 export default function HomePage() {
   const [featuredProducts, setFeaturedProducts] = useState<Product[]>([])
   const [saleProducts, setSaleProducts] = useState<Product[]>([])
+  const [onSaleProducts, setOnSaleProducts] = useState<Product[]>([])
+  const [professionalFlutesProducts, setProfessionalFlutesProducts] = useState<Product[]>([])
+  const [saxophonesProducts, setSaxophonesProducts] = useState<Product[]>([])
+  const [studentInstrumentsProducts, setStudentInstrumentsProducts] = useState<Product[]>([])
+  const [collectionTitles, setCollectionTitles] = useState<Record<string, string>>({
+    'new-arrivals': 'NEW ARRIVALS',
+    'featured-instruments': 'FEATURED INSTRUMENTS',
+    'on-sale': 'ON SALE',
+    'professional-flutes': 'PROFESSIONAL FLUTES',
+    'saxophones': 'SAXOPHONES',
+    'student-instruments': 'STUDENT INSTRUMENTS',
+  })
   const [allProducts, setAllProducts] = useState<Product[]>([])
   const [categories, setCategories] = useState<any[]>([])
   const [categoryCounts, setCategoryCounts] = useState<Record<string, number>>({})
@@ -203,15 +334,25 @@ export default function HomePage() {
         // Try to fetch from featured collections first
         let newArrivalsProducts: Product[] = []
         let featuredInstrumentsProducts: Product[] = []
+        let onSale: Product[] = []
+        let professionalFlutes: Product[] = []
+        let saxophones: Product[] = []
+        let studentInstruments: Product[] = []
+        const titles: Record<string, string> = { ...collectionTitles }
 
         try {
-          const [newArrivalsRes, featuredRes] = await Promise.all([
+          const [newArrivalsRes, featuredRes, onSaleRes, flutesRes, saxRes, studentRes] = await Promise.all([
             fetch('/api/admin/featured-collections/new-arrivals'),
             fetch('/api/admin/featured-collections/featured-instruments'),
+            fetch('/api/admin/featured-collections/on-sale'),
+            fetch('/api/admin/featured-collections/professional-flutes'),
+            fetch('/api/admin/featured-collections/saxophones'),
+            fetch('/api/admin/featured-collections/student-instruments'),
           ])
 
           if (newArrivalsRes.ok) {
             const newArrivalsData = await newArrivalsRes.json()
+            if (newArrivalsData.name) titles['new-arrivals'] = newArrivalsData.name.toUpperCase()
             if (newArrivalsData.products && newArrivalsData.products.length > 0) {
               newArrivalsProducts = newArrivalsData.products.map(transformProduct)
             }
@@ -219,26 +360,56 @@ export default function HomePage() {
 
           if (featuredRes.ok) {
             const featuredData = await featuredRes.json()
+            if (featuredData.name) titles['featured-instruments'] = featuredData.name.toUpperCase()
             if (featuredData.products && featuredData.products.length > 0) {
               featuredInstrumentsProducts = featuredData.products.map(transformProduct)
             }
           }
+
+          if (onSaleRes.ok) {
+            const onSaleData = await onSaleRes.json()
+            if (onSaleData.name) titles['on-sale'] = onSaleData.name.toUpperCase()
+            if (onSaleData.products && onSaleData.products.length > 0) {
+              onSale = onSaleData.products.map(transformProduct)
+            }
+          }
+
+          if (flutesRes.ok) {
+            const flutesData = await flutesRes.json()
+            if (flutesData.name) titles['professional-flutes'] = flutesData.name.toUpperCase()
+            if (flutesData.products && flutesData.products.length > 0) {
+              professionalFlutes = flutesData.products.map(transformProduct)
+            }
+          }
+
+          if (saxRes.ok) {
+            const saxData = await saxRes.json()
+            if (saxData.name) titles['saxophones'] = saxData.name.toUpperCase()
+            if (saxData.products && saxData.products.length > 0) {
+              saxophones = saxData.products.map(transformProduct)
+            }
+          }
+
+          if (studentRes.ok) {
+            const studentData = await studentRes.json()
+            if (studentData.name) titles['student-instruments'] = studentData.name.toUpperCase()
+            if (studentData.products && studentData.products.length > 0) {
+              studentInstruments = studentData.products.map(transformProduct)
+            }
+          }
+
+          setCollectionTitles(titles)
         } catch (error) {
           console.log('Featured collections not found, using fallback')
         }
 
-        // Fallback to badge-based filtering if collections are empty
-        if (featuredInstrumentsProducts.length === 0) {
-          const featuredResponse = await getProducts({ badge: 'new', limit: 8 })
-          featuredInstrumentsProducts = featuredResponse.products.map(transformProduct)
-        }
+        // Only show products from admin collections (no fallback)
         setFeaturedProducts(featuredInstrumentsProducts)
-
-        if (newArrivalsProducts.length === 0) {
-          const comingSoonResponse = await getProducts({ badge: 'coming-soon', limit: 3 })
-          newArrivalsProducts = comingSoonResponse.products.map(transformProduct)
-        }
         setSaleProducts(newArrivalsProducts)
+        setOnSaleProducts(onSale)
+        setProfessionalFlutesProducts(professionalFlutes)
+        setSaxophonesProducts(saxophones)
+        setStudentInstrumentsProducts(studentInstruments)
 
         const allResponse = await getProducts({ limit: 28 })
         const all = allResponse.products.map(transformProduct)
@@ -374,7 +545,7 @@ export default function HomePage() {
             <div className="flex items-center justify-center gap-3">
               <div className="flex-1 h-px bg-primary/30" />
               <span className="text-2xl sm:text-3xl text-primary">♪</span>
-              <h2 className="text-lg sm:text-xl md:text-2xl font-bold text-secondary tracking-wide uppercase">NEW ARRIVALS</h2>
+              <h2 className="text-lg sm:text-xl md:text-2xl font-bold text-secondary tracking-wide uppercase">{collectionTitles['new-arrivals']}</h2>
               <span className="text-2xl sm:text-3xl text-primary">♪</span>
               <div className="flex-1 h-px bg-primary/30" />
             </div>
@@ -385,30 +556,124 @@ export default function HomePage() {
             </div>
           </div>
           <div className="container mx-auto px-4 pb-4 sm:pb-6">
-            <NewArrivalsCarousel products={saleProducts} id="new-arrivals" />
+            <StaticProductGrid products={saleProducts} id="new-arrivals" />
           </div>
         </section>
       )}
 
-      <section>
-        <div className="container mx-auto px-4 py-3 sm:py-4">
-          <div className="flex items-center justify-center gap-3">
-            <div className="flex-1 h-px bg-primary/30" />
-            <span className="text-2xl sm:text-3xl text-primary">♫</span>
-            <h2 className="text-lg sm:text-xl md:text-2xl font-bold text-secondary tracking-wide uppercase">FEATURED INSTRUMENTS</h2>
-            <span className="text-2xl sm:text-3xl text-primary">♫</span>
-            <div className="flex-1 h-px bg-primary/30" />
+      {featuredProducts.length > 0 && (
+        <section>
+          <div className="container mx-auto px-4 py-3 sm:py-4">
+            <div className="flex items-center justify-center gap-3">
+              <div className="flex-1 h-px bg-primary/30" />
+              <span className="text-2xl sm:text-3xl text-primary">♫</span>
+              <h2 className="text-lg sm:text-xl md:text-2xl font-bold text-secondary tracking-wide uppercase">{collectionTitles['featured-instruments']}</h2>
+              <span className="text-2xl sm:text-3xl text-primary">♫</span>
+              <div className="flex-1 h-px bg-primary/30" />
+            </div>
+            <div className="text-center mt-2">
+              <Link href="/shop?badge=new" className="text-xs sm:text-sm text-primary hover:text-secondary transition-colors inline-flex items-center gap-1">
+                View All <ChevronRight className="h-3 w-3 sm:h-4 sm:w-4" />
+              </Link>
+            </div>
           </div>
-          <div className="text-center mt-2">
-            <Link href="/shop?badge=new" className="text-xs sm:text-sm text-primary hover:text-secondary transition-colors inline-flex items-center gap-1">
-              View All <ChevronRight className="h-3 w-3 sm:h-4 sm:w-4" />
-            </Link>
+          <div className="container mx-auto px-4 pb-4 sm:pb-6">
+            <StaticProductGrid products={featuredProducts} id="featured" />
           </div>
-        </div>
-        <div className="container mx-auto px-4 pb-4 sm:pb-6">
-          <NewArrivalsCarousel products={featuredProducts} id="featured" />
-        </div>
-      </section>
+        </section>
+      )}
+
+      {/* On Sale Section */}
+      {onSaleProducts.length > 0 && (
+        <section className="bg-gradient-to-br from-red-50/30 via-white to-amber-50/30">
+          <div className="container mx-auto px-4 py-3 sm:py-4">
+            <div className="flex items-center justify-center gap-3">
+              <div className="flex-1 h-px bg-red-400/30" />
+              <span className="text-2xl sm:text-3xl text-red-500">🔥</span>
+              <h2 className="text-lg sm:text-xl md:text-2xl font-bold text-secondary tracking-wide uppercase">{collectionTitles['on-sale']}</h2>
+              <span className="text-2xl sm:text-3xl text-red-500">🔥</span>
+              <div className="flex-1 h-px bg-red-400/30" />
+            </div>
+            <div className="text-center mt-2">
+              <Link href="/shop?badge=sale" className="text-xs sm:text-sm text-primary hover:text-secondary transition-colors inline-flex items-center gap-1">
+                View All <ChevronRight className="h-3 w-3 sm:h-4 sm:w-4" />
+              </Link>
+            </div>
+          </div>
+          <div className="container mx-auto px-4 pb-4 sm:pb-6">
+            <StaticProductGrid products={onSaleProducts} id="on-sale" />
+          </div>
+        </section>
+      )}
+
+      {/* Professional Flutes Section */}
+      {professionalFlutesProducts.length > 0 && (
+        <section>
+          <div className="container mx-auto px-4 py-3 sm:py-4">
+            <div className="flex items-center justify-center gap-3">
+              <div className="flex-1 h-px bg-primary/30" />
+              <span className="text-2xl sm:text-3xl text-primary">🎵</span>
+              <h2 className="text-lg sm:text-xl md:text-2xl font-bold text-secondary tracking-wide uppercase">{collectionTitles['professional-flutes']}</h2>
+              <span className="text-2xl sm:text-3xl text-primary">🎵</span>
+              <div className="flex-1 h-px bg-primary/30" />
+            </div>
+            <div className="text-center mt-2">
+              <Link href="/shop?subcategory=flutes" className="text-xs sm:text-sm text-primary hover:text-secondary transition-colors inline-flex items-center gap-1">
+                View All <ChevronRight className="h-3 w-3 sm:h-4 sm:w-4" />
+              </Link>
+            </div>
+          </div>
+          <div className="container mx-auto px-4 pb-4 sm:pb-6">
+            <StaticProductGrid products={professionalFlutesProducts} id="professional-flutes" />
+          </div>
+        </section>
+      )}
+
+      {/* Saxophones Section */}
+      {saxophonesProducts.length > 0 && (
+        <section className="bg-gradient-to-br from-amber-50/30 via-white to-blue-50/30">
+          <div className="container mx-auto px-4 py-3 sm:py-4">
+            <div className="flex items-center justify-center gap-3">
+              <div className="flex-1 h-px bg-primary/30" />
+              <span className="text-2xl sm:text-3xl text-primary">🎷</span>
+              <h2 className="text-lg sm:text-xl md:text-2xl font-bold text-secondary tracking-wide uppercase">{collectionTitles['saxophones']}</h2>
+              <span className="text-2xl sm:text-3xl text-primary">🎷</span>
+              <div className="flex-1 h-px bg-primary/30" />
+            </div>
+            <div className="text-center mt-2">
+              <Link href="/shop?category=saxophones" className="text-xs sm:text-sm text-primary hover:text-secondary transition-colors inline-flex items-center gap-1">
+                View All <ChevronRight className="h-3 w-3 sm:h-4 sm:w-4" />
+              </Link>
+            </div>
+          </div>
+          <div className="container mx-auto px-4 pb-4 sm:pb-6">
+            <StaticProductGrid products={saxophonesProducts} id="saxophones" />
+          </div>
+        </section>
+      )}
+
+      {/* Student Instruments Section */}
+      {studentInstrumentsProducts.length > 0 && (
+        <section>
+          <div className="container mx-auto px-4 py-3 sm:py-4">
+            <div className="flex items-center justify-center gap-3">
+              <div className="flex-1 h-px bg-primary/30" />
+              <span className="text-2xl sm:text-3xl text-primary">📚</span>
+              <h2 className="text-lg sm:text-xl md:text-2xl font-bold text-secondary tracking-wide uppercase">{collectionTitles['student-instruments']}</h2>
+              <span className="text-2xl sm:text-3xl text-primary">📚</span>
+              <div className="flex-1 h-px bg-primary/30" />
+            </div>
+            <div className="text-center mt-2">
+              <Link href="/shop?productType=student" className="text-xs sm:text-sm text-primary hover:text-secondary transition-colors inline-flex items-center gap-1">
+                View All <ChevronRight className="h-3 w-3 sm:h-4 sm:w-4" />
+              </Link>
+            </div>
+          </div>
+          <div className="container mx-auto px-4 pb-4 sm:pb-6">
+            <StaticProductGrid products={studentInstrumentsProducts} id="student-instruments" />
+          </div>
+        </section>
+      )}
 
       <section className="bg-gradient-to-br from-amber-50/50 via-white to-blue-50/50">
         <div className="container mx-auto px-4 py-3 sm:py-4">

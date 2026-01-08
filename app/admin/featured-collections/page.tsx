@@ -20,7 +20,8 @@ import {
   GripVertical,
   X,
   Check,
-  Image as ImageIcon
+  Image as ImageIcon,
+  Pencil
 } from 'lucide-react'
 import Image from 'next/image'
 
@@ -51,6 +52,8 @@ export default function FeaturedCollectionsPage() {
   const [selectedCollection, setSelectedCollection] = useState<FeaturedCollection | null>(null)
   const [isProductDialogOpen, setIsProductDialogOpen] = useState(false)
   const [productSearchTerm, setProductSearchTerm] = useState('')
+  const [editingTitle, setEditingTitle] = useState<string | null>(null)
+  const [editTitleValue, setEditTitleValue] = useState('')
 
   // Fetch collections and products
   useEffect(() => {
@@ -133,6 +136,43 @@ export default function FeaturedCollectionsPage() {
     } finally {
       setSaving(null)
     }
+  }
+
+  // Save collection title
+  const saveCollectionTitle = async (slug: string, name: string) => {
+    setSaving(slug)
+    try {
+      const response = await fetch(`/api/admin/featured-collections/${slug}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name }),
+      })
+
+      if (response.ok) {
+        setCollections((prev) =>
+          prev.map((c) =>
+            c.slug === slug ? { ...c, name } : c
+          )
+        )
+        setEditingTitle(null)
+      }
+    } catch (error) {
+      console.error('Error saving collection title:', error)
+    } finally {
+      setSaving(null)
+    }
+  }
+
+  // Start editing title
+  const startEditingTitle = (collection: FeaturedCollection) => {
+    setEditingTitle(collection.slug)
+    setEditTitleValue(collection.name)
+  }
+
+  // Cancel editing title
+  const cancelEditingTitle = () => {
+    setEditingTitle(null)
+    setEditTitleValue('')
   }
 
   // Add product to collection
@@ -234,7 +274,51 @@ export default function FeaturedCollectionsPage() {
                 <div className="flex items-center gap-3">
                   {getCollectionIcon(collection.slug)}
                   <div>
-                    <h2 className="text-lg font-semibold text-gray-900">{collection.name}</h2>
+                    {editingTitle === collection.slug ? (
+                      <div className="flex items-center gap-2">
+                        <Input
+                          value={editTitleValue}
+                          onChange={(e) => setEditTitleValue(e.target.value)}
+                          className="h-8 text-lg font-semibold w-48"
+                          autoFocus
+                          onKeyDown={(e) => {
+                            if (e.key === 'Enter') {
+                              saveCollectionTitle(collection.slug, editTitleValue)
+                            } else if (e.key === 'Escape') {
+                              cancelEditingTitle()
+                            }
+                          }}
+                        />
+                        <Button
+                          size="sm"
+                          variant="ghost"
+                          onClick={() => saveCollectionTitle(collection.slug, editTitleValue)}
+                          className="h-8 w-8 p-0 text-green-600 hover:text-green-700 hover:bg-green-50"
+                        >
+                          <Check className="h-4 w-4" />
+                        </Button>
+                        <Button
+                          size="sm"
+                          variant="ghost"
+                          onClick={cancelEditingTitle}
+                          className="h-8 w-8 p-0 text-gray-500 hover:text-gray-700"
+                        >
+                          <X className="h-4 w-4" />
+                        </Button>
+                      </div>
+                    ) : (
+                      <div className="flex items-center gap-2 group/title">
+                        <h2 className="text-lg font-semibold text-gray-900">{collection.name}</h2>
+                        <Button
+                          size="sm"
+                          variant="ghost"
+                          onClick={() => startEditingTitle(collection)}
+                          className="h-6 w-6 p-0 opacity-0 group-hover/title:opacity-100 transition-opacity text-gray-400 hover:text-gray-600"
+                        >
+                          <Pencil className="h-3 w-3" />
+                        </Button>
+                      </div>
+                    )}
                     <p className="text-sm text-gray-500">
                       {collection.products?.length || 0} products
                     </p>

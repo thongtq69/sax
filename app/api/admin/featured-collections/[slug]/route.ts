@@ -33,8 +33,16 @@ export async function GET(
         slug: true,
         brand: true,
         price: true,
+        retailPrice: true,
         images: true,
         badge: true,
+        inStock: true,
+        stock: true,
+        stockStatus: true,
+        rating: true,
+        reviewCount: true,
+        condition: true,
+        productType: true,
       },
     })
 
