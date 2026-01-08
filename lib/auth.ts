@@ -5,10 +5,10 @@ import Facebook from "next-auth/providers/facebook"
 import Credentials from "next-auth/providers/credentials"
 import { prisma } from "@/lib/prisma"
 import bcrypt from "bcryptjs"
-import type { NextAuthConfig, Provider } from "next-auth"
+import type { NextAuthConfig } from "next-auth"
 
 // Build providers array dynamically based on available credentials
-const providers: Provider[] = [
+const providers: NextAuthConfig["providers"] = [
   Credentials({
     name: "credentials",
     credentials: {
