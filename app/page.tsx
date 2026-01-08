@@ -569,7 +569,7 @@ export default function HomePage() {
 
       {saleProducts.length > 0 && (
         <section className="relative overflow-hidden" style={collectionBackgrounds['new-arrivals'] ? { backgroundImage: `url(${collectionBackgrounds['new-arrivals']})`, backgroundSize: 'cover', backgroundPosition: 'center' } : {}}>
-          {collectionBackgrounds['new-arrivals'] && <div className="absolute inset-0 bg-white/85 backdrop-blur-sm" />}
+          {collectionBackgrounds['new-arrivals'] && <div className="absolute inset-0 bg-white/5" />}
           <div className="relative">
             <div className="container mx-auto px-4 py-3 sm:py-4">
               <div className="flex items-center justify-center gap-3">
@@ -594,7 +594,7 @@ export default function HomePage() {
 
       {featuredProducts.length > 0 && (
         <section className="relative overflow-hidden" style={collectionBackgrounds['featured-instruments'] ? { backgroundImage: `url(${collectionBackgrounds['featured-instruments']})`, backgroundSize: 'cover', backgroundPosition: 'center' } : {}}>
-          {collectionBackgrounds['featured-instruments'] && <div className="absolute inset-0 bg-white/85 backdrop-blur-sm" />}
+          {collectionBackgrounds['featured-instruments'] && <div className="absolute inset-0 bg-white/5" />}
           <div className="relative">
             <div className="container mx-auto px-4 py-3 sm:py-4">
               <div className="flex items-center justify-center gap-3">
@@ -620,7 +620,7 @@ export default function HomePage() {
       {/* On Sale Section */}
       {onSaleProducts.length > 0 && (
         <section className="relative overflow-hidden" style={collectionBackgrounds['on-sale'] ? { backgroundImage: `url(${collectionBackgrounds['on-sale']})`, backgroundSize: 'cover', backgroundPosition: 'center' } : {}}>
-          {collectionBackgrounds['on-sale'] ? <div className="absolute inset-0 bg-white/85 backdrop-blur-sm" /> : <div className="absolute inset-0 bg-gradient-to-br from-red-50/30 via-white to-amber-50/30" />}
+          {collectionBackgrounds['on-sale'] ? <div className="absolute inset-0 bg-white/5" /> : <div className="absolute inset-0 bg-gradient-to-br from-red-50/30 via-white to-amber-50/30" />}
           <div className="relative">
             <div className="container mx-auto px-4 py-3 sm:py-4">
               <div className="flex items-center justify-center gap-3">
@@ -646,7 +646,7 @@ export default function HomePage() {
       {/* Professional Flutes Section */}
       {professionalFlutesProducts.length > 0 && (
         <section className="relative overflow-hidden" style={collectionBackgrounds['professional-flutes'] ? { backgroundImage: `url(${collectionBackgrounds['professional-flutes']})`, backgroundSize: 'cover', backgroundPosition: 'center' } : {}}>
-          {collectionBackgrounds['professional-flutes'] && <div className="absolute inset-0 bg-white/85 backdrop-blur-sm" />}
+          {collectionBackgrounds['professional-flutes'] && <div className="absolute inset-0 bg-white/5" />}
           <div className="relative">
             <div className="container mx-auto px-4 py-3 sm:py-4">
               <div className="flex items-center justify-center gap-3">
@@ -672,7 +672,7 @@ export default function HomePage() {
       {/* Saxophones Section */}
       {saxophonesProducts.length > 0 && (
         <section className="relative overflow-hidden" style={collectionBackgrounds['saxophones'] ? { backgroundImage: `url(${collectionBackgrounds['saxophones']})`, backgroundSize: 'cover', backgroundPosition: 'center' } : {}}>
-          {collectionBackgrounds['saxophones'] ? <div className="absolute inset-0 bg-white/85 backdrop-blur-sm" /> : <div className="absolute inset-0 bg-gradient-to-br from-amber-50/30 via-white to-blue-50/30" />}
+          {collectionBackgrounds['saxophones'] ? <div className="absolute inset-0 bg-white/5" /> : <div className="absolute inset-0 bg-gradient-to-br from-amber-50/30 via-white to-blue-50/30" />}
           <div className="relative">
             <div className="container mx-auto px-4 py-3 sm:py-4">
               <div className="flex items-center justify-center gap-3">
@@ -698,7 +698,7 @@ export default function HomePage() {
       {/* Student Instruments Section */}
       {studentInstrumentsProducts.length > 0 && (
         <section className="relative overflow-hidden" style={collectionBackgrounds['student-instruments'] ? { backgroundImage: `url(${collectionBackgrounds['student-instruments']})`, backgroundSize: 'cover', backgroundPosition: 'center' } : {}}>
-          {collectionBackgrounds['student-instruments'] && <div className="absolute inset-0 bg-white/85 backdrop-blur-sm" />}
+          {collectionBackgrounds['student-instruments'] && <div className="absolute inset-0 bg-white/5" />}
           <div className="relative">
             <div className="container mx-auto px-4 py-3 sm:py-4">
               <div className="flex items-center justify-center gap-3">

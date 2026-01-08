@@ -35,6 +35,7 @@ export async function GET() {
 
         return {
           ...collection,
+          backgroundImage: collection.backgroundImage,
           products: sortedProducts,
         }
       })
