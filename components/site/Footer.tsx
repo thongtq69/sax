@@ -112,104 +112,136 @@ export function Footer() {
 
   return (
     <footer className="bg-[#2f3f4f] text-white">
-      <div className="container mx-auto px-3 sm:px-4 py-3 sm:py-4 md:py-6">
+      <div className="container mx-auto px-3 lg:px-4 py-2 lg:py-4">
         
         {/* Mobile Layout */}
-        <div className="sm:hidden">
-          <div className="flex items-center justify-between gap-2 pb-2.5 mb-2.5 border-b border-white/10">
-            <h3 className="text-[11px] font-bold text-white flex items-center gap-1">
-              <span className="text-[#D4AF37] text-xs animate-pulse">★</span>
-              Need Help?
-            </h3>
-            <div className="flex gap-1.5">
-              {settings.phone && (
-                <Button size="sm" className="bg-[#D4AF37] hover:bg-[#c4a030] text-[#2f3f4f] font-semibold text-[9px] px-2 h-6" asChild>
-                  <Link href={`tel:${settings.phone}`}>
-                    <Phone className="mr-0.5 h-2.5 w-2.5" />
-                    Call
-                  </Link>
-                </Button>
-              )}
-              <Button size="sm" variant="outline" className="border-white/30 text-white hover:bg-white/10 text-[9px] px-2 h-6" asChild>
-                <Link href="/inquiry">Message</Link>
-              </Button>
+        <div className="lg:hidden">
+          {/* Need Help Section - Mobile (single Ask Now button like desktop) */}
+          <div className="flex items-center justify-between gap-2 pb-2 mb-2 border-b border-white/10">
+            <div>
+              <h3 className="text-[10px] font-bold text-white flex items-center gap-0.5">
+                <span className="text-[#D4AF37] animate-pulse text-[9px]">★</span>
+                Need Help Choosing?
+              </h3>
+              <p className="text-[8px] text-white/60 mt-0.5">Our team is ready to help</p>
             </div>
+            <Button size="sm" className="bg-[#D4AF37] hover:bg-[#c4a030] text-[#2f3f4f] font-semibold text-[9px] px-2 h-6" asChild>
+              <Link href="/inquiry">
+                <MessageCircle className="mr-0.5 h-2.5 w-2.5" />
+                Ask Now
+              </Link>
+            </Button>
           </div>
           
-          <div className="flex items-start gap-3 pb-2.5 mb-2.5 border-b border-white/10">
-            <div className="border border-[#D4AF37]/50 rounded p-1.5 bg-[#D4AF37]/5 flex-shrink-0">
+          {/* Logo & Contact - Mobile */}
+          <div className="flex items-start gap-2 pb-2 mb-2 border-b border-white/10">
+            <div className="border border-[#D4AF37]/50 rounded p-1 bg-[#D4AF37]/5 flex-shrink-0">
               <Image src="/logo.png" alt={settings.companyName} width={80} height={26} className="h-5 w-auto" priority />
             </div>
-            <div className="text-[10px] text-white/70 space-y-0.5 min-w-0">
+            <div className="text-[9px] text-white/70 space-y-0.5 min-w-0 flex-1">
               <p className="flex items-center gap-1">
                 <MapPin className="h-2.5 w-2.5 text-[#D4AF37] flex-shrink-0" />
-                {settings.address}
+                <span>{settings.address}</span>
               </p>
               {settings.phone && (
                 <p className="flex items-center gap-1">
                   <Phone className="h-2.5 w-2.5 text-[#D4AF37] flex-shrink-0" />
-                  {settings.phone}
+                  <span>{settings.phone}</span>
+                </p>
+              )}
+              {settings.email && (
+                <p className="flex items-center gap-1">
+                  <Mail className="h-2.5 w-2.5 text-[#D4AF37] flex-shrink-0" />
+                  <span className="truncate">{settings.email}</span>
                 </p>
               )}
             </div>
           </div>
           
-          <div className="grid grid-cols-4 gap-2 text-[9px]">
-            <div>
-              <h4 className="font-semibold text-[10px] mb-1 flex items-center gap-0.5 text-white">
-                <Clock className="h-2.5 w-2.5 text-[#D4AF37]" />
-                Hours
-              </h4>
-              <div className="text-white/70 space-y-0">
-                <p>{settings.workingHours}</p>
+          {/* Links Grid - Mobile */}
+          <div className="grid grid-cols-2 gap-3 text-[9px]">
+            <div className="space-y-2">
+              {/* Hours */}
+              <div>
+                <h4 className="font-semibold text-[10px] mb-1 flex items-center gap-0.5 text-white">
+                  <Clock className="h-2.5 w-2.5 text-[#D4AF37]" />
+                  Hours
+                </h4>
+                <div className="text-white/70 space-y-0">
+                  <p>{settings.workingHours}</p>
+                  <p>Always Open</p>
+                </div>
+              </div>
+              
+              {/* Support */}
+              <div>
+                <h4 className="font-semibold text-[10px] mb-1 flex items-center gap-0.5 text-white">
+                  <Heart className="h-2.5 w-2.5 text-[#D4AF37]" />
+                  Support
+                </h4>
+                <div className="text-white/70 space-y-0">
+                  <p><Link href="/inquiry" className="hover:text-white transition-colors">Inquiry</Link></p>
+                  <p><Link href="/account" className="hover:text-white transition-colors">Account</Link></p>
+                  <p><Link href="/blog" className="hover:text-white transition-colors">Blog</Link></p>
+                  <p>
+                    <button onClick={() => setShowTestimonials(true)} className="hover:text-white transition-colors">
+                      Testimonials
+                    </button>
+                  </p>
+                </div>
               </div>
             </div>
-            <div>
-              <h4 className="font-semibold text-[10px] mb-1 flex items-center gap-0.5 text-white">
-                <Music className="h-2.5 w-2.5 text-[#D4AF37]" />
-                Shop
-              </h4>
-              <div className="text-white/70 space-y-0">
-                <p><Link href="/shop" className="hover:text-white transition-colors">All</Link></p>
-                <p><Link href="/cart" className="hover:text-white transition-colors">Cart</Link></p>
+            
+            <div className="space-y-2">
+              {/* Shop */}
+              <div>
+                <h4 className="font-semibold text-[10px] mb-1 flex items-center gap-0.5 text-white">
+                  <Music className="h-2.5 w-2.5 text-[#D4AF37]" />
+                  Shop
+                </h4>
+                <div className="text-white/70 space-y-0">
+                  <p><Link href="/shop" className="hover:text-white transition-colors">All Instruments</Link></p>
+                  <p><Link href="/cart" className="hover:text-white transition-colors">Cart</Link></p>
+                  <p><Link href="/checkout" className="hover:text-white transition-colors">Checkout</Link></p>
+                </div>
+              </div>
+              
+              {/* Follow Us */}
+              <div>
+                <h4 className="font-semibold text-[10px] mb-1 text-white">Follow Us</h4>
+                <div className="flex gap-1 mb-1.5">
+                  {socialLinks.map((social) => (
+                    <Link
+                      key={social.label}
+                      href={social.href || '#'}
+                      className="rounded-full bg-white/10 hover:bg-[#D4AF37] flex items-center justify-center text-white hover:text-[#2f3f4f] transition-all"
+                      style={{ width: '16px', height: '16px', minWidth: '16px', minHeight: '16px', maxWidth: '16px', maxHeight: '16px' }}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      aria-label={social.label}
+                    >
+                      <social.icon style={{ width: '8px', height: '8px' }} />
+                    </Link>
+                  ))}
+                </div>
+                <div className="flex items-center gap-1">
+                  <span className="text-[#D4AF37] text-[10px]">★</span>
+                  <span className="text-white font-bold text-[10px]">4.9/5</span>
+                  <span className="text-white/60 text-[8px]">500+ reviews</span>
+                </div>
               </div>
             </div>
-            <div>
-              <h4 className="font-semibold text-[10px] mb-1 flex items-center gap-0.5 text-white">
-                <Heart className="h-2.5 w-2.5 text-[#D4AF37]" />
-                Support
-              </h4>
-              <div className="text-white/70 space-y-0">
-                <p><Link href="/inquiry" className="hover:text-white transition-colors">Inquiry</Link></p>
-                <p><Link href="/account" className="hover:text-white transition-colors">Account</Link></p>
-              </div>
-            </div>
-            <div>
-              <h4 className="font-semibold text-[10px] mb-1 text-white">Follow</h4>
-              <div className="flex gap-1 mb-1">
-                {socialLinks.map((social) => (
-                  <Link
-                    key={social.label}
-                    href={social.href || '#'}
-                    className="w-5 h-5 rounded-full bg-white/10 hover:bg-[#D4AF37] flex items-center justify-center text-white hover:text-[#2f3f4f] transition-all"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    aria-label={social.label}
-                  >
-                    <social.icon className="h-2.5 w-2.5" />
-                  </Link>
-                ))}
-              </div>
-              <div className="flex items-center gap-1">
-                <span className="text-[#D4AF37] text-xs animate-pulse">★</span>
-                <span className="text-white font-bold text-[10px]">4.9</span>
-              </div>
-            </div>
+          </div>
+          
+          {/* Copyright - Mobile */}
+          <div className="mt-2 pt-2 border-t border-white/10 text-center">
+            <p className="text-[8px] text-white/50">{settings.copyrightText}</p>
           </div>
         </div>
 
         {/* Desktop Layout */}
-        <div className="hidden sm:block">
+        <div className="hidden lg:block">
+          {/* Need Help Section - Desktop */}
           <div className="flex items-center justify-between gap-3 pb-6 mb-6 border-b border-white/10">
             <div className="flex items-center gap-4">
               <div>
@@ -296,18 +328,19 @@ export function Footer() {
             </div>
 
             <div>
-              <h4 className="font-semibold mb-3 text-white">Follow Us</h4>
-              <div className="flex gap-2 mb-3">
+              <h4 className="font-semibold mb-3 text-white text-sm">Follow Us</h4>
+              <div className="flex gap-1 mb-3">
                 {socialLinks.map((social) => (
                   <Link
                     key={social.label}
                     href={social.href || '#'}
-                    className="w-7 h-7 rounded-full bg-white/10 hover:bg-[#D4AF37] flex items-center justify-center text-white hover:text-[#2f3f4f] transition-all"
+                    className="rounded-full bg-white/10 hover:bg-[#D4AF37] flex items-center justify-center text-white hover:text-[#2f3f4f] transition-all"
+                    style={{ width: '16px', height: '16px', minWidth: '16px', minHeight: '16px', maxWidth: '16px', maxHeight: '16px' }}
                     target="_blank"
                     rel="noopener noreferrer"
                     aria-label={social.label}
                   >
-                    <social.icon className="h-3.5 w-3.5" />
+                    <social.icon style={{ width: '8px', height: '8px' }} />
                   </Link>
                 ))}
               </div>
@@ -317,6 +350,11 @@ export function Footer() {
                 <span className="text-white/60 text-xs">500+ reviews</span>
               </div>
             </div>
+          </div>
+          
+          {/* Copyright - Desktop */}
+          <div className="mt-6 pt-4 border-t border-white/10 text-center">
+            <p className="text-xs text-white/50">{settings.copyrightText}</p>
           </div>
         </div>
       </div>

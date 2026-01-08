@@ -333,45 +333,54 @@ function ShopPageContent() {
     <div className="min-h-screen">
       {/* Hero Banner - Compact */}
       <section className="relative bg-gradient-to-br from-secondary via-secondary/95 to-secondary overflow-hidden">
-        {/* Decorative pattern - Various Music Note Vectors */}
-        <div className="absolute inset-0 opacity-12">
+        {/* Clean decorative pattern - Music notes from SVG file */}
+        <div className="absolute inset-0 opacity-[0.08]">
           <div className="absolute inset-0" style={{
-            backgroundImage: `url("data:image/svg+xml,%3Csvg width='100' height='100' viewBox='0 0 100 100' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='%23ffffff' fill-opacity='0.35'%3E%3C!-- Quarter note --%3E%3Cpath d='M20 15c0-1.1.9-2 2-2s2 .9 2 2v20c0 3.3-2.7 6-6 6s-6-2.7-6-6 2.7-6 6-6c.6 0 1.1.1 1.5.3V15z'/%3E%3Cpath d='M20 35h3v20h-3z'/%3E%3C!-- Eighth note --%3E%3Cpath d='M45 10c0-1.1.9-2 2-2s2 .9 2 2v18c0 3.3-2.7 6-6 6s-6-2.7-6-6 2.7-6 6-6c.6 0 1.1.1 1.5.3V10z'/%3E%3Cpath d='M47 28h3v25h-3z'/%3E%3Cpath d='M45 50c0-1.7 1.3-3 3-3h4c1.7 0 3 1.3 3 3v6c0 1.7-1.3 3-3 3h-4c-1.7 0-3-1.3-3-3v-6z'/%3E%3C!-- Sixteenth note --%3E%3Cpath d='M70 8c0-1.1.9-2 2-2s2 .9 2 2v16c0 3.3-2.7 6-6 6s-6-2.7-6-6 2.7-6 6-6c.6 0 1.1.1 1.5.3V8z'/%3E%3Cpath d='M72 24h3v28h-3z'/%3E%3Cpath d='M70 48c0-1.7 1.3-3 3-3h4c1.7 0 3 1.3 3 3v6c0 1.7-1.3 3-3 3h-4c-1.7 0-3-1.3-3-3v-6z'/%3E%3Cpath d='M72 54h3v15h-3z'/%3E%3Cpath d='M70 65c0-1.7 1.3-3 3-3h4c1.7 0 3 1.3 3 3v6c0 1.7-1.3 3-3 3h-4c-1.7 0-3-1.3-3-3v-6z'/%3E%3C!-- Whole note --%3E%3Cellipse cx='25' cy='75' rx='5' ry='4'/%3E%3C!-- Half note --%3E%3Cellipse cx='50' cy='70' rx='4.5' ry='3.5'/%3E%3Cpath d='M50 73.5h2.5v20h-2.5z'/%3E%3C!-- Treble clef --%3E%3Cpath d='M75 60c-1.5-1-2.5-2.8-2.5-5 0-3.3 2.7-6 6-6s6 2.7 6 6c0 2.2-1 4-2.5 5v-8c0-1.1-.9-2-2-2h-1c-1.1 0-2 .9-2 2v8z'/%3E%3Cpath d='M77 55c0 1.7 1.3 3 3 3s3-1.3 3-3-1.3-3-3-3-3 1.3-3 3z'/%3E%3Cpath d='M78 58c1-1 2.5-1 3.5 0l-.5 1c-.5-.5-1.2-.5-1.7 0l-1.3-1z'/%3E%3C!-- Bass clef --%3E%3Cpath d='M15 80c-1-2-1-4.5 0-6.5 1-2 3-3 5-3 2 0 4 1 5 3 1 2 1 4.5 0 6.5-1 2-3 3-5 3-2 0-4-1-5-3z'/%3E%3Cpath d='M18 85c0-1.1.9-2 2-2h2c1.1 0 2 .9 2 2v8h-6v-8z'/%3E%3C!-- Sharp symbol --%3E%3Cpath d='M35 45h8v2h-8z'/%3E%3Cpath d='M35 50h8v2h-8z'/%3E%3Cpath d='M37 42v12h2V42z'/%3E%3Cpath d='M41 42v12h2V42z'/%3E%3C!-- Flat symbol --%3E%3Cpath d='M60 65h2v18h-2z'/%3E%3Cpath d='M60 83c0-2 1.5-3.5 3.5-3.5 1 0 1.8.4 2.3 1.1l-1.3 1.2c-.3-.4-.7-.6-1-.6-.8 0-1.5.6-1.5 1.5 0 .8.7 1.5 1.5 1.5.3 0 .7-.2 1-.6l1.3 1.2c-.5.7-1.3 1.1-2.3 1.1-2 0-3.5-1.5-3.5-3.5z'/%3E%3C!-- Musical staff lines --%3E%3Cpath d='M5 20h20' stroke='%23ffffff' stroke-opacity='0.2' stroke-width='0.5'/%3E%3Cpath d='M5 25h20' stroke='%23ffffff' stroke-opacity='0.2' stroke-width='0.5'/%3E%3Cpath d='M5 30h20' stroke='%23ffffff' stroke-opacity='0.2' stroke-width='0.5'/%3E%3Cpath d='M5 35h20' stroke='%23ffffff' stroke-opacity='0.2' stroke-width='0.5'/%3E%3Cpath d='M5 40h20' stroke='%23ffffff' stroke-opacity='0.2' stroke-width='0.5'/%3E%3C/g%3E%3C/svg%3E")`,
-            backgroundSize: '100px 100px',
+            backgroundImage: `url("/musicnote.svg")`,
+            backgroundSize: '280px 280px',
+            backgroundRepeat: 'repeat',
+            filter: 'invert(1)',
           }} />
         </div>
         
-        <div className="container mx-auto px-4 py-4 md:py-5 relative">
+        {/* Gradient overlay for depth */}
+        <div className="absolute inset-0 bg-gradient-to-r from-secondary/50 via-transparent to-secondary/50" />
+        
+        {/* Decorative circles */}
+        <div className="absolute -top-20 -right-20 w-64 h-64 bg-primary/10 rounded-full blur-3xl" />
+        <div className="absolute -bottom-20 -left-20 w-64 h-64 bg-primary/10 rounded-full blur-3xl" />
+        
+        <div className="container mx-auto px-4 py-6 md:py-8 relative">
           <div className="text-center animate-fade-in-up">
             {/* Decorative element */}
-            <div className="flex items-center justify-center gap-2 mb-1">
-              <div className="h-px w-10 md:w-12 bg-gradient-to-r from-transparent to-primary" />
-              <Music className="h-4 w-4 md:h-5 md:w-5 text-primary" />
-              <div className="h-px w-10 md:w-12 bg-gradient-to-l from-transparent to-primary" />
+            <div className="flex items-center justify-center gap-3 mb-2">
+              <div className="h-px w-12 md:w-16 bg-gradient-to-r from-transparent via-primary to-primary" />
+              <Music className="h-5 w-5 md:h-6 md:w-6 text-primary" />
+              <div className="h-px w-12 md:w-16 bg-gradient-to-l from-transparent via-primary to-primary" />
             </div>
             
-            <h1 className="text-2xl md:text-3xl lg:text-4xl font-bold text-white mb-1 tracking-tight">
+            <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold text-white mb-2 tracking-tight">
               Shop All Instruments
             </h1>
-            <p className="text-sm md:text-base text-white/80 max-w-xl mx-auto">
+            <p className="text-sm md:text-base lg:text-lg text-white/70 max-w-2xl mx-auto">
               Professional wind instruments, handpicked for musicians who demand excellence.
             </p>
             
             {/* Stats - Compact */}
-            <div className="flex justify-center gap-4 md:gap-6 mt-3">
+            <div className="flex justify-center gap-6 md:gap-8 mt-4">
               <div className="text-center">
-                <div className="text-xl md:text-2xl font-bold text-primary">{products.length}</div>
-                <div className="text-xs text-white/60">Products</div>
+                <div className="text-2xl md:text-3xl font-bold text-primary">{products.length}</div>
+                <div className="text-xs md:text-sm text-white/50">Products</div>
               </div>
-              <div className="h-8 w-px bg-white/20" />
+              <div className="h-10 w-px bg-white/20" />
               <div className="text-center">
-                <div className="text-xl md:text-2xl font-bold text-primary">{brands.length}</div>
-                <div className="text-xs text-white/60">Brands</div>
+                <div className="text-2xl md:text-3xl font-bold text-primary">{brands.length}</div>
+                <div className="text-xs md:text-sm text-white/50">Brands</div>
               </div>
-              <div className="h-8 w-px bg-white/20" />
+              <div className="h-10 w-px bg-white/20" />
               <div className="text-center">
-                <div className="text-xl md:text-2xl font-bold text-primary">{subcategories.size}</div>
-                <div className="text-xs text-white/60">Categories</div>
+                <div className="text-2xl md:text-3xl font-bold text-primary">{subcategories.size}</div>
+                <div className="text-xs md:text-sm text-white/50">Categories</div>
               </div>
             </div>
           </div>
@@ -379,8 +388,8 @@ function ShopPageContent() {
 
         {/* Wave decoration - smaller */}
         <div className="absolute bottom-0 left-0 right-0">
-          <svg viewBox="0 0 1440 40" fill="none" xmlns="http://www.w3.org/2000/svg" className="w-full">
-            <path d="M0 40L60 33C120 27 240 13 360 10C480 7 600 13 720 17C840 20 960 20 1080 17C1200 13 1320 7 1380 3L1440 0V40H1380C1320 40 1200 40 1080 40C960 40 840 40 720 40C600 40 480 40 360 40C240 40 120 40 60 40H0Z" fill="hsl(45 20% 97%)"/>
+          <svg viewBox="0 0 1440 50" fill="none" xmlns="http://www.w3.org/2000/svg" className="w-full">
+            <path d="M0 50L60 42C120 34 240 18 360 14C480 10 600 18 720 22C840 26 960 26 1080 22C1200 18 1320 10 1380 6L1440 2V50H1380C1320 50 1200 50 1080 50C960 50 840 50 720 50C600 50 480 50 360 50C240 50 120 50 60 50H0Z" fill="hsl(45 20% 97%)"/>
           </svg>
         </div>
       </section>

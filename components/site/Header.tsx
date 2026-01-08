@@ -511,17 +511,17 @@ export function Header() {
             }`}>
             <div className="py-4 space-y-3">
               {/* Social Icons */}
-              <div className="flex items-center gap-2 pb-3 border-b border-[#2c3e50]/20">
+              <div className="flex items-center gap-1.5 pb-3 border-b border-[#2c3e50]/20">
                 {socialIconsData.map((social) => (
                   <Link
                     key={social.label}
                     href={social.href || '#'}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="rounded-full bg-[#2c3e50]/20 p-2 hover:bg-[#2c3e50]/40 transition-all"
+                    className="rounded-full bg-[#2c3e50]/20 p-1.5 hover:bg-[#2c3e50]/40 transition-all"
                     aria-label={social.label}
                   >
-                    <social.icon className="h-4 w-4 text-[#2c3e50]" />
+                    <social.icon className="h-3 w-3 text-[#2c3e50]" />
                   </Link>
                 ))}
               </div>

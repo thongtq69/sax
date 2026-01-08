@@ -58,7 +58,7 @@ export default function BlogPage({ searchParams }: BlogPageProps) {
     return (
         <div className="min-h-screen bg-background">
             {/* Hero Section - Vintage Style */}
-            <section className="relative bg-primary py-16 overflow-hidden">
+            <section className="relative bg-primary py-8 sm:py-12 md:py-16 overflow-hidden">
                 {/* Decorative Pattern */}
                 <div className="absolute inset-0 opacity-10">
                     <div className="absolute inset-0" style={{
@@ -85,23 +85,23 @@ export default function BlogPage({ searchParams }: BlogPageProps) {
                     </nav>
 
                     {/* Icon */}
-                    <div className="mb-4 inline-flex items-center justify-center rounded-full border-2 border-white/30 bg-white/10 p-4">
-                        <BookOpen className="h-8 w-8 text-white" />
+                    <div className="mb-3 sm:mb-4 inline-flex items-center justify-center rounded-full border-2 border-white/30 bg-white/10 p-3 sm:p-4">
+                        <BookOpen className="h-6 w-6 sm:h-8 sm:w-8 text-white" />
                     </div>
 
                     {/* Title */}
-                    <h1 className="mb-4 text-4xl font-bold text-white md:text-5xl font-display">
+                    <h1 className="mb-3 sm:mb-4 text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold text-white font-display">
                         {categoryName ? `${categoryName} Articles` : "The Music Blog"}
                     </h1>
 
                     {/* Decorative Divider */}
-                    <div className="flex items-center justify-center gap-4 mb-4">
-                        <div className="h-px w-16 bg-white/40" />
-                        <span className="text-2xl text-white/60">♪</span>
-                        <div className="h-px w-16 bg-white/40" />
+                    <div className="flex items-center justify-center gap-3 sm:gap-4 mb-3 sm:mb-4">
+                        <div className="h-px w-10 sm:w-16 bg-white/40" />
+                        <span className="text-xl sm:text-2xl text-white/60">♪</span>
+                        <div className="h-px w-10 sm:w-16 bg-white/40" />
                     </div>
 
-                    <p className="mx-auto max-w-2xl text-lg text-white/80">
+                    <p className="mx-auto max-w-2xl text-sm sm:text-base md:text-lg text-white/80 px-2">
                         Expert insights, reviews, and tips from our team of professional musicians.
                         Discover the stories behind the instruments.
                     </p>
@@ -113,16 +113,16 @@ export default function BlogPage({ searchParams }: BlogPageProps) {
             </section>
 
             {/* Main Content */}
-            <section className="py-16">
+            <section className="py-8 sm:py-12 md:py-16">
                 <div className="container mx-auto px-4">
-                    <div className="grid gap-12 lg:grid-cols-3">
-                        {/* Blog Posts */}
+                    <div className="flex flex-col lg:grid lg:grid-cols-3 gap-8 lg:gap-12">
+                        {/* Blog Posts - Always first */}
                         <div className="lg:col-span-2">
                             {/* Featured Post (First Post) */}
                             {posts.length > 0 && currentPage === 1 && !categoryFilter && (
-                                <div className="mb-12">
-                                    <div className="mb-6 flex items-center gap-3">
-                                        <h2 className="text-xl font-bold text-secondary font-display">Featured Article</h2>
+                                <div className="mb-8 sm:mb-12">
+                                    <div className="mb-4 sm:mb-6 flex items-center gap-3">
+                                        <h2 className="text-lg sm:text-xl font-bold text-secondary font-display">Featured Article</h2>
                                         <div className="h-px flex-1 bg-primary/20" />
                                         <span className="text-primary">★</span>
                                     </div>
@@ -131,8 +131,8 @@ export default function BlogPage({ searchParams }: BlogPageProps) {
                             )}
 
                             {/* Section Header */}
-                            <div className="mb-8 flex items-center gap-3">
-                                <h2 className="text-xl font-bold text-secondary font-display">
+                            <div className="mb-6 sm:mb-8 flex items-center gap-3">
+                                <h2 className="text-lg sm:text-xl font-bold text-secondary font-display">
                                     {categoryFilter ? `${categoryName} Articles` : 'Latest Articles'}
                                 </h2>
                                 <div className="h-px flex-1 bg-primary/20" />
@@ -143,7 +143,7 @@ export default function BlogPage({ searchParams }: BlogPageProps) {
                             <Suspense fallback={<BlogSkeleton />}>
                                 {posts.length > 0 ? (
                                     <>
-                                        <div className="grid gap-8 sm:grid-cols-2">
+                                        <div className="grid gap-4 sm:gap-6 md:gap-8 grid-cols-1 sm:grid-cols-2">
                                             {(currentPage === 1 && !categoryFilter ? posts.slice(1) : posts).map((post) => (
                                                 <BlogCard key={post.id} post={post} />
                                             ))}
@@ -182,7 +182,7 @@ export default function BlogPage({ searchParams }: BlogPageProps) {
                             </Suspense>
                         </div>
 
-                        {/* Sidebar */}
+                        {/* Sidebar - Always after content */}
                         <div className="lg:col-span-1">
                             <BlogSidebar showSearch currentCategory={categoryFilter} />
                         </div>

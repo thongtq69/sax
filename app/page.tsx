@@ -745,13 +745,13 @@ export default function HomePage() {
         </div>
       </section>
       {/* Join Our Musical Community - Compact */}
-      <section className="bg-gradient-to-r from-primary to-primary/80 py-2 sm:py-3 relative overflow-hidden">
+      <section className="bg-gradient-to-r from-primary to-primary/80 py-0.5 sm:py-3 relative overflow-hidden">
         <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent animate-shimmer" />
-        <div className="container mx-auto px-3 sm:px-4">
-          <div className="flex flex-col sm:flex-row items-center justify-between gap-2 sm:gap-3">
+        <div className="container mx-auto px-1.5 sm:px-4">
+          <div className="flex flex-col sm:flex-row items-center justify-between gap-0.5 sm:gap-3">
             <div className="text-center sm:text-left">
-              <h3 className="text-xs sm:text-sm font-bold text-white flex items-center gap-1 justify-center sm:justify-start">
-                <Sparkles className="h-3 w-3 sm:h-4 sm:w-4" />
+              <h3 className="text-[9px] sm:text-sm font-bold text-white flex items-center gap-0.5 justify-center sm:justify-start">
+                <Sparkles className="h-2.5 w-2.5 sm:h-4 sm:w-4" />
                 Join Our Musical Community
               </h3>
               <p className="text-white/80 text-[9px] sm:text-xs hidden sm:block">Get exclusive deals, tips, and industry news</p>
@@ -766,23 +766,23 @@ export default function HomePage() {
                   e.currentTarget.reset()
                 }
               }}
-              className="flex items-center gap-2 w-full sm:w-auto"
+              className="flex items-center gap-1 w-full sm:w-auto"
             >
               <input
                 type="email"
                 name="email"
                 placeholder="Enter your email"
-                className="bg-white/20 border border-white/30 placeholder:text-white/60 text-white flex-1 sm:flex-initial sm:w-[200px] px-3 py-2 transition-all duration-300 focus:bg-white/30 focus:outline-none focus:border-white/50 text-xs sm:text-sm h-9"
+                className="bg-white/20 border border-white/30 placeholder:text-white/60 text-white flex-1 sm:flex-initial sm:w-[320px] px-2 py-1 sm:px-3 sm:py-2 transition-all duration-300 focus:bg-white/30 focus:outline-none focus:border-white/50 text-[9px] sm:text-sm h-5 sm:h-9"
                 required
               />
               <Button
                 type="submit"
                 size="sm"
-                className="bg-secondary hover:bg-secondary/90 text-white px-4 transition-all duration-300 text-xs sm:text-sm h-9 whitespace-nowrap"
+                className="bg-secondary hover:bg-secondary/90 text-white px-2 sm:px-4 transition-all duration-300 text-[9px] sm:text-sm h-5 sm:h-9 whitespace-nowrap"
               >
                 <span className="flex items-center gap-0.5">
                   Subscribe
-                  <ChevronRight className="h-4 w-4" />
+                  <ChevronRight className="h-3 w-3 sm:h-4 sm:w-4" />
                 </span>
               </Button>
             </form>

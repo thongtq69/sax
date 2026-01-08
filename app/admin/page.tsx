@@ -4,7 +4,8 @@ import { useEffect, useState } from 'react'
 import { 
   Package, FileText, ShoppingCart, TrendingUp, Users, Plus, 
   ArrowUpRight, ArrowDownRight, Eye, Star, Image as ImageIcon,
-  HelpCircle, MessageSquare, Settings, Home
+  HelpCircle, MessageSquare, Settings, Home, Layers, ListOrdered, 
+  ClipboardList, Tag
 } from 'lucide-react'
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
@@ -222,6 +223,24 @@ export default function AdminDashboard() {
         <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
           <h2 className="text-lg font-semibold text-gray-900 mb-4">Quick Actions</h2>
           <div className="grid grid-cols-2 gap-3">
+            <Link href="/admin/products">
+              <Button className="w-full justify-start" variant="outline">
+                <Package className="h-4 w-4 mr-3" />
+                Manage Products
+              </Button>
+            </Link>
+            <Link href="/admin/blog">
+              <Button className="w-full justify-start" variant="outline">
+                <FileText className="h-4 w-4 mr-3" />
+                Manage Blog Posts
+              </Button>
+            </Link>
+            <Link href="/admin/categories">
+              <Button className="w-full justify-start" variant="outline">
+                <Layers className="h-4 w-4 mr-3" />
+                Manage Categories
+              </Button>
+            </Link>
             <Link href="/admin/banners">
               <Button className="w-full justify-start" variant="outline">
                 <ImageIcon className="h-4 w-4 mr-3" />
@@ -234,10 +253,28 @@ export default function AdminDashboard() {
                 Manage FAQs
               </Button>
             </Link>
+            <Link href="/admin/quick-faq">
+              <Button className="w-full justify-start" variant="outline">
+                <ClipboardList className="h-4 w-4 mr-3" />
+                Quick FAQ (Product)
+              </Button>
+            </Link>
+            <Link href="/admin/inquiry-titles">
+              <Button className="w-full justify-start" variant="outline">
+                <ListOrdered className="h-4 w-4 mr-3" />
+                Inquiry Titles
+              </Button>
+            </Link>
             <Link href="/admin/testimonials">
               <Button className="w-full justify-start" variant="outline">
                 <MessageSquare className="h-4 w-4 mr-3" />
-                Testimonials
+                Testimonials & Reviews
+              </Button>
+            </Link>
+            <Link href="/admin/promos">
+              <Button className="w-full justify-start" variant="outline">
+                <Tag className="h-4 w-4 mr-3" />
+                Promo Banners
               </Button>
             </Link>
             <Link href="/admin/content">
@@ -246,16 +283,16 @@ export default function AdminDashboard() {
                 Homepage Content
               </Button>
             </Link>
+            <Link href="/admin/orders">
+              <Button className="w-full justify-start" variant="outline">
+                <ShoppingCart className="h-4 w-4 mr-3" />
+                Manage Orders
+              </Button>
+            </Link>
             <Link href="/admin/settings">
               <Button className="w-full justify-start" variant="outline">
                 <Settings className="h-4 w-4 mr-3" />
                 Site Settings
-              </Button>
-            </Link>
-            <Link href="/admin/promos">
-              <Button className="w-full justify-start" variant="outline">
-                <TrendingUp className="h-4 w-4 mr-3" />
-                Promo Banners
               </Button>
             </Link>
           </div>

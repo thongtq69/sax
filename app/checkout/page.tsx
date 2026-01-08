@@ -52,6 +52,10 @@ function CheckoutContent() {
   const [shippingMessage, setShippingMessage] = useState<string>('')
 
   const calculateShipping = () => {
+    if (!shippingInfo.country) {
+      setShippingMessage('Please select a country')
+      return
+    }
     if (!shippingInfo.zip.trim()) {
       setShippingMessage('Please enter a ZIP/Postal code')
       return
@@ -61,23 +65,24 @@ function CheckoutContent() {
     
     // Simulate API call delay
     setTimeout(() => {
-      const isVietnam = isVietnamZipCode(shippingInfo.zip)
+      // Shipping based on country: Vietnam = $25, International = $200
+      const isVietnam = shippingInfo.country === 'Vietnam'
       
       if (isVietnam) {
         setShippingCost(25)
-        setShippingMessage('Your shipping cost is $25')
+        setShippingMessage('Domestic shipping (Vietnam): $25')
       } else {
         setShippingCost(200)
-        setShippingMessage('Your shipping cost is $200')
+        setShippingMessage('International shipping: $200')
       }
       
       setIsCalculatingShipping(false)
     }, 500)
   }
 
-  // Auto-calculate shipping when zip changes
+  // Auto-calculate shipping when country or zip changes
   useEffect(() => {
-    if (shippingInfo.zip.length >= 5) {
+    if (shippingInfo.country && shippingInfo.zip.length >= 3) {
       const timer = setTimeout(() => {
         calculateShipping()
       }, 800)
@@ -86,7 +91,7 @@ function CheckoutContent() {
       setShippingCost(null)
       setShippingMessage('')
     }
-  }, [shippingInfo.zip])
+  }, [shippingInfo.country, shippingInfo.zip])
 
   const shipping = shippingCost ?? (subtotal > 500 ? 0 : 25)
   const tax = subtotal * 0.08
@@ -240,7 +245,7 @@ function CheckoutContent() {
                     <div className="flex items-center gap-2">
                       <MapPin className="h-4 w-4 text-gray-400" />
                       <span className="text-sm text-gray-600">
-                        {shippingInfo.zip ? `ZIP: ${shippingInfo.zip}` : 'Enter ZIP code above'}
+                        {shippingInfo.country ? `${shippingInfo.country}${shippingInfo.zip ? ` - ${shippingInfo.zip}` : ''}` : 'Select country above'}
                       </span>
                     </div>
                     {shippingMessage && (
@@ -253,7 +258,7 @@ function CheckoutContent() {
                     variant="outline" 
                     size="sm" 
                     onClick={calculateShipping}
-                    disabled={isCalculatingShipping || !shippingInfo.zip}
+                    disabled={isCalculatingShipping || !shippingInfo.country || !shippingInfo.zip}
                   >
                     {isCalculatingShipping ? (
                       <Loader2 className="h-4 w-4 animate-spin" />

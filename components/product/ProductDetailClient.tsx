@@ -40,6 +40,7 @@ export function ProductDetailClient({ product }: ProductDetailClientProps) {
   const [quickFaqs, setQuickFaqs] = useState<{id: string, question: string, answer: string, category: string, isActive: boolean}[]>([])
   const [reviews, setReviews] = useState<Review[]>([])
   const [showShippingCalc, setShowShippingCalc] = useState(false)
+  const [shippingCountry, setShippingCountry] = useState('')
   const [shippingZip, setShippingZip] = useState('')
   const [shippingCost, setShippingCost] = useState<number | null>(null)
   const [shippingMessage, setShippingMessage] = useState('')
@@ -55,15 +56,11 @@ export function ProductDetailClient({ product }: ProductDetailClientProps) {
   
   const reviewStats = useMemo(() => getProductRatingStats(product.name), [product.name])
 
-  // Vietnam postal codes (6 digits, prefixes 10-99)
-  const isVietnamZipCode = (zip: string): boolean => {
-    const cleanZip = zip.replace(/\s/g, '')
-    if (cleanZip.length !== 6 || !/^\d+$/.test(cleanZip)) return false
-    const prefix = parseInt(cleanZip.substring(0, 2))
-    return prefix >= 10 && prefix <= 99
-  }
-
   const calculateShipping = () => {
+    if (!shippingCountry) {
+      setShippingMessage('Please select a country')
+      return
+    }
     if (!shippingZip.trim()) {
       setShippingMessage('Please enter a ZIP/Postal code')
       return
@@ -71,7 +68,8 @@ export function ProductDetailClient({ product }: ProductDetailClientProps) {
     
     setIsCalculatingShipping(true)
     setTimeout(() => {
-      const isVietnam = isVietnamZipCode(shippingZip)
+      // Shipping based on country: Vietnam = $25, International = $200
+      const isVietnam = shippingCountry === 'Vietnam'
       if (isVietnam) {
         setShippingCost(25)
         setShippingMessage('Domestic shipping (Vietnam): $25')
@@ -696,29 +694,60 @@ const handleAddToCart = async () => {
                     <MapPin className="h-4 w-4 text-primary" />
                     <span className="text-sm font-medium text-secondary">Calculate Shipping Cost</span>
                   </div>
-                  <div className="flex gap-2">
-                    <input
-                      type="text"
-                      placeholder="Enter ZIP/Postal code"
-                      value={shippingZip}
-                      onChange={(e) => setShippingZip(e.target.value)}
-                      className="flex-1 px-3 py-2 text-sm border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/30"
-                    />
-                    <button
-                      onClick={calculateShipping}
-                      disabled={isCalculatingShipping}
-                      className="px-4 py-2 bg-primary text-white text-sm font-medium rounded-lg hover:bg-primary/90 transition-colors disabled:opacity-50"
+                  <div className="space-y-2">
+                    {/* Country Selection */}
+                    <select
+                      value={shippingCountry}
+                      onChange={(e) => setShippingCountry(e.target.value)}
+                      className="w-full px-3 py-2 text-sm border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/30 bg-white"
                     >
-                      {isCalculatingShipping ? (
-                        <Loader2 className="h-4 w-4 animate-spin" />
-                      ) : (
-                        'Calculate'
-                      )}
-                    </button>
+                      <option value="">Select Country</option>
+                      <option value="Vietnam">Vietnam</option>
+                      <option value="United States">United States</option>
+                      <option value="Canada">Canada</option>
+                      <option value="United Kingdom">United Kingdom</option>
+                      <option value="Australia">Australia</option>
+                      <option value="Germany">Germany</option>
+                      <option value="France">France</option>
+                      <option value="Japan">Japan</option>
+                      <option value="South Korea">South Korea</option>
+                      <option value="Singapore">Singapore</option>
+                      <option value="Thailand">Thailand</option>
+                      <option value="Malaysia">Malaysia</option>
+                      <option value="Indonesia">Indonesia</option>
+                      <option value="Philippines">Philippines</option>
+                      <option value="China">China</option>
+                      <option value="Taiwan">Taiwan</option>
+                      <option value="Hong Kong">Hong Kong</option>
+                      <option value="India">India</option>
+                      <option value="Other">Other</option>
+                    </select>
+                    
+                    {/* ZIP Code Input */}
+                    <div className="flex gap-2">
+                      <input
+                        type="text"
+                        placeholder="Enter ZIP/Postal code"
+                        value={shippingZip}
+                        onChange={(e) => setShippingZip(e.target.value)}
+                        className="flex-1 px-3 py-2 text-sm border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/30"
+                      />
+                      <button
+                        onClick={calculateShipping}
+                        disabled={isCalculatingShipping || !shippingCountry}
+                        className="px-4 py-2 bg-primary text-white text-sm font-medium rounded-lg hover:bg-primary/90 transition-colors disabled:opacity-50"
+                      >
+                        {isCalculatingShipping ? (
+                          <Loader2 className="h-4 w-4 animate-spin" />
+                        ) : (
+                          'Calculate'
+                        )}
+                      </button>
+                    </div>
                   </div>
                   {shippingMessage && (
                     <p className={`mt-2 text-sm font-medium ${shippingCost === 25 ? 'text-green-600' : 'text-amber-600'}`}>
-                      Your shipping cost is ${shippingCost}
+                      {shippingMessage}
                     </p>
                   )}
                 </div>

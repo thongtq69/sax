@@ -15,11 +15,11 @@ export function BlogSidebar({ showSearch = false, currentCategory }: BlogSidebar
     const categoryCounts = getCategoryPostCounts();
 
     return (
-        <aside className="space-y-8">
+        <aside className="space-y-6 lg:space-y-8">
             {/* Search */}
             {showSearch && (
-                <div className="rounded-lg border-2 border-primary/20 bg-white p-6 shadow-sm">
-                    <h3 className="mb-4 font-display text-lg font-bold text-secondary flex items-center gap-2">
+                <div className="rounded-lg border-2 border-primary/20 bg-white p-4 sm:p-5 lg:p-6 shadow-sm">
+                    <h3 className="mb-3 sm:mb-4 font-display text-base sm:text-lg font-bold text-secondary flex items-center gap-2">
                         <Search className="h-4 w-4 text-primary" />
                         Search Articles
                     </h3>
@@ -27,7 +27,7 @@ export function BlogSidebar({ showSearch = false, currentCategory }: BlogSidebar
                         <Input
                             type="search"
                             placeholder="Search..."
-                            className="pr-10 border-primary/30 focus:border-primary"
+                            className="pr-10 border-primary/30 focus:border-primary text-sm"
                         />
                         <Search className="absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
                     </div>
@@ -35,19 +35,19 @@ export function BlogSidebar({ showSearch = false, currentCategory }: BlogSidebar
             )}
 
             {/* Recent Posts */}
-            <div className="rounded-lg border-2 border-primary/20 bg-white p-6 shadow-sm">
-                <h3 className="mb-4 font-display text-lg font-bold text-secondary flex items-center gap-2">
+            <div className="rounded-lg border-2 border-primary/20 bg-white p-4 sm:p-5 lg:p-6 shadow-sm">
+                <h3 className="mb-3 sm:mb-4 font-display text-base sm:text-lg font-bold text-secondary flex items-center gap-2">
                     <Clock className="h-4 w-4 text-primary" />
                     Recent Articles
                 </h3>
 
                 {/* Decorative Line */}
-                <div className="flex items-center gap-2 mb-4">
+                <div className="flex items-center gap-2 mb-3 sm:mb-4">
                     <div className="h-0.5 w-8 bg-primary" />
                     <div className="h-0.5 flex-1 bg-primary/20" />
                 </div>
 
-                <ul className="space-y-4">
+                <ul className="space-y-3 sm:space-y-4">
                     {recentPosts.map((post, index) => {
                         const dateInfo = formatBlogDate(post.date);
                         return (
@@ -55,14 +55,14 @@ export function BlogSidebar({ showSearch = false, currentCategory }: BlogSidebar
                                 <Link href={`/blog/${post.slug}`} className="block">
                                     <div className="flex gap-3">
                                         {/* Number Badge */}
-                                        <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full border border-primary/30 text-sm font-bold text-primary group-hover:bg-primary group-hover:text-white transition-colors">
+                                        <span className="flex h-7 w-7 sm:h-8 sm:w-8 shrink-0 items-center justify-center rounded-full border border-primary/30 text-xs sm:text-sm font-bold text-primary group-hover:bg-primary group-hover:text-white transition-colors">
                                             {index + 1}
                                         </span>
                                         <div className="flex-1 min-w-0">
-                                            <h4 className="text-sm font-semibold text-secondary group-hover:text-primary transition-colors line-clamp-2 leading-tight">
+                                            <h4 className="text-xs sm:text-sm font-semibold text-secondary group-hover:text-primary transition-colors line-clamp-2 leading-tight">
                                                 {post.title}
                                             </h4>
-                                            <p className="mt-1 text-xs text-muted-foreground">
+                                            <p className="mt-1 text-[10px] sm:text-xs text-muted-foreground">
                                                 {dateInfo.full}
                                             </p>
                                         </div>
@@ -75,18 +75,19 @@ export function BlogSidebar({ showSearch = false, currentCategory }: BlogSidebar
             </div>
 
             {/* Categories */}
-            <div className="rounded-lg border-2 border-primary/20 bg-white p-6 shadow-sm">
-                <h3 className="mb-4 font-display text-lg font-bold text-secondary flex items-center gap-2">
+            <div className="rounded-lg border-2 border-primary/20 bg-white p-4 sm:p-5 lg:p-6 shadow-sm">
+                <h3 className="mb-3 sm:mb-4 font-display text-base sm:text-lg font-bold text-secondary flex items-center gap-2">
                     <Tag className="h-4 w-4 text-primary" />
                     Categories
                 </h3>
 
                 {/* Decorative Line */}
-                <div className="flex items-center gap-2 mb-4">
+                <div className="flex items-center gap-2 mb-3 sm:mb-4">
                     <div className="h-0.5 w-8 bg-primary" />
                     <div className="h-0.5 flex-1 bg-primary/20" />
                 </div>
 
+                {/* Vertical list on all screens */}
                 <ul className="space-y-1">
                     {blogCategories.map((category) => {
                         const count = categoryCounts[category.slug] || 0;
@@ -117,19 +118,19 @@ export function BlogSidebar({ showSearch = false, currentCategory }: BlogSidebar
             </div>
 
             {/* Newsletter CTA */}
-            <div className="rounded-lg bg-gradient-to-br from-primary to-primary/80 p-6 text-white shadow-lg">
-                <h3 className="mb-2 font-display text-lg font-bold">
+            <div className="rounded-lg bg-gradient-to-br from-primary to-primary/80 p-4 sm:p-5 lg:p-6 text-white shadow-lg">
+                <h3 className="mb-2 font-display text-base sm:text-lg font-bold">
                     Stay Updated
                 </h3>
-                <p className="mb-4 text-sm text-white/80">
+                <p className="mb-3 sm:mb-4 text-xs sm:text-sm text-white/80">
                     Subscribe to receive the latest articles and exclusive offers.
                 </p>
                 <Input
                     type="email"
                     placeholder="Your email address"
-                    className="mb-3 border-white/30 bg-white/10 text-white placeholder:text-white/50"
+                    className="mb-3 border-white/30 bg-white/10 text-white placeholder:text-white/50 text-sm"
                 />
-                <button className="w-full rounded bg-white py-2 text-sm font-semibold text-primary hover:bg-white/90 transition-colors">
+                <button className="w-full rounded bg-white py-2 text-xs sm:text-sm font-semibold text-primary hover:bg-white/90 transition-colors">
                     Subscribe
                 </button>
             </div>

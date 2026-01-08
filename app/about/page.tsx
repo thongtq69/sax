@@ -124,11 +124,11 @@ export default function AboutPage() {
             </div>
 
             {/* Trust Statement */}
-            <div className="bg-secondary/5 rounded-2xl p-8 md:p-12 text-center">
+            <div className="bg-secondary/5 rounded-2xl p-8 md:p-12 text-center mb-0">
               <p className="text-lg md:text-xl text-gray-700 leading-relaxed max-w-3xl mx-auto">
                 Over time, James Sax Corner has earned the trust of musicians worldwide through honest representation, careful preparation of instruments, and consistent service standards. Our reputation is reflected in the feedback and testimonials shared by musicians from different countries and musical backgrounds.
               </p>
-              <div className="mt-6 flex items-center justify-center gap-1">
+              <div className="mt-4 flex items-center justify-center gap-1">
                 {[...Array(5)].map((_, i) => (
                   <span key={i} className="text-amber-400 text-xl">★</span>
                 ))}
@@ -139,7 +139,7 @@ export default function AboutPage() {
       </section>
 
       {/* CTA Section */}
-      <section className="py-5 md:py-6 bg-gradient-to-br from-primary/5 via-white to-primary/10">
+      <section className="pt-2 md:pt-3 pb-5 md:pb-6 bg-gradient-to-br from-primary/5 via-white to-primary/10">
         <div className="container mx-auto px-4">
           <div className="max-w-3xl mx-auto text-center">
             <h2 className="text-lg md:text-xl font-bold text-secondary mb-2">Ready to Find Your Perfect Saxophone?</h2>
