@@ -142,3 +142,6 @@ export function getProductRatingStats(_productName: string): { rating: number; r
 if (typeof window !== 'undefined') {
   fetchReviewsFromAPI()
 }
+
+// Export reviews as alias for getAllReviews (for backward compatibility)
+export const reviews = fallbackReviews
