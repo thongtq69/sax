@@ -32,14 +32,14 @@ export function NewYearPopup() {
     fetchProducts()
   }, [])
 
-  // Show popup after 2 seconds, only once per session
+  // Show popup after 2 seconds, only once (stored in localStorage)
   useEffect(() => {
-    const hasSeenPopup = sessionStorage.getItem('newYear2026PopupSeen')
+    const hasSeenPopup = localStorage.getItem('newYear2026PopupSeen')
     
     if (!hasSeenPopup) {
       const timer = setTimeout(() => {
         setIsOpen(true)
-        sessionStorage.setItem('newYear2026PopupSeen', 'true')
+        localStorage.setItem('newYear2026PopupSeen', 'true')
       }, 2000)
       return () => clearTimeout(timer)
     }
