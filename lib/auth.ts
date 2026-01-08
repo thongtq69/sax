@@ -16,33 +16,38 @@ const providers: Provider[] = [
       password: { label: "Password", type: "password" }
     },
     async authorize(credentials) {
-      if (!credentials?.email || !credentials?.password) {
-        throw new Error("Email and password are required")
-      }
+      try {
+        if (!credentials?.email || !credentials?.password) {
+          return null
+        }
 
-      const email = credentials.email as string
-      const password = credentials.password as string
+        const email = credentials.email as string
+        const password = credentials.password as string
 
-      const user = await prisma.user.findUnique({
-        where: { email }
-      })
+        const user = await prisma.user.findUnique({
+          where: { email }
+        })
 
-      if (!user || !user.password) {
-        throw new Error("Invalid email or password")
-      }
+        if (!user || !user.password) {
+          return null
+        }
 
-      const isPasswordValid = await bcrypt.compare(password, user.password)
+        const isPasswordValid = await bcrypt.compare(password, user.password)
 
-      if (!isPasswordValid) {
-        throw new Error("Invalid email or password")
-      }
+        if (!isPasswordValid) {
+          return null
+        }
 
-      return {
-        id: user.id,
-        email: user.email,
-        name: user.name,
-        image: user.image,
-        role: user.role,
+        return {
+          id: user.id,
+          email: user.email,
+          name: user.name,
+          image: user.image,
+          role: user.role,
+        }
+      } catch (error) {
+        console.error("Auth error:", error)
+        return null
       }
     }
   })
@@ -71,55 +76,66 @@ if (process.env.FACEBOOK_CLIENT_ID && process.env.FACEBOOK_CLIENT_SECRET) {
 }
 
 export const authConfig: NextAuthConfig = {
+  // Use adapter only for OAuth providers (not for credentials with JWT)
   adapter: PrismaAdapter(prisma),
   providers,
-
+  
+  secret: process.env.NEXTAUTH_SECRET,
+  
   session: {
     strategy: "jwt",
+    maxAge: 30 * 24 * 60 * 60, // 30 days
   },
+  
+  trustHost: true,
   callbacks: {
     async signIn({ user, account }) {
-      // Allow OAuth sign-in
-      if (account?.provider !== "credentials") {
+      try {
+        // Allow OAuth sign-in
+        if (account?.provider !== "credentials") {
+          return true
+        }
         return true
+      } catch (error) {
+        console.error("SignIn callback error:", error)
+        return false
       }
-      
-      // For credentials, check if email is verified (optional)
-      // You can enable this check if you want to require email verification
-      // const existingUser = await prisma.user.findUnique({
-      //   where: { id: user.id }
-      // })
-      // if (!existingUser?.emailVerified) {
-      //   return false
-      // }
-      
-      return true
     },
     async jwt({ token, user, account }) {
-      if (user) {
-        token.id = user.id
-        token.role = (user as any).role || "user"
-      }
-      
-      // Handle OAuth account linking
-      if (account && user) {
-        const existingUser = await prisma.user.findUnique({
-          where: { email: user.email! }
-        })
-        if (existingUser) {
-          token.id = existingUser.id
-          token.role = existingUser.role
+      try {
+        if (user) {
+          token.id = user.id
+          token.role = (user as any).role || "user"
         }
+        
+        // Handle OAuth account linking
+        if (account && user && user.email) {
+          const existingUser = await prisma.user.findUnique({
+            where: { email: user.email }
+          })
+          if (existingUser) {
+            token.id = existingUser.id
+            token.role = existingUser.role
+          }
+        }
+        
+        return token
+      } catch (error) {
+        console.error("JWT callback error:", error)
+        return token
       }
-      
-      return token
     },
     async session({ session, token }) {
-      if (session.user) {
-        session.user.id = token.id as string
-        session.user.role = token.role as string
+      try {
+        if (session.user) {
+          session.user.id = token.id as string
+          session.user.role = token.role as string
+        }
+        return session
+      } catch (error) {
+        console.error("Session callback error:", error)
+        return session
       }
-      return session
     },
   },
   pages: {
@@ -129,11 +145,15 @@ export const authConfig: NextAuthConfig = {
   },
   events: {
     async linkAccount({ user }) {
-      // When OAuth account is linked, mark email as verified
-      await prisma.user.update({
-        where: { id: user.id },
-        data: { emailVerified: new Date() }
-      })
+      try {
+        // When OAuth account is linked, mark email as verified
+        await prisma.user.update({
+          where: { id: user.id },
+          data: { emailVerified: new Date() }
+        })
+      } catch (error) {
+        console.error("LinkAccount event error:", error)
+      }
     }
   },
   debug: process.env.NODE_ENV === "development",
