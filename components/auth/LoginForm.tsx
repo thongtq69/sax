@@ -44,8 +44,16 @@ export function LoginForm({ callbackUrl }: LoginFormProps) {
       if (result?.error) {
         setError('Invalid email or password. Please try again.')
       } else {
-        // Successful login
-        router.push(callbackUrl || '/')
+        // Successful login - fetch session to check user role
+        const response = await fetch('/api/auth/session')
+        const session = await response.json()
+        
+        // Redirect based on user role
+        if (session?.user?.role === 'admin') {
+          router.push('/admin')
+        } else {
+          router.push(callbackUrl || '/')
+        }
         router.refresh()
       }
     } catch (error) {

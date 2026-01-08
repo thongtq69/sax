@@ -24,6 +24,11 @@ export const authConfig: NextAuthConfig = {
 
             // Redirect logged-in users away from auth pages
             if (isAuthRoute && isLoggedIn) {
+                // Redirect admin to dashboard, regular users to home
+                const userRole = (auth?.user as any)?.role
+                if (userRole === 'admin') {
+                    return Response.redirect(new URL('/admin', nextUrl))
+                }
                 return Response.redirect(new URL('/', nextUrl))
             }
 
