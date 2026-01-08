@@ -315,6 +315,7 @@ export default function HomePage() {
     'saxophones': 'SAXOPHONES',
     'student-instruments': 'STUDENT INSTRUMENTS',
   })
+  const [heroBackgroundImage, setHeroBackgroundImage] = useState('/homepage3.png')
   const [allProducts, setAllProducts] = useState<Product[]>([])
   const [categories, setCategories] = useState<any[]>([])
   const [categoryCounts, setCategoryCounts] = useState<Record<string, number>>({})
@@ -326,6 +327,24 @@ export default function HomePage() {
   // Fetch reviews from API
   useEffect(() => {
     getAllReviewsAsync().then(setReviews)
+  }, [])
+
+  // Fetch hero background image from admin settings
+  useEffect(() => {
+    async function fetchHeroContent() {
+      try {
+        const response = await fetch('/api/admin/homepage-content/hero')
+        if (response.ok) {
+          const data = await response.json()
+          if (data.image) {
+            setHeroBackgroundImage(data.image)
+          }
+        }
+      } catch (error) {
+        console.log('Using default hero background')
+      }
+    }
+    fetchHeroContent()
   }, [])
 
   useEffect(() => {
@@ -489,7 +508,7 @@ export default function HomePage() {
       <ScrollAnimations />
       <section className="homepage-hero relative overflow-hidden">
         <div className="absolute inset-0">
-          <Image src="/homepage3.png" alt="Saxophones Background" fill className="object-cover" priority />
+          <Image src={heroBackgroundImage} alt="Saxophones Background" fill className="object-cover" priority />
         </div>
         <div className="relative min-h-[280px] md:min-h-[350px] lg:min-h-[420px]">
           <div className="container mx-auto flex min-h-[280px] md:min-h-[350px] lg:min-h-[420px] items-center justify-center px-4 py-8 md:py-12">
