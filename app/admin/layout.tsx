@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react'
 import { usePathname, useRouter } from 'next/navigation'
 import { Button } from '@/components/ui/button'
-import { Menu, X, Bell, Search } from 'lucide-react'
+import { Menu, X, Bell, Search, ArrowLeft } from 'lucide-react'
 import { Input } from '@/components/ui/input'
 import AdminSidebar, { menuItems } from '@/components/admin/AdminSidebar'
 
@@ -54,7 +54,7 @@ export default function AdminLayout({
   }
 
   const getCurrentPageTitle = () => {
-    const item = menuItems.find(item => 
+    const item = menuItems.find(item =>
       item.exact ? pathname === item.href : pathname.startsWith(item.href) && item.href !== '/admin'
     )
     return item?.label || 'Dashboard'
@@ -65,7 +65,18 @@ export default function AdminLayout({
       {/* Mobile Header */}
       <div className="lg:hidden bg-white border-b sticky top-0 z-40 shadow-sm">
         <div className="flex items-center justify-between p-4">
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2">
+            {/* Back button - only show when not on dashboard */}
+            {pathname !== '/admin' && (
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={() => router.push('/admin')}
+                className="mr-1"
+              >
+                <ArrowLeft className="h-5 w-5" />
+              </Button>
+            )}
             <Button
               variant="ghost"
               size="icon"
@@ -113,8 +124,8 @@ export default function AdminLayout({
             <div className="flex items-center gap-4">
               <div className="relative">
                 <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
-                <Input 
-                  placeholder="Search..." 
+                <Input
+                  placeholder="Search..."
                   className="pl-10 w-64 bg-gray-50 border-gray-200"
                 />
               </div>
