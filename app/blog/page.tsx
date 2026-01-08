@@ -143,7 +143,7 @@ export default function BlogPage({ searchParams }: BlogPageProps) {
                             <Suspense fallback={<BlogSkeleton />}>
                                 {posts.length > 0 ? (
                                     <>
-                                        <div className="grid gap-4 sm:gap-6 md:gap-8 grid-cols-1 sm:grid-cols-2">
+                                        <div className="grid gap-4 sm:gap-6 md:gap-8 grid-cols-1 min-[480px]:grid-cols-2">
                                             {(currentPage === 1 && !categoryFilter ? posts.slice(1) : posts).map((post) => (
                                                 <BlogCard key={post.id} post={post} />
                                             ))}

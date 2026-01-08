@@ -16,10 +16,10 @@ export function BlogCard({ post, featured = false }: BlogCardProps) {
             <article className="group relative overflow-hidden rounded-xl sm:rounded-2xl border-2 border-primary/20 bg-white shadow-lg transition-all duration-500 hover:shadow-2xl hover:border-primary/40 hover:-translate-y-1 animate-fade-in-up">
                 {/* Gradient overlay on hover */}
                 <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-accent/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500 z-10 pointer-events-none" />
-                
-                <div className="grid md:grid-cols-2">
+
+                <div className="flex flex-col md:grid md:grid-cols-2">
                     {/* Image */}
-                    <div className="relative aspect-[16/9] sm:aspect-[4/3] md:aspect-auto overflow-hidden">
+                    <div className="relative aspect-[16/10] md:aspect-auto overflow-hidden">
                         <Link href={`/blog/${post.slug}`}>
                             <Image
                                 src={post.image}
@@ -43,7 +43,7 @@ export function BlogCard({ post, featured = false }: BlogCardProps) {
                     </div>
 
                     {/* Content */}
-                    <div className="flex flex-col justify-center p-4 sm:p-6 md:p-8 relative">
+                    <div className="flex flex-col justify-center p-3 sm:p-5 md:p-8 relative">
                         {/* Categories */}
                         <div className="mb-2 sm:mb-3 flex flex-wrap gap-1.5 sm:gap-2">
                             {post.categories.map((category, i) => (
@@ -60,18 +60,18 @@ export function BlogCard({ post, featured = false }: BlogCardProps) {
 
                         {/* Title */}
                         <Link href={`/blog/${post.slug}`}>
-                            <h2 className="mb-2 sm:mb-4 text-lg sm:text-xl md:text-2xl font-bold text-secondary transition-colors hover:text-primary font-display leading-tight group-hover:text-primary">
+                            <h2 className="mb-2 sm:mb-3 text-base sm:text-lg md:text-2xl font-bold text-secondary transition-colors hover:text-primary font-display leading-tight group-hover:text-primary">
                                 {post.title}
                             </h2>
                         </Link>
 
                         {/* Excerpt */}
-                        <p className="mb-3 sm:mb-4 text-sm sm:text-base text-muted-foreground leading-relaxed line-clamp-2 sm:line-clamp-3">
+                        <p className="mb-2 sm:mb-3 text-xs sm:text-sm md:text-base text-muted-foreground leading-relaxed line-clamp-2 md:line-clamp-3">
                             {post.excerpt}
                         </p>
 
                         {/* Meta */}
-                        <div className="flex items-center gap-3 sm:gap-4 text-xs sm:text-sm text-muted-foreground mb-3 sm:mb-4">
+                        <div className="flex items-center gap-2 sm:gap-4 text-[10px] sm:text-xs md:text-sm text-muted-foreground mb-2 sm:mb-4">
                             <div className="flex items-center gap-1 sm:gap-1.5 group/meta">
                                 <User className="h-3.5 w-3.5 sm:h-4 sm:w-4 transition-colors group-hover/meta:text-primary" />
                                 <span>{post.author}</span>
@@ -87,7 +87,7 @@ export function BlogCard({ post, featured = false }: BlogCardProps) {
                         {/* Read More */}
                         <Link
                             href={`/blog/${post.slug}`}
-                            className="inline-flex items-center gap-2 text-primary font-semibold hover:gap-3 transition-all group/link relative overflow-hidden text-sm sm:text-base"
+                            className="inline-flex items-center gap-1.5 text-primary font-semibold hover:gap-2 transition-all group/link relative overflow-hidden text-xs sm:text-sm md:text-base"
                         >
                             <span className="relative z-10">Continue Reading</span>
                             <ArrowRight className="h-3.5 w-3.5 sm:h-4 sm:w-4 transition-transform group-hover/link:translate-x-1 relative z-10" />
@@ -103,7 +103,7 @@ export function BlogCard({ post, featured = false }: BlogCardProps) {
         <article className="group relative overflow-hidden rounded-lg sm:rounded-xl border border-primary/20 bg-white shadow-sm transition-all duration-500 hover:shadow-xl hover:-translate-y-2 hover:border-primary/40 animate-fade-in-up">
             {/* Gradient overlay */}
             <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-accent/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500 z-10 pointer-events-none" />
-            
+
             {/* Image Container */}
             <div className="relative aspect-[16/10] sm:aspect-[4/3] overflow-hidden">
                 <Link href={`/blog/${post.slug}`}>

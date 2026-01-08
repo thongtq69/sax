@@ -98,8 +98,8 @@ export function BlogSidebar({ showSearch = false, currentCategory }: BlogSidebar
                                 <Link
                                     href={`/blog?category=${category.slug}`}
                                     className={`group flex items-center justify-between rounded-md px-3 py-2 text-sm transition-colors ${isActive
-                                            ? 'bg-primary text-white'
-                                            : 'hover:bg-primary/10 text-secondary'
+                                        ? 'bg-primary text-white'
+                                        : 'hover:bg-primary/10 text-secondary'
                                         }`}
                                 >
                                     <div className="flex items-center gap-2">
@@ -118,19 +118,19 @@ export function BlogSidebar({ showSearch = false, currentCategory }: BlogSidebar
             </div>
 
             {/* Newsletter CTA */}
-            <div className="rounded-lg bg-gradient-to-br from-primary to-primary/80 p-4 sm:p-5 lg:p-6 text-white shadow-lg">
-                <h3 className="mb-2 font-display text-base sm:text-lg font-bold">
+            <div className="rounded-lg bg-gradient-to-br from-primary to-primary/80 p-3 sm:p-4 lg:p-6 text-white shadow-lg">
+                <h3 className="mb-1.5 sm:mb-2 font-display text-sm sm:text-base lg:text-lg font-bold">
                     Stay Updated
                 </h3>
-                <p className="mb-3 sm:mb-4 text-xs sm:text-sm text-white/80">
+                <p className="mb-2 sm:mb-3 lg:mb-4 text-[11px] sm:text-xs lg:text-sm text-white/80 leading-snug">
                     Subscribe to receive the latest articles and exclusive offers.
                 </p>
                 <Input
                     type="email"
                     placeholder="Your email address"
-                    className="mb-3 border-white/30 bg-white/10 text-white placeholder:text-white/50 text-sm"
+                    className="mb-2 sm:mb-3 border-white/30 bg-white/10 text-white placeholder:text-white/50 text-xs sm:text-sm"
                 />
-                <button className="w-full rounded bg-white py-2 text-xs sm:text-sm font-semibold text-primary hover:bg-white/90 transition-colors">
+                <button className="w-full rounded bg-white py-1.5 sm:py-2 text-[10px] sm:text-xs lg:text-sm font-semibold text-primary hover:bg-white/90 transition-colors">
                     Subscribe
                 </button>
             </div>

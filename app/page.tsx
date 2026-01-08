@@ -63,9 +63,8 @@ function ReviewsCarousel({ reviews, productImages = [], onViewAll }: ReviewsCaro
     >
       {/* Wide Review Card - Horizontal Layout */}
       <div
-        className={`bg-white/85 backdrop-blur-md px-8 sm:px-10 md:px-12 py-6 sm:py-8 shadow-xl border border-white/50 rounded-xl w-full transition-all duration-300 ease-out ${
-          isAnimating ? 'opacity-0 scale-95' : 'opacity-100 scale-100'
-        }`}
+        className={`bg-white/85 backdrop-blur-md px-8 sm:px-10 md:px-12 py-6 sm:py-8 shadow-xl border border-white/50 rounded-xl w-full transition-all duration-300 ease-out ${isAnimating ? 'opacity-0 scale-95' : 'opacity-100 scale-100'
+          }`}
       >
         <div className="flex flex-col sm:flex-row sm:items-center gap-4 sm:gap-8">
           {/* Quote + Review Text */}
@@ -76,18 +75,17 @@ function ReviewsCarousel({ reviews, productImages = [], onViewAll }: ReviewsCaro
               <span className="text-amber-400 text-2xl ml-1">"</span>
             </p>
           </div>
-          
+
           {/* Reviewer Info + Stars */}
           <div className="flex sm:flex-col items-center sm:items-end gap-3 sm:gap-2 shrink-0">
             <div className="flex gap-0.5">
               {[...Array(5)].map((_, i) => (
                 <Star
                   key={i}
-                  className={`h-4 w-4 sm:h-5 sm:w-5 ${
-                    i < currentReview.rating
-                      ? 'fill-amber-400 text-amber-400'
-                      : 'fill-gray-200 text-gray-200'
-                  }`}
+                  className={`h-4 w-4 sm:h-5 sm:w-5 ${i < currentReview.rating
+                    ? 'fill-amber-400 text-amber-400'
+                    : 'fill-gray-200 text-gray-200'
+                    }`}
                 />
               ))}
             </div>
@@ -193,12 +191,11 @@ function NewArrivalsCarousel({ products, id }: NewArrivalsCarouselProps) {
           {displayProducts.map((product, index) => (
             <div
               key={`${id}-${product.id}-${currentIndex}-${index}`}
-              className={`transition-all duration-300 ease-out ${
-                isAnimating 
-                  ? 'opacity-0 scale-95' 
-                  : 'opacity-100 scale-100'
-              }`}
-              style={{ 
+              className={`transition-all duration-300 ease-out ${isAnimating
+                ? 'opacity-0 scale-95'
+                : 'opacity-100 scale-100'
+                }`}
+              style={{
                 transitionDelay: isAnimating ? '0ms' : `${index * 30}ms`,
               }}
             >
@@ -547,33 +544,35 @@ export default function HomePage() {
         </div>
 
         {/* Customer Reviews - Same Background */}
-        <div className="relative py-8 sm:py-10 md:py-12">
-          {/* View All Reviews Button - Absolute positioned at bottom right corner */}
-          <button
-            className="absolute bottom-2 right-2 sm:bottom-3 sm:right-3 md:bottom-4 md:right-4 text-secondary hover:text-primary font-medium text-xs underline underline-offset-2 transition-all z-10 flex items-center gap-1"
-            onClick={() => setShowTestimonials(true)}
-          >
-            View All Reviews
-            <ChevronRight className="h-3.5 w-3.5" />
-          </button>
-
+        <div className="relative py-4 sm:py-8 md:py-12">
           <div className="container mx-auto px-4">
             <div className="mb-4 sm:mb-6 text-center animate-fade-in-up">
               <div className="inline-flex items-center gap-1.5 px-3 py-1.5 sm:px-4 sm:py-2 bg-white/90 text-amber-700 text-[10px] sm:text-xs font-medium mb-3 rounded-full shadow-md backdrop-blur-sm">
                 <Star className="h-3 w-3 sm:h-3.5 sm:w-3.5 fill-amber-400 text-amber-400" />
                 Trusted by Musicians Worldwide
               </div>
-              <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold text-white mb-2 sm:mb-3 drop-shadow-lg">
+              <h2 className="text-lg sm:text-3xl md:text-4xl font-bold text-white mb-2 sm:mb-3 drop-shadow-lg">
                 What Our Customers Say
               </h2>
             </div>
 
             {/* Reviews Carousel */}
-            <ReviewsCarousel 
-              reviews={reviews} 
-              productImages={allProducts.slice(0, 10).map(p => p.images[0])} 
+            <ReviewsCarousel
+              reviews={reviews}
+              productImages={allProducts.slice(0, 10).map(p => p.images[0])}
               onViewAll={() => setShowTestimonials(true)}
             />
+          </div>
+
+          {/* View All Reviews Button */}
+          <div className="text-center mt-3 sm:mt-4">
+            <button
+              className="text-white hover:text-amber-300 font-medium text-xs sm:text-sm underline underline-offset-2 transition-all inline-flex items-center gap-1"
+              onClick={() => setShowTestimonials(true)}
+            >
+              View All Reviews
+              <ChevronRight className="h-3 w-3 sm:h-4 sm:w-4" />
+            </button>
           </div>
         </div>
       </section>
@@ -596,7 +595,7 @@ export default function HomePage() {
               </Link>
             </div>
           </div>
-          
+
           {/* Products */}
           <div className="container mx-auto px-4 pb-4 sm:pb-6">
             <NewArrivalsCarousel products={saleProducts} id="new-arrivals" />
@@ -621,7 +620,7 @@ export default function HomePage() {
             </Link>
           </div>
         </div>
-        
+
         {/* Products */}
         <div className="container mx-auto px-4 pb-4 sm:pb-6">
           <NewArrivalsCarousel products={featuredProducts} id="featured" />
@@ -645,60 +644,60 @@ export default function HomePage() {
             </Link>
           </div>
         </div>
-        
+
         <div className="container mx-auto px-4 py-4 sm:py-6">
           <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 md:gap-5 lg:gap-6 w-full">
-              {subcategories.map((sub, i) => {
-                // Remove "Saxophones" from display name
-                const displayName = sub.name.replace(/\s+Saxophones?/gi, '')
-                // Different music notes for each category
-                const musicNotes = ['♪', '♫', '♬', '𝄞']
-                const noteIcon = musicNotes[i % musicNotes.length]
+            {subcategories.map((sub, i) => {
+              // Remove "Saxophones" from display name
+              const displayName = sub.name.replace(/\s+Saxophones?/gi, '')
+              // Different music notes for each category
+              const musicNotes = ['♪', '♫', '♬', '𝄞']
+              const noteIcon = musicNotes[i % musicNotes.length]
 
-                return (
-                  <Link
-                    key={sub.slug}
-                    href={`/shop?subcategory=${sub.slug}`}
-                    className="group bg-secondary hover:bg-secondary/90 rounded-lg p-4 sm:p-5 transition-all duration-300 hover:shadow-2xl hover:scale-105 hover:-translate-y-1 animate-fade-in-up"
-                    style={{ animationDelay: `${0.1 * i}s` }}
-                  >
-                    <div className="flex items-center justify-center gap-3">
-                      {/* Music Note Icon with animation */}
-                      <span className="text-amber-400 text-2xl sm:text-3xl group-hover:animate-bounce transition-transform duration-300">{noteIcon}</span>
-                      
-                      {/* Category Name */}
-                      <h3 className="text-base sm:text-lg md:text-xl font-bold text-white group-hover:text-amber-300 transition-colors duration-300">
-                        {displayName}
-                      </h3>
-                    </div>
-                  </Link>
-                )
-              })}
-
-              {/* Add Baritone category if not exists in subcategories */}
-              {!subcategories.find(s => s.slug.includes('baritone') || s.name.toLowerCase().includes('baritone')) && (
+              return (
                 <Link
-                  href="/shop?subcategory=baritone-saxophones"
+                  key={sub.slug}
+                  href={`/shop?subcategory=${sub.slug}`}
                   className="group bg-secondary hover:bg-secondary/90 rounded-lg p-4 sm:p-5 transition-all duration-300 hover:shadow-2xl hover:scale-105 hover:-translate-y-1 animate-fade-in-up"
-                  style={{ animationDelay: `${0.1 * subcategories.length}s` }}
+                  style={{ animationDelay: `${0.1 * i}s` }}
                 >
                   <div className="flex items-center justify-center gap-3">
                     {/* Music Note Icon with animation */}
-                    <span className="text-amber-400 text-2xl sm:text-3xl group-hover:animate-bounce transition-transform duration-300">𝄞</span>
-                    
+                    <span className="text-amber-400 text-2xl sm:text-3xl group-hover:animate-bounce transition-transform duration-300">{noteIcon}</span>
+
                     {/* Category Name */}
                     <h3 className="text-base sm:text-lg md:text-xl font-bold text-white group-hover:text-amber-300 transition-colors duration-300">
-                      Baritone
+                      {displayName}
                     </h3>
                   </div>
                 </Link>
-              )}
+              )
+            })}
+
+            {/* Add Baritone category if not exists in subcategories */}
+            {!subcategories.find(s => s.slug.includes('baritone') || s.name.toLowerCase().includes('baritone')) && (
+              <Link
+                href="/shop?subcategory=baritone-saxophones"
+                className="group bg-secondary hover:bg-secondary/90 rounded-lg p-4 sm:p-5 transition-all duration-300 hover:shadow-2xl hover:scale-105 hover:-translate-y-1 animate-fade-in-up"
+                style={{ animationDelay: `${0.1 * subcategories.length}s` }}
+              >
+                <div className="flex items-center justify-center gap-3">
+                  {/* Music Note Icon with animation */}
+                  <span className="text-amber-400 text-2xl sm:text-3xl group-hover:animate-bounce transition-transform duration-300">𝄞</span>
+
+                  {/* Category Name */}
+                  <h3 className="text-base sm:text-lg md:text-xl font-bold text-white group-hover:text-amber-300 transition-colors duration-300">
+                    Baritone
+                  </h3>
+                </div>
+              </Link>
+            )}
           </div>
         </div>
       </section>
 
       {/* Testimonial / Why Choose Us */}
-      <section id="reviews" className="bg-gradient-to-br from-amber-50/30 via-white to-blue-50/30 py-6 sm:py-8 md:py-10">
+      <section id="reviews" className="bg-gradient-to-br from-amber-50/30 via-white to-blue-50/30 py-3 sm:py-6 md:py-10">
         <div className="container mx-auto px-4 max-w-6xl">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-10 items-stretch">
             {/* Left: Why Musicians Choose Us */}
@@ -744,18 +743,15 @@ export default function HomePage() {
           </div>
         </div>
       </section>
-      {/* Join Our Musical Community - Compact */}
-      <section className="bg-gradient-to-r from-primary to-primary/80 py-0.5 sm:py-3 relative overflow-hidden">
+      {/* Join Our Musical Community - Hidden on mobile, show on desktop */}
+      <section className="hidden lg:block bg-gradient-to-r from-primary to-primary/80 relative overflow-hidden py-3">
         <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent animate-shimmer" />
-        <div className="container mx-auto px-1.5 sm:px-4">
-          <div className="flex flex-col sm:flex-row items-center justify-between gap-0.5 sm:gap-3">
-            <div className="text-center sm:text-left">
-              <h3 className="text-[9px] sm:text-sm font-bold text-white flex items-center gap-0.5 justify-center sm:justify-start">
-                <Sparkles className="h-2.5 w-2.5 sm:h-4 sm:w-4" />
-                Join Our Musical Community
-              </h3>
-              <p className="text-white/80 text-[9px] sm:text-xs hidden sm:block">Get exclusive deals, tips, and industry news</p>
-            </div>
+        <div className="container mx-auto px-4">
+          <div className="flex items-center justify-between gap-4">
+            <h3 className="text-sm font-bold text-white flex items-center gap-2 whitespace-nowrap">
+              <Sparkles className="w-4 h-4" />
+              Join Our Musical Community
+            </h3>
             <form
               onSubmit={(e) => {
                 e.preventDefault()
@@ -766,24 +762,22 @@ export default function HomePage() {
                   e.currentTarget.reset()
                 }
               }}
-              className="flex items-center gap-1 w-full sm:w-auto"
+              className="flex items-center gap-2 flex-1 max-w-md"
             >
               <input
                 type="email"
                 name="email"
-                placeholder="Enter your email"
-                className="bg-white/20 border border-white/30 placeholder:text-white/60 text-white flex-1 sm:flex-initial sm:w-[320px] px-2 py-1 sm:px-3 sm:py-2 transition-all duration-300 focus:bg-white/30 focus:outline-none focus:border-white/50 text-[9px] sm:text-sm h-5 sm:h-9"
+                placeholder="Enter your email address"
+                className="bg-white/20 border border-white/30 placeholder:text-white/60 text-white flex-1 min-w-0 focus:bg-white/30 focus:outline-none focus:border-white/50 rounded text-sm h-9 px-4"
                 required
               />
               <Button
                 type="submit"
                 size="sm"
-                className="bg-secondary hover:bg-secondary/90 text-white px-2 sm:px-4 transition-all duration-300 text-[9px] sm:text-sm h-5 sm:h-9 whitespace-nowrap"
+                className="bg-secondary hover:bg-secondary/90 text-white whitespace-nowrap text-sm h-9 px-4"
               >
-                <span className="flex items-center gap-0.5">
-                  Subscribe
-                  <ChevronRight className="h-3 w-3 sm:h-4 sm:w-4" />
-                </span>
+                Subscribe
+                <ChevronRight className="w-4 h-4 ml-1" />
               </Button>
             </form>
           </div>
@@ -791,9 +785,9 @@ export default function HomePage() {
       </section>
 
       {/* Testimonials Popup */}
-      <TestimonialsPopup 
-        isOpen={showTestimonials} 
-        onClose={() => setShowTestimonials(false)} 
+      <TestimonialsPopup
+        isOpen={showTestimonials}
+        onClose={() => setShowTestimonials(false)}
       />
     </div>
   )
