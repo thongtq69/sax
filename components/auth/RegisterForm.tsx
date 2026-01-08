@@ -79,10 +79,10 @@ export function RegisterForm({ onSuccess }: RegisterFormProps) {
       if (data.success) {
         setIsSuccess(true)
         onSuccess?.()
-        // Redirect to login after showing success message
+        // Redirect to OTP verification page
         setTimeout(() => {
-          router.push('/auth/login')
-        }, 3000)
+          router.push(`/auth/verify-otp?email=${encodeURIComponent(data.email)}`)
+        }, 2000)
       } else {
         setError(data.message)
       }
@@ -99,11 +99,11 @@ export function RegisterForm({ onSuccess }: RegisterFormProps) {
         <CheckCircle className="h-16 w-16 text-green-600 mx-auto" />
         <h2 className="text-2xl font-bold text-gray-900">Registration Successful!</h2>
         <p className="text-gray-600">
-          We've sent a verification email to <strong>{email}</strong>. 
-          Please check your inbox and click the verification link to activate your account.
+          We've sent a 6-digit OTP code to <strong>{email}</strong>. 
+          Please check your inbox to verify your account.
         </p>
         <p className="text-sm text-gray-500">
-          Redirecting to login page...
+          Redirecting to verification page...
         </p>
       </div>
     )

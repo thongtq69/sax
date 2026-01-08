@@ -70,6 +70,67 @@ export async function sendVerificationEmail(email: string, token: string, name?:
 }
 
 
+export async function sendOTPEmail(email: string, otp: string, name?: string) {
+  const html = `
+    <!DOCTYPE html>
+    <html>
+    <head>
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <title>Email Verification OTP</title>
+    </head>
+    <body style="font-family: Arial, sans-serif; line-height: 1.6; color: #333; max-width: 600px; margin: 0 auto; padding: 20px;">
+      <div style="background: linear-gradient(135deg, #1a365d 0%, #2d4a7c 100%); padding: 30px; text-align: center; border-radius: 10px 10px 0 0;">
+        <h1 style="color: #fff; margin: 0; font-size: 28px;">James Sax Corner</h1>
+        <p style="color: #ffd700; margin: 10px 0 0 0;">Premium Saxophones</p>
+      </div>
+      
+      <div style="background: #fff; padding: 30px; border: 1px solid #e0e0e0; border-top: none; border-radius: 0 0 10px 10px;">
+        <h2 style="color: #1a365d; margin-top: 0;">Welcome${name ? `, ${name}` : ''}!</h2>
+        
+        <p>Thank you for registering at James Sax Corner. Please use the following OTP code to verify your email address:</p>
+        
+        <div style="text-align: center; margin: 30px 0;">
+          <div style="background: #f5f5f5; border: 2px dashed #1a365d; padding: 20px; border-radius: 10px; display: inline-block;">
+            <p style="margin: 0; color: #666; font-size: 14px; font-weight: bold;">YOUR OTP CODE</p>
+            <p style="margin: 10px 0 0 0; font-size: 36px; font-weight: bold; color: #1a365d; letter-spacing: 8px; font-family: 'Courier New', monospace;">
+              ${otp}
+            </p>
+          </div>
+        </div>
+        
+        <p style="color: #666; font-size: 14px; text-align: center;">
+          Enter this code on the verification page to complete your registration.
+        </p>
+        
+        <p style="color: #e53e3e; font-size: 14px; margin-top: 30px; text-align: center; font-weight: bold;">
+          ⚠️ This code will expire in 15 minutes
+        </p>
+        
+        <p style="color: #666; font-size: 14px; margin-top: 20px;">
+          If you didn't create an account, you can safely ignore this email.
+        </p>
+        
+        <hr style="border: none; border-top: 1px solid #e0e0e0; margin: 30px 0;">
+        
+        <p style="color: #999; font-size: 12px; text-align: center;">
+          © ${new Date().getFullYear()} James Sax Corner. All rights reserved.<br>
+          Hanoi, Vietnam
+        </p>
+      </div>
+    </body>
+    </html>
+  `
+
+  await transporter.sendMail({
+    from: `"James Sax Corner" <${fromEmail}>`,
+    to: email,
+    subject: "Email Verification OTP - James Sax Corner",
+    html,
+  })
+}
+
+
 export async function sendPasswordResetEmail(email: string, token: string, name?: string) {
   const resetUrl = `${baseUrl}/auth/reset-password?token=${token}`
   

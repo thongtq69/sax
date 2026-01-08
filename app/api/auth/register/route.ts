@@ -83,31 +83,35 @@ export async function POST(request: NextRequest) {
       }
     })
 
-    // Generate verification token
+    // Generate OTP code (6 digits)
+    const otp = Math.floor(100000 + Math.random() * 900000).toString()
     const token = crypto.randomBytes(32).toString("hex")
-    const expires = new Date(Date.now() + 24 * 60 * 60 * 1000) // 24 hours
+    const expires = new Date(Date.now() + 15 * 60 * 1000) // 15 minutes
 
     await prisma.verificationToken.create({
       data: {
         identifier: email.toLowerCase(),
         token,
-        type: "email-verification",
+        otp,
+        type: "otp-verification",
         expires,
       }
     })
 
-    // Send verification email
+    // Send OTP email
     try {
-      await sendVerificationEmail(email, token, name)
+      const { sendOTPEmail } = await import("@/lib/email")
+      await sendOTPEmail(email, otp, name)
     } catch (emailError) {
-      console.error("Failed to send verification email:", emailError)
+      console.error("Failed to send OTP email:", emailError)
       // Don't fail registration if email fails
     }
 
     return NextResponse.json({
       success: true,
-      message: "Registration successful! Please check your email to verify your account.",
-      userId: user.id
+      message: "Registration successful! Please check your email for the OTP code.",
+      userId: user.id,
+      email: email.toLowerCase()
     })
 
   } catch (error) {
