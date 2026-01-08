@@ -5,8 +5,9 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { 
-  Save, FileText, Eye, EyeOff, ChevronDown, ChevronRight, Image as ImageIcon
+  Save, FileText, Eye, EyeOff, ChevronDown, ChevronRight, Image as ImageIcon, Upload, Loader2
 } from 'lucide-react'
+import Image from 'next/image'
 
 interface HomepageSection {
   id: string
@@ -32,10 +33,10 @@ export default function HomepageContentPage() {
   const [sections, setSections] = useState<HomepageSection[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [expandedSections, setExpandedSections] = useState<Set<string>>(new Set(['hero']))
-  const [editingSection, setEditingSection] = useState<string | null>(null)
   const [formData, setFormData] = useState<Record<string, any>>({})
   const [isSaving, setIsSaving] = useState(false)
   const [successMessage, setSuccessMessage] = useState('')
+  const [isUploading, setIsUploading] = useState<string | null>(null)
 
   useEffect(() => {
     fetchSections()
@@ -92,7 +93,6 @@ export default function HomepageContentPage() {
 
       if (response.ok) {
         await fetchSections()
-        setEditingSection(null)
         setSuccessMessage(`${sectionLabels[sectionKey] || sectionKey} saved successfully!`)
         setTimeout(() => setSuccessMessage(''), 3000)
       } else {
@@ -144,6 +144,38 @@ export default function HomepageContentPage() {
         },
       },
     }))
+  }
+
+  const handleImageUpload = async (sectionKey: string, field: 'image' | 'logoImage', file: File) => {
+    setIsUploading(`${sectionKey}-${field}`)
+    
+    try {
+      const formData = new FormData()
+      formData.append('file', file)
+      formData.append('folder', 'sax/homepage')
+
+      const response = await fetch('/api/upload', {
+        method: 'POST',
+        body: formData,
+      })
+
+      if (!response.ok) {
+        const data = await response.json()
+        throw new Error(data.error || 'Upload failed')
+      }
+
+      const result = await response.json()
+      
+      if (field === 'image') {
+        updateFormData(sectionKey, 'image', result.url)
+      } else {
+        updateMetadata(sectionKey, field, result.url)
+      }
+    } catch (error: any) {
+      alert(error.message || 'Failed to upload image')
+    } finally {
+      setIsUploading(null)
+    }
   }
 
   if (isLoading) {
@@ -266,7 +298,44 @@ export default function HomepageContentPage() {
                           className="pl-10"
                         />
                       </div>
+                      <label className="cursor-pointer">
+                        <input
+                          type="file"
+                          accept="image/*"
+                          className="hidden"
+                          onChange={(e) => {
+                            const file = e.target.files?.[0]
+                            if (file) handleImageUpload(section.sectionKey, 'image', file)
+                            e.target.value = ''
+                          }}
+                        />
+                        <Button
+                          type="button"
+                          variant="outline"
+                          disabled={isUploading === `${section.sectionKey}-image`}
+                          asChild
+                        >
+                          <span>
+                            {isUploading === `${section.sectionKey}-image` ? (
+                              <Loader2 className="h-4 w-4 animate-spin" />
+                            ) : (
+                              <Upload className="h-4 w-4" />
+                            )}
+                          </span>
+                        </Button>
+                      </label>
                     </div>
+                    {/* Image Preview */}
+                    {formData[section.sectionKey]?.image && (
+                      <div className="mt-3 relative w-full max-w-md aspect-video bg-gray-100 rounded-lg overflow-hidden">
+                        <Image
+                          src={formData[section.sectionKey].image}
+                          alt="Background preview"
+                          fill
+                          className="object-cover"
+                        />
+                      </div>
+                    )}
                   </div>
                 )}
 
@@ -293,11 +362,51 @@ export default function HomepageContentPage() {
                     </div>
                     <div>
                       <Label>Logo Image URL</Label>
-                      <Input
-                        value={formData[section.sectionKey]?.metadata?.logoImage || ''}
-                        onChange={(e) => updateMetadata(section.sectionKey, 'logoImage', e.target.value)}
-                        placeholder="/logo.svg"
-                      />
+                      <div className="flex gap-2">
+                        <Input
+                          value={formData[section.sectionKey]?.metadata?.logoImage || ''}
+                          onChange={(e) => updateMetadata(section.sectionKey, 'logoImage', e.target.value)}
+                          placeholder="/logo.svg"
+                          className="flex-1"
+                        />
+                        <label className="cursor-pointer">
+                          <input
+                            type="file"
+                            accept="image/*"
+                            className="hidden"
+                            onChange={(e) => {
+                              const file = e.target.files?.[0]
+                              if (file) handleImageUpload(section.sectionKey, 'logoImage', file)
+                              e.target.value = ''
+                            }}
+                          />
+                          <Button
+                            type="button"
+                            variant="outline"
+                            disabled={isUploading === `${section.sectionKey}-logoImage`}
+                            asChild
+                          >
+                            <span>
+                              {isUploading === `${section.sectionKey}-logoImage` ? (
+                                <Loader2 className="h-4 w-4 animate-spin" />
+                              ) : (
+                                <Upload className="h-4 w-4" />
+                              )}
+                            </span>
+                          </Button>
+                        </label>
+                      </div>
+                      {/* Logo Preview */}
+                      {formData[section.sectionKey]?.metadata?.logoImage && (
+                        <div className="mt-3 relative h-16 w-48 bg-gray-100 rounded-lg overflow-hidden">
+                          <Image
+                            src={formData[section.sectionKey].metadata.logoImage}
+                            alt="Logo preview"
+                            fill
+                            className="object-contain"
+                          />
+                        </div>
+                      )}
                     </div>
                   </>
                 )}
