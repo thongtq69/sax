@@ -282,7 +282,7 @@ export default function HomePage() {
           <div className="container mx-auto flex min-h-[280px] md:min-h-[350px] lg:min-h-[420px] items-center justify-center px-4 py-8 md:py-12">
             <div className="text-center space-y-4 md:space-y-6">
               <div className="hero-title flex justify-center">
-                <Image src="/jsc.svg" alt="James Sax Corner" width={760} height={220} className="h-[70px] md:h-[90px] lg:h-[110px] w-auto drop-shadow-[0_2px_4px_rgba(255,255,255,0.8)]" priority />
+                <Image src="/jsc-logo-transparent.svg" alt="James Sax Corner" width={760} height={220} className="h-[70px] md:h-[90px] lg:h-[110px] w-auto drop-shadow-[0_2px_4px_rgba(255,255,255,0.8)]" priority />
               </div>
               <p className="hero-cta text-base md:text-lg lg:text-xl leading-relaxed text-white max-w-3xl mx-auto font-body drop-shadow-lg">
                 Premium Japanese saxophones, expertly maintained for peak performance. Trusted by musicians worldwide, backed by outstanding reviews. Unmatched customer service—your satisfaction comes first! Buy with confidence.
