@@ -36,7 +36,7 @@ export function MiniCartDrawer({ open, onOpenChange }: MiniCartDrawerProps) {
     }, 300)
   }
 
-  const freeShippingThreshold = 500
+  const freeShippingThreshold = 10000
   const progressToFreeShipping = Math.min((subtotal / freeShippingThreshold) * 100, 100)
   const amountToFreeShipping = Math.max(freeShippingThreshold - subtotal, 0)
 
@@ -65,14 +65,14 @@ export function MiniCartDrawer({ open, onOpenChange }: MiniCartDrawerProps) {
               <div className="flex items-center justify-between text-sm mb-2">
                 <span className="flex items-center gap-1.5">
                   <Package className="h-4 w-4" />
-                  {amountToFreeShipping > 0 
+                  {amountToFreeShipping > 0
                     ? `$${amountToFreeShipping.toFixed(0)} away from free shipping!`
                     : '🎉 You qualify for free shipping!'
                   }
                 </span>
               </div>
               <div className="h-2 bg-white/20 rounded-full overflow-hidden">
-                <div 
+                <div
                   className="h-full bg-gradient-to-r from-accent to-primary rounded-full transition-all duration-700 ease-out"
                   style={{ width: `${progressToFreeShipping}%` }}
                 />
@@ -90,10 +90,10 @@ export function MiniCartDrawer({ open, onOpenChange }: MiniCartDrawerProps) {
             <p className="mb-8 text-sm text-muted-foreground text-center max-w-xs">
               Discover our premium collection of saxophones and accessories
             </p>
-            <Button 
-              size="lg" 
+            <Button
+              size="lg"
               className="group bg-gradient-to-r from-primary to-accent hover:from-primary/90 hover:to-accent/90 shadow-lg hover:shadow-xl transition-all duration-300"
-              asChild 
+              asChild
               onClick={() => onOpenChange(false)}
             >
               <Link href="/shop" className="flex items-center gap-2">
@@ -107,12 +107,11 @@ export function MiniCartDrawer({ open, onOpenChange }: MiniCartDrawerProps) {
           <>
             <div className="flex-1 overflow-y-auto p-4 space-y-3">
               {items.map((item, index) => (
-                <div 
-                  key={item.id} 
-                  className={`flex gap-4 p-3 rounded-xl bg-gradient-to-r from-gray-50 to-white border border-gray-100 hover:border-primary/30 hover:shadow-lg transition-all duration-300 group animate-fade-in-up ${
-                    removingId === item.id ? 'opacity-0 scale-95 -translate-x-full' : ''
-                  }`}
-                  style={{ 
+                <div
+                  key={item.id}
+                  className={`flex gap-4 p-3 rounded-xl bg-gradient-to-r from-gray-50 to-white border border-gray-100 hover:border-primary/30 hover:shadow-lg transition-all duration-300 group animate-fade-in-up ${removingId === item.id ? 'opacity-0 scale-95 -translate-x-full' : ''
+                    }`}
+                  style={{
                     animationDelay: `${index * 0.05}s`,
                     transitionDuration: removingId === item.id ? '0.3s' : '0.3s'
                   }}
@@ -146,7 +145,7 @@ export function MiniCartDrawer({ open, onOpenChange }: MiniCartDrawerProps) {
                         <Trash2 className="h-4 w-4" />
                       </button>
                     </div>
-                    
+
                     <div className="mt-auto flex items-center justify-between pt-2">
                       {/* Quantity controls */}
                       <div className="flex items-center gap-1 bg-gray-100 rounded-full p-0.5">
@@ -193,7 +192,7 @@ export function MiniCartDrawer({ open, onOpenChange }: MiniCartDrawerProps) {
                   ${subtotal.toLocaleString()}
                 </span>
               </div>
-              
+
               <p className="text-xs text-muted-foreground text-center">
                 Shipping & taxes calculated at checkout
               </p>
@@ -202,8 +201,8 @@ export function MiniCartDrawer({ open, onOpenChange }: MiniCartDrawerProps) {
 
               {/* Action buttons */}
               <div className="space-y-2">
-                <Button 
-                  className="w-full h-12 text-base font-semibold bg-gradient-to-r from-primary to-accent hover:from-primary/90 hover:to-accent/90 shadow-lg hover:shadow-xl transition-all duration-300 group" 
+                <Button
+                  className="w-full h-12 text-base font-semibold bg-gradient-to-r from-primary to-accent hover:from-primary/90 hover:to-accent/90 shadow-lg hover:shadow-xl transition-all duration-300 group"
                   asChild
                 >
                   <Link href="/checkout" onClick={() => onOpenChange(false)} className="flex items-center justify-center gap-2">
@@ -211,9 +210,9 @@ export function MiniCartDrawer({ open, onOpenChange }: MiniCartDrawerProps) {
                     <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
                   </Link>
                 </Button>
-                <Button 
-                  variant="outline" 
-                  className="w-full h-11 border-2 hover:bg-secondary hover:text-white hover:border-secondary transition-all duration-300" 
+                <Button
+                  variant="outline"
+                  className="w-full h-11 border-2 hover:bg-secondary hover:text-white hover:border-secondary transition-all duration-300"
                   asChild
                 >
                   <Link href="/cart" onClick={() => onOpenChange(false)}>

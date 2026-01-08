@@ -21,10 +21,10 @@ export function LoginForm({ callbackUrl }: LoginFormProps) {
   const [showPassword, setShowPassword] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState('')
-  
+
   const router = useRouter()
   const searchParams = useSearchParams()
-  
+
   // Check for success messages
   const verified = searchParams.get('verified')
   const reset = searchParams.get('reset')
@@ -44,17 +44,21 @@ export function LoginForm({ callbackUrl }: LoginFormProps) {
       if (result?.error) {
         setError('Invalid email or password. Please try again.')
       } else {
-        // Successful login - fetch session to check user role
+        // Successful login - refresh to update session first
+        router.refresh()
+
+        // Wait a moment for session to update, then fetch and check role
+        await new Promise(resolve => setTimeout(resolve, 500))
+
         const response = await fetch('/api/auth/session')
         const session = await response.json()
-        
+
         // Redirect based on user role
         if (session?.user?.role === 'admin') {
           router.push('/admin')
         } else {
           router.push(callbackUrl || '/')
         }
-        router.refresh()
       }
     } catch (error) {
       setError('An error occurred. Please try again.')
@@ -71,7 +75,7 @@ export function LoginForm({ callbackUrl }: LoginFormProps) {
           Email verified successfully! You can now login.
         </div>
       )}
-      
+
       {reset === 'success' && (
         <div className="bg-green-50 text-green-700 p-3 rounded-md border border-green-200">
           Password reset successfully! You can now login with your new password.
@@ -129,9 +133,9 @@ export function LoginForm({ callbackUrl }: LoginFormProps) {
               Remember me
             </Label>
           </div>
-          
-          <Link 
-            href="/auth/forgot-password" 
+
+          <Link
+            href="/auth/forgot-password"
             className="text-sm text-blue-600 hover:text-blue-500"
           >
             Forgot password?
