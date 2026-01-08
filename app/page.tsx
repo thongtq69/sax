@@ -456,18 +456,18 @@ export default function HomePage() {
         </div>
       </section>
 
-      <section className="bg-gradient-to-r from-primary to-primary/80 py-0.5 relative overflow-hidden">
+      <section className="hidden lg:block bg-gradient-to-r from-primary to-primary/80 py-2 relative overflow-hidden">
         <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent animate-shimmer" />
-        <div className="container mx-auto px-2 sm:px-4">
-          <div className="flex items-center justify-between gap-1">
-            <span className="text-[8px] sm:text-[10px] font-semibold text-white flex items-center gap-0.5 whitespace-nowrap">
-              <Sparkles className="h-2 w-2 sm:h-2.5 sm:w-2.5" />
+        <div className="container mx-auto px-6">
+          <div className="flex items-center justify-between gap-4">
+            <span className="text-sm font-semibold text-white flex items-center gap-1.5 whitespace-nowrap">
+              <Sparkles className="h-4 w-4" />
               Newsletter
             </span>
-            <form onSubmit={(e) => { e.preventDefault(); const formData = new FormData(e.currentTarget); const email = formData.get('email'); if (email) { alert('Thank you for subscribing!'); e.currentTarget.reset(); } }} className="flex gap-1 flex-1 max-w-[160px] sm:max-w-[240px]">
-              <input type="email" name="email" placeholder="Email" className="bg-white/20 border border-white/30 placeholder:text-white/60 text-white min-w-0 flex-1 px-1.5 py-0.5 rounded text-[8px] sm:text-[10px] h-5" required />
-              <Button type="submit" size="sm" className="bg-secondary hover:bg-secondary/90 text-white px-1.5 sm:px-2 text-[8px] sm:text-[10px] h-5">
-                <ChevronRight className="h-2 w-2" />
+            <form onSubmit={(e) => { e.preventDefault(); const formData = new FormData(e.currentTarget); const email = formData.get('email'); if (email) { alert('Thank you for subscribing!'); e.currentTarget.reset(); } }} className="flex gap-2 flex-1 max-w-md">
+              <input type="email" name="email" placeholder="Enter your email" className="bg-white/20 border border-white/30 placeholder:text-white/60 text-white min-w-0 flex-1 px-4 py-1.5 rounded text-sm h-9" required />
+              <Button type="submit" size="sm" className="bg-secondary hover:bg-secondary/90 text-white px-4 text-sm h-9">
+                <ChevronRight className="h-4 w-4" />
               </Button>
             </form>
           </div>
