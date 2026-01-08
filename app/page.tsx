@@ -53,7 +53,7 @@ function ReviewsCarousel({ reviews, productImages = [], onViewAll }: ReviewsCaro
 
   return (
     <div className="relative" onMouseEnter={() => setIsPaused(true)} onMouseLeave={() => setIsPaused(false)}>
-      <div className={`bg-white/85 backdrop-blur-md px-8 sm:px-10 md:px-12 py-6 sm:py-8 shadow-xl border border-white/50 rounded-xl w-full transition-all duration-300 ease-out ${isAnimating ? 'opacity-0 scale-95' : 'opacity-100 scale-100'}`}>
+      <div className={`bg-white/85 backdrop-blur-md px-8 sm:px-10 md:px-12 py-6 sm:py-8 pb-10 sm:pb-12 shadow-xl border border-white/50 rounded-xl w-full transition-all duration-300 ease-out relative ${isAnimating ? 'opacity-0 scale-95' : 'opacity-100 scale-100'}`}>
         <div className="flex flex-col sm:flex-row sm:items-center gap-4 sm:gap-8">
           <div className="flex-1">
             <p className="text-gray-700 text-base sm:text-lg md:text-xl leading-relaxed italic">
@@ -77,6 +77,16 @@ function ReviewsCarousel({ reviews, productImages = [], onViewAll }: ReviewsCaro
             </div>
           </div>
         </div>
+        {/* View All Reviews - positioned at bottom right of card */}
+        {onViewAll && (
+          <button
+            className="absolute bottom-3 right-4 sm:bottom-4 sm:right-6 text-secondary hover:text-primary font-medium text-[10px] sm:text-xs underline transition-all flex items-center gap-0.5"
+            onClick={onViewAll}
+          >
+            View All Reviews
+            <ChevronRight className="h-3 w-3 sm:h-3.5 sm:w-3.5" />
+          </button>
+        )}
       </div>
     </div>
   )
@@ -312,10 +322,6 @@ export default function HomePage() {
           </div>
         </div>
         <div className="relative py-8 sm:py-10 md:py-12">
-          <button className="absolute bottom-4 right-4 sm:bottom-5 sm:right-5 md:bottom-6 md:right-6 bg-white/90 hover:bg-white text-secondary hover:text-primary font-medium text-[10px] sm:text-xs px-2 py-1 sm:px-3 sm:py-1.5 rounded-full shadow-md transition-all z-10 flex items-center gap-0.5 sm:gap-1" onClick={() => setShowTestimonials(true)}>
-            View All Reviews
-            <ChevronRight className="h-3 w-3 sm:h-3.5 sm:w-3.5" />
-          </button>
           <div className="container mx-auto px-4">
             <div className="mb-4 sm:mb-6 text-center animate-fade-in-up">
               <div className="inline-flex items-center gap-1.5 px-3 py-1.5 sm:px-4 sm:py-2 bg-white/90 text-amber-700 text-[10px] sm:text-xs font-medium mb-3 rounded-full shadow-md backdrop-blur-sm">
