@@ -1,4 +1,3 @@
-'use client'
 import NextAuth from "next-auth"
 import type { NextAuthConfig } from "next-auth"
 
@@ -9,6 +8,20 @@ export const authConfig: NextAuthConfig = {
         strategy: "jwt",
     },
     callbacks: {
+        async jwt({ token, user }) {
+            // Pass role from user object to token
+            if (user) {
+                token.role = (user as any).role || "user"
+            }
+            return token
+        },
+        async session({ session, token }) {
+            // Pass role from token to session
+            if (session.user) {
+                (session.user as any).role = token.role
+            }
+            return session
+        },
         authorized({ auth, request: { nextUrl } }) {
             const isLoggedIn = !!auth?.user
 
@@ -59,3 +72,4 @@ export const authConfig: NextAuthConfig = {
 }
 
 export const { auth: middleware } = NextAuth(authConfig)
+
