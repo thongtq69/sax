@@ -53,6 +53,7 @@ export async function GET(
 
     return NextResponse.json({
       ...collection,
+      backgroundImage: collection.backgroundImage,
       products: sortedProducts,
     })
   } catch (error: any) {
@@ -72,7 +73,7 @@ export async function PUT(
   try {
     const { slug } = await params
     const body = await request.json()
-    const { name, productIds } = body
+    const { name, productIds, backgroundImage } = body
 
     const collection = await prisma.featuredCollection.findUnique({
       where: { slug },
@@ -90,6 +91,7 @@ export async function PUT(
       data: {
         ...(name && { name }),
         ...(productIds !== undefined && { productIds }),
+        ...(backgroundImage !== undefined && { backgroundImage }),
       },
     })
 

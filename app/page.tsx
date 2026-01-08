@@ -315,6 +315,7 @@ export default function HomePage() {
     'saxophones': 'SAXOPHONES',
     'student-instruments': 'STUDENT INSTRUMENTS',
   })
+  const [collectionBackgrounds, setCollectionBackgrounds] = useState<Record<string, string>>({})
   const [heroBackgroundImage, setHeroBackgroundImage] = useState('/homepage3.png')
   const [allProducts, setAllProducts] = useState<Product[]>([])
   const [categories, setCategories] = useState<any[]>([])
@@ -358,6 +359,7 @@ export default function HomePage() {
         let saxophones: Product[] = []
         let studentInstruments: Product[] = []
         const titles: Record<string, string> = { ...collectionTitles }
+        const backgrounds: Record<string, string> = {}
 
         try {
           const [newArrivalsRes, featuredRes, onSaleRes, flutesRes, saxRes, studentRes] = await Promise.all([
@@ -372,6 +374,7 @@ export default function HomePage() {
           if (newArrivalsRes.ok) {
             const newArrivalsData = await newArrivalsRes.json()
             if (newArrivalsData.name) titles['new-arrivals'] = newArrivalsData.name.toUpperCase()
+            if (newArrivalsData.backgroundImage) backgrounds['new-arrivals'] = newArrivalsData.backgroundImage
             if (newArrivalsData.products && newArrivalsData.products.length > 0) {
               newArrivalsProducts = newArrivalsData.products.map(transformProduct)
             }
@@ -380,6 +383,7 @@ export default function HomePage() {
           if (featuredRes.ok) {
             const featuredData = await featuredRes.json()
             if (featuredData.name) titles['featured-instruments'] = featuredData.name.toUpperCase()
+            if (featuredData.backgroundImage) backgrounds['featured-instruments'] = featuredData.backgroundImage
             if (featuredData.products && featuredData.products.length > 0) {
               featuredInstrumentsProducts = featuredData.products.map(transformProduct)
             }
@@ -388,6 +392,7 @@ export default function HomePage() {
           if (onSaleRes.ok) {
             const onSaleData = await onSaleRes.json()
             if (onSaleData.name) titles['on-sale'] = onSaleData.name.toUpperCase()
+            if (onSaleData.backgroundImage) backgrounds['on-sale'] = onSaleData.backgroundImage
             if (onSaleData.products && onSaleData.products.length > 0) {
               onSale = onSaleData.products.map(transformProduct)
             }
@@ -396,6 +401,7 @@ export default function HomePage() {
           if (flutesRes.ok) {
             const flutesData = await flutesRes.json()
             if (flutesData.name) titles['professional-flutes'] = flutesData.name.toUpperCase()
+            if (flutesData.backgroundImage) backgrounds['professional-flutes'] = flutesData.backgroundImage
             if (flutesData.products && flutesData.products.length > 0) {
               professionalFlutes = flutesData.products.map(transformProduct)
             }
@@ -404,6 +410,7 @@ export default function HomePage() {
           if (saxRes.ok) {
             const saxData = await saxRes.json()
             if (saxData.name) titles['saxophones'] = saxData.name.toUpperCase()
+            if (saxData.backgroundImage) backgrounds['saxophones'] = saxData.backgroundImage
             if (saxData.products && saxData.products.length > 0) {
               saxophones = saxData.products.map(transformProduct)
             }
@@ -412,12 +419,14 @@ export default function HomePage() {
           if (studentRes.ok) {
             const studentData = await studentRes.json()
             if (studentData.name) titles['student-instruments'] = studentData.name.toUpperCase()
+            if (studentData.backgroundImage) backgrounds['student-instruments'] = studentData.backgroundImage
             if (studentData.products && studentData.products.length > 0) {
               studentInstruments = studentData.products.map(transformProduct)
             }
           }
 
           setCollectionTitles(titles)
+          setCollectionBackgrounds(backgrounds)
         } catch (error) {
           console.log('Featured collections not found, using fallback')
         }
@@ -559,137 +568,155 @@ export default function HomePage() {
 
 
       {saleProducts.length > 0 && (
-        <section>
-          <div className="container mx-auto px-4 py-3 sm:py-4">
-            <div className="flex items-center justify-center gap-3">
-              <div className="flex-1 h-px bg-primary/30" />
-              <span className="text-2xl sm:text-3xl text-primary">♪</span>
-              <h2 className="text-lg sm:text-xl md:text-2xl font-bold text-secondary tracking-wide uppercase">{collectionTitles['new-arrivals']}</h2>
-              <span className="text-2xl sm:text-3xl text-primary">♪</span>
-              <div className="flex-1 h-px bg-primary/30" />
+        <section className="relative overflow-hidden" style={collectionBackgrounds['new-arrivals'] ? { backgroundImage: `url(${collectionBackgrounds['new-arrivals']})`, backgroundSize: 'cover', backgroundPosition: 'center' } : {}}>
+          {collectionBackgrounds['new-arrivals'] && <div className="absolute inset-0 bg-white/85 backdrop-blur-sm" />}
+          <div className="relative">
+            <div className="container mx-auto px-4 py-3 sm:py-4">
+              <div className="flex items-center justify-center gap-3">
+                <div className="flex-1 h-px bg-primary/30" />
+                <span className="text-2xl sm:text-3xl text-primary">♪</span>
+                <h2 className="text-lg sm:text-xl md:text-2xl font-bold text-secondary tracking-wide uppercase">{collectionTitles['new-arrivals']}</h2>
+                <span className="text-2xl sm:text-3xl text-primary">♪</span>
+                <div className="flex-1 h-px bg-primary/30" />
+              </div>
+              <div className="text-center mt-2">
+                <Link href="/shop?badge=coming-soon" className="text-xs sm:text-sm text-primary hover:text-secondary transition-colors inline-flex items-center gap-1">
+                  View All <ChevronRight className="h-3 w-3 sm:h-4 sm:w-4" />
+                </Link>
+              </div>
             </div>
-            <div className="text-center mt-2">
-              <Link href="/shop?badge=coming-soon" className="text-xs sm:text-sm text-primary hover:text-secondary transition-colors inline-flex items-center gap-1">
-                View All <ChevronRight className="h-3 w-3 sm:h-4 sm:w-4" />
-              </Link>
+            <div className="container mx-auto px-4 pb-4 sm:pb-6">
+              <StaticProductGrid products={saleProducts} id="new-arrivals" />
             </div>
-          </div>
-          <div className="container mx-auto px-4 pb-4 sm:pb-6">
-            <StaticProductGrid products={saleProducts} id="new-arrivals" />
           </div>
         </section>
       )}
 
       {featuredProducts.length > 0 && (
-        <section>
-          <div className="container mx-auto px-4 py-3 sm:py-4">
-            <div className="flex items-center justify-center gap-3">
-              <div className="flex-1 h-px bg-primary/30" />
-              <span className="text-2xl sm:text-3xl text-primary">♫</span>
-              <h2 className="text-lg sm:text-xl md:text-2xl font-bold text-secondary tracking-wide uppercase">{collectionTitles['featured-instruments']}</h2>
-              <span className="text-2xl sm:text-3xl text-primary">♫</span>
-              <div className="flex-1 h-px bg-primary/30" />
+        <section className="relative overflow-hidden" style={collectionBackgrounds['featured-instruments'] ? { backgroundImage: `url(${collectionBackgrounds['featured-instruments']})`, backgroundSize: 'cover', backgroundPosition: 'center' } : {}}>
+          {collectionBackgrounds['featured-instruments'] && <div className="absolute inset-0 bg-white/85 backdrop-blur-sm" />}
+          <div className="relative">
+            <div className="container mx-auto px-4 py-3 sm:py-4">
+              <div className="flex items-center justify-center gap-3">
+                <div className="flex-1 h-px bg-primary/30" />
+                <span className="text-2xl sm:text-3xl text-primary">♫</span>
+                <h2 className="text-lg sm:text-xl md:text-2xl font-bold text-secondary tracking-wide uppercase">{collectionTitles['featured-instruments']}</h2>
+                <span className="text-2xl sm:text-3xl text-primary">♫</span>
+                <div className="flex-1 h-px bg-primary/30" />
+              </div>
+              <div className="text-center mt-2">
+                <Link href="/shop?badge=new" className="text-xs sm:text-sm text-primary hover:text-secondary transition-colors inline-flex items-center gap-1">
+                  View All <ChevronRight className="h-3 w-3 sm:h-4 sm:w-4" />
+                </Link>
+              </div>
             </div>
-            <div className="text-center mt-2">
-              <Link href="/shop?badge=new" className="text-xs sm:text-sm text-primary hover:text-secondary transition-colors inline-flex items-center gap-1">
-                View All <ChevronRight className="h-3 w-3 sm:h-4 sm:w-4" />
-              </Link>
+            <div className="container mx-auto px-4 pb-4 sm:pb-6">
+              <StaticProductGrid products={featuredProducts} id="featured" />
             </div>
-          </div>
-          <div className="container mx-auto px-4 pb-4 sm:pb-6">
-            <StaticProductGrid products={featuredProducts} id="featured" />
           </div>
         </section>
       )}
 
       {/* On Sale Section */}
       {onSaleProducts.length > 0 && (
-        <section className="bg-gradient-to-br from-red-50/30 via-white to-amber-50/30">
-          <div className="container mx-auto px-4 py-3 sm:py-4">
-            <div className="flex items-center justify-center gap-3">
-              <div className="flex-1 h-px bg-red-400/30" />
-              <span className="text-2xl sm:text-3xl text-red-500">🔥</span>
-              <h2 className="text-lg sm:text-xl md:text-2xl font-bold text-secondary tracking-wide uppercase">{collectionTitles['on-sale']}</h2>
-              <span className="text-2xl sm:text-3xl text-red-500">🔥</span>
-              <div className="flex-1 h-px bg-red-400/30" />
+        <section className="relative overflow-hidden" style={collectionBackgrounds['on-sale'] ? { backgroundImage: `url(${collectionBackgrounds['on-sale']})`, backgroundSize: 'cover', backgroundPosition: 'center' } : {}}>
+          {collectionBackgrounds['on-sale'] ? <div className="absolute inset-0 bg-white/85 backdrop-blur-sm" /> : <div className="absolute inset-0 bg-gradient-to-br from-red-50/30 via-white to-amber-50/30" />}
+          <div className="relative">
+            <div className="container mx-auto px-4 py-3 sm:py-4">
+              <div className="flex items-center justify-center gap-3">
+                <div className="flex-1 h-px bg-red-400/30" />
+                <span className="text-2xl sm:text-3xl text-red-500">🔥</span>
+                <h2 className="text-lg sm:text-xl md:text-2xl font-bold text-secondary tracking-wide uppercase">{collectionTitles['on-sale']}</h2>
+                <span className="text-2xl sm:text-3xl text-red-500">🔥</span>
+                <div className="flex-1 h-px bg-red-400/30" />
+              </div>
+              <div className="text-center mt-2">
+                <Link href="/shop?badge=sale" className="text-xs sm:text-sm text-primary hover:text-secondary transition-colors inline-flex items-center gap-1">
+                  View All <ChevronRight className="h-3 w-3 sm:h-4 sm:w-4" />
+                </Link>
+              </div>
             </div>
-            <div className="text-center mt-2">
-              <Link href="/shop?badge=sale" className="text-xs sm:text-sm text-primary hover:text-secondary transition-colors inline-flex items-center gap-1">
-                View All <ChevronRight className="h-3 w-3 sm:h-4 sm:w-4" />
-              </Link>
+            <div className="container mx-auto px-4 pb-4 sm:pb-6">
+              <StaticProductGrid products={onSaleProducts} id="on-sale" />
             </div>
-          </div>
-          <div className="container mx-auto px-4 pb-4 sm:pb-6">
-            <StaticProductGrid products={onSaleProducts} id="on-sale" />
           </div>
         </section>
       )}
 
       {/* Professional Flutes Section */}
       {professionalFlutesProducts.length > 0 && (
-        <section>
-          <div className="container mx-auto px-4 py-3 sm:py-4">
-            <div className="flex items-center justify-center gap-3">
-              <div className="flex-1 h-px bg-primary/30" />
-              <span className="text-2xl sm:text-3xl text-primary">🎵</span>
-              <h2 className="text-lg sm:text-xl md:text-2xl font-bold text-secondary tracking-wide uppercase">{collectionTitles['professional-flutes']}</h2>
-              <span className="text-2xl sm:text-3xl text-primary">🎵</span>
-              <div className="flex-1 h-px bg-primary/30" />
+        <section className="relative overflow-hidden" style={collectionBackgrounds['professional-flutes'] ? { backgroundImage: `url(${collectionBackgrounds['professional-flutes']})`, backgroundSize: 'cover', backgroundPosition: 'center' } : {}}>
+          {collectionBackgrounds['professional-flutes'] && <div className="absolute inset-0 bg-white/85 backdrop-blur-sm" />}
+          <div className="relative">
+            <div className="container mx-auto px-4 py-3 sm:py-4">
+              <div className="flex items-center justify-center gap-3">
+                <div className="flex-1 h-px bg-primary/30" />
+                <span className="text-2xl sm:text-3xl text-primary">🎵</span>
+                <h2 className="text-lg sm:text-xl md:text-2xl font-bold text-secondary tracking-wide uppercase">{collectionTitles['professional-flutes']}</h2>
+                <span className="text-2xl sm:text-3xl text-primary">🎵</span>
+                <div className="flex-1 h-px bg-primary/30" />
+              </div>
+              <div className="text-center mt-2">
+                <Link href="/shop?subcategory=flutes" className="text-xs sm:text-sm text-primary hover:text-secondary transition-colors inline-flex items-center gap-1">
+                  View All <ChevronRight className="h-3 w-3 sm:h-4 sm:w-4" />
+                </Link>
+              </div>
             </div>
-            <div className="text-center mt-2">
-              <Link href="/shop?subcategory=flutes" className="text-xs sm:text-sm text-primary hover:text-secondary transition-colors inline-flex items-center gap-1">
-                View All <ChevronRight className="h-3 w-3 sm:h-4 sm:w-4" />
-              </Link>
+            <div className="container mx-auto px-4 pb-4 sm:pb-6">
+              <StaticProductGrid products={professionalFlutesProducts} id="professional-flutes" />
             </div>
-          </div>
-          <div className="container mx-auto px-4 pb-4 sm:pb-6">
-            <StaticProductGrid products={professionalFlutesProducts} id="professional-flutes" />
           </div>
         </section>
       )}
 
       {/* Saxophones Section */}
       {saxophonesProducts.length > 0 && (
-        <section className="bg-gradient-to-br from-amber-50/30 via-white to-blue-50/30">
-          <div className="container mx-auto px-4 py-3 sm:py-4">
-            <div className="flex items-center justify-center gap-3">
-              <div className="flex-1 h-px bg-primary/30" />
-              <span className="text-2xl sm:text-3xl text-primary">🎷</span>
-              <h2 className="text-lg sm:text-xl md:text-2xl font-bold text-secondary tracking-wide uppercase">{collectionTitles['saxophones']}</h2>
-              <span className="text-2xl sm:text-3xl text-primary">🎷</span>
-              <div className="flex-1 h-px bg-primary/30" />
+        <section className="relative overflow-hidden" style={collectionBackgrounds['saxophones'] ? { backgroundImage: `url(${collectionBackgrounds['saxophones']})`, backgroundSize: 'cover', backgroundPosition: 'center' } : {}}>
+          {collectionBackgrounds['saxophones'] ? <div className="absolute inset-0 bg-white/85 backdrop-blur-sm" /> : <div className="absolute inset-0 bg-gradient-to-br from-amber-50/30 via-white to-blue-50/30" />}
+          <div className="relative">
+            <div className="container mx-auto px-4 py-3 sm:py-4">
+              <div className="flex items-center justify-center gap-3">
+                <div className="flex-1 h-px bg-primary/30" />
+                <span className="text-2xl sm:text-3xl text-primary">🎷</span>
+                <h2 className="text-lg sm:text-xl md:text-2xl font-bold text-secondary tracking-wide uppercase">{collectionTitles['saxophones']}</h2>
+                <span className="text-2xl sm:text-3xl text-primary">🎷</span>
+                <div className="flex-1 h-px bg-primary/30" />
+              </div>
+              <div className="text-center mt-2">
+                <Link href="/shop?category=saxophones" className="text-xs sm:text-sm text-primary hover:text-secondary transition-colors inline-flex items-center gap-1">
+                  View All <ChevronRight className="h-3 w-3 sm:h-4 sm:w-4" />
+                </Link>
+              </div>
             </div>
-            <div className="text-center mt-2">
-              <Link href="/shop?category=saxophones" className="text-xs sm:text-sm text-primary hover:text-secondary transition-colors inline-flex items-center gap-1">
-                View All <ChevronRight className="h-3 w-3 sm:h-4 sm:w-4" />
-              </Link>
+            <div className="container mx-auto px-4 pb-4 sm:pb-6">
+              <StaticProductGrid products={saxophonesProducts} id="saxophones" />
             </div>
-          </div>
-          <div className="container mx-auto px-4 pb-4 sm:pb-6">
-            <StaticProductGrid products={saxophonesProducts} id="saxophones" />
           </div>
         </section>
       )}
 
       {/* Student Instruments Section */}
       {studentInstrumentsProducts.length > 0 && (
-        <section>
-          <div className="container mx-auto px-4 py-3 sm:py-4">
-            <div className="flex items-center justify-center gap-3">
-              <div className="flex-1 h-px bg-primary/30" />
-              <span className="text-2xl sm:text-3xl text-primary">📚</span>
-              <h2 className="text-lg sm:text-xl md:text-2xl font-bold text-secondary tracking-wide uppercase">{collectionTitles['student-instruments']}</h2>
-              <span className="text-2xl sm:text-3xl text-primary">📚</span>
-              <div className="flex-1 h-px bg-primary/30" />
+        <section className="relative overflow-hidden" style={collectionBackgrounds['student-instruments'] ? { backgroundImage: `url(${collectionBackgrounds['student-instruments']})`, backgroundSize: 'cover', backgroundPosition: 'center' } : {}}>
+          {collectionBackgrounds['student-instruments'] && <div className="absolute inset-0 bg-white/85 backdrop-blur-sm" />}
+          <div className="relative">
+            <div className="container mx-auto px-4 py-3 sm:py-4">
+              <div className="flex items-center justify-center gap-3">
+                <div className="flex-1 h-px bg-primary/30" />
+                <span className="text-2xl sm:text-3xl text-primary">📚</span>
+                <h2 className="text-lg sm:text-xl md:text-2xl font-bold text-secondary tracking-wide uppercase">{collectionTitles['student-instruments']}</h2>
+                <span className="text-2xl sm:text-3xl text-primary">📚</span>
+                <div className="flex-1 h-px bg-primary/30" />
+              </div>
+              <div className="text-center mt-2">
+                <Link href="/shop?productType=student" className="text-xs sm:text-sm text-primary hover:text-secondary transition-colors inline-flex items-center gap-1">
+                  View All <ChevronRight className="h-3 w-3 sm:h-4 sm:w-4" />
+                </Link>
+              </div>
             </div>
-            <div className="text-center mt-2">
-              <Link href="/shop?productType=student" className="text-xs sm:text-sm text-primary hover:text-secondary transition-colors inline-flex items-center gap-1">
-                View All <ChevronRight className="h-3 w-3 sm:h-4 sm:w-4" />
-              </Link>
+            <div className="container mx-auto px-4 pb-4 sm:pb-6">
+              <StaticProductGrid products={studentInstrumentsProducts} id="student-instruments" />
             </div>
-          </div>
-          <div className="container mx-auto px-4 pb-4 sm:pb-6">
-            <StaticProductGrid products={studentInstrumentsProducts} id="student-instruments" />
           </div>
         </section>
       )}

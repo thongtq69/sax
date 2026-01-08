@@ -21,7 +21,8 @@ import {
   X,
   Check,
   Image as ImageIcon,
-  Pencil
+  Pencil,
+  Upload
 } from 'lucide-react'
 import Image from 'next/image'
 
@@ -41,6 +42,7 @@ interface FeaturedCollection {
   slug: string
   productIds: string[]
   products?: Product[]
+  backgroundImage?: string
 }
 
 export default function FeaturedCollectionsPage() {
@@ -54,6 +56,7 @@ export default function FeaturedCollectionsPage() {
   const [productSearchTerm, setProductSearchTerm] = useState('')
   const [editingTitle, setEditingTitle] = useState<string | null>(null)
   const [editTitleValue, setEditTitleValue] = useState('')
+  const [uploadingBg, setUploadingBg] = useState<string | null>(null)
 
   // Fetch collections and products
   useEffect(() => {
@@ -173,6 +176,71 @@ export default function FeaturedCollectionsPage() {
   const cancelEditingTitle = () => {
     setEditingTitle(null)
     setEditTitleValue('')
+  }
+
+  // Upload background image
+  const handleBackgroundUpload = async (slug: string, file: File) => {
+    setUploadingBg(slug)
+    try {
+      const formData = new FormData()
+      formData.append('file', file)
+      formData.append('folder', 'sax/collections')
+
+      const uploadResponse = await fetch('/api/upload', {
+        method: 'POST',
+        body: formData,
+      })
+
+      if (!uploadResponse.ok) {
+        throw new Error('Upload failed')
+      }
+
+      const { url } = await uploadResponse.json()
+
+      // Save to collection
+      const response = await fetch(`/api/admin/featured-collections/${slug}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ backgroundImage: url }),
+      })
+
+      if (response.ok) {
+        setCollections((prev) =>
+          prev.map((c) =>
+            c.slug === slug ? { ...c, backgroundImage: url } : c
+          )
+        )
+      }
+    } catch (error) {
+      console.error('Error uploading background:', error)
+      alert('Failed to upload background image')
+    } finally {
+      setUploadingBg(null)
+    }
+  }
+
+  // Remove background image
+  const removeBackgroundImage = async (slug: string) => {
+    setSaving(slug)
+    try {
+      const response = await fetch(`/api/admin/featured-collections/${slug}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ backgroundImage: null }),
+      })
+
+      if (response.ok) {
+        setCollections((prev) =>
+          prev.map((c) =>
+            c.slug === slug ? { ...c, backgroundImage: undefined } : c
+          )
+        )
+      }
+    } catch (error) {
+      console.error('Error removing background:', error)
+    } finally {
+      setSaving(null)
+    }
   }
 
   // Add product to collection
@@ -335,6 +403,65 @@ export default function FeaturedCollectionsPage() {
                   <Plus className="h-4 w-4" />
                   Add Product
                 </Button>
+              </div>
+
+              {/* Background Image Section */}
+              <div className="mt-4 pt-4 border-t border-gray-200">
+                <Label className="text-sm font-medium text-gray-700 mb-2 block">Background Image</Label>
+                <div className="flex items-center gap-3">
+                  {collection.backgroundImage ? (
+                    <div className="relative w-32 h-20 rounded-lg overflow-hidden bg-gray-100 border group">
+                      <Image
+                        src={collection.backgroundImage}
+                        alt="Background"
+                        fill
+                        className="object-cover"
+                      />
+                      <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                        <Button
+                          size="sm"
+                          variant="destructive"
+                          onClick={() => removeBackgroundImage(collection.slug)}
+                          className="h-7 px-2"
+                        >
+                          <Trash2 className="h-3 w-3" />
+                        </Button>
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="w-32 h-20 rounded-lg border-2 border-dashed border-gray-300 flex items-center justify-center text-gray-400">
+                      <ImageIcon className="h-6 w-6" />
+                    </div>
+                  )}
+                  <label className="cursor-pointer">
+                    <input
+                      type="file"
+                      accept="image/*"
+                      className="hidden"
+                      onChange={(e) => {
+                        const file = e.target.files?.[0]
+                        if (file) handleBackgroundUpload(collection.slug, file)
+                        e.target.value = ''
+                      }}
+                    />
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      disabled={uploadingBg === collection.slug}
+                      asChild
+                    >
+                      <span className="gap-2">
+                        {uploadingBg === collection.slug ? (
+                          <Loader2 className="h-4 w-4 animate-spin" />
+                        ) : (
+                          <Upload className="h-4 w-4" />
+                        )}
+                        {collection.backgroundImage ? 'Change' : 'Upload'}
+                      </span>
+                    </Button>
+                  </label>
+                </div>
               </div>
             </div>
 
