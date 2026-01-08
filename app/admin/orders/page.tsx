@@ -496,9 +496,32 @@ export default function OrdersManagement() {
               </div>
 
               {/* Total */}
-              <div className="flex justify-between items-center pt-4 border-t">
-                <span className="text-lg font-semibold">Total</span>
-                <span className="text-2xl font-bold text-primary">${selectedOrder.total.toLocaleString()}</span>
+              <div className="pt-4 border-t space-y-2">
+                <div className="flex justify-between items-center">
+                  <span className="text-lg font-semibold">Total</span>
+                  <span className="text-2xl font-bold text-primary">${selectedOrder.total.toLocaleString()}</span>
+                </div>
+                
+                {/* Net Amount (Actual Received) */}
+                {selectedOrder.billingAddress?.mcGross && (
+                  <div className="bg-green-50 p-3 rounded-lg">
+                    <div className="flex justify-between items-center">
+                      <span className="text-sm font-medium text-green-800">💰 Net Amount (Actual Received)</span>
+                      <span className="text-xl font-bold text-green-600">
+                        ${(
+                          parseFloat(selectedOrder.billingAddress.mcGross || '0') -
+                          parseFloat(selectedOrder.billingAddress.mcFee || '0') -
+                          parseFloat(selectedOrder.billingAddress.mcShipping || '0')
+                        ).toFixed(2)}
+                      </span>
+                    </div>
+                    <p className="text-xs text-green-600 mt-1">
+                      = ${selectedOrder.billingAddress.mcGross} (Gross) 
+                      - ${selectedOrder.billingAddress.mcFee || '0'} (PayPal Fee) 
+                      - ${selectedOrder.billingAddress.mcShipping || '0'} (Shipping)
+                    </p>
+                  </div>
+                )}
               </div>
             </div>
           )}

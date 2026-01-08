@@ -200,13 +200,45 @@ export default function HomePage() {
   useEffect(() => {
     async function fetchData() {
       try {
-        const featuredResponse = await getProducts({ badge: 'new', limit: 8 })
-        const featured = featuredResponse.products.map(transformProduct)
-        setFeaturedProducts(featured)
+        // Try to fetch from featured collections first
+        let newArrivalsProducts: Product[] = []
+        let featuredInstrumentsProducts: Product[] = []
 
-        const comingSoonResponse = await getProducts({ badge: 'coming-soon', limit: 8 })
-        const comingSoon = comingSoonResponse.products.map(transformProduct)
-        setSaleProducts(comingSoon)
+        try {
+          const [newArrivalsRes, featuredRes] = await Promise.all([
+            fetch('/api/admin/featured-collections/new-arrivals'),
+            fetch('/api/admin/featured-collections/featured-instruments'),
+          ])
+
+          if (newArrivalsRes.ok) {
+            const newArrivalsData = await newArrivalsRes.json()
+            if (newArrivalsData.products && newArrivalsData.products.length > 0) {
+              newArrivalsProducts = newArrivalsData.products.map(transformProduct)
+            }
+          }
+
+          if (featuredRes.ok) {
+            const featuredData = await featuredRes.json()
+            if (featuredData.products && featuredData.products.length > 0) {
+              featuredInstrumentsProducts = featuredData.products.map(transformProduct)
+            }
+          }
+        } catch (error) {
+          console.log('Featured collections not found, using fallback')
+        }
+
+        // Fallback to badge-based filtering if collections are empty
+        if (featuredInstrumentsProducts.length === 0) {
+          const featuredResponse = await getProducts({ badge: 'new', limit: 8 })
+          featuredInstrumentsProducts = featuredResponse.products.map(transformProduct)
+        }
+        setFeaturedProducts(featuredInstrumentsProducts)
+
+        if (newArrivalsProducts.length === 0) {
+          const comingSoonResponse = await getProducts({ badge: 'coming-soon', limit: 3 })
+          newArrivalsProducts = comingSoonResponse.products.map(transformProduct)
+        }
+        setSaleProducts(newArrivalsProducts)
 
         const allResponse = await getProducts({ limit: 28 })
         const all = allResponse.products.map(transformProduct)

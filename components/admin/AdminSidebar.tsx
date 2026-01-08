@@ -34,6 +34,7 @@ interface AdminSidebarProps {
 export const menuItems = [
   { href: '/admin', label: 'Dashboard', icon: LayoutDashboard, exact: true },
   { href: '/admin/products', label: 'Products', icon: Package },
+  { href: '/admin/featured-collections', label: 'Featured Collections', icon: Star },
   { href: '/admin/blog', label: 'Blog Posts', icon: FileText },
   { href: '/admin/categories', label: 'Categories', icon: FolderTree },
   { href: '/admin/banners', label: 'Banners', icon: Image },
