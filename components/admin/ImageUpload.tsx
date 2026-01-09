@@ -1,10 +1,71 @@
 'use client'
 
-import { useState, useRef, useCallback } from 'react'
+import { useState, useRef } from 'react'
 import Image from 'next/image'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Upload, Link as LinkIcon, X, Loader2, ImageIcon, Plus } from 'lucide-react'
+
+// Max file size for Cloudinary free plan (10MB)
+const MAX_FILE_SIZE = 10 * 1024 * 1024
+
+// Compress image if it's too large
+async function compressImage(file: File, maxSizeMB: number = 9): Promise<File> {
+  return new Promise((resolve, reject) => {
+    const img = document.createElement('img')
+    const canvas = document.createElement('canvas')
+    const ctx = canvas.getContext('2d')
+    
+    img.onload = () => {
+      let { width, height } = img
+      
+      // Calculate scale factor based on file size
+      const fileSizeMB = file.size / (1024 * 1024)
+      let quality = 0.9
+      let scale = 1
+      
+      if (fileSizeMB > maxSizeMB) {
+        // Reduce dimensions for very large files
+        scale = Math.sqrt(maxSizeMB / fileSizeMB)
+        quality = 0.85
+      }
+      
+      // Also limit max dimensions to 4000px
+      const maxDimension = 4000
+      if (width > maxDimension || height > maxDimension) {
+        const dimensionScale = maxDimension / Math.max(width, height)
+        scale = Math.min(scale, dimensionScale)
+      }
+      
+      width = Math.round(width * scale)
+      height = Math.round(height * scale)
+      
+      canvas.width = width
+      canvas.height = height
+      
+      ctx?.drawImage(img, 0, 0, width, height)
+      
+      canvas.toBlob(
+        (blob) => {
+          if (blob) {
+            const compressedFile = new File([blob], file.name, {
+              type: 'image/jpeg',
+              lastModified: Date.now(),
+            })
+            resolve(compressedFile)
+          } else {
+            reject(new Error('Failed to compress image'))
+          }
+        },
+        'image/jpeg',
+        quality
+      )
+    }
+    
+    img.onerror = () => reject(new Error('Failed to load image'))
+    img.src = URL.createObjectURL(file)
+  })
+}
 
 interface ImageUploadProps {
   images: string[]
@@ -24,6 +85,7 @@ export function ImageUpload({
   const [urlInput, setUrlInput] = useState('')
   const [error, setError] = useState<string | null>(null)
   const [uploadProgress, setUploadProgress] = useState<number>(0)
+  const [statusMessage, setStatusMessage] = useState<string>('')
   const fileInputRef = useRef<HTMLInputElement>(null)
 
   // Upload directly to Cloudinary (bypasses server body size limit)
@@ -110,23 +172,36 @@ export function ImageUpload({
     setIsUploading(true)
     setError(null)
     setUploadProgress(0)
+    setStatusMessage('')
 
     try {
       const totalFiles = files.length
       const newUrls: string[] = []
       
       for (let i = 0; i < totalFiles; i++) {
-        const file = files[i]
+        let file = files[i]
         setUploadProgress(Math.round((i / totalFiles) * 100))
+        setStatusMessage(`Processing ${i + 1}/${totalFiles}...`)
         
-        // Use direct Cloudinary upload for large files (> 4MB)
-        // or server upload for smaller files
+        // Compress if file is too large (> 10MB)
+        if (file.size > MAX_FILE_SIZE) {
+          setStatusMessage(`Compressing ${file.name}...`)
+          try {
+            file = await compressImage(file, 9)
+            setStatusMessage(`Compressed to ${(file.size / (1024 * 1024)).toFixed(1)}MB`)
+          } catch (compressError) {
+            console.error('Compression failed:', compressError)
+            throw new Error(`File ${file.name} is too large and could not be compressed`)
+          }
+        }
+        
+        setStatusMessage(`Uploading ${i + 1}/${totalFiles}...`)
+        
+        // Use direct Cloudinary upload for files > 4MB
         let url: string
         if (file.size > 4 * 1024 * 1024) {
-          // Large file - upload directly to Cloudinary
           url = await uploadToCloudinary(file)
         } else {
-          // Small file - use server API
           const result = await uploadViaServer(file)
           url = result.url
         }
@@ -134,6 +209,7 @@ export function ImageUpload({
       }
       
       setUploadProgress(100)
+      setStatusMessage('Upload complete!')
       const combinedImages = [...images, ...newUrls].slice(0, maxImages)
       onChange(combinedImages)
     } catch (err: any) {
@@ -141,6 +217,7 @@ export function ImageUpload({
     } finally {
       setIsUploading(false)
       setUploadProgress(0)
+      setTimeout(() => setStatusMessage(''), 2000)
       if (fileInputRef.current) {
         fileInputRef.current.value = ''
       }
@@ -226,7 +303,7 @@ export function ImageUpload({
             <div className="flex flex-col items-center">
               <Loader2 className="h-10 w-10 text-primary animate-spin" />
               <p className="mt-2 text-sm text-gray-600">
-                Uploading... {uploadProgress > 0 ? `${uploadProgress}%` : ''}
+                {statusMessage || `Uploading... ${uploadProgress > 0 ? `${uploadProgress}%` : ''}`}
               </p>
             </div>
           ) : (
@@ -236,7 +313,7 @@ export function ImageUpload({
                 Click or drag & drop to upload images
               </p>
               <p className="text-xs text-gray-400 mt-1">
-                PNG, JPG, WEBP - No size limit
+                PNG, JPG, WEBP (auto-compressed if &gt;10MB)
               </p>
             </div>
           )}
@@ -407,13 +484,23 @@ export function SingleImageUpload({
   }
 
   const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0]
+    let file = e.target.files?.[0]
     if (!file) return
 
     setIsUploading(true)
     setError(null)
 
     try {
+      // Compress if file is too large (> 10MB)
+      if (file.size > MAX_FILE_SIZE) {
+        try {
+          file = await compressImage(file, 9)
+        } catch (compressError) {
+          console.error('Compression failed:', compressError)
+          throw new Error('File is too large and could not be compressed')
+        }
+      }
+      
       // Use direct Cloudinary upload for large files
       let url: string
       if (file.size > 4 * 1024 * 1024) {
@@ -541,7 +628,7 @@ export function SingleImageUpload({
                 <>
                   <ImageIcon className="h-8 w-8 text-gray-400 mx-auto" />
                   <p className="mt-2 text-sm text-gray-600">Click to upload</p>
-                  <p className="text-xs text-gray-400 mt-1">No size limit</p>
+                  <p className="text-xs text-gray-400 mt-1">Auto-compressed if &gt;10MB</p>
                 </>
               )}
             </div>
