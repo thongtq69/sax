@@ -77,20 +77,20 @@ export default function AboutPage() {
       </section>
 
       {/* Main About Content */}
-      <section className="py-16 md:py-24 bg-white">
+      <section className="py-5 md:py-6 bg-white">
         <div className="container mx-auto px-4">
           <div className="max-w-4xl mx-auto">
-            <div className="grid md:grid-cols-2 gap-12 items-center mb-16">
+            <div className="grid md:grid-cols-2 gap-6 items-center mb-6">
               <div>
-                <h2 className="text-3xl font-bold text-secondary mb-6">Our Mission</h2>
-                <p className="text-gray-600 leading-relaxed mb-4">
+                <h2 className="text-2xl md:text-3xl font-bold text-secondary mb-4">Our Mission</h2>
+                <p className="text-gray-600 leading-relaxed mb-3 text-sm md:text-base">
                   We focus exclusively on premium and professional saxophones, carefully selected to meet the expectations of serious students, advanced players, and working musicians.
                 </p>
-                <p className="text-gray-600 leading-relaxed">
+                <p className="text-gray-600 leading-relaxed text-sm md:text-base">
                   Each instrument is individually inspected and prepared to ensure reliable playability, proper mechanical function, and consistent performance before being offered for sale.
                 </p>
               </div>
-              <div className="relative h-80 rounded-2xl overflow-hidden shadow-2xl">
+              <div className="relative h-64 md:h-72 rounded-2xl overflow-hidden shadow-xl">
                 <Image
                   src="/homepage3.png"
                   alt="James Sax Corner"
@@ -102,57 +102,57 @@ export default function AboutPage() {
             </div>
 
             {/* Our Values - Moved up below Our Mission */}
-            <div className="mb-16 p-8 md:p-12 rounded-2xl bg-secondary text-white text-center">
-              <h2 className="text-2xl md:text-3xl font-bold mb-3">Our Values</h2>
-              <p className="text-base text-white/80 leading-relaxed mb-5 max-w-3xl mx-auto">
+            <div className="mb-6 p-5 md:p-6 rounded-2xl bg-secondary text-white text-center">
+              <h2 className="text-xl md:text-2xl font-bold mb-2">Our Values</h2>
+              <p className="text-sm text-white/80 leading-relaxed mb-3 max-w-3xl mx-auto">
                 At James Sax Corner, we believe in long-term relationships, respect for the instrument, and doing business with integrity.
               </p>
-              <div className="flex flex-wrap justify-center gap-3">
-                <div className="px-4 py-2 bg-white/10 rounded-full">
-                  <span className="font-medium text-sm">Quality</span>
+              <div className="flex flex-wrap justify-center gap-2">
+                <div className="px-3 py-1.5 bg-white/10 rounded-full">
+                  <span className="font-medium text-xs md:text-sm">Quality</span>
                 </div>
-                <div className="px-4 py-2 bg-white/10 rounded-full">
-                  <span className="font-medium text-sm">Integrity</span>
+                <div className="px-3 py-1.5 bg-white/10 rounded-full">
+                  <span className="font-medium text-xs md:text-sm">Integrity</span>
                 </div>
-                <div className="px-4 py-2 bg-white/10 rounded-full">
-                  <span className="font-medium text-sm">Precision</span>
+                <div className="px-3 py-1.5 bg-white/10 rounded-full">
+                  <span className="font-medium text-xs md:text-sm">Precision</span>
                 </div>
-                <div className="px-4 py-2 bg-white/10 rounded-full">
-                  <span className="font-medium text-sm">Trust</span>
+                <div className="px-3 py-1.5 bg-white/10 rounded-full">
+                  <span className="font-medium text-xs md:text-sm">Trust</span>
                 </div>
               </div>
             </div>
 
             {/* Services Grid */}
-            <div className="grid md:grid-cols-3 gap-8 mb-16">
-              <div className="p-6 bg-gradient-to-br from-primary/5 to-primary/10 rounded-2xl border border-primary/20">
-                <h3 className="text-xl font-bold text-secondary mb-3">Instrument Sales</h3>
-                <p className="text-gray-600 text-sm leading-relaxed">
+            <div className="grid md:grid-cols-3 gap-4 md:gap-5 mb-6">
+              <div className="p-4 md:p-5 bg-gradient-to-br from-primary/5 to-primary/10 rounded-xl border border-primary/20">
+                <h3 className="text-lg font-bold text-secondary mb-2">Instrument Sales</h3>
+                <p className="text-gray-600 text-xs md:text-sm leading-relaxed">
                   Premium and professional saxophones, carefully selected and individually prepared for serious musicians.
                 </p>
               </div>
-              <div className="p-6 bg-gradient-to-br from-blue-50 to-blue-100/50 rounded-2xl border border-blue-200/50">
-                <h3 className="text-xl font-bold text-secondary mb-3">Private Lessons</h3>
-                <p className="text-gray-600 text-sm leading-relaxed">
+              <div className="p-4 md:p-5 bg-gradient-to-br from-blue-50 to-blue-100/50 rounded-xl border border-blue-200/50">
+                <h3 className="text-lg font-bold text-secondary mb-2">Private Lessons</h3>
+                <p className="text-gray-600 text-xs md:text-sm leading-relaxed">
                   Online and in-person lessons for beginners and advanced players, tailored to individual goals.
                 </p>
               </div>
-              <div className="p-6 bg-gradient-to-br from-amber-50 to-amber-100/50 rounded-2xl border border-amber-200/50">
-                <h3 className="text-xl font-bold text-secondary mb-3">Repair Services</h3>
-                <p className="text-gray-600 text-sm leading-relaxed">
+              <div className="p-4 md:p-5 bg-gradient-to-br from-amber-50 to-amber-100/50 rounded-xl border border-amber-200/50">
+                <h3 className="text-lg font-bold text-secondary mb-2">Repair Services</h3>
+                <p className="text-gray-600 text-xs md:text-sm leading-relaxed">
                   Professional repair and maintenance for local clients, focusing on precision and quality.
                 </p>
               </div>
             </div>
 
             {/* Trust Statement */}
-            <div className="bg-secondary/5 rounded-2xl p-8 md:p-12 text-center mb-0">
-              <p className="text-lg md:text-xl text-gray-700 leading-relaxed max-w-3xl mx-auto">
+            <div className="bg-secondary/5 rounded-xl p-5 md:p-6 text-center mb-0">
+              <p className="text-sm md:text-base text-gray-700 leading-relaxed max-w-3xl mx-auto">
                 Over time, James Sax Corner has earned the trust of musicians worldwide through honest representation, careful preparation of instruments, and consistent service standards. Our reputation is reflected in the feedback and testimonials shared by musicians from different countries and musical backgrounds.
               </p>
-              <div className="mt-4 flex items-center justify-center gap-1">
+              <div className="mt-2 flex items-center justify-center gap-1">
                 {[...Array(5)].map((_, i) => (
-                  <span key={i} className="text-amber-400 text-xl">★</span>
+                  <span key={i} className="text-amber-400 text-lg">★</span>
                 ))}
               </div>
             </div>
@@ -161,16 +161,16 @@ export default function AboutPage() {
       </section>
 
       {/* CTA Section */}
-      <section className="pt-2 md:pt-3 pb-5 md:pb-6 bg-gradient-to-br from-primary/5 via-white to-primary/10">
+      <section className="py-3 md:py-4 bg-gradient-to-br from-primary/5 via-white to-primary/10">
         <div className="container mx-auto px-4">
           <div className="max-w-3xl mx-auto text-center">
-            <h2 className="text-lg md:text-xl font-bold text-secondary mb-2">Ready to Find Your Perfect Saxophone?</h2>
-            <p className="text-gray-600 text-sm mb-4">Browse our collection of premium instruments or contact us for personalized assistance.</p>
-            <div className="flex flex-wrap justify-center gap-3">
-              <Button asChild size="default" className="px-6">
+            <h2 className="text-base md:text-lg font-bold text-secondary mb-1">Ready to Find Your Perfect Saxophone?</h2>
+            <p className="text-gray-600 text-xs md:text-sm mb-2">Browse our collection of premium instruments or contact us for personalized assistance.</p>
+            <div className="flex flex-wrap justify-center gap-2">
+              <Button asChild size="sm" className="px-5">
                 <Link href="/shop">Browse Instruments</Link>
               </Button>
-              <Button asChild variant="outline" size="default" className="px-6">
+              <Button asChild variant="outline" size="sm" className="px-5">
                 <Link href="/inquiry">Contact Us</Link>
               </Button>
             </div>
@@ -179,14 +179,14 @@ export default function AboutPage() {
       </section>
 
       {/* Full FAQ Section */}
-      <section className="py-8 md:py-12 bg-white">
+      <section className="py-4 md:py-5 bg-white">
         <div className="container mx-auto px-4">
           <div className="max-w-3xl mx-auto">
-            <div className="text-center mb-6">
-              <h2 className="text-2xl md:text-3xl font-bold text-secondary mb-2">Frequently Asked Questions</h2>
-              <p className="text-gray-600 text-sm">Everything you need to know about our products and services</p>
+            <div className="text-center mb-3">
+              <h2 className="text-xl md:text-2xl font-bold text-secondary mb-1">Frequently Asked Questions</h2>
+              <p className="text-gray-600 text-xs md:text-sm">Everything you need to know about our products and services</p>
             </div>
-            <div className="space-y-3">
+            <div className="space-y-2">
               {loading ? (
                 <div className="text-center py-4 text-gray-500">Loading FAQs...</div>
               ) : (
@@ -194,9 +194,9 @@ export default function AboutPage() {
                   <div key={i} className="border rounded-lg overflow-hidden hover:border-primary/30 transition-colors">
                     <button
                       onClick={() => setOpenFaq(openFaq === i ? null : i)}
-                      className="w-full flex items-center justify-between p-4 text-left bg-white hover:bg-gray-50 transition-colors"
+                      className="w-full flex items-center justify-between p-3 text-left bg-white hover:bg-gray-50 transition-colors"
                     >
-                      <span className="font-semibold text-secondary pr-4 text-sm">{faq.q}</span>
+                      <span className="font-semibold text-secondary pr-4 text-xs md:text-sm">{faq.q}</span>
                       {openFaq === i ? (
                         <ChevronUp className="h-4 w-4 text-primary flex-shrink-0" />
                       ) : (
@@ -204,8 +204,8 @@ export default function AboutPage() {
                       )}
                     </button>
                     {openFaq === i && (
-                      <div className="px-4 pb-4 pt-0">
-                        <p className="text-gray-600 leading-relaxed text-sm">{faq.a}</p>
+                      <div className="px-3 pb-3 pt-0">
+                        <p className="text-gray-600 leading-relaxed text-xs md:text-sm">{faq.a}</p>
                       </div>
                     )}
                   </div>
