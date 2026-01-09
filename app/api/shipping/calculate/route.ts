@@ -42,12 +42,12 @@ export async function POST(request: NextRequest) {
     // Default shipping cost if no zone configured
     const baseShippingCost = zone?.shippingCost ?? 200
     
-    // Vietnam is free shipping
+    // Vietnam domestic shipping
     if (countryCode === 'VN') {
       return NextResponse.json({
-        shippingCost: 0,
+        shippingCost: 25,
         zoneName: 'Vietnam',
-        breakdown: 'Free shipping within Vietnam',
+        breakdown: 'Domestic shipping within Vietnam: $25',
       })
     }
     

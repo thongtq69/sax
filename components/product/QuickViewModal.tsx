@@ -73,6 +73,7 @@ export function QuickViewModal({
       sku: product.sku,
       price: product.price,
       image: product.images[0],
+      shippingCost: product.shippingCost ?? null,
     })
     setIsAddingToCart(false)
     setIsAddedToCart(true)

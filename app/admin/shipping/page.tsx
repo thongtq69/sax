@@ -226,7 +226,7 @@ export default function ShippingManagement() {
       <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
         <h3 className="font-semibold text-blue-800 mb-2">Shipping Logic</h3>
         <ul className="text-sm text-blue-700 space-y-1">
-          <li>• Vietnam: Free shipping</li>
+          <li>• Vietnam: $25 domestic shipping</li>
           <li>• Single product with specific shipping cost → use that cost</li>
           <li>• Multiple products with specific costs → use the highest one</li>
           <li>• Products without specific cost → use zone&apos;s base rate</li>

@@ -11,6 +11,7 @@ export interface CartItem {
   image: string
   quantity: number
   variant?: string
+  shippingCost?: number | null // Product-specific shipping cost
 }
 
 interface CartStore {

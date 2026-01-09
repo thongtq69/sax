@@ -125,6 +125,7 @@ export function ProductCardEnhanced({
       sku: product.sku,
       price: product.price,
       image: product.images[0],
+      shippingCost: product.shippingCost ?? null,
     })
     setTimeout(() => setIsAddingToCart(false), 1000)
   }

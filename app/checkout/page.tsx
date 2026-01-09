@@ -10,31 +10,8 @@ import { Input } from '@/components/ui/input'
 import { Separator } from '@/components/ui/separator'
 import { ShieldCheck, Lock, Package, Truck, ArrowLeft, AlertCircle, Loader2, MapPin, Calculator } from 'lucide-react'
 import { PayPalStandardButton } from '@/components/checkout/PayPalStandardButton'
-import { countries, getStatesByCountry } from '@/lib/location-data'
+import { countries, getStatesByCountry, getCountryByName } from '@/lib/location-data'
 // import { PayPalMeButton } from '@/components/checkout/PayPalMeButton' // Temporarily hidden
-
-// Vietnam postal codes start with these prefixes (6 digits)
-const VIETNAM_POSTAL_PREFIXES = [
-  '10', '11', '12', '13', '14', '15', '16', '17', '18', '19', // Hanoi area
-  '70', '71', '72', '73', '74', '75', '76', '77', '78', '79', // Ho Chi Minh area
-  '20', '21', '22', '23', '24', '25', '26', '27', '28', '29', // Northern provinces
-  '30', '31', '32', '33', '34', '35', '36', '37', '38', '39', // Central provinces
-  '40', '41', '42', '43', '44', '45', '46', '47', '48', '49', // Central provinces
-  '50', '51', '52', '53', '54', '55', '56', '57', '58', '59', // Central provinces
-  '60', '61', '62', '63', '64', '65', '66', '67', '68', '69', // Southern provinces
-  '80', '81', '82', '83', '84', '85', '86', '87', '88', '89', // Mekong Delta
-  '90', '91', '92', '93', '94', '95', '96', '97', '98', '99', // Mekong Delta
-]
-
-function isVietnamZipCode(zip: string): boolean {
-  const cleanZip = zip.replace(/\s/g, '')
-  // Vietnam postal codes are 6 digits
-  if (cleanZip.length !== 6 || !/^\d+$/.test(cleanZip)) {
-    return false
-  }
-  const prefix = cleanZip.substring(0, 2)
-  return VIETNAM_POSTAL_PREFIXES.includes(prefix)
-}
 
 function CheckoutContent() {
   const searchParams = useSearchParams()
@@ -52,7 +29,7 @@ function CheckoutContent() {
   const [isCalculatingShipping, setIsCalculatingShipping] = useState(false)
   const [shippingMessage, setShippingMessage] = useState<string>('')
 
-  const calculateShipping = () => {
+  const calculateShipping = async () => {
     if (!shippingInfo.country) {
       setShippingMessage('Please select a country')
       return
@@ -64,11 +41,46 @@ function CheckoutContent() {
 
     setIsCalculatingShipping(true)
 
-    // Simulate API call delay
-    setTimeout(() => {
-      // Shipping based on country: Vietnam = $25, International = $200
-      const isVietnam = shippingInfo.country === 'Vietnam'
+    try {
+      // Get country code from country name
+      const country = getCountryByName(shippingInfo.country)
+      const countryCode = country?.code || shippingInfo.country
 
+      // Prepare cart items with shipping cost info
+      const cartItems = items.map(item => ({
+        productId: item.productId,
+        quantity: item.quantity,
+        shippingCost: item.shippingCost ?? null,
+      }))
+
+      // Call shipping calculation API
+      const response = await fetch('/api/shipping/calculate', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          countryCode,
+          items: cartItems,
+        }),
+      })
+
+      if (!response.ok) {
+        throw new Error('Failed to calculate shipping')
+      }
+
+      const data = await response.json()
+      
+      setShippingCost(data.shippingCost)
+      
+      // Format message based on zone
+      if (data.shippingCost === 0) {
+        setShippingMessage(`Free shipping (${data.zoneName})`)
+      } else {
+        setShippingMessage(`${data.zoneName}: $${data.shippingCost}`)
+      }
+    } catch (error) {
+      console.error('Error calculating shipping:', error)
+      // Fallback to default shipping
+      const isVietnam = shippingInfo.country === 'Vietnam'
       if (isVietnam) {
         setShippingCost(25)
         setShippingMessage('Domestic shipping (Vietnam): $25')
@@ -76,9 +88,9 @@ function CheckoutContent() {
         setShippingCost(200)
         setShippingMessage('International shipping: $200')
       }
-
+    } finally {
       setIsCalculatingShipping(false)
-    }, 500)
+    }
   }
 
   // Auto-calculate shipping when country or zip changes
