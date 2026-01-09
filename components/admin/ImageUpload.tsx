@@ -6,11 +6,11 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Upload, Link as LinkIcon, X, Loader2, ImageIcon, Plus, XCircle } from 'lucide-react'
 
-// Max file size for Cloudinary free plan (10MB)
-const MAX_FILE_SIZE = 10 * 1024 * 1024
+// Max file size for upload (40MB) - will be auto-compressed if larger
+const MAX_FILE_SIZE = 40 * 1024 * 1024
 
 // Compress image if it's too large
-async function compressImage(file: File, maxSizeMB: number = 9): Promise<File> {
+async function compressImage(file: File, maxSizeMB: number = 39): Promise<File> {
   return new Promise((resolve, reject) => {
     const img = document.createElement('img')
     const canvas = document.createElement('canvas')
@@ -215,11 +215,11 @@ export function ImageUpload({
           setUploadProgress(Math.round((i / filesToUpload) * 100))
           setStatusMessage(`Processing ${i + 1}/${filesToUpload}...`)
           
-          // Compress if file is too large (> 10MB)
+          // Compress if file is too large (> 40MB)
           if (file.size > MAX_FILE_SIZE) {
             setStatusMessage(`Compressing ${file.name}...`)
             try {
-              file = await compressImage(file, 9)
+              file = await compressImage(file, 39)
               setStatusMessage(`Compressed to ${(file.size / (1024 * 1024)).toFixed(1)}MB`)
             } catch (compressError) {
               console.error('Compression failed:', compressError)
@@ -398,7 +398,7 @@ export function ImageUpload({
                   Click or drag & drop to upload images
                 </p>
                 <p className="text-xs text-gray-400 mt-1">
-                  PNG, JPG, WEBP (auto-compressed if &gt;10MB)
+                  PNG, JPG, WEBP (max 40MB, auto-compressed if needed)
                 </p>
               </div>
             )}
@@ -577,10 +577,10 @@ export function SingleImageUpload({
     setError(null)
 
     try {
-      // Compress if file is too large (> 10MB)
+      // Compress if file is too large (> 40MB)
       if (file.size > MAX_FILE_SIZE) {
         try {
-          file = await compressImage(file, 9)
+          file = await compressImage(file, 39)
         } catch (compressError) {
           console.error('Compression failed:', compressError)
           throw new Error('File is too large and could not be compressed')
@@ -714,7 +714,7 @@ export function SingleImageUpload({
                 <>
                   <ImageIcon className="h-8 w-8 text-gray-400 mx-auto" />
                   <p className="mt-2 text-sm text-gray-600">Click to upload</p>
-                  <p className="text-xs text-gray-400 mt-1">Auto-compressed if &gt;10MB</p>
+                  <p className="text-xs text-gray-400 mt-1">Max 40MB, auto-compressed if needed</p>
                 </>
               )}
             </div>

@@ -1268,7 +1268,7 @@ export function ProductDetailClient({ product }: ProductDetailClientProps) {
 
             {/* Video or Image */}
             {isVideoIndex(lightboxIndex) && videoIds[getVideoIndexFromLightbox(lightboxIndex)] ? (
-              <div className="relative w-full h-full max-w-5xl max-h-[70vh] aspect-video">
+              <div className="relative w-full h-full max-w-7xl max-h-[85vh] aspect-video">
                 <iframe
                   src={`https://www.youtube.com/embed/${videoIds[getVideoIndexFromLightbox(lightboxIndex)]}?autoplay=1&rel=0`}
                   className="absolute inset-0 w-full h-full"
@@ -1278,7 +1278,7 @@ export function ProductDetailClient({ product }: ProductDetailClientProps) {
                 />
               </div>
             ) : (
-              <div className="relative w-full h-full max-w-5xl max-h-[70vh]">
+              <div className="relative w-full h-full max-w-7xl max-h-[85vh]">
                 <SmartImage
                   src={product.images[lightboxIndex] || ''}
                   alt={`${product.name} - Image ${lightboxIndex + 1}`}

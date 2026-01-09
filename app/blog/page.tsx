@@ -59,10 +59,10 @@ export default function BlogPage({ searchParams }: BlogPageProps) {
         <div className="min-h-screen bg-background">
             {/* Hero Section - Vintage Style */}
             <section className="relative bg-primary py-8 sm:py-12 md:py-16 overflow-hidden">
-                {/* Decorative Pattern */}
+                {/* Music Notes Pattern */}
                 <div className="absolute inset-0 opacity-10">
                     <div className="absolute inset-0" style={{
-                        backgroundImage: `url("data:image/svg+xml,%3Csvg width='80' height='80' viewBox='0 0 80 80' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.3'%3E%3Cpath d='M40 0l40 40-40 40L0 40 40 0zm0 10L10 40l30 30 30-30-30-30z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")`,
+                        backgroundImage: `url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='%23ffffff' fill-opacity='0.4'%3E%3Cpath d='M15 8c0-1.1.9-2 2-2h1v8c0 2.2-1.8 4-4 4s-4-1.8-4-4 1.8-4 4-4c.4 0 .7.1 1 .2V8zm0 6c0 1.1.9 2 2 2s2-.9 2-2-.9-2-2-2-2 .9-2 2z'/%3E%3Cpath d='M45 8c0-1.1.9-2 2-2h1v8c0 2.2-1.8 4-4 4s-4-1.8-4-4 1.8-4 4-4c.4 0 .7.1 1 .2V8zm0 6c0 1.1.9 2 2 2s2-.9 2-2-.9-2-2-2-2 .9-2 2z'/%3E%3Cpath d='M30 38c0-1.1.9-2 2-2h1v8c0 2.2-1.8 4-4 4s-4-1.8-4-4 1.8-4 4-4c.4 0 .7.1 1 .2V38zm0 6c0 1.1.9 2 2 2s2-.9 2-2-.9-2-2-2-2 .9-2 2z'/%3E%3Cpath d='M5 38c0-1.1.9-2 2-2h1v8c0 2.2-1.8 4-4 4s-4-1.8-4-4 1.8-4 4-4c.4 0 .7.1 1 .2V38zm0 6c0 1.1.9 2 2 2s2-.9 2-2-.9-2-2-2-2 .9-2 2z'/%3E%3Cpath d='M55 38c0-1.1.9-2 2-2h1v8c0 2.2-1.8 4-4 4s-4-1.8-4-4 1.8-4 4-4c.4 0 .7.1 1 .2V38zm0 6c0 1.1.9 2 2 2s2-.9 2-2-.9-2-2-2-2 .9-2 2z'/%3E%3C/g%3E%3C/svg%3E")`,
                     }} />
                 </div>
 
@@ -91,7 +91,7 @@ export default function BlogPage({ searchParams }: BlogPageProps) {
 
                     {/* Title */}
                     <h1 className="mb-3 sm:mb-4 text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold text-white font-display">
-                        {categoryName ? `${categoryName} Articles` : "The Music Blog"}
+                        {categoryName ? `${categoryName} Articles` : "James's Blog"}
                     </h1>
 
                     {/* Decorative Divider */}
