@@ -248,6 +248,19 @@ export function Footer() {
 
         {/* Desktop Layout */}
         <div className="hidden lg:block">
+          {/* Need Help Choosing Section - Same layout as email subscription */}
+          <div className="flex items-center justify-between gap-4 pb-4 mb-4 border-b border-white/10 px-2">
+            <span className="text-sm font-semibold text-white flex items-center gap-1.5 whitespace-nowrap min-w-[320px]">
+              <span className="text-[#D4AF37]">★</span>
+              Need Help Choosing the Right Instrument?
+            </span>
+            <div className="flex gap-2 flex-1 max-w-md">
+              <Link href="/inquiry" className="bg-[#D4AF37] hover:bg-[#c9a432] text-[#2f3f4f] font-semibold min-w-0 flex-1 px-4 py-1.5 rounded text-sm h-9 flex items-center transition-colors">
+                <MessageCircle className="mr-2 h-4 w-4" />
+                Ask Now
+              </Link>
+            </div>
+          </div>
           <div className="grid grid-cols-5 gap-8 lg:gap-12">
             <div>
               <div className="border border-[#D4AF37]/50 rounded-lg p-2.5 inline-block mb-3 bg-[#D4AF37]/5">
