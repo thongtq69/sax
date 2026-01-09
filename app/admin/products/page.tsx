@@ -990,7 +990,18 @@ export default function ProductsManagement() {
                 </label>
                 <Input
                   value={formData.included?.join(', ') || ''}
-                  onChange={(e) => setFormData({ ...formData, included: e.target.value.split(',').map(s => s.trim()).filter(Boolean) })}
+                  onChange={(e) => {
+                    // Only split when there's actual content, preserve the raw input
+                    const rawValue = e.target.value
+                    // Split by comma but keep the array even if items are empty during typing
+                    const items = rawValue.split(',').map(s => s.trim())
+                    // Only filter out empty strings when the last character is not a comma
+                    const shouldFilter = !rawValue.endsWith(',') && !rawValue.endsWith(', ')
+                    setFormData({ 
+                      ...formData, 
+                      included: shouldFilter ? items.filter(Boolean) : items
+                    })
+                  }}
                   placeholder="e.g., Case, Mouthpiece, Cleaning Kit"
                 />
               </div>

@@ -4,6 +4,7 @@ import { useState, useEffect, useCallback, useMemo } from 'react'
 import Image from 'next/image'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
+import { useSession } from 'next-auth/react'
 import { Product } from '@/lib/data'
 import { getProducts, transformProduct, getProductUrl } from '@/lib/api'
 import { getAllReviewsAsync, getProductRatingStats, type Review } from '@/lib/reviews'
@@ -28,6 +29,7 @@ export function ProductDetailClient({ product }: ProductDetailClientProps) {
   const [selectedImageIndex, setSelectedImageIndex] = useState(0)
   const [showVideo, setShowVideo] = useState(false)
   const [isWishlisted, setIsWishlisted] = useState(false)
+  const [isWishlistLoading, setIsWishlistLoading] = useState(false)
   const [isAddedToCart, setIsAddedToCart] = useState(false)
   const [isAddingToCart, setIsAddingToCart] = useState(false)
   const [isLoaded, setIsLoaded] = useState(false)
@@ -46,8 +48,61 @@ export function ProductDetailClient({ product }: ProductDetailClientProps) {
   const [shippingMessage, setShippingMessage] = useState('')
   const [isCalculatingShipping, setIsCalculatingShipping] = useState(false)
   const router = useRouter()
+  const { data: session } = useSession()
   const addItem = useCartStore((state) => state.addItem)
   const clearCart = useCartStore((state) => state.clearCart)
+  
+  // Fetch wishlist status when user is logged in
+  useEffect(() => {
+    const checkWishlist = async () => {
+      if (session?.user?.id && product.id) {
+        try {
+          const res = await fetch(`/api/wishlist/${product.id}`)
+          if (res.ok) {
+            const data = await res.json()
+            setIsWishlisted(data.inWishlist)
+          }
+        } catch (error) {
+          console.error('Error checking wishlist:', error)
+        }
+      }
+    }
+    checkWishlist()
+  }, [session?.user?.id, product.id])
+
+  // Toggle wishlist
+  const handleToggleWishlist = async () => {
+    if (!session?.user?.id) {
+      // Redirect to login if not logged in
+      router.push('/auth/login?callbackUrl=' + encodeURIComponent(window.location.pathname))
+      return
+    }
+
+    setIsWishlistLoading(true)
+    try {
+      if (isWishlisted) {
+        // Remove from wishlist
+        const res = await fetch(`/api/wishlist/${product.id}`, { method: 'DELETE' })
+        if (res.ok) {
+          setIsWishlisted(false)
+        }
+      } else {
+        // Add to wishlist
+        const res = await fetch('/api/wishlist', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ productId: product.id })
+        })
+        if (res.ok) {
+          setIsWishlisted(true)
+        }
+      }
+    } catch (error) {
+      console.error('Error toggling wishlist:', error)
+    } finally {
+      setIsWishlistLoading(false)
+    }
+  }
   
   // Fetch reviews from API on mount
   useEffect(() => {
@@ -632,6 +687,13 @@ const handleAddToCart = async () => {
               {product.name}
             </h1>
 
+            {/* Condition Badge for Used Products - Below product name */}
+            {product.productType === 'used' && product.condition && (
+              <div className="mb-3 md:mb-4">
+                <ConditionTooltip condition={product.condition as ConditionRating} />
+              </div>
+            )}
+
             {/* Rating - Hidden per user request */}
           </div>
 
@@ -768,21 +830,13 @@ const handleAddToCart = async () => {
             })()}
           </div>
 
-          {/* Condition Badge for Used Products */}
-          {product.productType === 'used' && product.condition && (
-            <div className="space-y-3">
-              <div className="flex items-center gap-3">
-                <ConditionTooltip condition={product.condition as ConditionRating} />
-                <span className="text-sm text-amber-600 font-medium">Only 1 available</span>
-              </div>
-              {product.conditionNotes && (
-                <div className="p-3 bg-gray-50 rounded-lg border border-gray-200">
-                  <p className="text-sm text-gray-600">
-                    <span className="font-medium text-gray-700">Seller Notes: </span>
-                    {product.conditionNotes}
-                  </p>
-                </div>
-              )}
+          {/* Condition Notes for Used Products */}
+          {product.productType === 'used' && product.conditionNotes && (
+            <div className="p-3 bg-gray-50 rounded-lg border border-gray-200">
+              <p className="text-sm text-gray-600">
+                <span className="font-medium text-gray-700">Seller Notes: </span>
+                {product.conditionNotes}
+              </p>
             </div>
           )}
 
@@ -857,13 +911,18 @@ const handleAddToCart = async () => {
               <Button
                 size="lg"
                 variant="outline"
-                onClick={() => setIsWishlisted(!isWishlisted)}
+                onClick={handleToggleWishlist}
+                disabled={isWishlistLoading}
                 className={`px-4 shrink-0 transition-all duration-300 rounded-full h-12 ${
                   isWishlisted ? 'border-red-300 bg-red-50 text-red-500' : 'bg-gray-100 hover:bg-gray-200 text-gray-600 border-gray-200'
                 }`}
-                title="Add to Wishlist"
+                title={session?.user ? (isWishlisted ? "Remove from Wishlist" : "Add to Wishlist") : "Login to add to Wishlist"}
               >
-                <Heart className={`h-5 w-5 transition-all ${isWishlisted ? 'fill-current scale-110' : ''}`} />
+                {isWishlistLoading ? (
+                  <Loader2 className="h-5 w-5 animate-spin" />
+                ) : (
+                  <Heart className={`h-5 w-5 transition-all ${isWishlisted ? 'fill-current scale-110' : ''}`} />
+                )}
               </Button>
             </div>
           </div>

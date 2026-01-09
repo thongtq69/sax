@@ -1,8 +1,9 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
+import { useSession } from 'next-auth/react'
 import { Eye, Star, Heart, ShoppingBag, Loader2 } from 'lucide-react'
 import { Product } from '@/lib/data'
 import { Badge } from '@/components/ui/badge'
@@ -37,13 +38,63 @@ export function ProductCard({ product, index = 0 }: ProductCardProps) {
   const [isQuickViewOpen, setIsQuickViewOpen] = useState(false)
   const [imageHover, setImageHover] = useState(false)
   const [isWishlisted, setIsWishlisted] = useState(false)
+  const [isWishlistLoading, setIsWishlistLoading] = useState(false)
   const [isAddingToCart, setIsAddingToCart] = useState(false)
   const [isImageLoading, setIsImageLoading] = useState(true)
   const addItem = useCartStore((state) => state.addItem)
   const router = useRouter()
+  const { data: session } = useSession()
   
   // Product URL with SEO-friendly slug
   const productUrl = getProductUrl(product.sku, product.slug)
+  
+  // Fetch wishlist status when user is logged in
+  useEffect(() => {
+    const checkWishlist = async () => {
+      if (session?.user?.id && product.id) {
+        try {
+          const res = await fetch(`/api/wishlist/${product.id}`)
+          if (res.ok) {
+            const data = await res.json()
+            setIsWishlisted(data.inWishlist)
+          }
+        } catch (error) {
+          console.error('Error checking wishlist:', error)
+        }
+      }
+    }
+    checkWishlist()
+  }, [session?.user?.id, product.id])
+
+  // Toggle wishlist
+  const handleToggleWishlist = async (e: React.MouseEvent) => {
+    e.preventDefault()
+    e.stopPropagation()
+    
+    if (!session?.user?.id) {
+      router.push('/auth/login?callbackUrl=' + encodeURIComponent(window.location.pathname))
+      return
+    }
+
+    setIsWishlistLoading(true)
+    try {
+      if (isWishlisted) {
+        const res = await fetch(`/api/wishlist/${product.id}`, { method: 'DELETE' })
+        if (res.ok) setIsWishlisted(false)
+      } else {
+        const res = await fetch('/api/wishlist', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ productId: product.id })
+        })
+        if (res.ok) setIsWishlisted(true)
+      }
+    } catch (error) {
+      console.error('Error toggling wishlist:', error)
+    } finally {
+      setIsWishlistLoading(false)
+    }
+  }
   
   // Prefetch product page on hover
   const handleMouseEnter = () => {
@@ -162,14 +213,20 @@ export function ProductCard({ product, index = 0 }: ProductCardProps) {
 
           {/* Wishlist Button */}
           <button
-            onClick={() => setIsWishlisted(!isWishlisted)}
+            onClick={handleToggleWishlist}
+            disabled={isWishlistLoading}
             className={`absolute right-3 top-3 z-20 p-2 rounded-full bg-white/90 backdrop-blur-sm shadow-lg transition-all duration-300 hover:scale-110 ${
               isWishlisted ? 'text-red-500' : 'text-gray-400 hover:text-red-400'
-            }`}
+            } ${isWishlistLoading ? 'opacity-50' : ''}`}
+            title={session?.user ? (isWishlisted ? "Remove from Wishlist" : "Add to Wishlist") : "Login to add to Wishlist"}
           >
-            <Heart 
-              className={`h-5 w-5 transition-all duration-300 ${isWishlisted ? 'fill-current scale-110' : ''}`} 
-            />
+            {isWishlistLoading ? (
+              <Loader2 className="h-5 w-5 animate-spin" />
+            ) : (
+              <Heart 
+                className={`h-5 w-5 transition-all duration-300 ${isWishlisted ? 'fill-current scale-110' : ''}`} 
+              />
+            )}
           </button>
 
           {/* Quick View Overlay - hidden on mobile */}

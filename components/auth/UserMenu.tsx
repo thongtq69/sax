@@ -13,7 +13,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
-import { User, Settings, ShoppingBag, LogOut, ChevronDown } from 'lucide-react'
+import { User, Settings, ShoppingBag, LogOut, ChevronDown, Heart } from 'lucide-react'
 
 interface UserMenuProps {
   user: {
@@ -100,6 +100,13 @@ export function UserMenu({ user }: UserMenuProps) {
           <Link href="/account/orders" className="flex items-center">
             <ShoppingBag className="h-4 w-4 mr-2" />
             My Orders
+          </Link>
+        </DropdownMenuItem>
+        
+        <DropdownMenuItem asChild>
+          <Link href="/account/wishlist" className="flex items-center">
+            <Heart className="h-4 w-4 mr-2" />
+            My Wishlist
           </Link>
         </DropdownMenuItem>
         
