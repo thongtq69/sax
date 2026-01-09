@@ -360,16 +360,24 @@ export function ProductCardEnhanced({
             {/* Pricing */}
             <div className="mb-3">
               <div className="flex items-baseline gap-2">
-                <span className={cn(
-                  "text-xl font-bold text-primary transition-all duration-300",
-                  isHovered && "text-2xl"
-                )}>
-                  ${product.price.toLocaleString()}
-                </span>
-                {product.shippingCost && product.shippingCost > 0 && (
-                  <span className="text-sm text-blue-600">
-                    Ship: ${product.shippingCost.toLocaleString()}
+                {!product.inStock || product.badge === 'out-of-stock' ? (
+                  <span className="text-xl font-bold text-red-500">
+                    SOLD
                   </span>
+                ) : (
+                  <>
+                    <span className={cn(
+                      "text-xl font-bold text-primary transition-all duration-300",
+                      isHovered && "text-2xl"
+                    )}>
+                      ${product.price.toLocaleString()}
+                    </span>
+                    {product.shippingCost && product.shippingCost > 0 && (
+                      <span className="text-sm text-blue-600">
+                        Ship: ${product.shippingCost.toLocaleString()}
+                      </span>
+                    )}
+                  </>
                 )}
               </div>
             </div>

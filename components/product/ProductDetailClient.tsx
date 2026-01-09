@@ -694,13 +694,21 @@ export function ProductDetailClient({ product }: ProductDetailClientProps) {
             {/* Pricing */}
             <div className="p-4 md:p-6 rounded-xl md:rounded-2xl bg-gradient-to-br from-primary/5 to-primary/10 border border-primary/20">
               <div className="flex items-baseline gap-2 md:gap-3 mb-2 flex-wrap">
-                <span className="text-3xl md:text-4xl font-bold text-primary">
-                  ${product.price.toLocaleString()}
-                </span>
-                {product.shippingCost && product.shippingCost > 0 && (
-                  <span className="text-lg md:text-xl text-blue-600">
-                    Ship: ${product.shippingCost.toLocaleString()}
+                {!product.inStock ? (
+                  <span className="text-3xl md:text-4xl font-bold text-red-500">
+                    SOLD
                   </span>
+                ) : (
+                  <>
+                    <span className="text-3xl md:text-4xl font-bold text-primary">
+                      ${product.price.toLocaleString()}
+                    </span>
+                    {product.shippingCost && product.shippingCost > 0 && (
+                      <span className="text-lg md:text-xl text-blue-600">
+                        Ship: ${product.shippingCost.toLocaleString()}
+                      </span>
+                    )}
+                  </>
                 )}
               </div>
 

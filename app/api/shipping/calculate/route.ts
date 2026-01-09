@@ -73,6 +73,10 @@ export async function POST(request: NextRequest) {
     
     console.log('Calculating shipping for country code:', countryCode)
     
+    // Get site settings for domestic shipping cost
+    const siteSettings = await prisma.siteSettings.findFirst() as { domesticShippingCost?: number } | null
+    const domesticShippingCost = siteSettings?.domesticShippingCost ?? 25
+    
     // Get all active shipping zones
     const allZones = await prisma.shippingZone.findMany({
       where: { isActive: true },
@@ -106,9 +110,9 @@ export async function POST(request: NextRequest) {
     // Vietnam domestic shipping
     if (countryCode === 'VN') {
       return NextResponse.json({
-        shippingCost: 25,
+        shippingCost: domesticShippingCost,
         zoneName: 'Vietnam',
-        breakdown: 'Domestic shipping within Vietnam: $25',
+        breakdown: `Domestic shipping within Vietnam: $${domesticShippingCost}`,
       })
     }
     

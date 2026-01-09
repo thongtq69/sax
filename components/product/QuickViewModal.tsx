@@ -309,13 +309,21 @@ export function QuickViewModal({
             {/* Pricing */}
             <div className="p-4 rounded-xl bg-gradient-to-br from-primary/5 to-primary/10 border border-primary/20 animate-fade-in-up hover:shadow-lg transition-all duration-300" style={{ animationDelay: '0.15s' }}>
               <div className="flex items-baseline gap-2 sm:gap-3">
-                <span className="text-2xl sm:text-3xl font-bold text-primary">
-                  ${product.price.toLocaleString()}
-                </span>
-                {product.shippingCost && product.shippingCost > 0 && (
-                  <span className="text-base sm:text-lg text-blue-600">
-                    Ship: ${product.shippingCost.toLocaleString()}
+                {!product.inStock ? (
+                  <span className="text-2xl sm:text-3xl font-bold text-red-500">
+                    SOLD
                   </span>
+                ) : (
+                  <>
+                    <span className="text-2xl sm:text-3xl font-bold text-primary">
+                      ${product.price.toLocaleString()}
+                    </span>
+                    {product.shippingCost && product.shippingCost > 0 && (
+                      <span className="text-base sm:text-lg text-blue-600">
+                        Ship: ${product.shippingCost.toLocaleString()}
+                      </span>
+                    )}
+                  </>
                 )}
               </div>
             </div>

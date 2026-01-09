@@ -261,6 +261,7 @@ model SiteSettings {
   quickFaq      Json?    // Quick FAQ for product pages
   footerText    String   @default("")
   copyrightText String   @default("")
+  domesticShippingCost Float @default(25) // Vietnam domestic shipping cost
   updatedAt     DateTime @updatedAt
 }
 

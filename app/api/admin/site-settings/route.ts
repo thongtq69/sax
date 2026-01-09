@@ -57,10 +57,11 @@ export async function PUT(request: NextRequest) {
       socialLinks,
       footerText,
       copyrightText,
+      domesticShippingCost,
     } = body
 
     // Validate required fields
-    if (!companyName || companyName.trim() === '') {
+    if (companyName !== undefined && companyName.trim() === '') {
       return NextResponse.json(
         { error: 'Thiếu thông tin bắt buộc', message: 'Tên công ty không được để trống' },
         { status: 400 }
@@ -94,6 +95,7 @@ export async function PUT(request: NextRequest) {
           ...(socialLinks !== undefined && { socialLinks }),
           ...(footerText !== undefined && { footerText }),
           ...(copyrightText !== undefined && { copyrightText }),
+          ...(domesticShippingCost !== undefined && { domesticShippingCost }),
         },
       })
     } else {
@@ -108,6 +110,7 @@ export async function PUT(request: NextRequest) {
           socialLinks: socialLinks || {},
           footerText: footerText || '',
           copyrightText: copyrightText || '',
+          domesticShippingCost: domesticShippingCost ?? 25,
         },
       })
     }

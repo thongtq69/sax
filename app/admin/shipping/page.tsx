@@ -10,14 +10,7 @@ import {
   DialogTitle,
   DialogFooter,
 } from '@/components/ui/dialog'
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select'
-import { Plus, Edit, Trash2, Loader2, Truck, Globe, Check } from 'lucide-react'
+import { Plus, Edit, Trash2, Loader2, Truck, Globe, Check, Save } from 'lucide-react'
 
 // Common country list
 const COUNTRIES = [
@@ -92,6 +85,11 @@ export default function ShippingManagement() {
     order: 0,
     isActive: true,
   })
+  
+  // Default shipping cost for countries not in any zone
+  const [defaultShippingCost, setDefaultShippingCost] = useState<number>(200)
+  const [domesticShippingCost, setDomesticShippingCost] = useState<number>(25)
+  const [isSavingDefaults, setIsSavingDefaults] = useState(false)
 
   const fetchZones = async () => {
     try {
@@ -100,6 +98,21 @@ export default function ShippingManagement() {
       if (response.ok) {
         const data = await response.json()
         setZones(data)
+        
+        // Find default zone to get the default shipping cost
+        const defaultZone = data.find((z: ShippingZone) => z.isDefault)
+        if (defaultZone) {
+          setDefaultShippingCost(defaultZone.shippingCost)
+        }
+      }
+      
+      // Fetch domestic shipping cost from site settings
+      const settingsResponse = await fetch('/api/admin/site-settings')
+      if (settingsResponse.ok) {
+        const settings = await settingsResponse.json()
+        if (settings.domesticShippingCost !== undefined) {
+          setDomesticShippingCost(settings.domesticShippingCost)
+        }
       }
     } catch (error) {
       console.error('Error fetching shipping zones:', error)
@@ -111,6 +124,58 @@ export default function ShippingManagement() {
   useEffect(() => {
     fetchZones()
   }, [])
+  
+  const handleSaveDefaults = async () => {
+    try {
+      setIsSavingDefaults(true)
+      
+      // Find or create default zone
+      const existingDefaultZone = zones.find(z => z.isDefault)
+      
+      if (existingDefaultZone) {
+        // Update existing default zone
+        await fetch(`/api/admin/shipping-zones/${existingDefaultZone.id}`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            ...existingDefaultZone,
+            shippingCost: defaultShippingCost,
+          }),
+        })
+      } else {
+        // Create new default zone
+        await fetch('/api/admin/shipping-zones', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            name: 'Rest of World',
+            countries: [],
+            shippingCost: defaultShippingCost,
+            isDefault: true,
+            order: 999,
+            isActive: true,
+          }),
+        })
+      }
+      
+      // Save domestic shipping cost to site settings
+      await fetch('/api/admin/site-settings', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          domesticShippingCost: domesticShippingCost,
+        }),
+      })
+      
+      await fetchZones()
+      alert('Default shipping costs saved successfully!')
+    } catch (error) {
+      console.error('Error saving defaults:', error)
+      alert('Failed to save default shipping costs')
+    } finally {
+      setIsSavingDefaults(false)
+    }
+  }
 
   const handleOpenDialog = (zone?: ShippingZone) => {
     if (zone) {
@@ -239,15 +304,72 @@ export default function ShippingManagement() {
         </Button>
       </div>
 
+      {/* Default Shipping Costs Section */}
+      <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+        <h2 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
+          <Globe className="h-5 w-5 text-primary" />
+          Default Shipping Costs
+        </h2>
+        <p className="text-sm text-gray-500 mb-4">
+          Set shipping costs for Vietnam (domestic) and countries not in any specific zone.
+        </p>
+        
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Vietnam Domestic Shipping ($)
+            </label>
+            <Input
+              type="number"
+              value={domesticShippingCost}
+              onChange={(e) => setDomesticShippingCost(parseFloat(e.target.value) || 0)}
+              placeholder="25"
+              min="0"
+            />
+            <p className="text-xs text-gray-500 mt-1">Applied when shipping within Vietnam</p>
+          </div>
+          
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Rest of World Shipping ($)
+            </label>
+            <Input
+              type="number"
+              value={defaultShippingCost}
+              onChange={(e) => setDefaultShippingCost(parseFloat(e.target.value) || 0)}
+              placeholder="200"
+              min="0"
+            />
+            <p className="text-xs text-gray-500 mt-1">Applied to countries not in any zone below</p>
+          </div>
+        </div>
+        
+        <div className="mt-4 flex justify-end">
+          <Button onClick={handleSaveDefaults} disabled={isSavingDefaults}>
+            {isSavingDefaults ? (
+              <>
+                <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                Saving...
+              </>
+            ) : (
+              <>
+                <Save className="h-4 w-4 mr-2" />
+                Save Defaults
+              </>
+            )}
+          </Button>
+        </div>
+      </div>
+
       {/* Info Box */}
       <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
         <h3 className="font-semibold text-blue-800 mb-2">Shipping Logic</h3>
         <ul className="text-sm text-blue-700 space-y-1">
-          <li>• Vietnam: $25 domestic shipping</li>
+          <li>• Vietnam: Uses domestic shipping cost (default ${domesticShippingCost})</li>
+          <li>• Countries in a zone: Uses that zone&apos;s shipping cost</li>
+          <li>• Countries not in any zone: Uses &quot;Rest of World&quot; cost (default ${defaultShippingCost})</li>
           <li>• Single product with specific shipping cost → use that cost</li>
           <li>• Multiple products with specific costs → use the highest one</li>
-          <li>• Products without specific cost → use zone&apos;s base rate</li>
-          <li>• Default zone applies to countries not in any specific zone</li>
         </ul>
       </div>
 

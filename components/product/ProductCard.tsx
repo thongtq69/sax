@@ -290,13 +290,21 @@ export function ProductCard({ product, index = 0 }: ProductCardProps) {
             {/* Pricing with highlight animation */}
             <div className="mb-2 sm:mb-3">
               <div className="flex items-baseline gap-1.5 sm:gap-2">
-                <span className="price-highlight text-base sm:text-xl font-bold text-primary transition-all duration-300 group-hover:text-lg sm:group-hover:text-2xl">
-                  ${product.price.toLocaleString()}
-                </span>
-                {product.shippingCost && product.shippingCost > 0 && (
-                  <span className="text-[10px] sm:text-sm text-blue-600">
-                    Ship: ${product.shippingCost.toLocaleString()}
+                {!product.inStock || product.badge === 'out-of-stock' ? (
+                  <span className="price-highlight text-base sm:text-xl font-bold text-red-500">
+                    SOLD
                   </span>
+                ) : (
+                  <>
+                    <span className="price-highlight text-base sm:text-xl font-bold text-primary transition-all duration-300 group-hover:text-lg sm:group-hover:text-2xl">
+                      ${product.price.toLocaleString()}
+                    </span>
+                    {product.shippingCost && product.shippingCost > 0 && (
+                      <span className="text-[10px] sm:text-sm text-blue-600">
+                        Ship: ${product.shippingCost.toLocaleString()}
+                      </span>
+                    )}
+                  </>
                 )}
               </div>
             </div>
