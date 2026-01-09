@@ -152,7 +152,9 @@ export function Footer() {
               </p>
               {settings.phone && (
                 <Link href={`https://wa.me/${settings.phone.replace(/[^0-9]/g, '')}`} target="_blank" rel="noopener noreferrer" className="flex items-center gap-1 hover:text-white transition-colors">
-                  <WhatsAppIcon className="h-2.5 w-2.5 text-[#25D366] flex-shrink-0" />
+                  <span className="flex items-center justify-center w-4 h-4 rounded-full bg-[#D4AF37] flex-shrink-0">
+                    <WhatsAppIcon className="h-2.5 w-2.5 text-white" />
+                  </span>
                   <span>{settings.phone}</span>
                 </Link>
               )}
@@ -273,7 +275,9 @@ export function Footer() {
                 </div>
                 {settings.phone && (
                   <Link href={`https://wa.me/${settings.phone.replace(/[^0-9]/g, '')}`} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 hover:text-white transition-colors">
-                    <WhatsAppIcon className="h-4 w-4 text-[#25D366] flex-shrink-0" />
+                    <span className="flex items-center justify-center w-5 h-5 rounded-full bg-[#D4AF37] flex-shrink-0">
+                      <WhatsAppIcon className="h-3 w-3 text-white" />
+                    </span>
                     <span>{settings.phone}</span>
                   </Link>
                 )}
