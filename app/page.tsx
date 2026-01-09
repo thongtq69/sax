@@ -335,7 +335,13 @@ export default function HomePage() {
   useEffect(() => {
     async function fetchHeroContent() {
       try {
-        const response = await fetch('/api/admin/homepage-content/hero')
+        // Add cache-busting to ensure fresh data
+        const response = await fetch('/api/admin/homepage-content/hero', {
+          cache: 'no-store',
+          headers: {
+            'Cache-Control': 'no-cache',
+          },
+        })
         if (response.ok) {
           const data = await response.json()
           if (data.image) {

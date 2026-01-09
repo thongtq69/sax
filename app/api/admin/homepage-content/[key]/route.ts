@@ -3,6 +3,54 @@ import { prisma } from '@/lib/prisma'
 
 export const dynamic = 'force-dynamic'
 
+// Default sections for auto-creation
+const defaultSections: Record<string, any> = {
+  'hero': {
+    sectionKey: 'hero',
+    title: 'James Sax Corner',
+    subtitle: 'Premium Japanese saxophones, expertly maintained for peak performance.',
+    content: '',
+    image: '/homepage3.png',
+    isVisible: true,
+    order: 0,
+    metadata: { 
+      buttonText: 'Buy with confidence!', 
+      buttonLink: '/shop',
+      logoImage: '/jsc-logo-cropped.svg'
+    },
+  },
+  'why-choose-us': {
+    sectionKey: 'why-choose-us',
+    title: 'Why Musicians Choose Us',
+    subtitle: '',
+    content: '',
+    image: '',
+    isVisible: true,
+    order: 1,
+    metadata: {},
+  },
+  'featured-review': {
+    sectionKey: 'featured-review',
+    title: 'Featured Review',
+    subtitle: '',
+    content: '',
+    image: '',
+    isVisible: true,
+    order: 2,
+    metadata: { authorName: '', rating: 5 },
+  },
+  'newsletter': {
+    sectionKey: 'newsletter',
+    title: 'Join Our Musical Community',
+    subtitle: 'Get exclusive deals, tips, and industry news',
+    content: '',
+    image: '',
+    isVisible: true,
+    order: 3,
+    metadata: { buttonText: 'Subscribe' },
+  },
+}
+
 // GET /api/admin/homepage-content/[key] - Get a single section
 export async function GET(
   request: NextRequest,
@@ -11,9 +59,16 @@ export async function GET(
   try {
     const { key } = await params
 
-    const section = await prisma.homepageContent.findUnique({
+    let section = await prisma.homepageContent.findUnique({
       where: { sectionKey: key },
     })
+
+    // If section doesn't exist but we have a default, create it
+    if (!section && defaultSections[key]) {
+      section = await prisma.homepageContent.create({
+        data: defaultSections[key],
+      })
+    }
 
     if (!section) {
       return NextResponse.json(
