@@ -824,12 +824,20 @@ export default function ProductsManagement() {
                     Price ($) <span className="text-red-500">*</span>
                   </label>
                   <Input
-                    type="number"
-                    value={formData.price}
-                    onChange={(e) => setFormData({ ...formData, price: parseFloat(e.target.value) || 0 })}
+                    type="text"
+                    inputMode="decimal"
+                    value={formData.price === 0 ? '' : formData.price?.toString() || ''}
+                    onChange={(e) => {
+                      const value = e.target.value
+                      // Only allow numbers and one decimal point
+                      if (value === '' || /^\d*\.?\d*$/.test(value)) {
+                        // Remove leading zeros (except for "0." case)
+                        const cleanValue = value.replace(/^0+(?=\d)/, '')
+                        const numValue = parseFloat(cleanValue) || 0
+                        setFormData({ ...formData, price: numValue })
+                      }
+                    }}
                     placeholder="0.00"
-                    min="0"
-                    step="0.01"
                   />
                 </div>
                 <div>
@@ -837,12 +845,20 @@ export default function ProductsManagement() {
                     Retail Price ($)
                   </label>
                   <Input
-                    type="number"
-                    value={formData.retailPrice || ''}
-                    onChange={(e) => setFormData({ ...formData, retailPrice: parseFloat(e.target.value) || undefined })}
+                    type="text"
+                    inputMode="decimal"
+                    value={formData.retailPrice ? formData.retailPrice.toString() : ''}
+                    onChange={(e) => {
+                      const value = e.target.value
+                      // Only allow numbers and one decimal point
+                      if (value === '' || /^\d*\.?\d*$/.test(value)) {
+                        // Remove leading zeros (except for "0." case)
+                        const cleanValue = value.replace(/^0+(?=\d)/, '')
+                        const numValue = cleanValue ? parseFloat(cleanValue) : undefined
+                        setFormData({ ...formData, retailPrice: numValue })
+                      }
+                    }}
                     placeholder="Original price (optional)"
-                    min="0"
-                    step="0.01"
                   />
                   <p className="text-xs text-gray-500 mt-1">Show as crossed-out price if higher than sale price</p>
                 </div>
@@ -1001,15 +1017,22 @@ export default function ProductsManagement() {
                 <Input
                   value={formData.included?.join(', ') || ''}
                   onChange={(e) => {
-                    // Only split when there's actual content, preserve the raw input
+                    // Preserve the raw input value including spaces
                     const rawValue = e.target.value
-                    // Split by comma but keep the array even if items are empty during typing
-                    const items = rawValue.split(',').map(s => s.trim())
-                    // Only filter out empty strings when the last character is not a comma
-                    const shouldFilter = !rawValue.endsWith(',') && !rawValue.endsWith(', ')
+                    // Split by comma only, preserve spaces within items
+                    const items = rawValue.split(',').map(s => s.trimStart())
                     setFormData({ 
                       ...formData, 
-                      included: shouldFilter ? items.filter(Boolean) : items
+                      included: items
+                    })
+                  }}
+                  onBlur={(e) => {
+                    // Clean up on blur - trim and filter empty items
+                    const rawValue = e.target.value
+                    const items = rawValue.split(',').map(s => s.trim()).filter(Boolean)
+                    setFormData({ 
+                      ...formData, 
+                      included: items
                     })
                   }}
                   placeholder="e.g., Case, Mouthpiece, Cleaning Kit"
