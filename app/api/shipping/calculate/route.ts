@@ -9,6 +9,56 @@ interface CartItem {
   shippingCost?: number | null
 }
 
+// Country code to name mapping for backward compatibility
+const COUNTRY_CODE_TO_NAME: Record<string, string> = {
+  'US': 'United States',
+  'CA': 'Canada',
+  'GB': 'United Kingdom',
+  'DE': 'Germany',
+  'FR': 'France',
+  'IT': 'Italy',
+  'ES': 'Spain',
+  'NL': 'Netherlands',
+  'BE': 'Belgium',
+  'AU': 'Australia',
+  'NZ': 'New Zealand',
+  'JP': 'Japan',
+  'KR': 'South Korea',
+  'SG': 'Singapore',
+  'MY': 'Malaysia',
+  'TH': 'Thailand',
+  'PH': 'Philippines',
+  'ID': 'Indonesia',
+  'IN': 'India',
+  'CN': 'China',
+  'HK': 'Hong Kong',
+  'TW': 'Taiwan',
+  'VN': 'Vietnam',
+  'BR': 'Brazil',
+  'MX': 'Mexico',
+  'AR': 'Argentina',
+  'CL': 'Chile',
+  'ZA': 'South Africa',
+  'AE': 'United Arab Emirates',
+  'SA': 'Saudi Arabia',
+  'IL': 'Israel',
+  'RU': 'Russia',
+  'PL': 'Poland',
+  'SE': 'Sweden',
+  'NO': 'Norway',
+  'DK': 'Denmark',
+  'FI': 'Finland',
+  'AT': 'Austria',
+  'CH': 'Switzerland',
+  'PT': 'Portugal',
+  'IE': 'Ireland',
+  'GR': 'Greece',
+  'CZ': 'Czech Republic',
+  'HU': 'Hungary',
+  'RO': 'Romania',
+  'TR': 'Turkey',
+}
+
 // POST calculate shipping cost
 export async function POST(request: NextRequest) {
   try {
@@ -21,22 +71,33 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Country code is required' }, { status: 400 })
     }
     
-    // Get shipping zone for the country
-    let zone = await prisma.shippingZone.findFirst({
-      where: {
-        isActive: true,
-        countries: { has: countryCode },
-      },
+    console.log('Calculating shipping for country code:', countryCode)
+    
+    // Get all active shipping zones
+    const allZones = await prisma.shippingZone.findMany({
+      where: { isActive: true },
+      orderBy: { order: 'asc' },
     })
+    
+    // Get country name from code for backward compatibility
+    const countryName = COUNTRY_CODE_TO_NAME[countryCode] || countryCode
+    
+    console.log('Calculating shipping for:', { countryCode, countryName })
+    console.log('All zones:', allZones.map(z => ({ name: z.name, countries: z.countries, cost: z.shippingCost })))
+    
+    // Find zone that contains this country
+    // Support both country codes (TH) and country names (Thailand) for backward compatibility
+    let zone = allZones.find(z => 
+      z.countries.includes(countryCode) || 
+      z.countries.includes(countryName)
+    )
+    
+    console.log('Found zone:', zone?.name, 'with cost:', zone?.shippingCost)
     
     // If no specific zone found, get default zone
     if (!zone) {
-      zone = await prisma.shippingZone.findFirst({
-        where: {
-          isActive: true,
-          isDefault: true,
-        },
-      })
+      zone = allZones.find(z => z.isDefault)
+      console.log('Using default zone:', zone?.name, 'with cost:', zone?.shippingCost)
     }
     
     // Default shipping cost if no zone configured

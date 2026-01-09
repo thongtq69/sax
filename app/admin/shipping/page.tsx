@@ -115,9 +115,19 @@ export default function ShippingManagement() {
   const handleOpenDialog = (zone?: ShippingZone) => {
     if (zone) {
       setEditingZone(zone)
+      // Convert country names to codes if needed (for backward compatibility)
+      const normalizedCountries = zone.countries.map(c => {
+        // If it's already a code (2 letters), keep it
+        if (c.length === 2 && c === c.toUpperCase()) {
+          return c
+        }
+        // Otherwise, find the code by name
+        const country = COUNTRIES.find(country => country.name === c)
+        return country?.code || c
+      })
       setFormData({
         name: zone.name,
-        countries: zone.countries,
+        countries: normalizedCountries,
         shippingCost: zone.shippingCost,
         isDefault: zone.isDefault,
         order: zone.order,
@@ -197,8 +207,15 @@ export default function ShippingManagement() {
     }))
   }
 
-  const getCountryName = (code: string) => {
-    return COUNTRIES.find(c => c.code === code)?.name || code
+  const getCountryName = (codeOrName: string) => {
+    // First try to find by code
+    const byCode = COUNTRIES.find(c => c.code === codeOrName)
+    if (byCode) return byCode.name
+    // Then try to find by name (for backward compatibility)
+    const byName = COUNTRIES.find(c => c.name === codeOrName)
+    if (byName) return byName.name
+    // Return as-is if not found
+    return codeOrName
   }
 
   if (isLoading) {
