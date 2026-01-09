@@ -172,7 +172,7 @@ export function ImageUpload({
                 Click or drag & drop to upload images
               </p>
               <p className="text-xs text-gray-400 mt-1">
-                PNG, JPG, WEBP up to 10MB
+                PNG, JPG, WEBP up to 50MB
               </p>
             </div>
           )}
