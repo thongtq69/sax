@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
+import { generateSlug } from '@/lib/slug-utils'
 
 export const dynamic = 'force-dynamic'
 
@@ -164,7 +165,6 @@ export async function POST(request: NextRequest) {
     // Validate required fields with specific messages
     const missingFields: string[] = []
     if (!name) missingFields.push('Product Name')
-    if (!slug) missingFields.push('Slug')
     if (!brand) missingFields.push('Brand')
     if (!price && price !== 0) missingFields.push('Price')
     if (!categoryId) missingFields.push('Category')
@@ -180,6 +180,25 @@ export async function POST(request: NextRequest) {
         },
         { status: 400 }
       )
+    }
+
+    // Auto-generate slug from name if not provided
+    let finalSlug = slug
+    if (!finalSlug || finalSlug.trim() === '' || finalSlug === 'Auto-generated from name') {
+      const baseSlug = generateSlug(name)
+      
+      // Check if slug exists and make it unique
+      let slugToCheck = baseSlug
+      let counter = 1
+      while (await prisma.product.findUnique({ where: { slug: slugToCheck } })) {
+        slugToCheck = `${baseSlug}-${counter}`
+        counter++
+        if (counter > 100) {
+          slugToCheck = `${baseSlug}-${Date.now()}`
+          break
+        }
+      }
+      finalSlug = slugToCheck
     }
 
     // Validate product type
@@ -202,7 +221,7 @@ export async function POST(request: NextRequest) {
     const product = await prisma.product.create({
       data: {
         name,
-        slug,
+        slug: finalSlug,
         brand,
         price: parseFloat(price),
         retailPrice: retailPrice ? parseFloat(retailPrice) : null,

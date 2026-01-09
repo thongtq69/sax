@@ -19,6 +19,7 @@ export async function GET(request: NextRequest) {
 
     if (search) {
       where.OR = [
+        { orderNumber: { contains: search, mode: 'insensitive' } },
         { id: { contains: search, mode: 'insensitive' } },
         { shippingAddress: { path: ['email'], string_contains: search } },
         { shippingAddress: { path: ['firstName'], string_contains: search } },

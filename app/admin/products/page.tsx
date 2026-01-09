@@ -172,7 +172,7 @@ export default function ProductsManagement() {
         specs: {},
         included: [],
         warranty: '',
-        sku: '',
+        sku: 'JSC-',
         rating: 0,
         reviewCount: 0,
       })
@@ -187,8 +187,8 @@ export default function ProductsManagement() {
       alert('Product name is required')
       return
     }
-    if (!formData.sku?.trim()) {
-      alert('SKU is required')
+    if (!formData.sku?.trim() || formData.sku === 'JSC-' || formData.sku.length <= 4) {
+      alert('SKU is required. Please enter a code after JSC-')
       return
     }
     if (!formData.brand?.trim()) {
@@ -634,11 +634,21 @@ export default function ProductsManagement() {
                   <label className="block text-sm font-medium text-gray-700 mb-2">
                     SKU <span className="text-red-500">*</span>
                   </label>
-                  <Input
-                    value={formData.sku}
-                    onChange={(e) => setFormData({ ...formData, sku: e.target.value })}
-                    placeholder="e.g., JSC-A3WIIU"
-                  />
+                  <div className="flex">
+                    <span className="inline-flex items-center px-3 rounded-l-md border border-r-0 border-gray-300 bg-gray-100 text-gray-600 text-sm font-medium">
+                      JSC-
+                    </span>
+                    <Input
+                      value={formData.sku?.startsWith('JSC-') ? formData.sku.slice(4) : formData.sku}
+                      onChange={(e) => {
+                        const value = e.target.value.toUpperCase().replace(/[^A-Z0-9-]/g, '')
+                        setFormData({ ...formData, sku: `JSC-${value}` })
+                      }}
+                      placeholder="e.g., A3WIIU"
+                      className="rounded-l-none"
+                    />
+                  </div>
+                  <p className="text-xs text-gray-500 mt-1">SKU will be prefixed with JSC-</p>
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">

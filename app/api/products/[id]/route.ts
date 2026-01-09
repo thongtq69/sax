@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
+import { generateSlug } from '@/lib/slug-utils'
 
 export const dynamic = 'force-dynamic'
 
@@ -71,7 +72,49 @@ export async function PUT(
     const updateData: any = {}
     
     if (name) updateData.name = name
-    if (slug) updateData.slug = slug
+    
+    // Auto-generate slug from name if slug is empty or placeholder
+    if (slug && slug.trim() !== '' && slug !== 'Auto-generated from name') {
+      // Check if slug is different from current and already exists
+      const existingWithSlug = await prisma.product.findFirst({
+        where: {
+          slug: slug,
+          NOT: { id: params.id }
+        }
+      })
+      if (existingWithSlug) {
+        return NextResponse.json(
+          { 
+            error: 'Duplicate entry', 
+            message: 'A product with this Slug already exists. Please use a different value.' 
+          },
+          { status: 409 }
+        )
+      }
+      updateData.slug = slug
+    } else if (name) {
+      // Auto-generate slug from name
+      const baseSlug = generateSlug(name)
+      let slugToCheck = baseSlug
+      let counter = 1
+      
+      // Check if slug exists (excluding current product)
+      while (await prisma.product.findFirst({
+        where: {
+          slug: slugToCheck,
+          NOT: { id: params.id }
+        }
+      })) {
+        slugToCheck = `${baseSlug}-${counter}`
+        counter++
+        if (counter > 100) {
+          slugToCheck = `${baseSlug}-${Date.now()}`
+          break
+        }
+      }
+      updateData.slug = slugToCheck
+    }
+    
     if (brand) updateData.brand = brand
     if (price !== undefined) updateData.price = parseFloat(price)
     if (retailPrice !== undefined) updateData.retailPrice = retailPrice ? parseFloat(retailPrice) : null

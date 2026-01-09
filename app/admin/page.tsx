@@ -26,6 +26,7 @@ interface DashboardStats {
 
 interface RecentOrder {
   id: string
+  orderNumber?: string
   status: string
   total: number
   createdAt: string
@@ -313,7 +314,7 @@ export default function AdminDashboard() {
               {recentOrders.map((order) => (
                 <div key={order.id} className="flex items-center justify-between p-3 rounded-lg hover:bg-gray-50 transition-colors">
                   <div>
-                    <p className="text-sm font-medium text-gray-900">Order #{order.id.slice(-6)}</p>
+                    <p className="text-sm font-medium text-gray-900">Order #{order.orderNumber || order.id.slice(-6)}</p>
                     <p className="text-xs text-gray-500">
                       {new Date(order.createdAt).toLocaleDateString()}
                     </p>

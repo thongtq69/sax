@@ -27,6 +27,7 @@ interface OrderItem {
 
 interface Order {
   id: string
+  orderNumber?: string // Custom order number (Vietnam timezone format)
   status: string
   total: number
   shippingAddress: {
@@ -234,7 +235,7 @@ export default function OrdersManagement() {
                 {orders.map((order) => (
                   <tr key={order.id} className="hover:bg-gray-50">
                     <td className="px-6 py-4 whitespace-nowrap text-sm font-mono text-gray-900">
-                      #{order.id.slice(-8)}
+                      #{order.orderNumber || order.id.slice(-8)}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
                       <div className="text-sm font-medium text-gray-900">
@@ -298,7 +299,7 @@ export default function OrdersManagement() {
       <Dialog open={!!selectedOrder} onOpenChange={() => setSelectedOrder(null)}>
         <DialogContent className="max-w-2xl">
           <DialogHeader>
-            <DialogTitle>Order Details #{selectedOrder?.id.slice(-8)}</DialogTitle>
+            <DialogTitle>Order Details #{selectedOrder?.orderNumber || selectedOrder?.id.slice(-8)}</DialogTitle>
           </DialogHeader>
           {selectedOrder && (
             <div className="space-y-6">

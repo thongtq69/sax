@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
+import { generateUniqueOrderNumber } from '@/lib/order-utils'
 
 export const dynamic = 'force-dynamic'
 
@@ -23,9 +24,13 @@ export async function POST(request: NextRequest) {
       return productId && /^[a-f\d]{24}$/i.test(productId)
     })
 
+    // Generate unique order number (Vietnam timezone format)
+    const orderNumber = generateUniqueOrderNumber()
+
     // Create order in database with pending status
     const order = await prisma.order.create({
       data: {
+        orderNumber,
         status: 'pending',
         total: total,
         shippingAddress: shippingInfo ? {
@@ -54,7 +59,7 @@ export async function POST(request: NextRequest) {
     })
 
     return NextResponse.json({
-      orderId: order.id,
+      orderId: order.orderNumber, // Return orderNumber instead of id
       message: 'Order created successfully',
     })
   } catch (error: any) {

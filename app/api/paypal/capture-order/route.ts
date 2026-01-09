@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
+import { generateUniqueOrderNumber } from '@/lib/order-utils'
 
 const PAYPAL_API_URL = process.env.PAYPAL_MODE === 'sandbox' 
   ? 'https://api-m.sandbox.paypal.com'
@@ -92,9 +93,13 @@ export async function POST(request: NextRequest) {
       }
     }
 
+    // Generate unique order number (Vietnam timezone format)
+    const orderNumber = generateUniqueOrderNumber()
+
     // Save order to database
     const order = await prisma.order.create({
       data: {
+        orderNumber,
         status: 'paid',
         total: total,
         shippingAddress: finalShippingAddress,
@@ -126,12 +131,12 @@ export async function POST(request: NextRequest) {
       }
     })
 
-    console.log('Order saved to database:', order.id)
+    console.log('Order saved to database:', order.orderNumber)
     console.log('Shipping address source:', finalShippingAddress ? (shippingInfo?.firstName ? 'user-provided' : 'paypal') : 'none')
 
     return NextResponse.json({
       status: captureData.status,
-      orderID: order.id,
+      orderID: order.orderNumber, // Return orderNumber instead of id
       paypalOrderID: captureData.id,
       payer: captureData.payer,
       purchase_units: captureData.purchase_units,

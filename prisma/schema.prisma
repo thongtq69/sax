@@ -168,16 +168,17 @@ model VerificationToken {
 }
 
 model Order {
-  id         String      @id @default(auto()) @map("_id") @db.ObjectId
-  userId     String?     @db.ObjectId
-  user       User?       @relation(fields: [userId], references: [id], onDelete: SetNull)
-  status     String      @default("pending") // 'pending' | 'processing' | 'shipped' | 'delivered' | 'cancelled'
-  total      Float
-  items      OrderItem[]
+  id          String      @id @default(auto()) @map("_id") @db.ObjectId
+  orderNumber String?     // Custom order number: day+month+year(2)+hour+minute+21 (Vietnam timezone)
+  userId      String?     @db.ObjectId
+  user        User?       @relation(fields: [userId], references: [id], onDelete: SetNull)
+  status      String      @default("pending") // 'pending' | 'processing' | 'shipped' | 'delivered' | 'cancelled'
+  total       Float
+  items       OrderItem[]
   shippingAddress Json?
   billingAddress  Json?
-  createdAt  DateTime    @default(now())
-  updatedAt DateTime    @updatedAt
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
 
   @@index([userId])
   @@index([status])
