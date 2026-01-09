@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/button'
 import { ProductCard } from '@/components/product/ProductCard'
 import { getProducts, getCategories, transformProduct, transformCategory } from '@/lib/api'
 import type { Product } from '@/lib/data'
-import { ChevronRight, ChevronLeft, Star, Sparkles } from 'lucide-react'
+import { ChevronRight, ChevronLeft, Star, Sparkles, MessageCircle } from 'lucide-react'
 import { getAllReviewsAsync, type Review } from '@/lib/reviews'
 import { ScrollAnimations } from '@/components/site/ScrollAnimations'
 import { TestimonialsPopup } from '@/components/site/TestimonialsPopup'
@@ -803,11 +803,12 @@ export default function HomePage() {
         </div>
       </section>
 
-      <section className="hidden lg:block bg-gradient-to-r from-primary to-primary/80 py-2 relative overflow-hidden">
+      <section className="hidden lg:block bg-gradient-to-r from-primary to-primary/80 py-3 relative overflow-hidden">
         <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent animate-shimmer" />
-        <div className="container mx-auto px-6">
+        <div className="container mx-auto px-6 space-y-2">
+          {/* Row 1: Join Our Musical Community */}
           <div className="flex items-center justify-between gap-4">
-            <span className="text-sm font-semibold text-white flex items-center gap-1.5 whitespace-nowrap">
+            <span className="text-sm font-semibold text-white flex items-center gap-1.5 whitespace-nowrap min-w-[320px]">
               <Sparkles className="h-4 w-4" />
               Join Our Musical Community
             </span>
@@ -817,6 +818,23 @@ export default function HomePage() {
                 <ChevronRight className="h-4 w-4" />
               </Button>
             </form>
+          </div>
+
+          {/* Row 2: Need Help Choosing the Right Instrument */}
+          <div className="flex items-center justify-between gap-4">
+            <span className="text-sm font-semibold text-white flex items-center gap-1.5 whitespace-nowrap min-w-[320px]">
+              <span className="text-[#D4AF37]">★</span>
+              Need Help Choosing the Right Instrument?
+            </span>
+            <div className="flex gap-2 flex-1 max-w-md">
+              <Link href="/inquiry" className="bg-[#D4AF37] hover:bg-[#c9a432] text-secondary font-semibold min-w-0 flex-1 px-4 py-1.5 rounded text-sm h-9 flex items-center transition-colors">
+                <MessageCircle className="mr-2 h-4 w-4" />
+                Ask Now
+              </Link>
+              <Button size="sm" className="bg-secondary hover:bg-secondary/90 text-white px-4 text-sm h-9 invisible">
+                <ChevronRight className="h-4 w-4" />
+              </Button>
+            </div>
           </div>
         </div>
       </section>

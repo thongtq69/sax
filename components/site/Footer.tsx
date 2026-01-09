@@ -248,28 +248,6 @@ export function Footer() {
 
         {/* Desktop Layout */}
         <div className="hidden lg:block">
-          {/* Need Help Section - Desktop */}
-          <div className="grid grid-cols-3 items-center gap-6 pb-6 mb-6 border-b border-white/10">
-            <div>
-              <h3 className="text-sm md:text-lg font-bold text-white flex items-center gap-2">
-                <span className="text-[#D4AF37]">★</span>
-                Need Help Choosing the Right Instrument?
-              </h3>
-              <p className="text-xs md:text-sm text-white/70 mt-0.5">
-                Our team of professional musicians is ready to help you find the perfect saxophone.
-              </p>
-            </div>
-            <div className="flex justify-center">
-              <Button size="sm" className="bg-[#D4AF37] hover:bg-[#c9a432] text-secondary font-semibold text-xs md:text-sm px-4 h-8 md:h-9" asChild>
-                <Link href="/inquiry">
-                  <MessageCircle className="mr-1.5 h-4 w-4" />
-                  Ask Now
-                </Link>
-              </Button>
-            </div>
-            <div></div>
-          </div>
-
           <div className="grid grid-cols-5 gap-8 lg:gap-12">
             <div>
               <div className="border border-[#D4AF37]/50 rounded-lg p-2.5 inline-block mb-3 bg-[#D4AF37]/5">

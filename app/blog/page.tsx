@@ -63,7 +63,7 @@ export default function BlogPage({ searchParams }: BlogPageProps) {
                 <div className="absolute inset-0 opacity-[0.08]">
                     <div className="absolute inset-0" style={{
                         backgroundImage: `url("/musicnote.svg")`,
-                        backgroundSize: '80px 80px',
+                        backgroundSize: '200px 200px',
                         backgroundRepeat: 'repeat',
                     }} />
                 </div>
