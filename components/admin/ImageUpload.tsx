@@ -1,10 +1,10 @@
 'use client'
 
-import { useState, useRef } from 'react'
+import { useState, useRef, useCallback } from 'react'
 import Image from 'next/image'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
-import { Upload, Link as LinkIcon, X, Loader2, ImageIcon, Plus } from 'lucide-react'
+import { Upload, Link as LinkIcon, X, Loader2, ImageIcon, Plus, XCircle } from 'lucide-react'
 
 // Max file size for Cloudinary free plan (10MB)
 const MAX_FILE_SIZE = 10 * 1024 * 1024
@@ -86,7 +86,25 @@ export function ImageUpload({
   const [error, setError] = useState<string | null>(null)
   const [uploadProgress, setUploadProgress] = useState<number>(0)
   const [statusMessage, setStatusMessage] = useState<string>('')
+  const [totalFiles, setTotalFiles] = useState<number>(0)
+  const [currentFileIndex, setCurrentFileIndex] = useState<number>(0)
   const fileInputRef = useRef<HTMLInputElement>(null)
+  const abortControllerRef = useRef<AbortController | null>(null)
+  const isCancelledRef = useRef<boolean>(false)
+
+  // Cancel upload function
+  const cancelUpload = useCallback(() => {
+    isCancelledRef.current = true
+    if (abortControllerRef.current) {
+      abortControllerRef.current.abort()
+    }
+    setIsUploading(false)
+    setUploadProgress(0)
+    setStatusMessage('Upload cancelled')
+    setTotalFiles(0)
+    setCurrentFileIndex(0)
+    setTimeout(() => setStatusMessage(''), 2000)
+  }, [])
 
   // Upload directly to Cloudinary (bypasses server body size limit)
   const uploadToCloudinary = async (file: File): Promise<string> => {
@@ -169,59 +187,95 @@ export function ImageUpload({
     const files = e.target.files
     if (!files || files.length === 0) return
 
+    // Reset cancel flag
+    isCancelledRef.current = false
+    abortControllerRef.current = new AbortController()
+    
     setIsUploading(true)
     setError(null)
     setUploadProgress(0)
     setStatusMessage('')
+    setTotalFiles(files.length)
+    setCurrentFileIndex(0)
 
-    try {
-      const totalFiles = files.length
-      const newUrls: string[] = []
-      
-      for (let i = 0; i < totalFiles; i++) {
-        let file = files[i]
-        setUploadProgress(Math.round((i / totalFiles) * 100))
-        setStatusMessage(`Processing ${i + 1}/${totalFiles}...`)
+    // Process uploads in background - don't block UI
+    const processUploads = async () => {
+      try {
+        const filesToUpload = files.length
+        const newUrls: string[] = []
         
-        // Compress if file is too large (> 10MB)
-        if (file.size > MAX_FILE_SIZE) {
-          setStatusMessage(`Compressing ${file.name}...`)
-          try {
-            file = await compressImage(file, 9)
-            setStatusMessage(`Compressed to ${(file.size / (1024 * 1024)).toFixed(1)}MB`)
-          } catch (compressError) {
-            console.error('Compression failed:', compressError)
-            throw new Error(`File ${file.name} is too large and could not be compressed`)
+        for (let i = 0; i < filesToUpload; i++) {
+          // Check if cancelled
+          if (isCancelledRef.current) {
+            break
           }
+          
+          let file = files[i]
+          setCurrentFileIndex(i + 1)
+          setUploadProgress(Math.round((i / filesToUpload) * 100))
+          setStatusMessage(`Processing ${i + 1}/${filesToUpload}...`)
+          
+          // Compress if file is too large (> 10MB)
+          if (file.size > MAX_FILE_SIZE) {
+            setStatusMessage(`Compressing ${file.name}...`)
+            try {
+              file = await compressImage(file, 9)
+              setStatusMessage(`Compressed to ${(file.size / (1024 * 1024)).toFixed(1)}MB`)
+            } catch (compressError) {
+              console.error('Compression failed:', compressError)
+              throw new Error(`File ${file.name} is too large and could not be compressed`)
+            }
+          }
+          
+          // Check if cancelled after compression
+          if (isCancelledRef.current) {
+            break
+          }
+          
+          setStatusMessage(`Uploading ${i + 1}/${filesToUpload}...`)
+          
+          // Use direct Cloudinary upload for files > 4MB
+          let url: string
+          if (file.size > 4 * 1024 * 1024) {
+            url = await uploadToCloudinary(file)
+          } else {
+            const result = await uploadViaServer(file)
+            url = result.url
+          }
+          
+          // Check if cancelled after upload
+          if (isCancelledRef.current) {
+            break
+          }
+          
+          newUrls.push(url)
+          
+          // Update images immediately after each successful upload
+          onChange([...images, ...newUrls].slice(0, maxImages))
         }
         
-        setStatusMessage(`Uploading ${i + 1}/${totalFiles}...`)
-        
-        // Use direct Cloudinary upload for files > 4MB
-        let url: string
-        if (file.size > 4 * 1024 * 1024) {
-          url = await uploadToCloudinary(file)
-        } else {
-          const result = await uploadViaServer(file)
-          url = result.url
+        if (!isCancelledRef.current) {
+          setUploadProgress(100)
+          setStatusMessage('Upload complete!')
         }
-        newUrls.push(url)
-      }
-      
-      setUploadProgress(100)
-      setStatusMessage('Upload complete!')
-      const combinedImages = [...images, ...newUrls].slice(0, maxImages)
-      onChange(combinedImages)
-    } catch (err: any) {
-      setError(err.message || 'Failed to upload images')
-    } finally {
-      setIsUploading(false)
-      setUploadProgress(0)
-      setTimeout(() => setStatusMessage(''), 2000)
-      if (fileInputRef.current) {
-        fileInputRef.current.value = ''
+      } catch (err: any) {
+        if (!isCancelledRef.current) {
+          setError(err.message || 'Failed to upload images')
+        }
+      } finally {
+        setIsUploading(false)
+        setUploadProgress(0)
+        setTotalFiles(0)
+        setCurrentFileIndex(0)
+        setTimeout(() => setStatusMessage(''), 2000)
+        if (fileInputRef.current) {
+          fileInputRef.current.value = ''
+        }
       }
     }
+    
+    // Start upload process (non-blocking)
+    processUploads()
   }
 
   const handleUrlSubmit = async () => {
@@ -287,36 +341,68 @@ export function ImageUpload({
 
       {/* Upload Area */}
       {uploadMode === 'file' ? (
-        <div
-          className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center hover:border-primary transition-colors cursor-pointer"
-          onClick={() => fileInputRef.current?.click()}
-        >
-          <input
-            ref={fileInputRef}
-            type="file"
-            accept="image/*"
-            multiple
-            onChange={handleFileChange}
-            className="hidden"
-          />
-          {isUploading ? (
-            <div className="flex flex-col items-center">
-              <Loader2 className="h-10 w-10 text-primary animate-spin" />
-              <p className="mt-2 text-sm text-gray-600">
-                {statusMessage || `Uploading... ${uploadProgress > 0 ? `${uploadProgress}%` : ''}`}
-              </p>
-            </div>
-          ) : (
-            <div className="flex flex-col items-center">
-              <ImageIcon className="h-10 w-10 text-gray-400" />
-              <p className="mt-2 text-sm text-gray-600">
-                Click or drag & drop to upload images
-              </p>
-              <p className="text-xs text-gray-400 mt-1">
-                PNG, JPG, WEBP (auto-compressed if &gt;10MB)
-              </p>
-            </div>
-          )}
+        <div className="relative">
+          <div
+            className={`border-2 border-dashed rounded-lg p-6 text-center transition-colors ${
+              isUploading 
+                ? 'border-primary bg-primary/5 cursor-default' 
+                : 'border-gray-300 hover:border-primary cursor-pointer'
+            }`}
+            onClick={() => !isUploading && fileInputRef.current?.click()}
+          >
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept="image/*"
+              multiple
+              onChange={handleFileChange}
+              className="hidden"
+            />
+            {isUploading ? (
+              <div className="flex flex-col items-center">
+                <Loader2 className="h-10 w-10 text-primary animate-spin" />
+                <p className="mt-2 text-sm text-gray-600">
+                  {statusMessage || `Uploading ${currentFileIndex}/${totalFiles}...`}
+                </p>
+                {uploadProgress > 0 && (
+                  <div className="w-full max-w-xs mt-2">
+                    <div className="h-2 bg-gray-200 rounded-full overflow-hidden">
+                      <div 
+                        className="h-full bg-primary transition-all duration-300"
+                        style={{ width: `${uploadProgress}%` }}
+                      />
+                    </div>
+                  </div>
+                )}
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={(e) => {
+                    e.stopPropagation()
+                    cancelUpload()
+                  }}
+                  className="mt-3 text-red-600 border-red-300 hover:bg-red-50 hover:text-red-700"
+                >
+                  <XCircle className="h-4 w-4 mr-2" />
+                  Cancel Upload
+                </Button>
+                <p className="text-xs text-gray-400 mt-2">
+                  You can switch tabs while uploading
+                </p>
+              </div>
+            ) : (
+              <div className="flex flex-col items-center">
+                <ImageIcon className="h-10 w-10 text-gray-400" />
+                <p className="mt-2 text-sm text-gray-600">
+                  Click or drag & drop to upload images
+                </p>
+                <p className="text-xs text-gray-400 mt-1">
+                  PNG, JPG, WEBP (auto-compressed if &gt;10MB)
+                </p>
+              </div>
+            )}
+          </div>
         </div>
       ) : (
         <div className="space-y-2">
