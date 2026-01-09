@@ -858,7 +858,7 @@ export function ProductDetailClient({ product }: ProductDetailClientProps) {
                 variant="outline"
                 className={`w-full text-sm md:text-base font-semibold transition-all duration-300 rounded-full h-12 ${isAddedToCart
                   ? 'bg-green-500 hover:bg-green-600 text-white border-green-500'
-                  : 'bg-gray-100 hover:bg-gray-200 text-gray-800 border-gray-200'
+                  : 'bg-gray-100 hover:bg-[#D4AF37] hover:text-secondary hover:border-[#D4AF37] text-gray-800 border-gray-200'
                   }`}
                 onClick={handleAddToCart}
                 disabled={!product.inStock || isAddingToCart}
@@ -885,7 +885,7 @@ export function ProductDetailClient({ product }: ProductDetailClientProps) {
                   size="lg"
                   variant="outline"
                   onClick={() => setIsInquiryOpen(true)}
-                  className="flex-1 bg-gray-100 hover:bg-gray-200 text-gray-800 border-gray-200 rounded-full h-12 gap-2"
+                  className="flex-1 bg-gray-100 hover:bg-[#D4AF37] hover:text-secondary hover:border-[#D4AF37] text-gray-800 border-gray-200 rounded-full h-12 gap-2"
                   title={`Inquiry about ${product.name}`}
                 >
                   <MessageCircle className="h-5 w-5" />
@@ -898,7 +898,7 @@ export function ProductDetailClient({ product }: ProductDetailClientProps) {
                   variant="outline"
                   onClick={handleToggleWishlist}
                   disabled={isWishlistLoading}
-                  className={`px-4 shrink-0 transition-all duration-300 rounded-full h-12 ${isWishlisted ? 'border-red-300 bg-red-50 text-red-500' : 'bg-gray-100 hover:bg-gray-200 text-gray-600 border-gray-200'
+                  className={`px-4 shrink-0 transition-all duration-300 rounded-full h-12 ${isWishlisted ? 'border-red-300 bg-red-50 text-red-500 hover:bg-red-100' : 'bg-gray-100 hover:bg-[#D4AF37] hover:text-secondary hover:border-[#D4AF37] text-gray-600 border-gray-200'
                     }`}
                   title={session?.user ? (isWishlisted ? "Remove from Wishlist" : "Add to Wishlist") : "Login to add to Wishlist"}
                 >
@@ -916,7 +916,7 @@ export function ProductDetailClient({ product }: ProductDetailClientProps) {
                     size="lg"
                     variant="outline"
                     onClick={() => setShowShareMenu(!showShareMenu)}
-                    className="px-4 shrink-0 transition-all duration-300 rounded-full h-12 bg-gray-100 hover:bg-gray-200 text-gray-600 border-gray-200"
+                    className="px-4 shrink-0 transition-all duration-300 rounded-full h-12 bg-gray-100 hover:bg-[#D4AF37] hover:text-secondary hover:border-[#D4AF37] text-gray-600 border-gray-200"
                     title="Share this product"
                   >
                     <Share2 className="h-5 w-5" />
