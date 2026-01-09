@@ -208,6 +208,8 @@ export default function HomepageContentPage() {
         uploadFile = await compressImage(file, 9)
       }
       
+      let imageUrl = ''
+      
       // For files > 4MB, use direct Cloudinary upload
       if (uploadFile.size > 4 * 1024 * 1024) {
         // Get signature from our API
@@ -245,12 +247,7 @@ export default function HomepageContentPage() {
         }
         
         const result = await uploadResponse.json()
-        
-        if (field === 'image') {
-          updateFormData(sectionKey, 'image', result.secure_url)
-        } else {
-          updateMetadata(sectionKey, field, result.secure_url)
-        }
+        imageUrl = result.secure_url
       } else {
         // For smaller files, use server API
         const formData = new FormData()
@@ -268,13 +265,35 @@ export default function HomepageContentPage() {
         }
 
         const result = await response.json()
-        
-        if (field === 'image') {
-          updateFormData(sectionKey, 'image', result.url)
-        } else {
-          updateMetadata(sectionKey, field, result.url)
-        }
+        imageUrl = result.url
       }
+      
+      // Update local state
+      if (field === 'image') {
+        updateFormData(sectionKey, 'image', imageUrl)
+      } else {
+        updateMetadata(sectionKey, field, imageUrl)
+      }
+      
+      // Auto-save to database after successful upload
+      const currentData = formData[sectionKey] || {}
+      const dataToSave = field === 'image' 
+        ? { ...currentData, image: imageUrl }
+        : { ...currentData, metadata: { ...currentData.metadata, [field]: imageUrl } }
+      
+      const saveResponse = await fetch(`/api/admin/homepage-content/${sectionKey}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(dataToSave),
+      })
+      
+      if (saveResponse.ok) {
+        setSuccessMessage(`Image uploaded and saved successfully!`)
+        setTimeout(() => setSuccessMessage(''), 3000)
+      } else {
+        console.error('Failed to auto-save after upload')
+      }
+      
     } catch (error: any) {
       alert(error.message || 'Failed to upload image')
     } finally {
