@@ -9,6 +9,58 @@ import {
 } from 'lucide-react'
 import Image from 'next/image'
 
+// Max file size for Cloudinary (10MB)
+const MAX_FILE_SIZE = 10 * 1024 * 1024
+
+// Compress image if too large
+async function compressImage(file: File, maxSizeMB: number = 9): Promise<File> {
+  return new Promise((resolve, reject) => {
+    const img = document.createElement('img')
+    const canvas = document.createElement('canvas')
+    const ctx = canvas.getContext('2d')
+    
+    img.onload = () => {
+      let { width, height } = img
+      const fileSizeMB = file.size / (1024 * 1024)
+      let quality = 0.9
+      let scale = 1
+      
+      if (fileSizeMB > maxSizeMB) {
+        scale = Math.sqrt(maxSizeMB / fileSizeMB)
+        quality = 0.85
+      }
+      
+      const maxDimension = 4000
+      if (width > maxDimension || height > maxDimension) {
+        const dimensionScale = maxDimension / Math.max(width, height)
+        scale = Math.min(scale, dimensionScale)
+      }
+      
+      width = Math.round(width * scale)
+      height = Math.round(height * scale)
+      
+      canvas.width = width
+      canvas.height = height
+      ctx?.drawImage(img, 0, 0, width, height)
+      
+      canvas.toBlob(
+        (blob) => {
+          if (blob) {
+            resolve(new File([blob], file.name, { type: 'image/jpeg', lastModified: Date.now() }))
+          } else {
+            reject(new Error('Failed to compress image'))
+          }
+        },
+        'image/jpeg',
+        quality
+      )
+    }
+    
+    img.onerror = () => reject(new Error('Failed to load image'))
+    img.src = URL.createObjectURL(file)
+  })
+}
+
 interface HomepageSection {
   id: string
   sectionKey: string
@@ -150,26 +202,78 @@ export default function HomepageContentPage() {
     setIsUploading(`${sectionKey}-${field}`)
     
     try {
-      const formData = new FormData()
-      formData.append('file', file)
-      formData.append('folder', 'sax/homepage')
-
-      const response = await fetch('/api/upload', {
-        method: 'POST',
-        body: formData,
-      })
-
-      if (!response.ok) {
-        const data = await response.json()
-        throw new Error(data.error || 'Upload failed')
+      // Compress if file is too large for Cloudinary (> 10MB)
+      let uploadFile = file
+      if (file.size > MAX_FILE_SIZE) {
+        uploadFile = await compressImage(file, 9)
       }
-
-      const result = await response.json()
       
-      if (field === 'image') {
-        updateFormData(sectionKey, 'image', result.url)
+      // For files > 4MB, use direct Cloudinary upload
+      if (uploadFile.size > 4 * 1024 * 1024) {
+        // Get signature from our API
+        const sigResponse = await fetch('/api/upload/signature', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ folder: 'sax/homepage' }),
+        })
+        
+        if (!sigResponse.ok) {
+          throw new Error('Failed to get upload signature')
+        }
+        
+        const { signature, timestamp, cloudName, apiKey, folder } = await sigResponse.json()
+        
+        // Upload directly to Cloudinary
+        const uploadFormData = new FormData()
+        uploadFormData.append('file', uploadFile)
+        uploadFormData.append('signature', signature)
+        uploadFormData.append('timestamp', timestamp.toString())
+        uploadFormData.append('api_key', apiKey)
+        uploadFormData.append('folder', folder)
+        
+        const uploadResponse = await fetch(
+          `https://api.cloudinary.com/v1_1/${cloudName}/image/upload`,
+          {
+            method: 'POST',
+            body: uploadFormData,
+          }
+        )
+        
+        if (!uploadResponse.ok) {
+          const errorData = await uploadResponse.json()
+          throw new Error(errorData.error?.message || 'Upload failed')
+        }
+        
+        const result = await uploadResponse.json()
+        
+        if (field === 'image') {
+          updateFormData(sectionKey, 'image', result.secure_url)
+        } else {
+          updateMetadata(sectionKey, field, result.secure_url)
+        }
       } else {
-        updateMetadata(sectionKey, field, result.url)
+        // For smaller files, use server API
+        const formData = new FormData()
+        formData.append('file', uploadFile)
+        formData.append('folder', 'sax/homepage')
+
+        const response = await fetch('/api/upload', {
+          method: 'POST',
+          body: formData,
+        })
+
+        if (!response.ok) {
+          const data = await response.json()
+          throw new Error(data.error || 'Upload failed')
+        }
+
+        const result = await response.json()
+        
+        if (field === 'image') {
+          updateFormData(sectionKey, 'image', result.url)
+        } else {
+          updateMetadata(sectionKey, field, result.url)
+        }
       }
     } catch (error: any) {
       alert(error.message || 'Failed to upload image')
