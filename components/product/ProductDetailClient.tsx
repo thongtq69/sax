@@ -43,7 +43,6 @@ export function ProductDetailClient({ product }: ProductDetailClientProps) {
   const [reviews, setReviews] = useState<Review[]>([])
   const [showShippingCalc, setShowShippingCalc] = useState(false)
   const [shippingCountry, setShippingCountry] = useState('')
-  const [shippingZip, setShippingZip] = useState('')
   const [shippingCost, setShippingCost] = useState<number | null>(null)
   const [shippingMessage, setShippingMessage] = useState('')
   const [isCalculatingShipping, setIsCalculatingShipping] = useState(false)
@@ -114,10 +113,6 @@ export function ProductDetailClient({ product }: ProductDetailClientProps) {
   const calculateShipping = () => {
     if (!shippingCountry) {
       setShippingMessage('Please select a country')
-      return
-    }
-    if (!shippingZip.trim()) {
-      setShippingMessage('Please enter a ZIP/Postal code')
       return
     }
     
@@ -734,12 +729,12 @@ const handleAddToCart = async () => {
                     <MapPin className="h-4 w-4 text-primary" />
                     <span className="text-sm font-medium text-secondary">Calculate Shipping Cost</span>
                   </div>
-                  <div className="space-y-2">
+                  <div className="flex gap-2">
                     {/* Country Selection */}
                     <select
                       value={shippingCountry}
                       onChange={(e) => setShippingCountry(e.target.value)}
-                      className="w-full px-3 py-2 text-sm border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/30 bg-white"
+                      className="flex-1 px-3 py-2 text-sm border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/30 bg-white"
                     >
                       <option value="">Select Country</option>
                       <option value="Vietnam">Vietnam</option>
@@ -762,28 +757,17 @@ const handleAddToCart = async () => {
                       <option value="India">India</option>
                       <option value="Other">Other</option>
                     </select>
-                    
-                    {/* ZIP Code Input */}
-                    <div className="flex gap-2">
-                      <input
-                        type="text"
-                        placeholder="Enter ZIP/Postal code"
-                        value={shippingZip}
-                        onChange={(e) => setShippingZip(e.target.value)}
-                        className="flex-1 px-3 py-2 text-sm border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/30"
-                      />
-                      <button
-                        onClick={calculateShipping}
-                        disabled={isCalculatingShipping || !shippingCountry}
-                        className="px-4 py-2 bg-primary text-white text-sm font-medium rounded-lg hover:bg-primary/90 transition-colors disabled:opacity-50"
-                      >
-                        {isCalculatingShipping ? (
-                          <Loader2 className="h-4 w-4 animate-spin" />
-                        ) : (
-                          'Calculate'
-                        )}
-                      </button>
-                    </div>
+                    <button
+                      onClick={calculateShipping}
+                      disabled={isCalculatingShipping || !shippingCountry}
+                      className="px-4 py-2 bg-primary text-white text-sm font-medium rounded-lg hover:bg-primary/90 transition-colors disabled:opacity-50"
+                    >
+                      {isCalculatingShipping ? (
+                        <Loader2 className="h-4 w-4 animate-spin" />
+                      ) : (
+                        'Calculate'
+                      )}
+                    </button>
                   </div>
                   {shippingMessage && (
                     <p className={`mt-2 text-sm font-medium ${shippingCost === 25 ? 'text-green-600' : 'text-amber-600'}`}>
