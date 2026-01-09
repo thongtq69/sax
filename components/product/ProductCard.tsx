@@ -210,28 +210,7 @@ export function ProductCard({ product, index = 0 }: ProductCardProps) {
             </Link>
 
             {/* Rating with animation */}
-            {displayRating > 0 && (
-              <div className="mb-1.5 sm:mb-2 flex items-center gap-1 sm:gap-1.5">
-                <div className="flex">
-                  {[...Array(5)].map((_, i) => (
-                    <Star
-                      key={i}
-                      className={`h-3 w-3 sm:h-3.5 sm:w-3.5 transition-all duration-200 ${
-                        i < Math.floor(displayRating)
-                          ? 'fill-amber-400 text-amber-400'
-                          : 'fill-gray-200 text-gray-200'
-                      }`}
-                      style={{ animationDelay: `${i * 0.1}s` }}
-                    />
-                  ))}
-                </div>
-                {displayReviewCount > 0 && (
-                  <span className="text-[10px] sm:text-xs text-muted-foreground font-medium">
-                    ({displayReviewCount})
-                  </span>
-                )}
-              </div>
-            )}
+            {/* Rating hidden - removed per user request */}
 
             {/* Finish Options with hover effect - hidden on mobile */}
             {finishes.length > 1 && (

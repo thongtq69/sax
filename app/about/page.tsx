@@ -101,6 +101,28 @@ export default function AboutPage() {
               </div>
             </div>
 
+            {/* Our Values - Moved up below Our Mission */}
+            <div className="mb-16 p-8 md:p-12 rounded-2xl bg-secondary text-white text-center">
+              <h2 className="text-2xl md:text-3xl font-bold mb-3">Our Values</h2>
+              <p className="text-base text-white/80 leading-relaxed mb-5 max-w-3xl mx-auto">
+                At James Sax Corner, we believe in long-term relationships, respect for the instrument, and doing business with integrity.
+              </p>
+              <div className="flex flex-wrap justify-center gap-3">
+                <div className="px-4 py-2 bg-white/10 rounded-full">
+                  <span className="font-medium text-sm">Quality</span>
+                </div>
+                <div className="px-4 py-2 bg-white/10 rounded-full">
+                  <span className="font-medium text-sm">Integrity</span>
+                </div>
+                <div className="px-4 py-2 bg-white/10 rounded-full">
+                  <span className="font-medium text-sm">Precision</span>
+                </div>
+                <div className="px-4 py-2 bg-white/10 rounded-full">
+                  <span className="font-medium text-sm">Trust</span>
+                </div>
+              </div>
+            </div>
+
             {/* Services Grid */}
             <div className="grid md:grid-cols-3 gap-8 mb-16">
               <div className="p-6 bg-gradient-to-br from-primary/5 to-primary/10 rounded-2xl border border-primary/20">
@@ -194,31 +216,6 @@ export default function AboutPage() {
         </div>
       </section>
 
-      {/* Values Section */}
-      <section className="py-8 md:py-12 bg-secondary text-white">
-        <div className="container mx-auto px-4">
-          <div className="max-w-4xl mx-auto text-center">
-            <h2 className="text-2xl md:text-3xl font-bold mb-3">Our Values</h2>
-            <p className="text-base text-white/80 leading-relaxed mb-5">
-              At James Sax Corner, we believe in long-term relationships, respect for the instrument, and doing business with integrity.
-            </p>
-            <div className="flex flex-wrap justify-center gap-3">
-              <div className="px-4 py-2 bg-white/10 rounded-full">
-                <span className="font-medium text-sm">Quality</span>
-              </div>
-              <div className="px-4 py-2 bg-white/10 rounded-full">
-                <span className="font-medium text-sm">Integrity</span>
-              </div>
-              <div className="px-4 py-2 bg-white/10 rounded-full">
-                <span className="font-medium text-sm">Precision</span>
-              </div>
-              <div className="px-4 py-2 bg-white/10 rounded-full">
-                <span className="font-medium text-sm">Trust</span>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
     </div>
   )
 }

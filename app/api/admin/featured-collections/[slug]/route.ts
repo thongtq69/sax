@@ -31,6 +31,7 @@ export async function GET(
         id: true,
         name: true,
         slug: true,
+        sku: true,
         brand: true,
         price: true,
         retailPrice: true,
@@ -43,6 +44,14 @@ export async function GET(
         reviewCount: true,
         condition: true,
         productType: true,
+        categoryId: true,
+        subcategoryId: true,
+        category: {
+          select: { slug: true }
+        },
+        subcategory: {
+          select: { slug: true }
+        },
       },
     })
 
@@ -53,7 +62,6 @@ export async function GET(
 
     return NextResponse.json({
       ...collection,
-      backgroundImage: collection.backgroundImage,
       products: sortedProducts,
     })
   } catch (error: any) {

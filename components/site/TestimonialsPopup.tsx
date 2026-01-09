@@ -62,7 +62,7 @@ function ReviewCard({ review }: { review: Review }) {
             </div>
             {review.product?.name && (
               <p className="text-[10px] sm:text-xs text-gray-500 mt-0.5 line-clamp-2 leading-tight">
-                <span className="text-gray-400">Product:</span> {review.product.name}
+                {review.product.name}
               </p>
             )}
           </div>

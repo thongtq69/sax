@@ -632,29 +632,7 @@ const handleAddToCart = async () => {
               {product.name}
             </h1>
 
-            {/* Rating */}
-            {displayReviewCount > 0 && (
-              <div className="flex items-center gap-3">
-                <div className="flex items-center gap-1">
-                  {Array.from({ length: 5 }).map((_, i) => (
-                    <Star
-                      key={i}
-                      className={`h-5 w-5 transition-all duration-200 ${
-                        i < Math.floor(displayRating || 0)
-                          ? 'fill-amber-400 text-amber-400'
-                          : 'fill-gray-200 text-gray-200'
-                      }`}
-                    />
-                  ))}
-                </div>
-                <span className="text-sm font-medium text-secondary">
-                  {displayRating.toFixed(1)}
-                </span>
-                <span className="text-sm text-muted-foreground">
-                  ({displayReviewCount} reviews)
-                </span>
-              </div>
-            )}
+            {/* Rating - Hidden per user request */}
           </div>
 
           {/* Pricing */}
@@ -809,66 +787,66 @@ const handleAddToCart = async () => {
           )}
 
 
-          {/* Action Buttons - 2 Rows Layout */}
+          {/* Action Buttons - 3 Rows Layout (eBay style) */}
           <div className="space-y-3">
-            {/* Row 1: Buy Now + Add to Cart */}
-            <div className="flex gap-2">
-              <Button
-                size="lg"
-                className="flex-1 text-sm md:text-base font-semibold bg-primary hover:bg-primary/90 text-white transition-all duration-300 hover:shadow-lg hover:scale-[1.01]"
-                onClick={() => {
-                  // Clear cart first, then add only this product for immediate checkout
-                  clearCart()
-                  addItem({
-                    id: `${product.id}-default`,
-                    productId: product.id,
-                    name: product.name,
-                    slug: product.slug,
-                    sku: product.sku,
-                    price: product.price,
-                    image: product.images[0],
-                  })
-                  router.push('/checkout')
-                }}
-                disabled={!product.inStock || isAddingToCart}
-              >
-                Buy Now
-              </Button>
-              
-              <Button
-                size="lg"
-                variant="outline"
-                className={`flex-1 text-sm md:text-base font-semibold transition-all duration-300 ${
-                  isAddedToCart 
-                    ? 'bg-green-500 hover:bg-green-600 text-white border-green-500' 
-                    : 'bg-white hover:bg-gray-50 text-primary border-primary hover:shadow-lg hover:scale-[1.01]'
-                }`}
-                onClick={handleAddToCart}
-                disabled={!product.inStock || isAddingToCart}
-              >
-                {isAddingToCart ? (
-                  <span className="flex items-center gap-2">
-                    <Loader2 className="h-4 w-4 animate-spin" />
-                    Adding...
-                  </span>
-                ) : isAddedToCart ? (
-                  <span className="flex items-center gap-2">
-                    <Check className="h-4 w-4 animate-bounce" />
-                    Added!
-                  </span>
-                ) : (
-                  'Add to Cart'
-                )}
-              </Button>
-            </div>
+            {/* Row 1: Buy Now - Orange/Primary */}
+            <Button
+              size="lg"
+              className="w-full text-sm md:text-base font-semibold bg-orange-500 hover:bg-orange-600 text-white transition-all duration-300 hover:shadow-lg rounded-full h-12"
+              onClick={() => {
+                // Clear cart first, then add only this product for immediate checkout
+                clearCart()
+                addItem({
+                  id: `${product.id}-default`,
+                  productId: product.id,
+                  name: product.name,
+                  slug: product.slug,
+                  sku: product.sku,
+                  price: product.price,
+                  image: product.images[0],
+                })
+                router.push('/checkout')
+              }}
+              disabled={!product.inStock || isAddingToCart}
+            >
+              Buy it now
+            </Button>
             
-            {/* Row 2: Inquiry + Favorite + Share */}
+            {/* Row 2: Add to Cart - Gray */}
+            <Button
+              size="lg"
+              variant="outline"
+              className={`w-full text-sm md:text-base font-semibold transition-all duration-300 rounded-full h-12 ${
+                isAddedToCart 
+                  ? 'bg-green-500 hover:bg-green-600 text-white border-green-500' 
+                  : 'bg-gray-100 hover:bg-gray-200 text-gray-800 border-gray-200'
+              }`}
+              onClick={handleAddToCart}
+              disabled={!product.inStock || isAddingToCart}
+            >
+              {isAddingToCart ? (
+                <span className="flex items-center gap-2">
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                  Adding...
+                </span>
+              ) : isAddedToCart ? (
+                <span className="flex items-center gap-2">
+                  <Check className="h-4 w-4 animate-bounce" />
+                  Added to cart
+                </span>
+              ) : (
+                'Add to cart'
+              )}
+            </Button>
+            
+            {/* Row 3: Inquiry + Favorite */}
             <div className="flex gap-2">
-              {/* Inquiry Button */}
+              {/* Inquiry Button - Gray */}
               <Button 
                 size="lg" 
+                variant="outline"
                 onClick={() => setIsInquiryOpen(true)}
-                className="flex-1 bg-primary hover:bg-primary/90 text-white gap-2"
+                className="flex-1 bg-gray-100 hover:bg-gray-200 text-gray-800 border-gray-200 rounded-full h-12 gap-2"
                 title={`Inquiry about ${product.name}`}
               >
                 <MessageCircle className="h-5 w-5" />
@@ -880,22 +858,12 @@ const handleAddToCart = async () => {
                 size="lg"
                 variant="outline"
                 onClick={() => setIsWishlisted(!isWishlisted)}
-                className={`px-4 shrink-0 transition-all duration-300 ${
-                  isWishlisted ? 'border-red-300 bg-red-50 text-red-500' : ''
+                className={`px-4 shrink-0 transition-all duration-300 rounded-full h-12 ${
+                  isWishlisted ? 'border-red-300 bg-red-50 text-red-500' : 'bg-gray-100 hover:bg-gray-200 text-gray-600 border-gray-200'
                 }`}
                 title="Add to Wishlist"
               >
                 <Heart className={`h-5 w-5 transition-all ${isWishlisted ? 'fill-current scale-110' : ''}`} />
-              </Button>
-              
-              {/* Share Button */}
-              <Button 
-                size="lg" 
-                variant="outline" 
-                className="px-4 shrink-0"
-                title="Share"
-              >
-                <Share2 className="h-5 w-5" />
               </Button>
             </div>
           </div>
