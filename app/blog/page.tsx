@@ -58,21 +58,22 @@ export default function BlogPage({ searchParams }: BlogPageProps) {
     return (
         <div className="min-h-screen bg-background">
             {/* Hero Section - Vintage Style */}
-            <section className="relative bg-primary py-8 sm:py-12 md:py-16 overflow-hidden">
-                {/* Music Notes Pattern */}
-                <div className="absolute inset-0 opacity-10">
+            <section className="relative bg-primary py-6 sm:py-8 md:py-10 overflow-hidden">
+                {/* Music Notes Pattern using musicnote.svg */}
+                <div className="absolute inset-0 opacity-[0.08]">
                     <div className="absolute inset-0" style={{
-                        backgroundImage: `url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='%23ffffff' fill-opacity='0.4'%3E%3Cpath d='M15 8c0-1.1.9-2 2-2h1v8c0 2.2-1.8 4-4 4s-4-1.8-4-4 1.8-4 4-4c.4 0 .7.1 1 .2V8zm0 6c0 1.1.9 2 2 2s2-.9 2-2-.9-2-2-2-2 .9-2 2z'/%3E%3Cpath d='M45 8c0-1.1.9-2 2-2h1v8c0 2.2-1.8 4-4 4s-4-1.8-4-4 1.8-4 4-4c.4 0 .7.1 1 .2V8zm0 6c0 1.1.9 2 2 2s2-.9 2-2-.9-2-2-2-2 .9-2 2z'/%3E%3Cpath d='M30 38c0-1.1.9-2 2-2h1v8c0 2.2-1.8 4-4 4s-4-1.8-4-4 1.8-4 4-4c.4 0 .7.1 1 .2V38zm0 6c0 1.1.9 2 2 2s2-.9 2-2-.9-2-2-2-2 .9-2 2z'/%3E%3Cpath d='M5 38c0-1.1.9-2 2-2h1v8c0 2.2-1.8 4-4 4s-4-1.8-4-4 1.8-4 4-4c.4 0 .7.1 1 .2V38zm0 6c0 1.1.9 2 2 2s2-.9 2-2-.9-2-2-2-2 .9-2 2z'/%3E%3Cpath d='M55 38c0-1.1.9-2 2-2h1v8c0 2.2-1.8 4-4 4s-4-1.8-4-4 1.8-4 4-4c.4 0 .7.1 1 .2V38zm0 6c0 1.1.9 2 2 2s2-.9 2-2-.9-2-2-2-2 .9-2 2z'/%3E%3C/g%3E%3C/svg%3E")`,
+                        backgroundImage: `url("/musicnote.svg")`,
+                        backgroundSize: '80px 80px',
+                        backgroundRepeat: 'repeat',
                     }} />
                 </div>
 
                 {/* Art Deco Lines */}
-                <div className="absolute top-0 left-0 right-0 h-1.5 bg-secondary opacity-40" />
-                <div className="absolute top-2 left-0 right-0 h-0.5 bg-secondary opacity-20" />
+                <div className="absolute top-0 left-0 right-0 h-1 bg-secondary opacity-40" />
 
                 <div className="container relative mx-auto px-4 text-center">
                     {/* Breadcrumbs */}
-                    <nav className="mb-6 flex items-center justify-center gap-2 text-sm text-white/70">
+                    <nav className="mb-4 flex items-center justify-center gap-2 text-sm text-white/70">
                         <Link href="/" className="hover:text-white transition-colors">Home</Link>
                         <ChevronRight className="h-4 w-4" />
                         <span className="text-white font-medium">Blog</span>
@@ -85,31 +86,29 @@ export default function BlogPage({ searchParams }: BlogPageProps) {
                     </nav>
 
                     {/* Icon */}
-                    <div className="mb-3 sm:mb-4 inline-flex items-center justify-center rounded-full border-2 border-white/30 bg-white/10 p-3 sm:p-4">
-                        <BookOpen className="h-6 w-6 sm:h-8 sm:w-8 text-white" />
+                    <div className="mb-2 sm:mb-3 inline-flex items-center justify-center rounded-full border-2 border-white/30 bg-white/10 p-2 sm:p-3">
+                        <BookOpen className="h-5 w-5 sm:h-6 sm:w-6 text-white" />
                     </div>
 
                     {/* Title */}
-                    <h1 className="mb-3 sm:mb-4 text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold text-white font-display">
+                    <h1 className="mb-2 sm:mb-3 text-xl sm:text-2xl md:text-3xl lg:text-4xl font-bold text-white font-display">
                         {categoryName ? `${categoryName} Articles` : "James's Blog"}
                     </h1>
 
                     {/* Decorative Divider */}
-                    <div className="flex items-center justify-center gap-3 sm:gap-4 mb-3 sm:mb-4">
-                        <div className="h-px w-10 sm:w-16 bg-white/40" />
-                        <span className="text-xl sm:text-2xl text-white/60">♪</span>
-                        <div className="h-px w-10 sm:w-16 bg-white/40" />
+                    <div className="flex items-center justify-center gap-3 mb-2 sm:mb-3">
+                        <div className="h-px w-8 sm:w-12 bg-white/40" />
+                        <span className="text-lg sm:text-xl text-white/60">♪</span>
+                        <div className="h-px w-8 sm:w-12 bg-white/40" />
                     </div>
 
-                    <p className="mx-auto max-w-2xl text-sm sm:text-base md:text-lg text-white/80 px-2">
+                    <p className="mx-auto max-w-xl text-xs sm:text-sm md:text-base text-white/80 px-2">
                         Expert insights, reviews, and tips from our team of professional musicians.
-                        Discover the stories behind the instruments.
                     </p>
                 </div>
 
                 {/* Bottom Lines */}
-                <div className="absolute bottom-2 left-0 right-0 h-0.5 bg-secondary opacity-20" />
-                <div className="absolute bottom-0 left-0 right-0 h-1.5 bg-secondary opacity-40" />
+                <div className="absolute bottom-0 left-0 right-0 h-1 bg-secondary opacity-40" />
             </section>
 
             {/* Main Content */}
