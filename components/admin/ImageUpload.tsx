@@ -23,9 +23,51 @@ export function ImageUpload({
   const [uploadMode, setUploadMode] = useState<'file' | 'url'>('file')
   const [urlInput, setUrlInput] = useState('')
   const [error, setError] = useState<string | null>(null)
+  const [uploadProgress, setUploadProgress] = useState<number>(0)
   const fileInputRef = useRef<HTMLInputElement>(null)
 
-  const uploadFile = async (file: File) => {
+  // Upload directly to Cloudinary (bypasses server body size limit)
+  const uploadToCloudinary = async (file: File): Promise<string> => {
+    // Get signature from our API
+    const sigResponse = await fetch('/api/upload/signature', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ folder }),
+    })
+    
+    if (!sigResponse.ok) {
+      throw new Error('Failed to get upload signature')
+    }
+    
+    const { signature, timestamp, cloudName, apiKey, folder: uploadFolder } = await sigResponse.json()
+    
+    // Upload directly to Cloudinary
+    const formData = new FormData()
+    formData.append('file', file)
+    formData.append('signature', signature)
+    formData.append('timestamp', timestamp.toString())
+    formData.append('api_key', apiKey)
+    formData.append('folder', uploadFolder)
+    
+    const uploadResponse = await fetch(
+      `https://api.cloudinary.com/v1_1/${cloudName}/image/upload`,
+      {
+        method: 'POST',
+        body: formData,
+      }
+    )
+    
+    if (!uploadResponse.ok) {
+      const errorData = await uploadResponse.json()
+      throw new Error(errorData.error?.message || 'Upload failed')
+    }
+    
+    const result = await uploadResponse.json()
+    return result.secure_url
+  }
+
+  // Fallback: Upload via our server API (for smaller files or URL uploads)
+  const uploadViaServer = async (file: File) => {
     const formData = new FormData()
     formData.append('file', file)
     formData.append('folder', folder)
@@ -67,18 +109,38 @@ export function ImageUpload({
 
     setIsUploading(true)
     setError(null)
+    setUploadProgress(0)
 
     try {
-      const uploadPromises = Array.from(files).map(file => uploadFile(file))
-      const results = await Promise.all(uploadPromises)
+      const totalFiles = files.length
+      const newUrls: string[] = []
       
-      const newUrls = results.map(r => r.url)
+      for (let i = 0; i < totalFiles; i++) {
+        const file = files[i]
+        setUploadProgress(Math.round((i / totalFiles) * 100))
+        
+        // Use direct Cloudinary upload for large files (> 4MB)
+        // or server upload for smaller files
+        let url: string
+        if (file.size > 4 * 1024 * 1024) {
+          // Large file - upload directly to Cloudinary
+          url = await uploadToCloudinary(file)
+        } else {
+          // Small file - use server API
+          const result = await uploadViaServer(file)
+          url = result.url
+        }
+        newUrls.push(url)
+      }
+      
+      setUploadProgress(100)
       const combinedImages = [...images, ...newUrls].slice(0, maxImages)
       onChange(combinedImages)
     } catch (err: any) {
       setError(err.message || 'Failed to upload images')
     } finally {
       setIsUploading(false)
+      setUploadProgress(0)
       if (fileInputRef.current) {
         fileInputRef.current.value = ''
       }
@@ -163,7 +225,9 @@ export function ImageUpload({
           {isUploading ? (
             <div className="flex flex-col items-center">
               <Loader2 className="h-10 w-10 text-primary animate-spin" />
-              <p className="mt-2 text-sm text-gray-600">Uploading...</p>
+              <p className="mt-2 text-sm text-gray-600">
+                Uploading... {uploadProgress > 0 ? `${uploadProgress}%` : ''}
+              </p>
             </div>
           ) : (
             <div className="flex flex-col items-center">
@@ -172,7 +236,7 @@ export function ImageUpload({
                 Click or drag & drop to upload images
               </p>
               <p className="text-xs text-gray-400 mt-1">
-                PNG, JPG, WEBP up to 50MB
+                PNG, JPG, WEBP - No size limit
               </p>
             </div>
           )}
@@ -285,6 +349,7 @@ export function ImageUpload({
   )
 }
 
+
 // Single image upload component
 interface SingleImageUploadProps {
   image: string | null
@@ -303,6 +368,44 @@ export function SingleImageUpload({
   const [error, setError] = useState<string | null>(null)
   const fileInputRef = useRef<HTMLInputElement>(null)
 
+  // Upload directly to Cloudinary
+  const uploadToCloudinary = async (file: File): Promise<string> => {
+    const sigResponse = await fetch('/api/upload/signature', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ folder }),
+    })
+    
+    if (!sigResponse.ok) {
+      throw new Error('Failed to get upload signature')
+    }
+    
+    const { signature, timestamp, cloudName, apiKey, folder: uploadFolder } = await sigResponse.json()
+    
+    const formData = new FormData()
+    formData.append('file', file)
+    formData.append('signature', signature)
+    formData.append('timestamp', timestamp.toString())
+    formData.append('api_key', apiKey)
+    formData.append('folder', uploadFolder)
+    
+    const uploadResponse = await fetch(
+      `https://api.cloudinary.com/v1_1/${cloudName}/image/upload`,
+      {
+        method: 'POST',
+        body: formData,
+      }
+    )
+    
+    if (!uploadResponse.ok) {
+      const errorData = await uploadResponse.json()
+      throw new Error(errorData.error?.message || 'Upload failed')
+    }
+    
+    const result = await uploadResponse.json()
+    return result.secure_url
+  }
+
   const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
     if (!file) return
@@ -311,22 +414,30 @@ export function SingleImageUpload({
     setError(null)
 
     try {
-      const formData = new FormData()
-      formData.append('file', file)
-      formData.append('folder', folder)
+      // Use direct Cloudinary upload for large files
+      let url: string
+      if (file.size > 4 * 1024 * 1024) {
+        url = await uploadToCloudinary(file)
+      } else {
+        const formData = new FormData()
+        formData.append('file', file)
+        formData.append('folder', folder)
 
-      const response = await fetch('/api/upload', {
-        method: 'POST',
-        body: formData,
-      })
+        const response = await fetch('/api/upload', {
+          method: 'POST',
+          body: formData,
+        })
 
-      if (!response.ok) {
-        const data = await response.json()
-        throw new Error(data.error || 'Upload failed')
+        if (!response.ok) {
+          const data = await response.json()
+          throw new Error(data.error || 'Upload failed')
+        }
+
+        const result = await response.json()
+        url = result.url
       }
-
-      const result = await response.json()
-      onChange(result.url)
+      
+      onChange(url)
     } catch (err: any) {
       setError(err.message || 'Failed to upload image')
     } finally {
@@ -430,6 +541,7 @@ export function SingleImageUpload({
                 <>
                   <ImageIcon className="h-8 w-8 text-gray-400 mx-auto" />
                   <p className="mt-2 text-sm text-gray-600">Click to upload</p>
+                  <p className="text-xs text-gray-400 mt-1">No size limit</p>
                 </>
               )}
             </div>
@@ -463,4 +575,3 @@ export function SingleImageUpload({
     </div>
   )
 }
-

@@ -1,16 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { cloudinary } from '@/lib/cloudinary'
 
-// Increase body size limit to 50MB for this route
-export const config = {
-  api: {
-    bodyParser: {
-      sizeLimit: '50mb',
-    },
-  },
-}
-
-// For App Router - set max duration and body size
+// For App Router - set max duration for large file uploads
 export const maxDuration = 60 // 60 seconds timeout
 export const dynamic = 'force-dynamic'
 
