@@ -95,3 +95,39 @@ export async function PATCH(request: NextRequest) {
     return NextResponse.json({ error: 'Lỗi cập nhật đơn hàng', message: 'Không thể cập nhật trạng thái đơn hàng. Vui lòng thử lại sau.' }, { status: 500 })
   }
 }
+
+
+export async function DELETE(request: NextRequest) {
+  try {
+    const { searchParams } = new URL(request.url)
+    const id = searchParams.get('id')
+
+    if (!id) {
+      return NextResponse.json(
+        { error: 'Thiếu thông tin', message: 'Vui lòng cung cấp ID đơn hàng' },
+        { status: 400 }
+      )
+    }
+
+    // Delete order items first (due to foreign key constraint)
+    await prisma.orderItem.deleteMany({
+      where: { orderId: id },
+    })
+
+    // Then delete the order
+    await prisma.order.delete({
+      where: { id },
+    })
+
+    return NextResponse.json({ success: true, message: 'Đơn hàng đã được xóa' })
+  } catch (error: any) {
+    console.error('Error deleting order:', error)
+    if (error.code === 'P2025') {
+      return NextResponse.json(
+        { error: 'Không tìm thấy đơn hàng', message: 'Đơn hàng với ID này không tồn tại trong hệ thống' },
+        { status: 404 }
+      )
+    }
+    return NextResponse.json({ error: 'Lỗi xóa đơn hàng', message: 'Không thể xóa đơn hàng. Vui lòng thử lại sau.' }, { status: 500 })
+  }
+}

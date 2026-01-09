@@ -739,7 +739,10 @@ export default function HomePage() {
         </div>
         <div className="container mx-auto px-4 py-4 sm:py-6">
           <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 md:gap-5 lg:gap-6 w-full">
-            {subcategories.map((sub, i) => {
+            {subcategories
+              .filter((sub) => !sub.name.toLowerCase().includes('trumpet'))
+              .slice(0, 4)
+              .map((sub, i) => {
               const displayName = sub.name.replace(/\s+Saxophones?/gi, '')
               const musicNotes = ['♪', '♫', '♬', '𝄞']
               const noteIcon = musicNotes[i % musicNotes.length]
@@ -752,14 +755,6 @@ export default function HomePage() {
                 </Link>
               )
             })}
-            {!subcategories.find(s => s.slug.includes('baritone') || s.name.toLowerCase().includes('baritone')) && (
-              <Link href="/shop?subcategory=baritone-saxophones" className="group bg-secondary hover:bg-secondary/90 rounded-lg p-4 sm:p-5 transition-all duration-300 hover:shadow-2xl hover:scale-105 hover:-translate-y-1 animate-fade-in-up" style={{ animationDelay: `${0.1 * subcategories.length}s` }}>
-                <div className="flex items-center justify-center gap-3">
-                  <span className="text-amber-400 text-2xl sm:text-3xl group-hover:animate-bounce transition-transform duration-300">𝄞</span>
-                  <h3 className="text-base sm:text-lg md:text-xl font-bold text-white group-hover:text-amber-300 transition-colors duration-300">Baritone</h3>
-                </div>
-              </Link>
-            )}
           </div>
         </div>
       </section>

@@ -11,7 +11,7 @@ const lora = Lora({
 })
 
 export const metadata: Metadata = {
-  title: 'James Sax Corner - Wind Instrument Specialists',
+  title: 'James Sax Corner - Premium Saxophones',
   description: 'Family-owned wind instrument specialists since 1985. Expert advice, professional setup, and personalized service for students, educators, and professionals.',
 }
 

@@ -143,12 +143,13 @@ export default function ProductsManagement() {
         productType: (product as any).productType || 'new',
         condition: (product as any).condition || undefined,
         conditionNotes: (product as any).conditionNotes || '',
+        shippingCost: (product as any).shippingCost || undefined,
         videoUrls: (product as any).videoUrls?.length > 0 
           ? [...(product as any).videoUrls, '', '', '', ''].slice(0, 4)
           : (product as any).videoUrl 
             ? [(product as any).videoUrl, '', '', ''] 
             : ['', '', '', ''],
-      })
+      } as any)
     } else {
       setEditingProduct(null)
       setFormData({
@@ -156,7 +157,7 @@ export default function ProductsManagement() {
         slug: '',
         brand: '',
         price: 0,
-        retailPrice: 0,
+        shippingCost: undefined,
         category: '',
         subcategory: '',
         images: [],
@@ -175,7 +176,7 @@ export default function ProductsManagement() {
         sku: 'JSC-',
         rating: 0,
         reviewCount: 0,
-      })
+      } as any)
     }
     setActiveTab('basic')
     setIsDialogOpen(true)
@@ -212,7 +213,7 @@ export default function ProductsManagement() {
         slug: formData.slug || formData.name?.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '') || '',
         brand: formData.brand,
         price: formData.price,
-        retailPrice: formData.retailPrice || null,
+        shippingCost: (formData as any).shippingCost || null,
         categoryId: categoryObj?.id || formData.category,
         subcategoryId: subcategoryObj?.id || formData.subcategory || null,
         images: formData.images || [],
@@ -842,12 +843,12 @@ export default function ProductsManagement() {
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Retail Price ($)
+                    Shipping Cost ($)
                   </label>
                   <Input
                     type="text"
                     inputMode="decimal"
-                    value={formData.retailPrice ? formData.retailPrice.toString() : ''}
+                    value={(formData as any).shippingCost ? (formData as any).shippingCost.toString() : ''}
                     onChange={(e) => {
                       const value = e.target.value
                       // Only allow numbers and one decimal point
@@ -855,12 +856,12 @@ export default function ProductsManagement() {
                         // Remove leading zeros (except for "0." case)
                         const cleanValue = value.replace(/^0+(?=\d)/, '')
                         const numValue = cleanValue ? parseFloat(cleanValue) : undefined
-                        setFormData({ ...formData, retailPrice: numValue })
+                        setFormData({ ...formData, shippingCost: numValue } as any)
                       }
                     }}
-                    placeholder="Original price (optional)"
+                    placeholder="Leave empty to use zone rate"
                   />
-                  <p className="text-xs text-gray-500 mt-1">Show as crossed-out price if higher than sale price</p>
+                  <p className="text-xs text-gray-500 mt-1">Product-specific shipping cost (optional). Leave empty to use shipping zone rate.</p>
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">

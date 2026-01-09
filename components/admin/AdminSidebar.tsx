@@ -21,6 +21,7 @@ import {
   Star,
   CircleHelp,
   MessageSquareText,
+  Truck,
 } from 'lucide-react'
 
 interface AdminSidebarProps {
@@ -45,6 +46,7 @@ export const menuItems = [
   { href: '/admin/promos', label: 'Promo Banners', icon: Megaphone },
   { href: '/admin/content', label: 'Homepage Content', icon: Home },
   { href: '/admin/orders', label: 'Orders', icon: ShoppingCart },
+  { href: '/admin/shipping', label: 'Shipping Zones', icon: Truck },
   { href: '/admin/users', label: 'Users', icon: Users },
   { href: '/admin/settings', label: 'Site Settings', icon: Settings },
 ]

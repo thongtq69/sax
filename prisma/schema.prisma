@@ -41,7 +41,7 @@ model Product {
   slug        String       @unique
   brand       String
   price       Float
-  retailPrice Float?
+  shippingCost Float?      // Product-specific shipping cost (optional)
   categoryId  String       @db.ObjectId
   category    Category     @relation(fields: [categoryId], references: [id], onDelete: Cascade)
   subcategoryId String?    @db.ObjectId
@@ -295,4 +295,17 @@ model Wishlist {
 
   @@unique([userId, productId])
   @@index([userId])
+}
+
+
+model ShippingZone {
+  id           String   @id @default(auto()) @map("_id") @db.ObjectId
+  name         String   // e.g., "USA", "Europe", "Asia Pacific"
+  countries    String[] @default([]) // Country codes: ["US", "CA"], or ["ALL"] for default
+  shippingCost Float    // Shipping cost for this zone
+  isDefault    Boolean  @default(false) // Default zone for countries not in any zone
+  order        Int      @default(0)
+  isActive     Boolean  @default(true)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
 }

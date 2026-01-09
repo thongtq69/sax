@@ -10,7 +10,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
-import { Search, ShoppingCart, Package, Truck, CheckCircle, Loader2, Eye, RefreshCw } from 'lucide-react'
+import { Search, ShoppingCart, Package, Truck, CheckCircle, Loader2, Eye, RefreshCw, Trash2 } from 'lucide-react'
 import {
   Dialog,
   DialogContent,
@@ -119,6 +119,31 @@ export default function OrdersManagement() {
       }
     } catch (error) {
       console.error('Error updating order:', error)
+    } finally {
+      setUpdating(null)
+    }
+  }
+
+  const deleteOrder = async (orderId: string) => {
+    if (!confirm('Are you sure you want to delete this order? This action cannot be undone.')) {
+      return
+    }
+    
+    setUpdating(orderId)
+    try {
+      const response = await fetch(`/api/orders?id=${orderId}`, {
+        method: 'DELETE',
+      })
+
+      if (response.ok) {
+        setOrders(orders.filter(order => order.id !== orderId))
+      } else {
+        const data = await response.json()
+        alert(data.error || 'Failed to delete order')
+      }
+    } catch (error) {
+      console.error('Error deleting order:', error)
+      alert('Failed to delete order')
     } finally {
       setUpdating(null)
     }
@@ -277,15 +302,26 @@ export default function OrdersManagement() {
                       </Select>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                      <Button 
-                        variant="outline" 
-                        size="sm"
-                        onClick={() => setSelectedOrder(order)}
-                        className="gap-1"
-                      >
-                        <Eye className="h-4 w-4" />
-                        View
-                      </Button>
+                      <div className="flex items-center justify-end gap-2">
+                        <Button 
+                          variant="outline" 
+                          size="sm"
+                          onClick={() => setSelectedOrder(order)}
+                          className="gap-1"
+                        >
+                          <Eye className="h-4 w-4" />
+                          View
+                        </Button>
+                        <Button 
+                          variant="outline" 
+                          size="sm"
+                          onClick={() => deleteOrder(order.id)}
+                          disabled={updating === order.id}
+                          className="gap-1 text-red-600 hover:text-red-700 hover:bg-red-50 border-red-200"
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      </div>
                     </td>
                   </tr>
                 ))}
