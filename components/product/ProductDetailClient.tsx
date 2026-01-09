@@ -405,8 +405,8 @@ const handleAddToCart = async () => {
     setTimeout(() => setIsAddedToCart(false), 2000)
   }
 
-  const savings = product.retailPrice ? product.retailPrice - product.price : 0
-  const savingsPercent = product.retailPrice ? Math.round((savings / product.retailPrice) * 100) : 0
+  const savings = 0 // Removed retailPrice, now using shippingCost
+  const savingsPercent = 0
 
   const handleNavigation = (sku: string, slug: string) => {
     // Use router.push for instant navigation with Next.js prefetching
@@ -698,15 +698,10 @@ const handleAddToCart = async () => {
               <span className="text-3xl md:text-4xl font-bold text-primary">
                 ${product.price.toLocaleString()}
               </span>
-              {product.retailPrice && (
-                <>
-                  <span className="text-lg md:text-xl text-gray-400 line-through">
-                    ${product.retailPrice.toLocaleString()}
-                  </span>
-                  <Badge variant="destructive" className="animate-pulse text-xs md:text-sm">
-                    Save ${savings.toLocaleString()}
-                  </Badge>
-                </>
+              {product.shippingCost && product.shippingCost > 0 && (
+                <span className="text-lg md:text-xl text-blue-600">
+                  Ship: ${product.shippingCost.toLocaleString()}
+                </span>
               )}
             </div>
 

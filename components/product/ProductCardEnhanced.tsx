@@ -112,7 +112,7 @@ export function ProductCardEnhanced({
   const displayReviewCount = reviewStats.reviewCount > 0 ? reviewStats.reviewCount : product.reviewCount || 0
 
   const finishes = getProductFinishes(product.id)
-  const savings = product.retailPrice ? product.retailPrice - product.price : 0
+  const savings = 0 // Removed retailPrice, now using shippingCost
 
   const handleAddToCart = async () => {
     setIsAddingToCart(true)
@@ -365,9 +365,9 @@ export function ProductCardEnhanced({
                 )}>
                   ${product.price.toLocaleString()}
                 </span>
-                {product.retailPrice && (
-                  <span className="text-sm text-muted-foreground line-through decoration-red-400">
-                    ${product.retailPrice.toLocaleString()}
+                {product.shippingCost && product.shippingCost > 0 && (
+                  <span className="text-sm text-blue-600">
+                    Ship: ${product.shippingCost.toLocaleString()}
                   </span>
                 )}
               </div>

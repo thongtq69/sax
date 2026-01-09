@@ -16,7 +16,7 @@ interface WishlistProduct {
   slug: string
   sku: string
   price: number
-  retailPrice?: number
+  shippingCost?: number
   images: string[]
   brand: string
   badge?: string
@@ -160,9 +160,9 @@ export default function WishlistPage() {
                     <span className="text-lg font-bold text-primary">
                       ${product.price.toLocaleString()}
                     </span>
-                    {product.retailPrice && (
-                      <span className="text-sm text-gray-400 line-through">
-                        ${product.retailPrice.toLocaleString()}
+                    {product.shippingCost && product.shippingCost > 0 && (
+                      <span className="text-sm text-blue-600">
+                        Ship: ${product.shippingCost.toLocaleString()}
                       </span>
                     )}
                   </div>

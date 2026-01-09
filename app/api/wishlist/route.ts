@@ -26,7 +26,7 @@ export async function GET() {
         slug: true,
         sku: true,
         price: true,
-        retailPrice: true,
+        shippingCost: true,
         images: true,
         brand: true,
         badge: true,

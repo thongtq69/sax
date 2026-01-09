@@ -4,7 +4,7 @@ export interface Product {
   slug: string
   brand: string
   price: number
-  retailPrice?: number
+  shippingCost?: number
   category: string
   subcategory?: string
   images: string[]
@@ -96,7 +96,7 @@ export const products: Product[] = [
     slug: 'altus-1607srbeo-d-4-flute',
     brand: 'Altus',
     price: 11999,
-    retailPrice: 13500,
+    shippingCost: 200,
     category: 'woodwinds',
     subcategory: 'flutes',
     images: [
@@ -124,7 +124,7 @@ export const products: Product[] = [
     slug: 'haynes-ap86w-amadeus-piccolo-a10751',
     brand: 'Haynes',
     price: 2399,
-    retailPrice: 2799,
+    shippingCost: 200,
     category: 'woodwinds',
     subcategory: 'piccolos',
     images: [
@@ -150,7 +150,7 @@ export const products: Product[] = [
     slug: 'haynes-ap86w-amadeus-piccolo-a10971',
     brand: 'Haynes',
     price: 2399,
-    retailPrice: 2799,
+    shippingCost: 200,
     category: 'woodwinds',
     subcategory: 'piccolos',
     images: [
@@ -176,7 +176,7 @@ export const products: Product[] = [
     slug: 'altus-1507srbeo-d-4-flute-8163',
     brand: 'Altus',
     price: 9999,
-    retailPrice: 11500,
+    shippingCost: 200,
     category: 'woodwinds',
     subcategory: 'flutes',
     images: [
@@ -204,7 +204,7 @@ export const products: Product[] = [
     slug: 'altus-1507srbeo-cd-4-flute-13428',
     brand: 'Altus',
     price: 9999,
-    retailPrice: 11500,
+    shippingCost: 200,
     category: 'woodwinds',
     subcategory: 'flutes',
     images: [
@@ -231,7 +231,7 @@ export const products: Product[] = [
     slug: 'altus-1507srbo-cd-4-flute-13974',
     brand: 'Altus',
     price: 9999,
-    retailPrice: 11500,
+    shippingCost: 200,
     category: 'woodwinds',
     subcategory: 'flutes',
     images: [
@@ -257,7 +257,7 @@ export const products: Product[] = [
     slug: 'altus-1607srbeo-cd-flute-12299',
     brand: 'Altus',
     price: 11999,
-    retailPrice: 13500,
+    shippingCost: 200,
     category: 'woodwinds',
     subcategory: 'flutes',
     images: [
@@ -284,7 +284,7 @@ export const products: Product[] = [
     slug: 'altus-1207srbeo-cd-pt-platinum-flute',
     brand: 'Altus',
     price: 9999,
-    retailPrice: 12000,
+    shippingCost: 200,
     category: 'woodwinds',
     subcategory: 'flutes',
     images: [
@@ -311,7 +311,7 @@ export const products: Product[] = [
     slug: 'altus-5207srbo-cd-14k-gold-flute',
     brand: 'Altus',
     price: 26999,
-    retailPrice: 32000,
+    shippingCost: 200,
     category: 'woodwinds',
     subcategory: 'flutes',
     images: [
@@ -338,7 +338,7 @@ export const products: Product[] = [
     slug: 'altus-1207srbo-d-flute-14k-riser',
     brand: 'Altus',
     price: 6999,
-    retailPrice: 8200,
+    shippingCost: 200,
     category: 'woodwinds',
     subcategory: 'flutes',
     images: [
@@ -364,7 +364,7 @@ export const products: Product[] = [
     slug: 'altus-1507srbeo-cd-flute-13111',
     brand: 'Altus',
     price: 11499,
-    retailPrice: 13000,
+    shippingCost: 200,
     category: 'woodwinds',
     subcategory: 'flutes',
     images: [
@@ -390,7 +390,7 @@ export const products: Product[] = [
     slug: 'altus-1807srbeo-d-flute-12388',
     brand: 'Altus',
     price: 13999,
-    retailPrice: 16000,
+    shippingCost: 200,
     category: 'woodwinds',
     subcategory: 'flutes',
     images: [
@@ -419,7 +419,7 @@ export const products: Product[] = [
     slug: 'selmer-paris-sa80-series-ii-alto-sax',
     brand: 'Selmer Paris',
     price: 3699,
-    retailPrice: 4500,
+    shippingCost: 200,
     category: 'woodwinds',
     subcategory: 'saxophones',
     images: [
@@ -447,7 +447,7 @@ export const products: Product[] = [
     slug: 'antigua-winds-ts4240bg-tenor-sax',
     brand: 'Antigua Winds',
     price: 1799,
-    retailPrice: 2200,
+    shippingCost: 200,
     category: 'woodwinds',
     subcategory: 'saxophones',
     images: [
@@ -475,7 +475,7 @@ export const products: Product[] = [
     slug: 'selmer-sfl301-student-flute',
     brand: 'Selmer',
     price: 499,
-    retailPrice: 599,
+    shippingCost: 200,
     category: 'woodwinds',
     subcategory: 'flutes',
     images: [
@@ -503,7 +503,7 @@ export const products: Product[] = [
     slug: 'buffet-crampon-r13-bb-clarinet',
     brand: 'Buffet Crampon',
     price: 2499,
-    retailPrice: 3200,
+    shippingCost: 200,
     category: 'woodwinds',
     subcategory: 'clarinets',
     images: [

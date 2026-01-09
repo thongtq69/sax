@@ -44,7 +44,7 @@ async function main() {
       slug: 'test-payment-product-10',
       brand: 'Test Brand',
       price: 10.00,
-      retailPrice: 15.00,
+      shippingCost: 200,
       categoryId: category.id,
       images: ['/placeholder.jpg'],
       badge: null,

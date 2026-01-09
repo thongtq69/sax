@@ -173,9 +173,9 @@ export function NewYearPopup() {
                           <p className="text-xs text-secondary/60">{product.brand}</p>
                           <div className="flex items-center gap-2 mt-1">
                             <span className="text-primary font-bold">${product.price.toLocaleString()}</span>
-                            {product.retailPrice && product.retailPrice > product.price && (
-                              <span className="text-xs text-secondary/40 line-through">
-                                ${product.retailPrice.toLocaleString()}
+                            {product.shippingCost && product.shippingCost > 0 && (
+                              <span className="text-xs text-blue-600">
+                                Ship: ${product.shippingCost.toLocaleString()}
                               </span>
                             )}
                           </div>

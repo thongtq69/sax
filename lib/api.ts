@@ -161,7 +161,7 @@ export function transformProduct(apiProduct: any) {
     slug: apiProduct.slug,
     brand: apiProduct.brand,
     price: apiProduct.price,
-    retailPrice: apiProduct.retailPrice,
+    shippingCost: apiProduct.shippingCost,
     category: apiProduct.category?.slug || apiProduct.categoryId,
     subcategory: apiProduct.subcategory?.slug || apiProduct.subcategoryId,
     images: apiProduct.images || [],

@@ -51,7 +51,7 @@ export default function ProductsManagement() {
     slug: '',
     brand: '',
     price: 0,
-    retailPrice: 0,
+    shippingCost: 0,
     category: '',
     subcategory: '',
     images: [],
@@ -484,8 +484,8 @@ export default function ProductsManagement() {
                       </td>
                       <td className="px-6 py-4">
                         <div className="font-semibold text-gray-900">${product.price.toLocaleString()}</div>
-                        {product.retailPrice && product.retailPrice > product.price && (
-                          <div className="text-sm text-gray-400 line-through">${product.retailPrice.toLocaleString()}</div>
+                        {product.shippingCost && product.shippingCost > 0 && (
+                          <div className="text-sm text-blue-600">Ship: ${product.shippingCost.toLocaleString()}</div>
                         )}
                       </td>
                       <td className="px-6 py-4">
@@ -584,8 +584,8 @@ export default function ProductsManagement() {
                   <div className="mt-2 flex items-center justify-between">
                     <div>
                       <span className="font-bold text-gray-900">${product.price.toLocaleString()}</span>
-                      {product.retailPrice && product.retailPrice > product.price && (
-                        <span className="text-sm text-gray-400 line-through ml-2">${product.retailPrice.toLocaleString()}</span>
+                      {product.shippingCost && product.shippingCost > 0 && (
+                        <span className="text-sm text-blue-600 ml-2">Ship: ${product.shippingCost.toLocaleString()}</span>
                       )}
                     </div>
                     <span className={`text-xs px-2 py-1 rounded-full ${product.inStock ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`}>

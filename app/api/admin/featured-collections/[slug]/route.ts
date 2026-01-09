@@ -34,7 +34,7 @@ export async function GET(
         sku: true,
         brand: true,
         price: true,
-        retailPrice: true,
+        shippingCost: true,
         images: true,
         badge: true,
         inStock: true,

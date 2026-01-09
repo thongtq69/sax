@@ -81,8 +81,8 @@ export function QuickViewModal({
     }, 2000)
   }
 
-  const savings = product.retailPrice ? product.retailPrice - product.price : 0
-  const savingsPercent = product.retailPrice ? Math.round((savings / product.retailPrice) * 100) : 0
+  const savings = 0 // Removed retailPrice, now using shippingCost
+  const savingsPercent = 0
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -311,15 +311,10 @@ export function QuickViewModal({
                 <span className="text-2xl sm:text-3xl font-bold text-primary">
                   ${product.price.toLocaleString()}
                 </span>
-                {product.retailPrice && (
-                  <>
-                    <span className="text-base sm:text-lg text-gray-400 line-through">
-                      ${product.retailPrice.toLocaleString()}
-                    </span>
-                    <Badge variant="destructive" className="text-[10px] sm:text-xs animate-pulse-soft">
-                      Save ${savings.toLocaleString()}
-                    </Badge>
-                  </>
+                {product.shippingCost && product.shippingCost > 0 && (
+                  <span className="text-base sm:text-lg text-blue-600">
+                    Ship: ${product.shippingCost.toLocaleString()}
+                  </span>
                 )}
               </div>
             </div>

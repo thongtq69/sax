@@ -154,9 +154,9 @@ export function SearchBar({ open, onOpenChange }: SearchBarProps) {
                       </div>
                       <div className="text-sm font-bold text-primary mt-1 flex items-center gap-2">
                         ${product.price.toLocaleString()}
-                        {product.retailPrice && (
-                          <span className="text-xs text-muted-foreground line-through">
-                            ${product.retailPrice.toLocaleString()}
+                        {product.shippingCost && product.shippingCost > 0 && (
+                          <span className="text-xs text-blue-600">
+                            Ship: ${product.shippingCost.toLocaleString()}
                           </span>
                         )}
                       </div>

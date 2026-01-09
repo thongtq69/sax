@@ -74,7 +74,7 @@ async function main() {
         slug: productData.slug,
         brand: productData.brand,
         price: productData.price,
-        retailPrice: productData.retailPrice,
+        shippingCost: productData.shippingCost,
         categoryId: categoryId,
         subcategoryId: subcategoryId,
         images: productData.images,
