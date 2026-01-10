@@ -1,5 +1,6 @@
 'use client'
 
+import dynamic from 'next/dynamic'
 import { useState, useEffect, useRef } from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
@@ -10,7 +11,12 @@ import type { Product } from '@/lib/data'
 import { ChevronRight, ChevronLeft, Star, Sparkles, MessageCircle } from 'lucide-react'
 import { getAllReviewsAsync, type Review } from '@/lib/reviews'
 import { ScrollAnimations } from '@/components/site/ScrollAnimations'
-import { TestimonialsPopup } from '@/components/site/TestimonialsPopup'
+
+// Lazy load popup - only when user clicks "View All Reviews"
+const TestimonialsPopup = dynamic(
+  () => import('@/components/site/TestimonialsPopup').then(m => m.TestimonialsPopup),
+  { ssr: false }
+)
 
 const getReviewExcerpt = (message: string, maxLength = 160) => {
   if (message.length <= maxLength) return message
@@ -358,7 +364,7 @@ export default function HomePage() {
   useEffect(() => {
     async function fetchData() {
       try {
-        // Try to fetch from featured collections first
+        // Fetch all collections from combined endpoint (1 request instead of 6)
         let newArrivalsProducts: Product[] = []
         let featuredInstrumentsProducts: Product[] = []
         let onSale: Product[] = []
@@ -369,66 +375,29 @@ export default function HomePage() {
         const backgrounds: Record<string, string> = {}
 
         try {
-          const [newArrivalsRes, featuredRes, onSaleRes, flutesRes, saxRes, studentRes] = await Promise.all([
-            fetch('/api/admin/featured-collections/new-arrivals'),
-            fetch('/api/admin/featured-collections/featured-instruments'),
-            fetch('/api/admin/featured-collections/on-sale'),
-            fetch('/api/admin/featured-collections/professional-flutes'),
-            fetch('/api/admin/featured-collections/saxophones'),
-            fetch('/api/admin/featured-collections/student-instruments'),
-          ])
+          const response = await fetch('/api/homepage-data')
+          if (response.ok) {
+            const data = await response.json()
 
-          if (newArrivalsRes.ok) {
-            const newArrivalsData = await newArrivalsRes.json()
-            if (newArrivalsData.name) titles['new-arrivals'] = newArrivalsData.name.toUpperCase()
-            if (newArrivalsData.backgroundImage) backgrounds['new-arrivals'] = newArrivalsData.backgroundImage
-            if (newArrivalsData.products && newArrivalsData.products.length > 0) {
-              newArrivalsProducts = newArrivalsData.products.map(transformProduct)
+            // Process each collection from combined response
+            const collectionMap: Record<string, { setter: (p: Product[]) => void, key: string }> = {
+              'new-arrivals': { setter: (p) => { newArrivalsProducts = p }, key: 'new-arrivals' },
+              'featured-instruments': { setter: (p) => { featuredInstrumentsProducts = p }, key: 'featured-instruments' },
+              'on-sale': { setter: (p) => { onSale = p }, key: 'on-sale' },
+              'professional-flutes': { setter: (p) => { professionalFlutes = p }, key: 'professional-flutes' },
+              'saxophones': { setter: (p) => { saxophones = p }, key: 'saxophones' },
+              'student-instruments': { setter: (p) => { studentInstruments = p }, key: 'student-instruments' },
             }
-          }
 
-          if (featuredRes.ok) {
-            const featuredData = await featuredRes.json()
-            if (featuredData.name) titles['featured-instruments'] = featuredData.name.toUpperCase()
-            if (featuredData.backgroundImage) backgrounds['featured-instruments'] = featuredData.backgroundImage
-            if (featuredData.products && featuredData.products.length > 0) {
-              featuredInstrumentsProducts = featuredData.products.map(transformProduct)
-            }
-          }
-
-          if (onSaleRes.ok) {
-            const onSaleData = await onSaleRes.json()
-            if (onSaleData.name) titles['on-sale'] = onSaleData.name.toUpperCase()
-            if (onSaleData.backgroundImage) backgrounds['on-sale'] = onSaleData.backgroundImage
-            if (onSaleData.products && onSaleData.products.length > 0) {
-              onSale = onSaleData.products.map(transformProduct)
-            }
-          }
-
-          if (flutesRes.ok) {
-            const flutesData = await flutesRes.json()
-            if (flutesData.name) titles['professional-flutes'] = flutesData.name.toUpperCase()
-            if (flutesData.backgroundImage) backgrounds['professional-flutes'] = flutesData.backgroundImage
-            if (flutesData.products && flutesData.products.length > 0) {
-              professionalFlutes = flutesData.products.map(transformProduct)
-            }
-          }
-
-          if (saxRes.ok) {
-            const saxData = await saxRes.json()
-            if (saxData.name) titles['saxophones'] = saxData.name.toUpperCase()
-            if (saxData.backgroundImage) backgrounds['saxophones'] = saxData.backgroundImage
-            if (saxData.products && saxData.products.length > 0) {
-              saxophones = saxData.products.map(transformProduct)
-            }
-          }
-
-          if (studentRes.ok) {
-            const studentData = await studentRes.json()
-            if (studentData.name) titles['student-instruments'] = studentData.name.toUpperCase()
-            if (studentData.backgroundImage) backgrounds['student-instruments'] = studentData.backgroundImage
-            if (studentData.products && studentData.products.length > 0) {
-              studentInstruments = studentData.products.map(transformProduct)
+            for (const [slug, config] of Object.entries(collectionMap)) {
+              const collection = data[slug]
+              if (collection) {
+                if (collection.name) titles[slug] = collection.name.toUpperCase()
+                if (collection.backgroundImage) backgrounds[slug] = collection.backgroundImage
+                if (collection.products?.length > 0) {
+                  config.setter(collection.products.map(transformProduct))
+                }
+              }
             }
           }
 
@@ -445,6 +414,7 @@ export default function HomePage() {
         setProfessionalFlutesProducts(professionalFlutes)
         setSaxophonesProducts(saxophones)
         setStudentInstrumentsProducts(studentInstruments)
+
 
         const allResponse = await getProducts({ limit: 28 })
         const all = allResponse.products.map(transformProduct)
@@ -524,7 +494,7 @@ export default function HomePage() {
       <ScrollAnimations />
       <section className="homepage-hero relative overflow-hidden">
         <div className="absolute inset-0">
-          <Image src={heroBackgroundImage} alt="Saxophones Background" fill className="object-cover" priority />
+          <Image src={heroBackgroundImage} alt="Saxophones Background" fill className="object-cover" priority sizes="100vw" quality={85} />
         </div>
         <div className="relative min-h-[280px] md:min-h-[350px] lg:min-h-[420px]">
           <div className="container mx-auto flex min-h-[280px] md:min-h-[350px] lg:min-h-[420px] items-center justify-center px-4 py-8 md:py-12">

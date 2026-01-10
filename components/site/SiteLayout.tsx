@@ -1,13 +1,18 @@
 'use client'
 
+import dynamic from 'next/dynamic'
 import { usePathname } from 'next/navigation'
-import { TopBar } from './TopBar'
 import { Header } from './Header'
 import { AnnouncementBar } from './AnnouncementBar'
 import { Footer } from './Footer'
-import { NewYearPopup } from './NewYearPopup'
 import { useNavigationLoading } from '@/hooks/use-navigation-loading'
-import { Loader2 } from 'lucide-react'
+import { SiteSettingsProvider } from '@/contexts/SiteSettingsContext'
+
+// Lazy load popup - not needed on initial paint
+const NewYearPopup = dynamic(
+  () => import('./NewYearPopup').then(m => m.NewYearPopup),
+  { ssr: false }
+)
 
 export function SiteLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname()
@@ -19,13 +24,13 @@ export function SiteLayout({ children }: { children: React.ReactNode }) {
   }
 
   return (
-    <>
+    <SiteSettingsProvider>
       <Header />
       <AnnouncementBar />
       <main className="min-h-screen">{children}</main>
       <Footer />
 
-      {/* New Year 2026 Flash Sale Popup */}
+      {/* New Year 2026 Flash Sale Popup - lazy loaded */}
       <NewYearPopup />
 
       {/* Global Navigation Loading Indicator - Lightweight progress bar */}
@@ -36,6 +41,6 @@ export function SiteLayout({ children }: { children: React.ReactNode }) {
           </div>
         </div>
       )}
-    </>
+    </SiteSettingsProvider>
   )
 }

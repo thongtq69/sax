@@ -1,11 +1,18 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import dynamic from 'next/dynamic'
+import { useState } from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
 import { Phone, MapPin, Clock, Music, Heart, Mail, MessageCircle } from 'lucide-react'
 import { Button } from '@/components/ui/button'
-import { TestimonialsPopup } from './TestimonialsPopup'
+import { useSiteSettings } from '@/contexts/SiteSettingsContext'
+
+// Lazy load TestimonialsPopup - only when user clicks
+const TestimonialsPopup = dynamic(
+  () => import('./TestimonialsPopup').then(m => m.TestimonialsPopup),
+  { ssr: false }
+)
 
 // WhatsApp icon component
 const WhatsAppIcon = ({ className, style }: { className?: string; style?: React.CSSProperties }) => (
@@ -40,76 +47,11 @@ const XIcon = ({ className, style }: { className?: string; style?: React.CSSProp
   </svg>
 )
 
-interface SocialLinks {
-  facebook?: string
-  youtube?: string
-  instagram?: string
-  twitter?: string
-}
-
-interface SiteSettings {
-  companyName: string
-  address: string
-  phone: string
-  email: string
-  workingHours: string
-  socialLinks: SocialLinks
-  footerText: string
-  copyrightText: string
-}
-
-const defaultSettings: SiteSettings = {
-  companyName: 'James Sax Corner',
-  address: 'Ha Noi, Viet Nam',
-  phone: '(702) 555-1234',
-  email: 'info@jamessaxcorner.com',
-  workingHours: '24/7',
-  socialLinks: {
-    facebook: 'https://www.facebook.com/jamessaxcorner',
-    youtube: 'https://www.youtube.com/@jamessaxcorner',
-    instagram: 'https://instagram.com',
-    twitter: 'https://twitter.com',
-  },
-  footerText: '',
-  copyrightText: '© 2024 James Sax Corner. All rights reserved.',
-}
-
 export function Footer() {
   const [showTestimonials, setShowTestimonials] = useState(false)
-  const [settings, setSettings] = useState<SiteSettings>(defaultSettings)
+  const settings = useSiteSettings()
 
-  useEffect(() => {
-    async function fetchSettings() {
-      try {
-        const response = await fetch('/api/admin/site-settings')
-        if (response.ok) {
-          const data = await response.json()
-          // Merge socialLinks with defaults - use database value if exists, otherwise use default
-          const dbSocialLinks = data.socialLinks || {}
-          const mergedSocialLinks = {
-            facebook: dbSocialLinks.facebook || defaultSettings.socialLinks.facebook,
-            youtube: dbSocialLinks.youtube || defaultSettings.socialLinks.youtube,
-            instagram: dbSocialLinks.instagram || defaultSettings.socialLinks.instagram,
-            twitter: dbSocialLinks.twitter || defaultSettings.socialLinks.twitter,
-          }
-          setSettings({
-            companyName: data.companyName || defaultSettings.companyName,
-            address: data.address || defaultSettings.address,
-            phone: data.phone || defaultSettings.phone,
-            email: data.email || defaultSettings.email,
-            workingHours: data.workingHours || defaultSettings.workingHours,
-            socialLinks: mergedSocialLinks,
-            footerText: data.footerText || '',
-            copyrightText: data.copyrightText || defaultSettings.copyrightText,
-          })
-        }
-      } catch (error) {
-        console.error('Error fetching site settings:', error)
-      }
-    }
-    fetchSettings()
-  }, [])
-
+  // Build social links array from shared context
   const socialLinks = [
     { href: settings.socialLinks.facebook, icon: FacebookIcon, label: 'Facebook' },
     { href: settings.socialLinks.instagram, icon: InstagramIcon, label: 'Instagram' },

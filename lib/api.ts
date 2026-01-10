@@ -62,12 +62,13 @@ async function fetchAPI<T>(endpoint: string, options?: RequestInit): Promise<T> 
   const url = `${API_BASE}${endpoint}`
   const response = await fetch(url, {
     ...options,
-    cache: 'no-store', // Disable caching to always get fresh data
+    next: { revalidate: 60 }, // Cache for 60 seconds, then revalidate in background
     headers: {
       'Content-Type': 'application/json',
       ...options?.headers,
     },
   })
+
 
   if (!response.ok) {
     // Try to get detailed error message from response body

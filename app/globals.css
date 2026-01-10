@@ -2,8 +2,7 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Import Lora font for consistent typography */
-@import url('https://fonts.googleapis.com/css2?family=Lora:wght@400;500;600;700&display=swap');
+/* Font loaded via next/font in layout.tsx - Lora variable */
 
 @layer base {
   :root {

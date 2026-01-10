@@ -1,5 +1,6 @@
 'use client'
 
+import dynamic from 'next/dynamic'
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
@@ -9,13 +10,18 @@ import { Product } from '@/lib/data'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
-import { QuickViewModal } from './QuickViewModal'
 import { useCartStore } from '@/lib/store/cart'
 import { SmartImage } from '@/components/ui/smart-image'
 import { getProductRatingStats } from '@/lib/reviews'
 import { getProductUrl } from '@/lib/api'
 import { ConditionTooltip } from './ConditionTooltip'
 import { ConditionRating } from '@/lib/product-conditions'
+
+// Lazy load QuickViewModal - only when user clicks Quick View
+const QuickViewModal = dynamic(
+  () => import('./QuickViewModal').then(m => m.QuickViewModal),
+  { ssr: false }
+)
 
 interface ProductCardProps {
   product: Product
@@ -44,10 +50,10 @@ export function ProductCard({ product, index = 0 }: ProductCardProps) {
   const addItem = useCartStore((state) => state.addItem)
   const router = useRouter()
   const { data: session } = useSession()
-  
+
   // Product URL with SEO-friendly slug
   const productUrl = getProductUrl(product.sku, product.slug)
-  
+
   // Fetch wishlist status when user is logged in
   useEffect(() => {
     const checkWishlist = async () => {
@@ -70,7 +76,7 @@ export function ProductCard({ product, index = 0 }: ProductCardProps) {
   const handleToggleWishlist = async (e: React.MouseEvent) => {
     e.preventDefault()
     e.stopPropagation()
-    
+
     if (!session?.user?.id) {
       router.push('/auth/login?callbackUrl=' + encodeURIComponent(window.location.pathname))
       return
@@ -95,7 +101,7 @@ export function ProductCard({ product, index = 0 }: ProductCardProps) {
       setIsWishlistLoading(false)
     }
   }
-  
+
   // Prefetch product page on hover
   const handleMouseEnter = () => {
     router.prefetch(productUrl)
@@ -131,7 +137,7 @@ export function ProductCard({ product, index = 0 }: ProductCardProps) {
 
   return (
     <>
-      <Card 
+      <Card
         className="product-card group relative overflow-hidden border-2 border-transparent hover:border-primary/30 transition-all duration-500 hover:shadow-2xl hover:-translate-y-1 sm:hover:-translate-y-2 bg-card"
         style={{ animationDelay: `${staggerDelay}s` }}
       >
@@ -161,9 +167,8 @@ export function ProductCard({ product, index = 0 }: ProductCardProps) {
             src={product.images[0] || ''}
             alt={product.name}
             fill
-            className={`object-cover transition-all duration-700 ease-out ${
-              imageHover && product.images[1] ? 'opacity-0 scale-105' : 'opacity-100 scale-100'
-            } ${isImageLoading ? 'opacity-0' : 'opacity-100'}`}
+            className={`object-cover transition-all duration-700 ease-out ${imageHover && product.images[1] ? 'opacity-0 scale-105' : 'opacity-100 scale-100'
+              } ${isImageLoading ? 'opacity-0' : 'opacity-100'}`}
             onLoad={() => setIsImageLoading(false)}
           />
 
@@ -173,9 +178,8 @@ export function ProductCard({ product, index = 0 }: ProductCardProps) {
               src={product.images[1]}
               alt={`${product.name} - alternate view`}
               fill
-              className={`object-cover transition-all duration-700 ease-out absolute inset-0 ${
-                imageHover ? 'opacity-100 scale-100' : 'opacity-0 scale-95'
-              }`}
+              className={`object-cover transition-all duration-700 ease-out absolute inset-0 ${imageHover ? 'opacity-100 scale-100' : 'opacity-0 scale-95'
+                }`}
             />
           )}
 
@@ -187,9 +191,8 @@ export function ProductCard({ product, index = 0 }: ProductCardProps) {
             {product.badge && (
               <Badge
                 variant={product.badge}
-                className={`shadow-lg transform transition-all duration-300 hover:scale-105 ${
-                  product.badge === 'sale' ? 'animate-pulse-soft' : ''
-                } ${product.badge === 'limited' ? 'animate-border-glow' : ''}`}
+                className={`shadow-lg transform transition-all duration-300 hover:scale-105 ${product.badge === 'sale' ? 'animate-pulse-soft' : ''
+                  } ${product.badge === 'limited' ? 'animate-border-glow' : ''}`}
               >
                 {product.badge === 'new' && '✨ New'}
                 {product.badge === 'sale' && `🔥 Save $${savings.toFixed(0)}`}
@@ -205,8 +208,8 @@ export function ProductCard({ product, index = 0 }: ProductCardProps) {
             )}
             {/* Condition badge for used products */}
             {product.productType === 'used' && product.condition && (
-              <ConditionTooltip 
-                condition={product.condition as ConditionRating} 
+              <ConditionTooltip
+                condition={product.condition as ConditionRating}
                 className="shadow-lg"
               />
             )}
@@ -216,16 +219,15 @@ export function ProductCard({ product, index = 0 }: ProductCardProps) {
           <button
             onClick={handleToggleWishlist}
             disabled={isWishlistLoading}
-            className={`absolute right-3 top-3 z-20 p-2 rounded-full bg-white/90 backdrop-blur-sm shadow-lg transition-all duration-300 hover:scale-110 ${
-              isWishlisted ? 'text-red-500' : 'text-gray-400 hover:text-red-400'
-            } ${isWishlistLoading ? 'opacity-50' : ''}`}
+            className={`absolute right-3 top-3 z-20 p-2 rounded-full bg-white/90 backdrop-blur-sm shadow-lg transition-all duration-300 hover:scale-110 ${isWishlisted ? 'text-red-500' : 'text-gray-400 hover:text-red-400'
+              } ${isWishlistLoading ? 'opacity-50' : ''}`}
             title={session?.user ? (isWishlisted ? "Remove from Wishlist" : "Add to Wishlist") : "Login to add to Wishlist"}
           >
             {isWishlistLoading ? (
               <Loader2 className="h-5 w-5 animate-spin" />
             ) : (
-              <Heart 
-                className={`h-5 w-5 transition-all duration-300 ${isWishlisted ? 'fill-current scale-110' : ''}`} 
+              <Heart
+                className={`h-5 w-5 transition-all duration-300 ${isWishlisted ? 'fill-current scale-110' : ''}`}
               />
             )}
           </button>
@@ -311,9 +313,8 @@ export function ProductCard({ product, index = 0 }: ProductCardProps) {
 
             {/* Add to Cart Button with ripple effect */}
             <Button
-              className={`add-to-cart-btn w-full btn-ripple font-semibold tracking-wide transition-all duration-300 text-xs sm:text-sm h-8 sm:h-10 ${
-                isAddingToCart ? 'scale-95 bg-green-500' : ''
-              }`}
+              className={`add-to-cart-btn w-full btn-ripple font-semibold tracking-wide transition-all duration-300 text-xs sm:text-sm h-8 sm:h-10 ${isAddingToCart ? 'scale-95 bg-green-500' : ''
+                }`}
               onClick={handleAddToCart}
               disabled={!product.inStock || product.badge === 'out-of-stock' || isAddingToCart}
             >

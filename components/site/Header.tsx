@@ -1,5 +1,6 @@
 'use client'
 
+import dynamic from 'next/dynamic'
 import { useState, useEffect, useRef } from 'react'
 import { useSession } from 'next-auth/react'
 import Link from 'next/link'
@@ -8,10 +9,19 @@ import { Search, ShoppingCart, Menu, X, User, LogIn, MessageCircle } from 'lucid
 import { useCartStore } from '@/lib/store/cart'
 import { Button } from '@/components/ui/button'
 import { SearchBar } from './SearchBar'
-import { MiniCartDrawer } from '@/components/cart/MiniCartDrawer'
-import { TestimonialsPopup } from './TestimonialsPopup'
 import { UserMenu } from '@/components/auth/UserMenu'
 import { cn } from '@/lib/utils'
+import { useSiteSettings } from '@/contexts/SiteSettingsContext'
+
+// Lazy load heavy components - only when user interacts
+const MiniCartDrawer = dynamic(
+  () => import('@/components/cart/MiniCartDrawer').then(m => m.MiniCartDrawer),
+  { ssr: false }
+)
+const TestimonialsPopup = dynamic(
+  () => import('./TestimonialsPopup').then(m => m.TestimonialsPopup),
+  { ssr: false }
+)
 
 // Social Media Icons
 const FacebookIcon = ({ className }: { className?: string }) => (
@@ -56,6 +66,7 @@ const defaultSocialLinks = {
 
 export function Header() {
   const { data: session, status } = useSession()
+  const siteSettings = useSiteSettings()
   const [isScrolled, setIsScrolled] = useState(false)
   const [isHidden, setIsHidden] = useState(false)
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
@@ -63,40 +74,20 @@ export function Header() {
   const [isCartOpen, setIsCartOpen] = useState(false)
   const [isTestimonialsOpen, setIsTestimonialsOpen] = useState(false)
   const [cartBounce, setCartBounce] = useState(false)
-  const [socialLinks, setSocialLinks] = useState<SocialLinks>(defaultSocialLinks)
   const [isMounted, setIsMounted] = useState(false)
   const lastScrollY = useRef(0)
   const itemCount = useCartStore(state => state.getItemCount())
   const subtotal = useCartStore(state => state.getSubtotal())
+
+  // Use social links from shared context (eliminates duplicate API call)
+  const socialLinks = siteSettings.socialLinks
 
   // Prevent hydration mismatch by only rendering cart values on client
   useEffect(() => {
     setIsMounted(true)
   }, [])
 
-  // Fetch social links from database
-  useEffect(() => {
-    async function fetchSocialLinks() {
-      try {
-        const response = await fetch('/api/admin/site-settings')
-        if (response.ok) {
-          const data = await response.json()
-          const dbSocialLinks = data.socialLinks || {}
-          setSocialLinks({
-            facebook: dbSocialLinks.facebook || defaultSocialLinks.facebook,
-            youtube: dbSocialLinks.youtube || defaultSocialLinks.youtube,
-            instagram: dbSocialLinks.instagram || defaultSocialLinks.instagram,
-            twitter: dbSocialLinks.twitter || defaultSocialLinks.twitter,
-          })
-        }
-      } catch (error) {
-        console.error('Error fetching social links:', error)
-      }
-    }
-    fetchSocialLinks()
-  }, [])
-
-  // Build social icons array from database
+  // Build social icons array from context
   const socialIconsData = [
     { href: socialLinks.facebook, icon: FacebookIcon, label: 'Facebook' },
     { href: socialLinks.instagram, icon: InstagramIcon, label: 'Instagram' },
