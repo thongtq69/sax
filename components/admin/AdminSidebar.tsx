@@ -34,18 +34,15 @@ interface AdminSidebarProps {
 }
 
 export const menuItems = [
-  { href: '/admin', label: 'Dashboard', icon: LayoutDashboard, exact: true },
   { href: '/admin/products', label: 'Products', icon: Package },
   { href: '/admin/brands', label: 'Brands', icon: Tag },
   { href: '/admin/featured-collections', label: 'Featured Collections', icon: Star },
   { href: '/admin/blog', label: 'Blog Posts', icon: FileText },
   { href: '/admin/categories', label: 'Categories', icon: FolderTree },
-  // { href: '/admin/banners', label: 'Banners', icon: Image }, // Hidden
   { href: '/admin/faqs', label: 'FAQs', icon: HelpCircle },
   { href: '/admin/quick-faq', label: 'Quick FAQ (Product)', icon: CircleHelp },
   { href: '/admin/inquiry-titles', label: 'Inquiry Titles', icon: MessageSquareText },
   { href: '/admin/testimonials', label: 'Testimonials & Reviews', icon: MessageSquare },
-  // { href: '/admin/promos', label: 'Promo Banners', icon: Megaphone }, // Hidden
   { href: '/admin/content', label: 'Homepage Content', icon: Home },
   { href: '/admin/orders', label: 'Orders', icon: ShoppingCart },
   { href: '/admin/shipping', label: 'Shipping Zones', icon: Truck },

@@ -187,9 +187,6 @@ function CheckoutContent() {
                 <Truck className="h-5 w-5 text-primary" />
                 <h2 className="text-xl font-semibold">Shipping Information</h2>
               </div>
-              <p className="text-sm text-gray-500 mb-4">
-                Fill this form if your shipping address differs from your PayPal address
-              </p>
               <div className="space-y-4">
                 {/* Row 1: Email */}
                 <Input placeholder="Email *" value={shippingInfo.email} onChange={(e) => handleChange('email', e.target.value)} />

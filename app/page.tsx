@@ -418,10 +418,10 @@ export default function HomePage() {
           <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-4 lg:grid-cols-4 gap-3 sm:gap-4 md:gap-5 lg:gap-6 w-full">
             {/* Fixed categories: Alto, Soprano, Tenor, Baritone */}
             {[
-              { name: 'Alto', slug: 'alto-saxophones' },
-              { name: 'Soprano', slug: 'soprano-saxophones' },
-              { name: 'Tenor', slug: 'tenor-saxophones' },
-              { name: 'Baritone', slug: 'baritone-saxophones' },
+              { name: 'Alto', slug: 'alto' },
+              { name: 'Soprano', slug: 'soprano' },
+              { name: 'Tenor', slug: 'tenor' },
+              { name: 'Baritone', slug: 'baritone' },
             ].map((sub, i) => {
               const musicNotes = ['♪', '♫', '♬', '𝄞']
               const noteIcon = musicNotes[i % musicNotes.length]

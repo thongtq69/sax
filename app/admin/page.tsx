@@ -218,128 +218,137 @@ export default function AdminDashboard() {
         </div>
       </div>
 
-      {/* Quick Actions & Recent Orders */}
-      <div className="flex flex-col lg:flex-row gap-4 lg:gap-6">
-        {/* Quick Actions */}
-        <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-4 sm:p-6 flex-1">
-          <h2 className="text-base sm:text-lg font-semibold text-gray-900 mb-3 sm:mb-4">Quick Actions</h2>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 sm:gap-3">
-            <Link href="/admin/products">
-              <Button className="w-full justify-start text-xs sm:text-sm h-9 sm:h-10 px-2 sm:px-4" variant="outline">
-                <Package className="h-3 w-3 sm:h-4 sm:w-4 mr-2 sm:mr-3 flex-shrink-0" />
-                <span className="truncate">Manage Products</span>
-              </Button>
-            </Link>
-            <Link href="/admin/blog">
-              <Button className="w-full justify-start text-xs sm:text-sm h-9 sm:h-10 px-2 sm:px-4" variant="outline">
-                <FileText className="h-3 w-3 sm:h-4 sm:w-4 mr-2 sm:mr-3 flex-shrink-0" />
-                <span className="truncate">Blog Posts</span>
-              </Button>
-            </Link>
-            <Link href="/admin/categories">
-              <Button className="w-full justify-start text-xs sm:text-sm h-9 sm:h-10 px-2 sm:px-4" variant="outline">
-                <Layers className="h-3 w-3 sm:h-4 sm:w-4 mr-2 sm:mr-3 flex-shrink-0" />
-                <span className="truncate">Categories</span>
-              </Button>
-            </Link>
-            <Link href="/admin/banners">
-              <Button className="w-full justify-start text-xs sm:text-sm h-9 sm:h-10 px-2 sm:px-4" variant="outline">
-                <ImageIcon className="h-3 w-3 sm:h-4 sm:w-4 mr-2 sm:mr-3 flex-shrink-0" />
-                <span className="truncate">Banners</span>
-              </Button>
-            </Link>
-            <Link href="/admin/faqs">
-              <Button className="w-full justify-start text-xs sm:text-sm h-9 sm:h-10 px-2 sm:px-4" variant="outline">
-                <HelpCircle className="h-3 w-3 sm:h-4 sm:w-4 mr-2 sm:mr-3 flex-shrink-0" />
-                <span className="truncate">FAQs</span>
-              </Button>
-            </Link>
-            <Link href="/admin/quick-faq">
-              <Button className="w-full justify-start text-xs sm:text-sm h-9 sm:h-10 px-2 sm:px-4" variant="outline">
-                <ClipboardList className="h-3 w-3 sm:h-4 sm:w-4 mr-2 sm:mr-3 flex-shrink-0" />
-                <span className="truncate">Quick FAQ</span>
-              </Button>
-            </Link>
-            <Link href="/admin/inquiries">
-              <Button className="w-full justify-start text-xs sm:text-sm h-9 sm:h-10 px-2 sm:px-4" variant="outline">
-                <MessageSquare className="h-3 w-3 sm:h-4 sm:w-4 mr-2 sm:mr-3 flex-shrink-0" />
-                <span className="truncate">Customer Inquiries</span>
-              </Button>
-            </Link>
-            <Link href="/admin/inquiry-titles">
-              <Button className="w-full justify-start text-xs sm:text-sm h-9 sm:h-10 px-2 sm:px-4" variant="outline">
-                <ListOrdered className="h-3 w-3 sm:h-4 sm:w-4 mr-2 sm:mr-3 flex-shrink-0" />
-                <span className="truncate">Inquiry Titles</span>
-              </Button>
-            </Link>
-            <Link href="/admin/testimonials">
-              <Button className="w-full justify-start text-xs sm:text-sm h-9 sm:h-10 px-2 sm:px-4" variant="outline">
-                <MessageSquare className="h-3 w-3 sm:h-4 sm:w-4 mr-2 sm:mr-3 flex-shrink-0" />
-                <span className="truncate">Testimonials</span>
-              </Button>
-            </Link>
-            <Link href="/admin/promos">
-              <Button className="w-full justify-start text-xs sm:text-sm h-9 sm:h-10 px-2 sm:px-4" variant="outline">
-                <Tag className="h-3 w-3 sm:h-4 sm:w-4 mr-2 sm:mr-3 flex-shrink-0" />
-                <span className="truncate">Promos</span>
-              </Button>
-            </Link>
-            <Link href="/admin/content">
-              <Button className="w-full justify-start text-xs sm:text-sm h-9 sm:h-10 px-2 sm:px-4" variant="outline">
-                <Home className="h-3 w-3 sm:h-4 sm:w-4 mr-2 sm:mr-3 flex-shrink-0" />
-                <span className="truncate">Homepage</span>
-              </Button>
-            </Link>
-            <Link href="/admin/orders">
-              <Button className="w-full justify-start text-xs sm:text-sm h-9 sm:h-10 px-2 sm:px-4" variant="outline">
-                <ShoppingCart className="h-3 w-3 sm:h-4 sm:w-4 mr-2 sm:mr-3 flex-shrink-0" />
-                <span className="truncate">Orders</span>
-              </Button>
-            </Link>
-            <Link href="/admin/settings">
-              <Button className="w-full justify-start text-xs sm:text-sm h-9 sm:h-10 px-2 sm:px-4" variant="outline">
-                <Settings className="h-3 w-3 sm:h-4 sm:w-4 mr-2 sm:mr-3 flex-shrink-0" />
-                <span className="truncate">Settings</span>
-              </Button>
-            </Link>
-          </div>
+      {/* Quick Actions - All Admin Functions */}
+      <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-4 sm:p-6">
+        <h2 className="text-base sm:text-lg font-semibold text-gray-900 mb-3 sm:mb-4">Quick Actions</h2>
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-2 sm:gap-3">
+          <Link href="/admin/products">
+            <Button className="w-full justify-start text-xs sm:text-sm h-9 sm:h-10 px-2 sm:px-4" variant="outline">
+              <Package className="h-3 w-3 sm:h-4 sm:w-4 mr-2 sm:mr-3 flex-shrink-0" />
+              <span className="truncate">Products</span>
+            </Button>
+          </Link>
+          <Link href="/admin/brands">
+            <Button className="w-full justify-start text-xs sm:text-sm h-9 sm:h-10 px-2 sm:px-4" variant="outline">
+              <Tag className="h-3 w-3 sm:h-4 sm:w-4 mr-2 sm:mr-3 flex-shrink-0" />
+              <span className="truncate">Brands</span>
+            </Button>
+          </Link>
+          <Link href="/admin/featured-collections">
+            <Button className="w-full justify-start text-xs sm:text-sm h-9 sm:h-10 px-2 sm:px-4" variant="outline">
+              <Star className="h-3 w-3 sm:h-4 sm:w-4 mr-2 sm:mr-3 flex-shrink-0" />
+              <span className="truncate">Collections</span>
+            </Button>
+          </Link>
+          <Link href="/admin/blog">
+            <Button className="w-full justify-start text-xs sm:text-sm h-9 sm:h-10 px-2 sm:px-4" variant="outline">
+              <FileText className="h-3 w-3 sm:h-4 sm:w-4 mr-2 sm:mr-3 flex-shrink-0" />
+              <span className="truncate">Blog Posts</span>
+            </Button>
+          </Link>
+          <Link href="/admin/categories">
+            <Button className="w-full justify-start text-xs sm:text-sm h-9 sm:h-10 px-2 sm:px-4" variant="outline">
+              <Layers className="h-3 w-3 sm:h-4 sm:w-4 mr-2 sm:mr-3 flex-shrink-0" />
+              <span className="truncate">Categories</span>
+            </Button>
+          </Link>
+          <Link href="/admin/faqs">
+            <Button className="w-full justify-start text-xs sm:text-sm h-9 sm:h-10 px-2 sm:px-4" variant="outline">
+              <HelpCircle className="h-3 w-3 sm:h-4 sm:w-4 mr-2 sm:mr-3 flex-shrink-0" />
+              <span className="truncate">FAQs</span>
+            </Button>
+          </Link>
+          <Link href="/admin/quick-faq">
+            <Button className="w-full justify-start text-xs sm:text-sm h-9 sm:h-10 px-2 sm:px-4" variant="outline">
+              <ClipboardList className="h-3 w-3 sm:h-4 sm:w-4 mr-2 sm:mr-3 flex-shrink-0" />
+              <span className="truncate">Quick FAQ</span>
+            </Button>
+          </Link>
+          <Link href="/admin/inquiries">
+            <Button className="w-full justify-start text-xs sm:text-sm h-9 sm:h-10 px-2 sm:px-4" variant="outline">
+              <MessageSquare className="h-3 w-3 sm:h-4 sm:w-4 mr-2 sm:mr-3 flex-shrink-0" />
+              <span className="truncate">Inquiries</span>
+            </Button>
+          </Link>
+          <Link href="/admin/inquiry-titles">
+            <Button className="w-full justify-start text-xs sm:text-sm h-9 sm:h-10 px-2 sm:px-4" variant="outline">
+              <ListOrdered className="h-3 w-3 sm:h-4 sm:w-4 mr-2 sm:mr-3 flex-shrink-0" />
+              <span className="truncate">Inquiry Titles</span>
+            </Button>
+          </Link>
+          <Link href="/admin/testimonials">
+            <Button className="w-full justify-start text-xs sm:text-sm h-9 sm:h-10 px-2 sm:px-4" variant="outline">
+              <MessageSquare className="h-3 w-3 sm:h-4 sm:w-4 mr-2 sm:mr-3 flex-shrink-0" />
+              <span className="truncate">Testimonials</span>
+            </Button>
+          </Link>
+          <Link href="/admin/content">
+            <Button className="w-full justify-start text-xs sm:text-sm h-9 sm:h-10 px-2 sm:px-4" variant="outline">
+              <Home className="h-3 w-3 sm:h-4 sm:w-4 mr-2 sm:mr-3 flex-shrink-0" />
+              <span className="truncate">Homepage</span>
+            </Button>
+          </Link>
+          <Link href="/admin/orders">
+            <Button className="w-full justify-start text-xs sm:text-sm h-9 sm:h-10 px-2 sm:px-4" variant="outline">
+              <ShoppingCart className="h-3 w-3 sm:h-4 sm:w-4 mr-2 sm:mr-3 flex-shrink-0" />
+              <span className="truncate">Orders</span>
+            </Button>
+          </Link>
+          <Link href="/admin/shipping">
+            <Button className="w-full justify-start text-xs sm:text-sm h-9 sm:h-10 px-2 sm:px-4" variant="outline">
+              <TrendingUp className="h-3 w-3 sm:h-4 sm:w-4 mr-2 sm:mr-3 flex-shrink-0" />
+              <span className="truncate">Shipping</span>
+            </Button>
+          </Link>
+          <Link href="/admin/users">
+            <Button className="w-full justify-start text-xs sm:text-sm h-9 sm:h-10 px-2 sm:px-4" variant="outline">
+              <Users className="h-3 w-3 sm:h-4 sm:w-4 mr-2 sm:mr-3 flex-shrink-0" />
+              <span className="truncate">Users</span>
+            </Button>
+          </Link>
+          <Link href="/admin/settings">
+            <Button className="w-full justify-start text-xs sm:text-sm h-9 sm:h-10 px-2 sm:px-4" variant="outline">
+              <Settings className="h-3 w-3 sm:h-4 sm:w-4 mr-2 sm:mr-3 flex-shrink-0" />
+              <span className="truncate">Settings</span>
+            </Button>
+          </Link>
         </div>
+      </div>
 
-        {/* Recent Orders */}
-        <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-4 sm:p-6 flex-1">
-          <div className="flex items-center justify-between mb-4">
-            <h2 className="text-lg font-semibold text-gray-900">Recent Orders</h2>
-            <Link href="/admin/orders" className="text-sm text-primary hover:underline">
-              View all
-            </Link>
-          </div>
-          {recentOrders.length === 0 ? (
-            <p className="text-gray-500 text-center py-8">No orders yet</p>
-          ) : (
-            <div className="space-y-3">
-              {recentOrders.map((order) => (
-                <div key={order.id} className="flex items-center justify-between p-3 rounded-lg hover:bg-gray-50 transition-colors">
-                  <div>
-                    <p className="text-sm font-medium text-gray-900">Order #{order.orderNumber || order.id.slice(-6)}</p>
-                    <p className="text-xs text-gray-500">
-                      {new Date(order.createdAt).toLocaleDateString()}
-                    </p>
-                  </div>
-                  <div className="text-right">
-                    <p className="text-sm font-medium text-gray-900">${order.total.toLocaleString()}</p>
-                    <span className={`text-xs px-2 py-0.5 rounded-full ${order.status === 'delivered' ? 'bg-green-100 text-green-700' :
-                      order.status === 'pending' ? 'bg-amber-100 text-amber-700' :
-                        order.status === 'processing' ? 'bg-blue-100 text-blue-700' :
-                          'bg-gray-100 text-gray-700'
-                      }`}>
-                      {order.status}
-                    </span>
-                  </div>
-                </div>
-              ))}
-            </div>
-          )}
+      {/* Recent Orders */}
+      <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-4 sm:p-6">
+        <div className="flex items-center justify-between mb-4">
+          <h2 className="text-lg font-semibold text-gray-900">Recent Orders</h2>
+          <Link href="/admin/orders" className="text-sm text-primary hover:underline">
+            View all
+          </Link>
         </div>
+        {recentOrders.length === 0 ? (
+          <p className="text-gray-500 text-center py-8">No orders yet</p>
+        ) : (
+          <div className="space-y-3">
+            {recentOrders.map((order) => (
+              <div key={order.id} className="flex items-center justify-between p-3 rounded-lg hover:bg-gray-50 transition-colors">
+                <div>
+                  <p className="text-sm font-medium text-gray-900">Order #{order.orderNumber || order.id.slice(-6)}</p>
+                  <p className="text-xs text-gray-500">
+                    {new Date(order.createdAt).toLocaleDateString()}
+                  </p>
+                </div>
+                <div className="text-right">
+                  <p className="text-sm font-medium text-gray-900">${order.total.toLocaleString()}</p>
+                  <span className={`text-xs px-2 py-0.5 rounded-full ${order.status === 'delivered' ? 'bg-green-100 text-green-700' :
+                    order.status === 'pending' ? 'bg-amber-100 text-amber-700' :
+                      order.status === 'processing' ? 'bg-blue-100 text-blue-700' :
+                        'bg-gray-100 text-gray-700'
+                    }`}>
+                    {order.status}
+                  </span>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
       </div>
 
       {/* Revenue Card */}
