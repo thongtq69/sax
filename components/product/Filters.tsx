@@ -405,7 +405,7 @@ export function Filters({
                     </div>
                   </div>
                   <span className="text-sm font-body group-hover:text-primary transition-colors">
-                    {badge === 'sale' ? 'On Sale' : badge === 'new' ? 'New Arrival' : badge === 'limited' ? 'Limited' : badge}
+                    {badge === 'sale' ? 'On Sale' : badge === 'new' ? 'New Arrival' : badge === 'rare' ? 'Rare' : badge}
                   </span>
                 </label>
               ))}

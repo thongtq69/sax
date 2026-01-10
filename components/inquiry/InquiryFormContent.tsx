@@ -12,6 +12,12 @@ interface InquiryTitle {
   order: number
 }
 
+interface SiteSettings {
+  email: string
+  phone: string
+  address: string
+}
+
 interface InquiryFormContentProps {
   prefillProduct?: string
   prefillSku?: string
@@ -29,6 +35,11 @@ export function InquiryFormContent({
   const [email, setEmail] = useState('')
   const [selectedTitle, setSelectedTitle] = useState('')
   const [inquiryTitles, setInquiryTitles] = useState<InquiryTitle[]>([])
+  const [siteSettings, setSiteSettings] = useState<SiteSettings>({
+    email: 'sales@jamessaxcorner.com',
+    phone: '+84-82-678-8899',
+    address: 'Hanoi, Vietnam',
+  })
   const [message, setMessage] = useState(
     `Hi, I'm interested in${prefillProduct ? ` ${prefillProduct}` : ' this instrument'}.`
   )
@@ -37,24 +48,37 @@ export function InquiryFormContent({
   const [submitError, setSubmitError] = useState('')
   const [focusedField, setFocusedField] = useState<string | null>(null)
 
-  // Fetch inquiry titles from API
+  // Fetch inquiry titles and site settings from API
   useEffect(() => {
-    const fetchTitles = async () => {
+    const fetchData = async () => {
       try {
-        const response = await fetch('/api/admin/inquiry-titles')
-        if (response.ok) {
-          const data = await response.json()
+        const [titlesRes, settingsRes] = await Promise.all([
+          fetch('/api/admin/inquiry-titles'),
+          fetch('/api/admin/site-settings'),
+        ])
+        
+        if (titlesRes.ok) {
+          const data = await titlesRes.json()
           const activeTitles = data.filter((t: InquiryTitle) => t.isActive).sort((a: InquiryTitle, b: InquiryTitle) => a.order - b.order)
           setInquiryTitles(activeTitles)
           if (activeTitles.length > 0) {
             setSelectedTitle(activeTitles[0].title)
           }
         }
+        
+        if (settingsRes.ok) {
+          const settings = await settingsRes.json()
+          setSiteSettings({
+            email: settings.email || 'sales@jamessaxcorner.com',
+            phone: settings.phone || '+84-82-678-8899',
+            address: settings.address || 'Hanoi, Vietnam',
+          })
+        }
       } catch (error) {
-        console.error('Error fetching inquiry titles:', error)
+        console.error('Error fetching data:', error)
       }
     }
-    fetchTitles()
+    fetchData()
   }, [])
 
   const subject = useMemo(() => {
@@ -88,22 +112,6 @@ export function InquiryFormContent({
       }
 
       setIsSubmitted(true)
-      
-      // Also open mailto for immediate email (optional)
-      const bodyLines = [
-        `Name: ${name || 'N/A'}`,
-        `Email: ${email || 'N/A'}`,
-        prefillProduct ? `Product: ${prefillProduct}` : '',
-        prefillSku ? `SKU: ${prefillSku}` : '',
-        '',
-        'Message:',
-        message,
-      ].filter(Boolean)
-
-      const mailto = `mailto:sales@jamessaxcorner.com?subject=${encodeURIComponent(
-        subject
-      )}&body=${encodeURIComponent(bodyLines.join('\n'))}`
-      window.location.href = mailto
       
     } catch (error: any) {
       console.error('Error submitting inquiry:', error)
@@ -282,9 +290,9 @@ export function InquiryFormContent({
         <div className="flex flex-col md:flex-row md:items-center gap-4 justify-between pt-2 animate-fade-in-up" style={{ animationDelay: '0.25s' }}>
           <div className="flex flex-wrap items-center gap-3 text-sm text-muted-foreground">
             {[
-              { icon: Mail, text: 'sales@jamessaxcorner.com' },
-              { icon: Phone, text: '+84-82-678-8899' },
-              { icon: MapPin, text: 'Hanoi, Vietnam' },
+              { icon: Mail, text: siteSettings.email },
+              { icon: Phone, text: siteSettings.phone },
+              { icon: MapPin, text: siteSettings.address },
             ].map((item, i) => (
               <span 
                 key={i} 

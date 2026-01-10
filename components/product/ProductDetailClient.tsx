@@ -589,7 +589,7 @@ export function ProductDetailClient({ product }: ProductDetailClientProps) {
                       >
                         {product.badge === 'new' && '✨ New Arrival'}
                         {product.badge === 'sale' && `🔥 ${savingsPercent}% OFF`}
-                        {product.badge === 'limited' && '⭐ Limited Edition'}
+                        {product.badge === 'rare' && '⭐ Rare'}
                       </Badge>
                     </div>
                   )}

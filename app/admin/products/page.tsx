@@ -342,7 +342,7 @@ export default function ProductsManagement() {
   const badgeColors: Record<string, string> = {
     new: 'bg-blue-100 text-blue-800',
     sale: 'bg-red-100 text-red-800',
-    limited: 'bg-purple-100 text-purple-800',
+    rare: 'bg-purple-100 text-purple-800',
     'coming-soon': 'bg-yellow-100 text-yellow-800',
     'out-of-stock': 'bg-gray-100 text-gray-800',
   }
@@ -411,7 +411,7 @@ export default function ProductsManagement() {
               <SelectItem value="none">No Badge</SelectItem>
               <SelectItem value="new">New</SelectItem>
               <SelectItem value="sale">Sale</SelectItem>
-              <SelectItem value="limited">Limited</SelectItem>
+              <SelectItem value="rare">Rare</SelectItem>
               <SelectItem value="coming-soon">Coming Soon</SelectItem>
             </SelectContent>
           </Select>
@@ -820,7 +820,7 @@ export default function ProductsManagement() {
                       <SelectItem value="none">No badge</SelectItem>
                       <SelectItem value="new">🆕 New</SelectItem>
                       <SelectItem value="sale">🔥 Sale</SelectItem>
-                      <SelectItem value="limited">⭐ Limited</SelectItem>
+                      <SelectItem value="rare">⭐ Rare</SelectItem>
                       <SelectItem value="coming-soon">🔜 Coming Soon</SelectItem>
                     </SelectContent>
                   </Select>

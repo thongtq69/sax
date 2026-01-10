@@ -100,7 +100,7 @@ export function QuickViewModal({
                 >
                   {product.badge === 'new' && '✨ New'}
                   {product.badge === 'sale' && `🔥 ${savingsPercent}% OFF`}
-                  {product.badge === 'limited' && '⭐ Limited'}
+                  {product.badge === 'rare' && '⭐ Rare'}
                 </Badge>
               </div>
             )}

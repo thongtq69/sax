@@ -224,12 +224,12 @@ export function ProductCardEnhanced({
                 className={cn(
                   "shadow-lg transform transition-all duration-300 hover:scale-105",
                   product.badge === 'sale' && 'animate-pulse-soft',
-                  product.badge === 'limited' && 'animate-border-glow'
+                  product.badge === 'rare' && 'animate-border-glow'
                 )}
               >
                 {product.badge === 'new' && '✨ New'}
                 {product.badge === 'sale' && `🔥 Save ${savings.toFixed(0)}`}
-                {product.badge === 'limited' && '⭐ Limited'}
+                {product.badge === 'rare' && '⭐ Rare'}
                 {product.badge === 'coming-soon' && '🎵 Coming Soon'}
                 {product.badge === 'out-of-stock' && 'Out of Stock'}
               </Badge>
