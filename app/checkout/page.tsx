@@ -106,7 +106,7 @@ function CheckoutContent() {
     }
   }, [shippingInfo.country, shippingInfo.zip])
 
-  const shipping = shippingCost ?? (subtotal > 500 ? 0 : 25)
+  const shipping = shippingCost ?? 0 // No default shipping - will be calculated or shown in PayPal
   const tax = subtotal * 0.08
   const total = subtotal + shipping + tax
 

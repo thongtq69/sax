@@ -3,19 +3,60 @@
 import { useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
-import { CheckCircle, Package, Mail, ArrowRight, Clock } from 'lucide-react'
-import { Suspense, useEffect } from 'react'
+import { CheckCircle, Package, Mail, ArrowRight, Clock, Loader2 } from 'lucide-react'
+import { Suspense, useEffect, useState } from 'react'
 import { useCartStore } from '@/lib/store/cart'
 
 function SuccessContent() {
   const searchParams = useSearchParams()
   const orderID = searchParams.get('orderID') || searchParams.get('orderId')
   const clearCart = useCartStore((state) => state.clearCart)
+  const [isPolling, setIsPolling] = useState(true)
+  const [customerInfo, setCustomerInfo] = useState<any>(null)
 
   // Clear cart when success page loads (for Standard Button flow)
   useEffect(() => {
     clearCart()
   }, [clearCart])
+
+  // Poll for customer info from PayPal
+  useEffect(() => {
+    if (!orderID) return
+
+    let attempts = 0
+    const maxAttempts = 10 // Try for ~30 seconds
+    
+    const pollForInfo = async () => {
+      try {
+        const response = await fetch(`/api/paypal/get-transaction?orderId=${orderID}`)
+        const data = await response.json()
+        
+        if (data.hasInfo) {
+          setCustomerInfo(data)
+          setIsPolling(false)
+          return true
+        }
+      } catch (error) {
+        console.error('Error polling for info:', error)
+      }
+      return false
+    }
+
+    const interval = setInterval(async () => {
+      attempts++
+      const found = await pollForInfo()
+      
+      if (found || attempts >= maxAttempts) {
+        clearInterval(interval)
+        setIsPolling(false)
+      }
+    }, 3000)
+
+    // Initial poll
+    pollForInfo()
+
+    return () => clearInterval(interval)
+  }, [orderID])
 
   return (
     <div className="container mx-auto px-4 py-16">
@@ -41,13 +82,44 @@ function SuccessContent() {
         {/* Payment Processing Notice */}
         <div className="mb-6 p-4 bg-blue-50 border border-blue-200 rounded-lg">
           <div className="flex items-center justify-center gap-2 mb-2">
-            <Clock className="h-5 w-5 text-blue-600" />
-            <span className="font-medium text-blue-800">Payment Processing</span>
+            {isPolling ? (
+              <Loader2 className="h-5 w-5 text-blue-600 animate-spin" />
+            ) : (
+              <Clock className="h-5 w-5 text-blue-600" />
+            )}
+            <span className="font-medium text-blue-800">
+              {isPolling ? 'Processing Payment...' : 'Payment Confirmed'}
+            </span>
           </div>
           <p className="text-sm text-blue-700">
-            PayPal is processing your payment. You will receive a confirmation email shortly.
+            {isPolling 
+              ? 'PayPal is processing your payment. Please wait...'
+              : 'You will receive a confirmation email shortly.'}
           </p>
         </div>
+
+        {/* Customer Info (if available) */}
+        {customerInfo?.shippingAddress?.email && (
+          <div className="mb-6 p-4 bg-green-50 border border-green-200 rounded-lg text-left">
+            <h3 className="font-medium text-green-800 mb-2">Shipping To:</h3>
+            <div className="text-sm text-green-700 space-y-1">
+              <p className="font-medium">{customerInfo.shippingAddress.name}</p>
+              {customerInfo.shippingAddress.address1 && (
+                <p>{customerInfo.shippingAddress.address1}</p>
+              )}
+              {(customerInfo.shippingAddress.city || customerInfo.shippingAddress.state) && (
+                <p>
+                  {[
+                    customerInfo.shippingAddress.city,
+                    customerInfo.shippingAddress.state,
+                    customerInfo.shippingAddress.zip
+                  ].filter(Boolean).join(', ')}
+                </p>
+              )}
+              <p>{customerInfo.shippingAddress.email}</p>
+            </div>
+          </div>
+        )}
 
         {/* Info Cards */}
         <div className="grid grid-cols-2 gap-4 mb-8">
