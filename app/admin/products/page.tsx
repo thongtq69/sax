@@ -31,6 +31,7 @@ export default function ProductsManagement() {
   const [brands, setBrands] = useState<{ id: string; name: string; isActive: boolean }[]>([])
   const [specKeys, setSpecKeys] = useState<{ id: string; name: string; isActive: boolean }[]>([])
   const [newSpecKey, setNewSpecKey] = useState('')
+  const [newSpecKeyValue, setNewSpecKeyValue] = useState('')
   const [descTemplates, setDescTemplates] = useState<{ id: string; name: string; content: string; type: string }[]>([])
   const [selectedHeader, setSelectedHeader] = useState('')
   const [selectedFooter, setSelectedFooter] = useState('')
@@ -1073,7 +1074,13 @@ export default function ProductsManagement() {
                     <Input
                       value={newSpecKey}
                       onChange={(e) => setNewSpecKey(e.target.value)}
-                      placeholder="Enter new spec key (e.g., Material, Finish)"
+                      placeholder="Key name (e.g., Material)"
+                      className="flex-1"
+                    />
+                    <Input
+                      value={newSpecKeyValue}
+                      onChange={(e) => setNewSpecKeyValue(e.target.value)}
+                      placeholder="Default value (e.g., Brass)"
                       className="flex-1"
                     />
                     <Button
@@ -1090,7 +1097,13 @@ export default function ProductsManagement() {
                           if (response.ok) {
                             const newKey = await response.json()
                             setSpecKeys([...specKeys, newKey])
+                            // Also add to current product specs with the default value
+                            if (newSpecKeyValue.trim()) {
+                              const newSpecs = { ...formData.specs, [newSpecKey.trim()]: newSpecKeyValue.trim() }
+                              setFormData({ ...formData, specs: newSpecs })
+                            }
                             setNewSpecKey('')
+                            setNewSpecKeyValue('')
                           } else {
                             const error = await response.json()
                             alert(error.error || 'Failed to add spec key')
