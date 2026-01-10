@@ -321,3 +321,22 @@ model Brand {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 }
+
+
+model Inquiry {
+  id          String   @id @default(auto()) @map("_id") @db.ObjectId
+  name        String
+  email       String
+  inquiryType String   // From InquiryTitle
+  message     String
+  productName String?  // Optional - if inquiry is about a specific product
+  productSku  String?  // Optional - product SKU
+  status      String   @default("new") // 'new' | 'read' | 'replied' | 'closed'
+  notes       String?  // Admin notes
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([status])
+  @@index([email])
+  @@index([createdAt])
+}

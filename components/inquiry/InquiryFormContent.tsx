@@ -33,6 +33,8 @@ export function InquiryFormContent({
     `Hi, I'm interested in${prefillProduct ? ` ${prefillProduct}` : ' this instrument'}.`
   )
   const [isSubmitting, setIsSubmitting] = useState(false)
+  const [isSubmitted, setIsSubmitted] = useState(false)
+  const [submitError, setSubmitError] = useState('')
   const [focusedField, setFocusedField] = useState<string | null>(null)
 
   // Fetch inquiry titles from API
@@ -64,25 +66,83 @@ export function InquiryFormContent({
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setIsSubmitting(true)
+    setSubmitError('')
     
-    // Simulate brief loading for better UX
-    await new Promise(resolve => setTimeout(resolve, 500))
-    
-    const bodyLines = [
-      `Name: ${name || 'N/A'}`,
-      `Email: ${email || 'N/A'}`,
-      prefillProduct ? `Product: ${prefillProduct}` : '',
-      prefillSku ? `SKU: ${prefillSku}` : '',
-      '',
-      'Message:',
-      message,
-    ].filter(Boolean)
+    try {
+      // Save to database
+      const response = await fetch('/api/inquiries', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          name,
+          email,
+          inquiryType: selectedTitle,
+          message,
+          productName: prefillProduct || null,
+          productSku: prefillSku || null,
+        }),
+      })
 
-    const mailto = `mailto:sales@jamessaxcorner.com?subject=${encodeURIComponent(
-      subject
-    )}&body=${encodeURIComponent(bodyLines.join('\n'))}`
-    window.location.href = mailto
-    setIsSubmitting(false)
+      if (!response.ok) {
+        throw new Error('Failed to submit inquiry')
+      }
+
+      setIsSubmitted(true)
+      
+      // Also open mailto for immediate email (optional)
+      const bodyLines = [
+        `Name: ${name || 'N/A'}`,
+        `Email: ${email || 'N/A'}`,
+        prefillProduct ? `Product: ${prefillProduct}` : '',
+        prefillSku ? `SKU: ${prefillSku}` : '',
+        '',
+        'Message:',
+        message,
+      ].filter(Boolean)
+
+      const mailto = `mailto:sales@jamessaxcorner.com?subject=${encodeURIComponent(
+        subject
+      )}&body=${encodeURIComponent(bodyLines.join('\n'))}`
+      window.location.href = mailto
+      
+    } catch (error: any) {
+      console.error('Error submitting inquiry:', error)
+      setSubmitError('Failed to submit inquiry. Please try again.')
+    } finally {
+      setIsSubmitting(false)
+    }
+  }
+
+  // Show success message if submitted
+  if (isSubmitted) {
+    return (
+      <div className="bg-white shadow-2xl rounded-2xl border border-gray-100 overflow-hidden animate-fade-in-up">
+        <div className="bg-gradient-to-r from-green-500 to-emerald-500 text-white px-5 py-5 flex items-center gap-3">
+          <div className="w-12 h-12 rounded-full bg-white/30 flex items-center justify-center">
+            <CheckCircle className="h-6 w-6" />
+          </div>
+          <div>
+            <h1 className="text-xl md:text-2xl font-bold">Inquiry Sent!</h1>
+            <p className="text-sm text-white/90">We'll get back to you soon.</p>
+          </div>
+        </div>
+        <div className="p-5 md:p-8 text-center">
+          <p className="text-gray-600 mb-4">
+            Thank you for your inquiry. Our team will review it and respond to your email shortly.
+          </p>
+          <div className="flex gap-2 justify-center">
+            <Button onClick={() => { setIsSubmitted(false); setName(''); setEmail(''); setMessage(''); }}>
+              Send Another Inquiry
+            </Button>
+            {showBackToShop && (
+              <Button variant="outline" asChild>
+                <Link href="/shop">Back to Shop</Link>
+              </Button>
+            )}
+          </div>
+        </div>
+      </div>
+    )
   }
 
   return (
@@ -105,6 +165,13 @@ export function InquiryFormContent({
       </div>
 
       <form onSubmit={handleSubmit} className="p-5 md:p-8 space-y-6">
+        {/* Error message */}
+        {submitError && (
+          <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg text-sm">
+            {submitError}
+          </div>
+        )}
+        
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           {/* Name field */}
           <div className="space-y-1 animate-fade-in-up" style={{ animationDelay: '0.1s' }}>

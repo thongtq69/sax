@@ -57,9 +57,10 @@ interface PayPalStandardButtonProps {
   } | null
   shippingCost?: number | null
   onError?: (error: any) => void
+  disabled?: boolean
 }
 
-export function PayPalStandardButton({ shippingInfo, shippingCost, onError }: PayPalStandardButtonProps) {
+export function PayPalStandardButton({ shippingInfo, shippingCost, onError, disabled }: PayPalStandardButtonProps) {
   const [isLoading, setIsLoading] = useState(false)
   const items = useCartStore((state) => state.items)
   const subtotal = useCartStore((state) => state.getSubtotal())
@@ -220,8 +221,8 @@ export function PayPalStandardButton({ shippingInfo, shippingCost, onError }: Pa
     <div className="space-y-3">
       <Button
         onClick={handlePayPalSubmit}
-        disabled={isLoading || items.length === 0}
-        className="w-full h-12 bg-[#0070ba] hover:bg-[#003087] text-white font-bold text-base"
+        disabled={isLoading || items.length === 0 || disabled}
+        className="w-full h-12 bg-[#0070ba] hover:bg-[#003087] text-white font-bold text-base disabled:opacity-50 disabled:cursor-not-allowed"
       >
         {isLoading ? (
           <>

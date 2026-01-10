@@ -353,11 +353,20 @@ function CheckoutContent() {
                 <span className="text-sm text-green-700">Secured with PayPal</span>
               </div>
 
-              {/* PayPal Standard Button */}
+              {/* Warning if form not filled */}
+              {!allFieldsFilled && (
+                <div className="p-3 bg-amber-50 border border-amber-200 rounded-lg flex items-center gap-2">
+                  <AlertCircle className="h-4 w-4 text-amber-600" />
+                  <span className="text-sm text-amber-700">Please fill in all shipping information to continue</span>
+                </div>
+              )}
+
+              {/* PayPal Standard Button - disabled when form not filled */}
               <PayPalStandardButton
                 shippingInfo={allFieldsFilled ? shippingInfo : null}
                 shippingCost={shippingCost}
                 onError={(error) => setPaymentError(error.message || 'Payment failed. Please try again.')}
+                disabled={!allFieldsFilled}
               />
 
               {/* PayPal.me Button - Temporarily hidden */}

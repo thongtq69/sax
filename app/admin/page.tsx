@@ -260,6 +260,12 @@ export default function AdminDashboard() {
                 <span className="truncate">Quick FAQ</span>
               </Button>
             </Link>
+            <Link href="/admin/inquiries">
+              <Button className="w-full justify-start text-xs sm:text-sm h-9 sm:h-10 px-2 sm:px-4" variant="outline">
+                <MessageSquare className="h-3 w-3 sm:h-4 sm:w-4 mr-2 sm:mr-3 flex-shrink-0" />
+                <span className="truncate">Customer Inquiries</span>
+              </Button>
+            </Link>
             <Link href="/admin/inquiry-titles">
               <Button className="w-full justify-start text-xs sm:text-sm h-9 sm:h-10 px-2 sm:px-4" variant="outline">
                 <ListOrdered className="h-3 w-3 sm:h-4 sm:w-4 mr-2 sm:mr-3 flex-shrink-0" />
