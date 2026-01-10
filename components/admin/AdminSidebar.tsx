@@ -33,7 +33,7 @@ interface AdminSidebarProps {
   onLogout: () => void
 }
 
-export const menuItems = [
+export const menuItems: { href: string; label: string; icon: any; exact?: boolean }[] = [
   { href: '/admin/products', label: 'Products', icon: Package },
   { href: '/admin/brands', label: 'Brands', icon: Tag },
   { href: '/admin/featured-collections', label: 'Featured Collections', icon: Star },
