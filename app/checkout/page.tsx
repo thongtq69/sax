@@ -329,14 +329,18 @@ function CheckoutContent() {
                 <div className="flex justify-between">
                   <span className="flex items-center gap-1">
                     Shipping
-                    {shippingCost !== null && (
+                    {shippingCost !== null && shippingCost > 0 && (
                       <span className={`text-xs px-1.5 py-0.5 rounded ${shippingCost === 25 ? 'bg-green-100 text-green-700' : 'bg-amber-100 text-amber-700'}`}>
                         {shippingCost === 25 ? 'VN' : 'INT'}
                       </span>
                     )}
                   </span>
-                  <span className={shipping === 0 ? "text-green-600" : ""}>
-                    {shipping === 0 ? "FREE" : "$" + shipping}
+                  <span className={shippingCost === null ? "text-amber-600 text-xs" : shippingCost === 0 ? "text-green-600" : ""}>
+                    {shippingCost === null 
+                      ? "Fill address for exact fee" 
+                      : shippingCost === 0 
+                        ? "FREE" 
+                        : "$" + shippingCost}
                   </span>
                 </div>
                 <div className="flex justify-between"><span>Tax (0%)</span><span>$0.00</span></div>
