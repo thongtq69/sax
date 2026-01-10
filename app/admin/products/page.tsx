@@ -29,6 +29,8 @@ export default function ProductsManagement() {
   const [productList, setProductList] = useState<Product[]>([])
   const [categories, setCategories] = useState<any[]>([])
   const [brands, setBrands] = useState<{ id: string; name: string; isActive: boolean }[]>([])
+  const [specKeys, setSpecKeys] = useState<{ id: string; name: string; isActive: boolean }[]>([])
+  const [newSpecKey, setNewSpecKey] = useState('')
   const [filteredProducts, setFilteredProducts] = useState<Product[]>([])
   const [searchTerm, setSearchTerm] = useState('')
   const [selectedCategory, setSelectedCategory] = useState<string>('all')
@@ -79,10 +81,11 @@ export default function ProductsManagement() {
     async function fetchData() {
       try {
         setIsLoading(true)
-        const [productsResponse, categoriesData, brandsData] = await Promise.all([
+        const [productsResponse, categoriesData, brandsData, specKeysData] = await Promise.all([
           getProducts({ limit: 1000 }),
           getCategories(),
           fetch('/api/admin/brands').then(res => res.json()),
+          fetch('/api/admin/spec-keys').then(res => res.json()),
         ])
         
         const transformedProducts = productsResponse.products.map(transformProduct)
@@ -91,6 +94,7 @@ export default function ProductsManagement() {
         setProductList(transformedProducts)
         setCategories(transformedCategories)
         setBrands(brandsData.filter((b: any) => b.isActive))
+        setSpecKeys(specKeysData.filter((s: any) => s.isActive))
       } catch (error) {
         console.error('Error fetching data:', error)
         alert('Failed to load data. Please refresh the page.')
@@ -947,25 +951,35 @@ export default function ProductsManagement() {
                   Product Specifications
                 </label>
                 <p className="text-sm text-gray-500 mb-4">
-                  Add key-value pairs for product specifications (e.g., Material: Brass, Finish: Gold Lacquer)
+                  Select specification keys from the list or add new ones
                 </p>
                 <div className="space-y-3">
                   {Object.entries(formData.specs || {}).map(([key, value], index) => (
                     <div key={index} className="flex gap-2 items-center">
-                      <Input
+                      {/* Spec Key Dropdown */}
+                      <Select
                         value={key}
-                        onChange={(e) => {
+                        onValueChange={(newKey) => {
                           const newSpecs = { ...formData.specs }
                           const oldValue = newSpecs[key]
                           delete newSpecs[key]
-                          if (e.target.value) {
-                            newSpecs[e.target.value] = oldValue
+                          if (newKey) {
+                            newSpecs[newKey] = oldValue
                           }
                           setFormData({ ...formData, specs: newSpecs })
                         }}
-                        placeholder="Key (e.g., Material)"
-                        className="flex-1"
-                      />
+                      >
+                        <SelectTrigger className="flex-1">
+                          <SelectValue placeholder="Select spec key" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {specKeys.map((specKey) => (
+                            <SelectItem key={specKey.id} value={specKey.name}>
+                              {specKey.name}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
                       <Input
                         value={value as string}
                         onChange={(e) => {
@@ -1003,6 +1017,76 @@ export default function ProductsManagement() {
                     <Plus className="h-4 w-4 mr-2" />
                     Add Specification
                   </Button>
+                </div>
+
+                {/* Add New Spec Key */}
+                <div className="mt-6 pt-4 border-t">
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Add New Spec Key
+                  </label>
+                  <div className="flex gap-2">
+                    <Input
+                      value={newSpecKey}
+                      onChange={(e) => setNewSpecKey(e.target.value)}
+                      placeholder="Enter new spec key (e.g., Material, Finish)"
+                      className="flex-1"
+                    />
+                    <Button
+                      type="button"
+                      variant="outline"
+                      onClick={async () => {
+                        if (!newSpecKey.trim()) return
+                        try {
+                          const response = await fetch('/api/admin/spec-keys', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ name: newSpecKey.trim() }),
+                          })
+                          if (response.ok) {
+                            const newKey = await response.json()
+                            setSpecKeys([...specKeys, newKey])
+                            setNewSpecKey('')
+                          } else {
+                            const error = await response.json()
+                            alert(error.error || 'Failed to add spec key')
+                          }
+                        } catch (error) {
+                          console.error('Error adding spec key:', error)
+                          alert('Failed to add spec key')
+                        }
+                      }}
+                    >
+                      <Plus className="h-4 w-4 mr-1" />
+                      Add Key
+                    </Button>
+                  </div>
+                  {specKeys.length > 0 && (
+                    <div className="mt-3 flex flex-wrap gap-2">
+                      {specKeys.map((key) => (
+                        <span
+                          key={key.id}
+                          className="inline-flex items-center gap-1 px-2 py-1 bg-gray-100 rounded text-sm"
+                        >
+                          {key.name}
+                          <button
+                            type="button"
+                            onClick={async () => {
+                              if (!confirm(`Delete spec key "${key.name}"?`)) return
+                              try {
+                                await fetch(`/api/admin/spec-keys?id=${key.id}`, { method: 'DELETE' })
+                                setSpecKeys(specKeys.filter(k => k.id !== key.id))
+                              } catch (error) {
+                                console.error('Error deleting spec key:', error)
+                              }
+                            }}
+                            className="text-gray-400 hover:text-red-500"
+                          >
+                            ×
+                          </button>
+                        </span>
+                      ))}
+                    </div>
+                  )}
                 </div>
               </div>
             </TabsContent>

@@ -340,3 +340,13 @@ model Inquiry {
   @@index([email])
   @@index([createdAt])
 }
+
+
+model SpecKey {
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  name      String   @unique // e.g., "Material", "Finish", "Key"
+  order     Int      @default(0)
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
