@@ -1,5 +1,8 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+  // Enable standalone output for self-hosting (Hostinger, VPS, etc.)
+  output: 'standalone',
+  
   // Increase body size limit for file uploads (50MB)
   experimental: {
     serverActions: {
