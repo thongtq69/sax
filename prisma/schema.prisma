@@ -48,7 +48,7 @@ model Product {
   subcategory SubCategory? @relation(fields: [subcategoryId], references: [id], onDelete: SetNull)
   images      String[]     @default([])
   videoUrls   String[]     @default([])  // YouTube video URLs (up to 4)
-  badge       String?      // 'new' | 'sale' | 'limited' | 'coming-soon' | 'out-of-stock'
+  badge       String?      // 'new' | 'sale' | 'rare' | 'coming-soon' | 'out-of-stock'
   inStock     Boolean      @default(true)
   stock       Int?         @default(0)
   stockStatus String?      @default("in-stock") // 'in-stock' | 'sold-out' | 'pre-order'
