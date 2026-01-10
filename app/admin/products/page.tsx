@@ -31,6 +31,13 @@ export default function ProductsManagement() {
   const [brands, setBrands] = useState<{ id: string; name: string; isActive: boolean }[]>([])
   const [specKeys, setSpecKeys] = useState<{ id: string; name: string; isActive: boolean }[]>([])
   const [newSpecKey, setNewSpecKey] = useState('')
+  const [descTemplates, setDescTemplates] = useState<{ id: string; name: string; content: string; type: string }[]>([])
+  const [selectedHeader, setSelectedHeader] = useState('')
+  const [selectedFooter, setSelectedFooter] = useState('')
+  const [descBody, setDescBody] = useState('')
+  const [newTemplateName, setNewTemplateName] = useState('')
+  const [newTemplateContent, setNewTemplateContent] = useState('')
+  const [newTemplateType, setNewTemplateType] = useState<'header' | 'footer'>('header')
   const [filteredProducts, setFilteredProducts] = useState<Product[]>([])
   const [searchTerm, setSearchTerm] = useState('')
   const [selectedCategory, setSelectedCategory] = useState<string>('all')
@@ -81,11 +88,12 @@ export default function ProductsManagement() {
     async function fetchData() {
       try {
         setIsLoading(true)
-        const [productsResponse, categoriesData, brandsData, specKeysData] = await Promise.all([
+        const [productsResponse, categoriesData, brandsData, specKeysData, templatesData] = await Promise.all([
           getProducts({ limit: 1000 }),
           getCategories(),
           fetch('/api/admin/brands').then(res => res.json()),
           fetch('/api/admin/spec-keys').then(res => res.json()),
+          fetch('/api/admin/description-templates').then(res => res.json()),
         ])
         
         const transformedProducts = productsResponse.products.map(transformProduct)
@@ -95,6 +103,7 @@ export default function ProductsManagement() {
         setCategories(transformedCategories)
         setBrands(brandsData.filter((b: any) => b.isActive))
         setSpecKeys(specKeysData.filter((s: any) => s.isActive))
+        setDescTemplates(templatesData)
       } catch (error) {
         console.error('Error fetching data:', error)
         alert('Failed to load data. Please refresh the page.')
@@ -142,11 +151,46 @@ export default function ProductsManagement() {
   }, [searchTerm, selectedCategory, selectedBadge, selectedProductType, selectedCondition, productList])
 
   const handleOpenDialog = (product?: Product) => {
+    // Reset template states
+    setSelectedHeader('')
+    setSelectedFooter('')
+    setNewTemplateName('')
+    setNewTemplateContent('')
+    setNewTemplateType('header')
+    
     if (product) {
       setEditingProduct(product)
       // Check if brand exists in brands list
       const brandExists = brands.some(b => b.name === product.brand)
       setCustomBrand(brandExists ? '' : product.brand)
+      
+      // Parse existing description to find header/body/footer
+      let parsedBody = product.description || ''
+      let foundHeader = ''
+      let foundFooter = ''
+      
+      // Try to match header templates
+      for (const template of descTemplates.filter(t => t.type === 'header')) {
+        if (parsedBody.startsWith(template.content)) {
+          foundHeader = template.id
+          parsedBody = parsedBody.slice(template.content.length).replace(/^\n\n/, '')
+          break
+        }
+      }
+      
+      // Try to match footer templates
+      for (const template of descTemplates.filter(t => t.type === 'footer')) {
+        if (parsedBody.endsWith(template.content)) {
+          foundFooter = template.id
+          parsedBody = parsedBody.slice(0, -template.content.length).replace(/\n\n$/, '')
+          break
+        }
+      }
+      
+      setSelectedHeader(foundHeader)
+      setSelectedFooter(foundFooter)
+      setDescBody(parsedBody)
+      
       setFormData({
         ...product,
         images: product.images || [],
@@ -164,6 +208,7 @@ export default function ProductsManagement() {
     } else {
       setEditingProduct(null)
       setCustomBrand('')
+      setDescBody('')
       setFormData({
         name: '',
         slug: '',
@@ -1093,17 +1138,226 @@ export default function ProductsManagement() {
 
             {/* Details Tab */}
             <TabsContent value="details" className="space-y-4 mt-6">
+              {/* Description with Header/Footer Templates */}
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
                   Description <span className="text-red-500">*</span>
                 </label>
-                <textarea
-                  className="w-full min-h-[150px] rounded-lg border border-gray-300 bg-white px-4 py-3 text-sm focus:border-primary focus:ring-1 focus:ring-primary"
-                  value={formData.description}
-                  onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                  placeholder="Enter product description..."
-                />
+                
+                {/* Header Template Selection */}
+                <div className="mb-3">
+                  <label className="block text-xs text-gray-500 mb-1">Header Template (optional)</label>
+                  <div className="flex gap-2">
+                    <Select
+                      value={selectedHeader}
+                      onValueChange={(value) => {
+                        setSelectedHeader(value)
+                        // Update description with new header
+                        const header = descTemplates.find(t => t.id === value)?.content || ''
+                        const footer = descTemplates.find(t => t.id === selectedFooter)?.content || ''
+                        const newDesc = [header, descBody, footer].filter(Boolean).join('\n\n')
+                        setFormData({ ...formData, description: newDesc })
+                      }}
+                    >
+                      <SelectTrigger className="flex-1">
+                        <SelectValue placeholder="Select header template" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="none">No header</SelectItem>
+                        {descTemplates.filter(t => t.type === 'header').map((t) => (
+                          <SelectItem key={t.id} value={t.id}>{t.name}</SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                    {selectedHeader && selectedHeader !== 'none' && (
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => {
+                          setSelectedHeader('')
+                          const footer = descTemplates.find(t => t.id === selectedFooter)?.content || ''
+                          const newDesc = [descBody, footer].filter(Boolean).join('\n\n')
+                          setFormData({ ...formData, description: newDesc })
+                        }}
+                        className="text-gray-400 hover:text-gray-600"
+                      >
+                        ×
+                      </Button>
+                    )}
+                  </div>
+                </div>
+
+                {/* Main Description Body */}
+                <div className="mb-3">
+                  <label className="block text-xs text-gray-500 mb-1">Main Content</label>
+                  <textarea
+                    className="w-full min-h-[120px] rounded-lg border border-gray-300 bg-white px-4 py-3 text-sm focus:border-primary focus:ring-1 focus:ring-primary"
+                    value={descBody}
+                    onChange={(e) => {
+                      setDescBody(e.target.value)
+                      const header = descTemplates.find(t => t.id === selectedHeader)?.content || ''
+                      const footer = descTemplates.find(t => t.id === selectedFooter)?.content || ''
+                      const newDesc = [header, e.target.value, footer].filter(Boolean).join('\n\n')
+                      setFormData({ ...formData, description: newDesc })
+                    }}
+                    placeholder="Enter main product description..."
+                  />
+                </div>
+
+                {/* Footer Template Selection */}
+                <div className="mb-3">
+                  <label className="block text-xs text-gray-500 mb-1">Footer Template (optional)</label>
+                  <div className="flex gap-2">
+                    <Select
+                      value={selectedFooter}
+                      onValueChange={(value) => {
+                        setSelectedFooter(value)
+                        const header = descTemplates.find(t => t.id === selectedHeader)?.content || ''
+                        const footer = descTemplates.find(t => t.id === value)?.content || ''
+                        const newDesc = [header, descBody, footer].filter(Boolean).join('\n\n')
+                        setFormData({ ...formData, description: newDesc })
+                      }}
+                    >
+                      <SelectTrigger className="flex-1">
+                        <SelectValue placeholder="Select footer template" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="none">No footer</SelectItem>
+                        {descTemplates.filter(t => t.type === 'footer').map((t) => (
+                          <SelectItem key={t.id} value={t.id}>{t.name}</SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                    {selectedFooter && selectedFooter !== 'none' && (
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => {
+                          setSelectedFooter('')
+                          const header = descTemplates.find(t => t.id === selectedHeader)?.content || ''
+                          const newDesc = [header, descBody].filter(Boolean).join('\n\n')
+                          setFormData({ ...formData, description: newDesc })
+                        }}
+                        className="text-gray-400 hover:text-gray-600"
+                      >
+                        ×
+                      </Button>
+                    )}
+                  </div>
+                </div>
+
+                {/* Preview */}
+                <div className="bg-gray-50 rounded-lg p-4 border">
+                  <label className="block text-xs text-gray-500 mb-2">Preview</label>
+                  <div className="text-sm whitespace-pre-wrap text-gray-700 max-h-[200px] overflow-y-auto">
+                    {formData.description || <span className="text-gray-400 italic">No description</span>}
+                  </div>
+                </div>
+
+                {/* Add New Template */}
+                <div className="mt-4 pt-4 border-t">
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Add New Template</label>
+                  <div className="space-y-2">
+                    <div className="flex gap-2">
+                      <Input
+                        value={newTemplateName}
+                        onChange={(e) => setNewTemplateName(e.target.value)}
+                        placeholder="Template name"
+                        className="flex-1"
+                      />
+                      <Select value={newTemplateType} onValueChange={(v: 'header' | 'footer') => setNewTemplateType(v)}>
+                        <SelectTrigger className="w-32">
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="header">Header</SelectItem>
+                          <SelectItem value="footer">Footer</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <textarea
+                      className="w-full min-h-[80px] rounded-lg border border-gray-300 bg-white px-4 py-3 text-sm focus:border-primary focus:ring-1 focus:ring-primary"
+                      value={newTemplateContent}
+                      onChange={(e) => setNewTemplateContent(e.target.value)}
+                      placeholder="Template content..."
+                    />
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      onClick={async () => {
+                        if (!newTemplateName.trim() || !newTemplateContent.trim()) {
+                          alert('Please enter template name and content')
+                          return
+                        }
+                        try {
+                          const response = await fetch('/api/admin/description-templates', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({
+                              name: newTemplateName.trim(),
+                              content: newTemplateContent.trim(),
+                              type: newTemplateType,
+                            }),
+                          })
+                          if (response.ok) {
+                            const newTemplate = await response.json()
+                            setDescTemplates([...descTemplates, newTemplate])
+                            setNewTemplateName('')
+                            setNewTemplateContent('')
+                          } else {
+                            const error = await response.json()
+                            alert(error.error || 'Failed to add template')
+                          }
+                        } catch (error) {
+                          console.error('Error adding template:', error)
+                          alert('Failed to add template')
+                        }
+                      }}
+                    >
+                      <Plus className="h-4 w-4 mr-1" />
+                      Add Template
+                    </Button>
+                  </div>
+
+                  {/* Existing Templates */}
+                  {descTemplates.length > 0 && (
+                    <div className="mt-3 space-y-2">
+                      <p className="text-xs text-gray-500">Existing Templates:</p>
+                      <div className="flex flex-wrap gap-2">
+                        {descTemplates.map((t) => (
+                          <span
+                            key={t.id}
+                            className={`inline-flex items-center gap-1 px-2 py-1 rounded text-xs ${
+                              t.type === 'header' ? 'bg-blue-100 text-blue-700' : 'bg-green-100 text-green-700'
+                            }`}
+                          >
+                            [{t.type}] {t.name}
+                            <button
+                              type="button"
+                              onClick={async () => {
+                                if (!confirm(`Delete template "${t.name}"?`)) return
+                                try {
+                                  await fetch(`/api/admin/description-templates?id=${t.id}`, { method: 'DELETE' })
+                                  setDescTemplates(descTemplates.filter(x => x.id !== t.id))
+                                } catch (error) {
+                                  console.error('Error deleting template:', error)
+                                }
+                              }}
+                              className="text-gray-400 hover:text-red-500 ml-1"
+                            >
+                              ×
+                            </button>
+                          </span>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                </div>
               </div>
+
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
                   YouTube Video URLs (up to 4)

@@ -350,3 +350,17 @@ model SpecKey {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 }
+
+
+model DescriptionTemplate {
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  name      String   // Template name for easy selection
+  content   String   // The actual template content
+  type      String   // 'header' | 'footer'
+  order     Int      @default(0)
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([type])
+}
