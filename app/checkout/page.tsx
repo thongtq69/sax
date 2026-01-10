@@ -107,7 +107,7 @@ function CheckoutContent() {
   }, [shippingInfo.country, shippingInfo.zip])
 
   const shipping = shippingCost ?? 0 // No default shipping - will be calculated or shown in PayPal
-  const tax = subtotal * 0.08
+  const tax = 0 // No tax
   const total = subtotal + shipping + tax
 
   // Check if payment was cancelled
@@ -339,7 +339,7 @@ function CheckoutContent() {
                     {shipping === 0 ? "FREE" : "$" + shipping}
                   </span>
                 </div>
-                <div className="flex justify-between"><span>Tax (8%)</span><span>${tax.toFixed(2)}</span></div>
+                <div className="flex justify-between"><span>Tax (0%)</span><span>$0.00</span></div>
                 <Separator />
                 <div className="flex justify-between text-lg font-bold"><span>Total</span><span className="text-primary">${total.toFixed(2)}</span></div>
               </div>

@@ -65,7 +65,7 @@ export function PayPalStandardButton({ shippingInfo, shippingCost, onError }: Pa
   const subtotal = useCartStore((state) => state.getSubtotal())
   // Use calculated shipping cost if provided, otherwise 0 (will be handled in PayPal)
   const shipping = shippingCost ?? 0
-  const tax = subtotal * 0.08
+  const tax = 0 // No tax
   const total = subtotal + shipping + tax
 
   // PayPal Business Email (Sandbox or Live)
