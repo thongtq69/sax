@@ -4,7 +4,7 @@ import { useState, useRef, useCallback } from 'react'
 import Image from 'next/image'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
-import { Upload, Link as LinkIcon, X, Loader2, ImageIcon, Plus, XCircle } from 'lucide-react'
+import { Upload, Link as LinkIcon, X, Loader2, ImageIcon, Plus, XCircle, GripVertical } from 'lucide-react'
 
 // Max file size for Cloudinary free plan (10MB limit)
 // Files larger than this will be auto-compressed before upload
@@ -93,6 +93,10 @@ export function ImageUpload({
   const fileInputRef = useRef<HTMLInputElement>(null)
   const abortControllerRef = useRef<AbortController | null>(null)
   const isCancelledRef = useRef<boolean>(false)
+  
+  // Drag and drop state
+  const [draggedIndex, setDraggedIndex] = useState<number | null>(null)
+  const [dragOverIndex, setDragOverIndex] = useState<number | null>(null)
 
   // Cancel upload function
   const cancelUpload = useCallback(() => {
@@ -317,6 +321,56 @@ export function ImageUpload({
     onChange(newImages)
   }
 
+  // Drag and drop handlers
+  const handleDragStart = (e: React.DragEvent, index: number) => {
+    setDraggedIndex(index)
+    e.dataTransfer.effectAllowed = 'move'
+    e.dataTransfer.setData('text/plain', index.toString())
+    // Add a slight delay to show the dragging state
+    setTimeout(() => {
+      const target = e.target as HTMLElement
+      target.style.opacity = '0.5'
+    }, 0)
+  }
+
+  const handleDragEnd = (e: React.DragEvent) => {
+    const target = e.target as HTMLElement
+    target.style.opacity = '1'
+    setDraggedIndex(null)
+    setDragOverIndex(null)
+  }
+
+  const handleDragOver = (e: React.DragEvent, index: number) => {
+    e.preventDefault()
+    e.dataTransfer.dropEffect = 'move'
+    if (draggedIndex !== null && draggedIndex !== index) {
+      setDragOverIndex(index)
+    }
+  }
+
+  const handleDragLeave = () => {
+    setDragOverIndex(null)
+  }
+
+  const handleDrop = (e: React.DragEvent, dropIndex: number) => {
+    e.preventDefault()
+    const dragIndex = parseInt(e.dataTransfer.getData('text/plain'))
+    
+    if (dragIndex === dropIndex) {
+      setDraggedIndex(null)
+      setDragOverIndex(null)
+      return
+    }
+
+    const newImages = [...images]
+    const [draggedImage] = newImages.splice(dragIndex, 1)
+    newImages.splice(dropIndex, 0, draggedImage)
+    onChange(newImages)
+    
+    setDraggedIndex(null)
+    setDragOverIndex(null)
+  }
+
   return (
     <div className="space-y-4">
       {/* Upload Mode Toggle */}
@@ -449,60 +503,80 @@ export function ImageUpload({
 
       {/* Image Preview Grid */}
       {images.length > 0 && (
-        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
-          {images.map((url, index) => (
-            <div
-              key={`${url}-${index}`}
-              className="relative group aspect-square bg-gray-100 rounded-lg overflow-hidden"
-            >
-              <Image
-                src={url}
-                alt={`Image ${index + 1}`}
-                fill
-                className="object-cover"
-                sizes="(max-width: 640px) 50vw, (max-width: 768px) 33vw, 25vw"
-              />
-              
-              {/* First image badge */}
-              {index === 0 && (
-                <span className="absolute top-2 left-2 bg-primary text-white text-xs px-2 py-1 rounded">
-                  Main
-                </span>
-              )}
+        <div>
+          <p className="text-sm text-gray-500 mb-2">
+            💡 Kéo thả để sắp xếp lại thứ tự ảnh
+          </p>
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
+            {images.map((url, index) => (
+              <div
+                key={`${url}-${index}`}
+                draggable
+                onDragStart={(e) => handleDragStart(e, index)}
+                onDragEnd={handleDragEnd}
+                onDragOver={(e) => handleDragOver(e, index)}
+                onDragLeave={handleDragLeave}
+                onDrop={(e) => handleDrop(e, index)}
+                className={`relative group aspect-square bg-gray-100 rounded-lg overflow-hidden cursor-grab active:cursor-grabbing transition-all duration-200 ${
+                  draggedIndex === index ? 'opacity-50 scale-95' : ''
+                } ${
+                  dragOverIndex === index ? 'ring-2 ring-primary ring-offset-2 scale-105' : ''
+                }`}
+              >
+                <Image
+                  src={url}
+                  alt={`Image ${index + 1}`}
+                  fill
+                  className="object-cover pointer-events-none"
+                  sizes="(max-width: 640px) 50vw, (max-width: 768px) 33vw, 25vw"
+                />
+                
+                {/* Drag handle indicator */}
+                <div className="absolute top-2 right-2 bg-black/50 text-white p-1 rounded opacity-0 group-hover:opacity-100 transition-opacity">
+                  <GripVertical className="h-4 w-4" />
+                </div>
+                
+                {/* First image badge */}
+                {index === 0 && (
+                  <span className="absolute top-2 left-2 bg-primary text-white text-xs px-2 py-1 rounded">
+                    Main
+                  </span>
+                )}
 
-              {/* Actions overlay */}
-              <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
-                {index > 0 && (
+                {/* Actions overlay */}
+                <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
+                  {index > 0 && (
+                    <Button
+                      type="button"
+                      size="sm"
+                      variant="secondary"
+                      onClick={() => moveImage(index, 'left')}
+                    >
+                      ←
+                    </Button>
+                  )}
                   <Button
                     type="button"
                     size="sm"
-                    variant="secondary"
-                    onClick={() => moveImage(index, 'left')}
+                    variant="destructive"
+                    onClick={() => removeImage(index)}
                   >
-                    ←
+                    <X className="h-4 w-4" />
                   </Button>
-                )}
-                <Button
-                  type="button"
-                  size="sm"
-                  variant="destructive"
-                  onClick={() => removeImage(index)}
-                >
-                  <X className="h-4 w-4" />
-                </Button>
-                {index < images.length - 1 && (
-                  <Button
-                    type="button"
-                    size="sm"
-                    variant="secondary"
-                    onClick={() => moveImage(index, 'right')}
-                  >
-                    →
-                  </Button>
-                )}
+                  {index < images.length - 1 && (
+                    <Button
+                      type="button"
+                      size="sm"
+                      variant="secondary"
+                      onClick={() => moveImage(index, 'right')}
+                    >
+                      →
+                    </Button>
+                  )}
+                </div>
               </div>
-            </div>
-          ))}
+            ))}
+          </div>
         </div>
       )}
 

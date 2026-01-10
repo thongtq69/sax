@@ -548,9 +548,9 @@ export default function OrdersManagement() {
                         ${(() => {
                           const gross = Math.abs(parseFloat(selectedOrder.billingAddress?.mcGross || '0'))
                           const fee = Math.abs(parseFloat(selectedOrder.billingAddress?.mcFee || '0'))
-                          const shipping = parseFloat(selectedOrder.billingAddress?.mcShipping || '0')
-                          // Net = Gross - Fee (shipping is paid by customer, not deducted from seller)
-                          const net = gross - fee
+                          const shipping = Math.abs(parseFloat(selectedOrder.billingAddress?.mcShipping || '0'))
+                          // Net = Gross - Fee - Shipping
+                          const net = gross - fee - shipping
                           return net.toFixed(2)
                         })()}
                       </span>
@@ -558,6 +558,7 @@ export default function OrdersManagement() {
                     <p className="text-xs text-green-600 mt-1">
                       = ${Math.abs(parseFloat(selectedOrder.billingAddress.mcGross || '0')).toFixed(2)} (Gross) 
                       - ${Math.abs(parseFloat(selectedOrder.billingAddress.mcFee || '0')).toFixed(2)} (PayPal Fee)
+                      - ${Math.abs(parseFloat(selectedOrder.billingAddress.mcShipping || '0')).toFixed(2)} (Shipping)
                     </p>
                   </div>
                 )}
