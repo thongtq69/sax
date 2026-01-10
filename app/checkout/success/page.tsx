@@ -122,16 +122,11 @@ function SuccessContent() {
         )}
 
         {/* Info Cards */}
-        <div className="grid grid-cols-2 gap-4 mb-8">
+        <div className="mb-8">
           <div className="p-4 bg-blue-50 border border-blue-100 rounded-lg">
             <Mail className="h-6 w-6 text-blue-500 mx-auto mb-2" />
             <p className="text-sm font-medium text-blue-700">Confirmation Email</p>
             <p className="text-xs text-blue-600">Sent to your email</p>
-          </div>
-          <div className="p-4 bg-amber-50 border border-amber-100 rounded-lg">
-            <Package className="h-6 w-6 text-amber-500 mx-auto mb-2" />
-            <p className="text-sm font-medium text-amber-700">Shipping</p>
-            <p className="text-xs text-amber-600">2-5 business days</p>
           </div>
         </div>
 

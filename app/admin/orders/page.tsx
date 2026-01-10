@@ -21,6 +21,8 @@ import {
 interface OrderItem {
   id: string
   productId: string
+  productSku?: string
+  productName?: string
   quantity: number
   price: number
 }
@@ -523,8 +525,9 @@ export default function OrdersManagement() {
                   {selectedOrder.items.map((item) => (
                     <div key={item.id} className="p-3 flex justify-between items-center">
                       <div>
-                        <p className="text-sm font-mono text-gray-500">Product ID: {item.productId.slice(-8)}</p>
-                        <p className="text-sm">Qty: {item.quantity}</p>
+                        <p className="text-sm font-medium text-gray-900">{item.productName || 'Unknown Product'}</p>
+                        <p className="text-sm font-mono text-gray-500">SKU: {item.productSku || 'N/A'}</p>
+                        <p className="text-sm text-gray-500">Qty: {item.quantity}</p>
                       </div>
                       <p className="font-semibold">${(item.price * item.quantity).toLocaleString()}</p>
                     </div>

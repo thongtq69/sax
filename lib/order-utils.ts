@@ -1,23 +1,22 @@
 /**
  * Generate order number based on Vietnam timezone
- * Format: day + month + year(2 digits) + hour + minute + "21"
- * Example: 9/1/2025 13:50 → 9125135021
+ * Format: YY + MM + DD + HH + mm + ss
+ * Example: 2025/01/11 02:15:30 → 250111021530
  */
 export function generateOrderNumber(): string {
   // Get current time in Vietnam timezone (UTC+7)
   const now = new Date()
   const vietnamTime = new Date(now.toLocaleString('en-US', { timeZone: 'Asia/Ho_Chi_Minh' }))
   
-  const day = vietnamTime.getDate()
-  const month = vietnamTime.getMonth() + 1 // 0-indexed
-  const year = vietnamTime.getFullYear() % 100 // Last 2 digits
-  const hour = vietnamTime.getHours()
-  const minute = vietnamTime.getMinutes()
-  const second = vietnamTime.getSeconds()
+  const year = (vietnamTime.getFullYear() % 100).toString().padStart(2, '0') // Last 2 digits
+  const month = (vietnamTime.getMonth() + 1).toString().padStart(2, '0') // 0-indexed
+  const day = vietnamTime.getDate().toString().padStart(2, '0')
+  const hour = vietnamTime.getHours().toString().padStart(2, '0')
+  const minute = vietnamTime.getMinutes().toString().padStart(2, '0')
+  const second = vietnamTime.getSeconds().toString().padStart(2, '0')
   
-  // Format: day + month + year(2) + hour + minute + "21"
-  // Add seconds to ensure uniqueness for orders created in same minute
-  const orderNumber = `${day}${month}${year}${hour}${minute}${second}21`
+  // Format: YY + MM + DD + HH + mm + ss
+  const orderNumber = `${year}${month}${day}${hour}${minute}${second}`
   
   return orderNumber
 }
@@ -30,16 +29,16 @@ export function generateUniqueOrderNumber(): string {
   const now = new Date()
   const vietnamTime = new Date(now.toLocaleString('en-US', { timeZone: 'Asia/Ho_Chi_Minh' }))
   
-  const day = vietnamTime.getDate()
-  const month = vietnamTime.getMonth() + 1
-  const year = vietnamTime.getFullYear() % 100
-  const hour = vietnamTime.getHours()
-  const minute = vietnamTime.getMinutes()
-  const second = vietnamTime.getSeconds()
-  const ms = now.getMilliseconds()
+  const year = (vietnamTime.getFullYear() % 100).toString().padStart(2, '0')
+  const month = (vietnamTime.getMonth() + 1).toString().padStart(2, '0')
+  const day = vietnamTime.getDate().toString().padStart(2, '0')
+  const hour = vietnamTime.getHours().toString().padStart(2, '0')
+  const minute = vietnamTime.getMinutes().toString().padStart(2, '0')
+  const second = vietnamTime.getSeconds().toString().padStart(2, '0')
+  const ms = now.getMilliseconds().toString().padStart(3, '0')
   
-  // Include milliseconds for uniqueness
-  const orderNumber = `${day}${month}${year}${hour}${minute}${second}${ms.toString().padStart(3, '0')}21`
+  // Include milliseconds for uniqueness: YY + MM + DD + HH + mm + ss + ms
+  const orderNumber = `${year}${month}${day}${hour}${minute}${second}${ms}`
   
   return orderNumber
 }

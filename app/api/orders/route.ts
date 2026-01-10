@@ -31,7 +31,12 @@ export async function GET(request: NextRequest) {
       prisma.order.findMany({
         where,
         include: {
-          items: true,
+          items: {
+            include: {
+              // Note: OrderItem doesn't have direct relation to Product in schema
+              // We'll need to fetch product info separately
+            }
+          },
         },
         orderBy: { createdAt: 'desc' },
         skip: (page - 1) * limit,
@@ -40,8 +45,29 @@ export async function GET(request: NextRequest) {
       prisma.order.count({ where }),
     ])
 
+    // Fetch product SKUs for all order items
+    const productIds = orders.flatMap(order => order.items.map(item => item.productId))
+    const uniqueProductIds = [...new Set(productIds)]
+    
+    const products = await prisma.product.findMany({
+      where: { id: { in: uniqueProductIds } },
+      select: { id: true, sku: true, name: true },
+    })
+    
+    const productMap = new Map(products.map(p => [p.id, { sku: p.sku, name: p.name }]))
+    
+    // Add SKU info to order items
+    const ordersWithSku = orders.map(order => ({
+      ...order,
+      items: order.items.map(item => ({
+        ...item,
+        productSku: productMap.get(item.productId)?.sku || 'N/A',
+        productName: productMap.get(item.productId)?.name || 'Unknown Product',
+      })),
+    }))
+
     return NextResponse.json({
-      orders,
+      orders: ordersWithSku,
       total,
       page,
       totalPages: Math.ceil(total / limit),
