@@ -1,16 +1,18 @@
 'use client'
 
 import dynamic from 'next/dynamic'
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
 import { Button } from '@/components/ui/button'
-import { ProductCard } from '@/components/product/ProductCard'
 import { getProducts, getCategories, transformProduct, transformCategory } from '@/lib/api'
 import type { Product } from '@/lib/data'
-import { ChevronRight, ChevronLeft, Star, Sparkles, MessageCircle } from 'lucide-react'
+import { ChevronRight, Star, Sparkles } from 'lucide-react'
 import { getAllReviewsAsync, type Review } from '@/lib/reviews'
 import { ScrollAnimations } from '@/components/site/ScrollAnimations'
+
+import { StaticProductGrid } from '@/components/home/StaticProductGrid'
+import { NewArrivalsCarousel } from '@/components/home/NewArrivalsCarousel'
 
 // Lazy load popup - only when user clicks "View All Reviews"
 const TestimonialsPopup = dynamic(
@@ -18,294 +20,11 @@ const TestimonialsPopup = dynamic(
   { ssr: false }
 )
 
-const getReviewExcerpt = (message: string, maxLength = 160) => {
-  if (message.length <= maxLength) return message
-  const trimmed = message.slice(0, maxLength)
-  const lastSpace = trimmed.lastIndexOf(' ')
-  const safeCut = lastSpace > 0 ? trimmed.slice(0, lastSpace) : trimmed
-  return `${safeCut.trim()}...`
-}
-
-interface ReviewsCarouselProps {
-  reviews: Review[]
-  productImages?: string[]
-  onViewAll?: () => void
-}
-
-function ReviewsCarousel({ reviews, productImages = [], onViewAll }: ReviewsCarouselProps) {
-  const [currentIndex, setCurrentIndex] = useState(0)
-  const [isPaused, setIsPaused] = useState(false)
-  const [isAnimating, setIsAnimating] = useState(false)
-  const intervalRef = useRef<NodeJS.Timeout | null>(null)
-
-  const reviewsLength = reviews?.length ?? 0
-
-  useEffect(() => {
-    if (reviewsLength === 0 || isPaused) return
-    intervalRef.current = setInterval(() => {
-      setIsAnimating(true)
-      setTimeout(() => {
-        setCurrentIndex((prev) => (prev + 1) % reviewsLength)
-        setTimeout(() => setIsAnimating(false), 50)
-      }, 200)
-    }, 5000)
-    return () => {
-      if (intervalRef.current) clearInterval(intervalRef.current)
-    }
-  }, [reviewsLength, isPaused])
-
-  if (reviewsLength === 0) return null
-  const currentReview = reviews[currentIndex]
-
-  return (
-    <div className="relative" onMouseEnter={() => setIsPaused(true)} onMouseLeave={() => setIsPaused(false)}>
-      <div className={`bg-white/85 backdrop-blur-md px-8 sm:px-10 md:px-12 py-6 sm:py-8 pb-10 sm:pb-12 shadow-xl border border-white/50 rounded-xl w-full transition-all duration-300 ease-out relative ${isAnimating ? 'opacity-0 scale-95' : 'opacity-100 scale-100'}`}>
-        <div className="flex flex-col sm:flex-row sm:items-center gap-4 sm:gap-8">
-          <div className="flex-1">
-            <p className="text-gray-700 text-base sm:text-lg md:text-xl leading-relaxed italic">
-              <span className="text-amber-400 text-2xl mr-1">&quot;</span>
-              {getReviewExcerpt(currentReview.message || 'Great experience!', 300)}
-              <span className="text-amber-400 text-2xl ml-1">&quot;</span>
-            </p>
-          </div>
-          <div className="flex sm:flex-col items-center sm:items-end gap-3 sm:gap-2 shrink-0">
-            <div className="flex gap-0.5">
-              {[...Array(5)].map((_, i) => (
-                <Star key={i} className={`h-4 w-4 sm:h-5 sm:w-5 ${i < currentReview.rating ? 'fill-amber-400 text-amber-400' : 'fill-gray-200 text-gray-200'}`} />
-              ))}
-            </div>
-            <div className="text-right">
-              <span className="font-semibold text-secondary text-base">{currentReview.buyerName}</span>
-              <span className="text-gray-400 mx-1.5 hidden sm:inline">•</span>
-              <span className="text-sm text-gray-500 block sm:inline">
-                {new Date(currentReview.date).toLocaleDateString('en-US', { month: 'short', year: 'numeric' })}
-              </span>
-            </div>
-          </div>
-        </div>
-        {/* View All Reviews - positioned at bottom right of card */}
-        {onViewAll && (
-          <button
-            className="absolute bottom-3 right-4 sm:bottom-4 sm:right-6 text-secondary hover:text-primary font-medium text-[10px] sm:text-xs underline transition-all flex items-center gap-0.5"
-            onClick={onViewAll}
-          >
-            View All Reviews
-            <ChevronRight className="h-3 w-3 sm:h-3.5 sm:w-3.5" />
-          </button>
-        )}
-      </div>
-    </div>
-  )
-}
-
-interface NewArrivalsCarouselProps {
-  products: Product[]
-  id: string
-  autoRotate?: boolean // Enable/disable auto rotation
-}
-
-// Static grid for displaying products with manual navigation (for NEW ARRIVALS & FEATURED INSTRUMENTS)
-function StaticProductGrid({ products, id }: { products: Product[], id: string }) {
-  const [currentIndex, setCurrentIndex] = useState(0)
-  const [isAnimating, setIsAnimating] = useState(false)
-  const [isMobile, setIsMobile] = useState(false)
-
-  useEffect(() => {
-    const checkMobile = () => setIsMobile(window.innerWidth < 640)
-    checkMobile()
-    window.addEventListener('resize', checkMobile)
-    return () => window.removeEventListener('resize', checkMobile)
-  }, [])
-
-  if (products.length === 0) return null
-
-  const productsPerView = isMobile ? 2 : 6
-  const showNavigation = products.length > productsPerView
-
-  // Get products to display based on current index
-  const getDisplayProducts = () => {
-    if (products.length <= productsPerView) {
-      return products
-    }
-    // Show a sliding window of products with loop
-    const display: Product[] = []
-    for (let i = 0; i < productsPerView; i++) {
-      const index = (currentIndex + i) % products.length
-      display.push(products[index])
-    }
-    return display
-  }
-
-  const displayProducts = getDisplayProducts()
-  const productCount = displayProducts.length
-
-  // Calculate grid columns - always use full width, products will be evenly distributed
-  const getGridClass = () => {
-    if (isMobile) return 'grid-cols-2'
-    // Always use the number of products as columns for even distribution
-    if (productCount === 1) return 'grid-cols-1'
-    if (productCount === 2) return 'grid-cols-2'
-    if (productCount === 3) return 'grid-cols-3'
-    if (productCount === 4) return 'grid-cols-4'
-    if (productCount === 5) return 'grid-cols-5'
-    return 'grid-cols-6'
-  }
-
-  const goToNext = () => {
-    if (!showNavigation) return
-    setIsAnimating(true)
-    setTimeout(() => {
-      setCurrentIndex((prev) => (prev + 1) % products.length)
-      setTimeout(() => setIsAnimating(false), 50)
-    }, 150)
-  }
-
-  const goToPrev = () => {
-    if (!showNavigation) return
-    setIsAnimating(true)
-    setTimeout(() => {
-      setCurrentIndex((prev) => (prev - 1 + products.length) % products.length)
-      setTimeout(() => setIsAnimating(false), 50)
-    }, 150)
-  }
-
-  return (
-    <div className="relative">
-      <div className="overflow-visible">
-        <div className={`grid ${getGridClass()} gap-3 sm:gap-6`}>
-          {displayProducts.map((product, index) => (
-            <div
-              key={`${id}-${product.id}-${currentIndex}-${index}`}
-              className={`transition-all duration-300 ease-out hover:scale-110 hover:z-10 ${isAnimating && showNavigation ? 'opacity-0 scale-95' : 'opacity-100 scale-100'}`}
-              style={{ transitionDelay: isAnimating ? '0ms' : `${index * 30}ms` }}
-            >
-              <ProductCard product={product} index={index} />
-            </div>
-          ))}
-        </div>
-      </div>
-      {showNavigation && (
-        <>
-          <button type="button" aria-label="Previous products" onClick={goToPrev} className="hidden sm:flex absolute left-0 top-1/2 -translate-y-1/2 -translate-x-1/2 rounded-full bg-white/95 border-2 border-primary/20 shadow-xl p-3 text-primary hover:bg-primary hover:text-white hover:border-primary hover:scale-110 transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-primary z-10 items-center justify-center">
-            <ChevronLeft className="h-5 w-5" />
-          </button>
-          <button type="button" aria-label="Next products" onClick={goToNext} className="hidden sm:flex absolute right-0 top-1/2 -translate-y-1/2 translate-x-1/2 rounded-full bg-white/95 border-2 border-primary/20 shadow-xl p-3 text-primary hover:bg-primary hover:text-white hover:border-primary hover:scale-110 transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-primary z-10 items-center justify-center">
-            <ChevronRight className="h-5 w-5" />
-          </button>
-        </>
-      )}
-    </div>
-  )
-}
-
-function NewArrivalsCarousel({ products, id, autoRotate = true }: NewArrivalsCarouselProps) {
-  const [currentIndex, setCurrentIndex] = useState(0)
-  const [isPaused, setIsPaused] = useState(false)
-  const [isAnimating, setIsAnimating] = useState(false)
-  const [isMobile, setIsMobile] = useState(false)
-  const intervalRef = useRef<NodeJS.Timeout | null>(null)
-
-  useEffect(() => {
-    const checkMobile = () => setIsMobile(window.innerWidth < 640)
-    checkMobile()
-    window.addEventListener('resize', checkMobile)
-    return () => window.removeEventListener('resize', checkMobile)
-  }, [])
-
-  const productsPerView = isMobile ? 2 : 6
-
-  // Only auto-rotate if enabled and we have more products than can be displayed
-  useEffect(() => {
-    if (!autoRotate || products.length <= productsPerView || isPaused) return
-    intervalRef.current = setInterval(() => {
-      setIsAnimating(true)
-      setTimeout(() => {
-        setCurrentIndex((prev) => (prev + 1) % products.length)
-        setTimeout(() => setIsAnimating(false), 50)
-      }, 200)
-    }, 4000)
-    return () => {
-      if (intervalRef.current) clearInterval(intervalRef.current)
-    }
-  }, [products.length, isPaused, autoRotate, productsPerView])
-
-  const getDisplayProducts = () => {
-    // If we have fewer products than slots, just show what we have (no duplication)
-    if (products.length <= productsPerView) {
-      return products
-    }
-    // Otherwise, show a sliding window of products
-    const display: Product[] = []
-    for (let i = 0; i < productsPerView; i++) {
-      const index = (currentIndex + i) % products.length
-      display.push(products[index])
-    }
-    return display
-  }
-
-  const displayProducts = getDisplayProducts()
-  const productCount = displayProducts.length
-  const showNavigation = products.length > productsPerView
-
-  // Calculate grid columns based on product count (for centering when < 6)
-  const getGridClass = () => {
-    if (isMobile) return 'grid-cols-2'
-    if (productCount === 1) return 'grid-cols-1 max-w-xs mx-auto'
-    if (productCount === 2) return 'grid-cols-2 max-w-lg mx-auto'
-    if (productCount === 3) return 'grid-cols-3 max-w-2xl mx-auto'
-    if (productCount === 4) return 'grid-cols-4 max-w-4xl mx-auto'
-    if (productCount === 5) return 'grid-cols-5 max-w-5xl mx-auto'
-    return 'grid-cols-6'
-  }
-
-  const goToNext = () => {
-    if (!showNavigation) return
-    setIsAnimating(true)
-    setTimeout(() => {
-      setCurrentIndex((prev) => (prev + 1) % products.length)
-      setTimeout(() => setIsAnimating(false), 50)
-    }, 150)
-  }
-
-  const goToPrev = () => {
-    if (!showNavigation) return
-    setIsAnimating(true)
-    setTimeout(() => {
-      setCurrentIndex((prev) => (prev - 1 + products.length) % products.length)
-      setTimeout(() => setIsAnimating(false), 50)
-    }, 150)
-  }
-
-  if (products.length === 0) return null
-
-  return (
-    <div className="relative" onMouseEnter={() => setIsPaused(true)} onMouseLeave={() => setIsPaused(false)}>
-      <div className="overflow-hidden">
-        <div className={`grid ${getGridClass()} gap-3 sm:gap-4`}>
-          {displayProducts.map((product, index) => (
-            <div
-              key={`${id}-${product.id}-${currentIndex}-${index}`}
-              className={`transition-all duration-300 ease-out ${isAnimating && showNavigation ? 'opacity-0 scale-95' : 'opacity-100 scale-100'}`}
-              style={{ transitionDelay: isAnimating ? '0ms' : `${index * 30}ms` }}
-            >
-              <ProductCard product={product} index={index} />
-            </div>
-          ))}
-        </div>
-      </div>
-      {showNavigation && (
-        <>
-          <button type="button" aria-label="Previous products" onClick={goToPrev} className="hidden sm:flex absolute left-0 top-1/2 -translate-y-1/2 -translate-x-1/2 rounded-full bg-white/95 border-2 border-primary/20 shadow-xl p-3 text-primary hover:bg-primary hover:text-white hover:border-primary hover:scale-110 transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-primary z-10 items-center justify-center">
-            <ChevronLeft className="h-5 w-5" />
-          </button>
-          <button type="button" aria-label="Next products" onClick={goToNext} className="hidden sm:flex absolute right-0 top-1/2 -translate-y-1/2 translate-x-1/2 rounded-full bg-white/95 border-2 border-primary/20 shadow-xl p-3 text-primary hover:bg-primary hover:text-white hover:border-primary hover:scale-110 transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-primary z-10 items-center justify-center">
-            <ChevronRight className="h-5 w-5" />
-          </button>
-        </>
-      )}
-    </div>
-  )
-}
+// Lazy load ReviewsCarousel
+const ReviewsCarousel = dynamic(
+  () => import('@/components/home/ReviewsCarousel').then(m => m.ReviewsCarousel),
+  { ssr: false }
+)
 
 export default function HomePage() {
   const [featuredProducts, setFeaturedProducts] = useState<Product[]>([])
@@ -434,42 +153,24 @@ export default function HomePage() {
           }
         })
 
-        Promise.all([
-          Promise.all(allSubcategories.map(async (sub) => {
-            try {
-              const response = await fetch(`/api/products/count?subcategory=${sub.slug}&inStock=true`)
-              if (!response.ok) return { slug: sub.slug, count: 0 }
-              const data = await response.json()
-              return { slug: sub.slug, count: data.count || 0 }
-            } catch (error) {
-              return { slug: sub.slug, count: 0 }
-            }
-          })),
-          Promise.all(transformedCategories.map(async (cat) => {
-            try {
-              const response = await fetch(`/api/products/count?category=${cat.slug}&inStock=true`)
-              if (!response.ok) return { slug: cat.slug, count: 0 }
-              const data = await response.json()
-              return { slug: cat.slug, count: data.count || 0 }
-            } catch (error) {
-              return { slug: cat.slug, count: 0 }
-            }
-          }))
-        ]).then(([subcategoryCountResults, categoryCountResults]) => {
-          const subcategoryCounts: Record<string, number> = {}
-          subcategoryCountResults.forEach(result => {
-            subcategoryCounts[result.slug] = result.count
-          })
-          const subcategoriesWithProducts = allSubcategories.filter(sub => (subcategoryCounts[sub.slug] || 0) > 0)
-          setSubcategories(subcategoriesWithProducts)
-          const counts: Record<string, number> = {}
-          categoryCountResults.forEach(result => {
-            counts[result.slug] = result.count
-          })
-          setCategoryCounts({ ...counts, ...subcategoryCounts })
-        }).catch(error => {
+        try {
+          const response = await fetch('/api/products/count?batch=true&inStock=true')
+          if (response.ok) {
+            const data = await response.json()
+            const categoryResults = data.categories || {}
+            const subcategoryResults = data.subcategories || {}
+
+            const subcategoriesWithProducts = allSubcategories.filter(sub => (subcategoryResults[sub.slug] || 0) > 0)
+            setSubcategories(subcategoriesWithProducts)
+
+            const allCounts = { ...categoryResults, ...subcategoryResults }
+            setCategoryCounts(allCounts)
+          } else {
+            console.error('Failed to fetch batch counts')
+          }
+        } catch (error) {
           console.error('Error fetching product counts:', error)
-        })
+        }
       } catch (error) {
         console.error('Error fetching data:', error)
         setIsLoading(false)

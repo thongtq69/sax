@@ -7,6 +7,7 @@ import { AnnouncementBar } from './AnnouncementBar'
 import { Footer } from './Footer'
 import { useNavigationLoading } from '@/hooks/use-navigation-loading'
 import { SiteSettingsProvider } from '@/contexts/SiteSettingsContext'
+import { WishlistProvider } from '@/contexts/WishlistContext'
 
 // Lazy load popup - not needed on initial paint
 const NewYearPopup = dynamic(
@@ -25,22 +26,24 @@ export function SiteLayout({ children }: { children: React.ReactNode }) {
 
   return (
     <SiteSettingsProvider>
-      <Header />
-      <AnnouncementBar />
-      <main className="min-h-screen">{children}</main>
-      <Footer />
+      <WishlistProvider>
+        <Header />
+        <AnnouncementBar />
+        <main className="min-h-screen">{children}</main>
+        <Footer />
 
-      {/* New Year 2026 Flash Sale Popup - lazy loaded */}
-      <NewYearPopup />
+        {/* New Year 2026 Flash Sale Popup - lazy loaded */}
+        <NewYearPopup />
 
-      {/* Global Navigation Loading Indicator - Lightweight progress bar */}
-      {isNavigating && (
-        <div className="fixed top-0 left-0 right-0 z-[100] pointer-events-none">
-          <div className="h-1 bg-primary/20">
-            <div className="h-full bg-primary animate-pulse" style={{ width: '30%' }} />
+        {/* Global Navigation Loading Indicator - Lightweight progress bar */}
+        {isNavigating && (
+          <div className="fixed top-0 left-0 right-0 z-[100] pointer-events-none">
+            <div className="h-1 bg-primary/20">
+              <div className="h-full bg-primary animate-pulse" style={{ width: '30%' }} />
+            </div>
           </div>
-        </div>
-      )}
+        )}
+      </WishlistProvider>
     </SiteSettingsProvider>
   )
 }

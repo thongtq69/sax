@@ -16,6 +16,7 @@ import { getProductRatingStats } from '@/lib/reviews'
 import { getProductUrl } from '@/lib/api'
 import { ConditionTooltip } from './ConditionTooltip'
 import { ConditionRating } from '@/lib/product-conditions'
+import { useWishlist } from '@/contexts/WishlistContext'
 
 // Lazy load QuickViewModal - only when user clicks Quick View
 const QuickViewModal = dynamic(
@@ -43,8 +44,11 @@ const getProductFinishes = (productId: string) => {
 export function ProductCard({ product, index = 0 }: ProductCardProps) {
   const [isQuickViewOpen, setIsQuickViewOpen] = useState(false)
   const [imageHover, setImageHover] = useState(false)
-  const [isWishlisted, setIsWishlisted] = useState(false)
-  const [isWishlistLoading, setIsWishlistLoading] = useState(false)
+  const { isInWishlist, addToWishlist, removeFromWishlist, isLoading: isWishlistGlobalLoading } = useWishlist()
+  // Local loading state for just this button operation
+  const [isActionLoading, setIsActionLoading] = useState(false)
+  const isWishlisted = product.id ? isInWishlist(product.id) : false
+
   const [isAddingToCart, setIsAddingToCart] = useState(false)
   const [isImageLoading, setIsImageLoading] = useState(true)
   const addItem = useCartStore((state) => state.addItem)
@@ -53,24 +57,6 @@ export function ProductCard({ product, index = 0 }: ProductCardProps) {
 
   // Product URL with SEO-friendly slug
   const productUrl = getProductUrl(product.sku, product.slug)
-
-  // Fetch wishlist status when user is logged in
-  useEffect(() => {
-    const checkWishlist = async () => {
-      if (session?.user?.id && product.id) {
-        try {
-          const res = await fetch(`/api/wishlist/${product.id}`)
-          if (res.ok) {
-            const data = await res.json()
-            setIsWishlisted(data.inWishlist)
-          }
-        } catch (error) {
-          console.error('Error checking wishlist:', error)
-        }
-      }
-    }
-    checkWishlist()
-  }, [session?.user?.id, product.id])
 
   // Toggle wishlist
   const handleToggleWishlist = async (e: React.MouseEvent) => {
@@ -82,23 +68,19 @@ export function ProductCard({ product, index = 0 }: ProductCardProps) {
       return
     }
 
-    setIsWishlistLoading(true)
+    if (!product.id) return
+
+    setIsActionLoading(true)
     try {
       if (isWishlisted) {
-        const res = await fetch(`/api/wishlist/${product.id}`, { method: 'DELETE' })
-        if (res.ok) setIsWishlisted(false)
+        await removeFromWishlist(product.id)
       } else {
-        const res = await fetch('/api/wishlist', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ productId: product.id })
-        })
-        if (res.ok) setIsWishlisted(true)
+        await addToWishlist(product.id)
       }
     } catch (error) {
       console.error('Error toggling wishlist:', error)
     } finally {
-      setIsWishlistLoading(false)
+      setIsActionLoading(false)
     }
   }
 
@@ -218,12 +200,12 @@ export function ProductCard({ product, index = 0 }: ProductCardProps) {
           {/* Wishlist Button */}
           <button
             onClick={handleToggleWishlist}
-            disabled={isWishlistLoading}
+            disabled={isActionLoading}
             className={`absolute right-3 top-3 z-20 p-2 rounded-full bg-white/90 backdrop-blur-sm shadow-lg transition-all duration-300 hover:scale-110 ${isWishlisted ? 'text-red-500' : 'text-gray-400 hover:text-red-400'
-              } ${isWishlistLoading ? 'opacity-50' : ''}`}
+              } ${isActionLoading ? 'opacity-50' : ''}`}
             title={session?.user ? (isWishlisted ? "Remove from Wishlist" : "Add to Wishlist") : "Login to add to Wishlist"}
           >
-            {isWishlistLoading ? (
+            {isActionLoading ? (
               <Loader2 className="h-5 w-5 animate-spin" />
             ) : (
               <Heart

@@ -12,9 +12,81 @@ function isValidObjectId(str: string): boolean {
 export async function GET(request: NextRequest) {
   try {
     const searchParams = request.nextUrl.searchParams
+    const batch = searchParams.get('batch')
+    const inStock = searchParams.get('inStock')
+
+    // Handle batch request
+    if (batch === 'true') {
+      const where: any = {}
+      if (inStock !== null) {
+        where.inStock = inStock === 'true'
+      }
+
+      // Run independent queries in parallel
+      const [
+        categoryCounts,
+        subcategoryCounts,
+        categories,
+        subcategories
+      ] = await Promise.all([
+        prisma.product.groupBy({
+          by: ['categoryId'],
+          where: {
+            ...where,
+            categoryId: { not: null }
+          },
+          _count: {
+            categoryId: true
+          }
+        }),
+        prisma.product.groupBy({
+          by: ['subcategoryId'],
+          where: {
+            ...where,
+            subcategoryId: { not: null }
+          },
+          _count: {
+            subcategoryId: true
+          }
+        }),
+        prisma.category.findMany({ select: { id: true, slug: true } }),
+        prisma.subCategory.findMany({ select: { id: true, slug: true } })
+      ])
+
+      // Create lookups
+      const categorySlugMap = new Map(categories.map(c => [c.id, c.slug]))
+      const subcategorySlugMap = new Map(subcategories.map(s => [s.id, s.slug]))
+
+      // Map results
+      const categoryResults: Record<string, number> = {}
+      categoryCounts.forEach(item => {
+        if (item.categoryId) {
+          const slug = categorySlugMap.get(item.categoryId)
+          if (slug) {
+            categoryResults[slug] = item._count.categoryId
+          }
+        }
+      })
+
+      const subcategoryResults: Record<string, number> = {}
+      subcategoryCounts.forEach(item => {
+        if (item.subcategoryId) {
+          const slug = subcategorySlugMap.get(item.subcategoryId)
+          if (slug) {
+            subcategoryResults[slug] = item._count.subcategoryId
+          }
+        }
+      })
+
+      return NextResponse.json({
+        categories: categoryResults,
+        subcategories: subcategoryResults
+      })
+    }
+
+    // Existing single count logic
     const category = searchParams.get('category')
     const subcategory = searchParams.get('subcategory')
-    const inStock = searchParams.get('inStock')
 
     const where: any = {}
 
@@ -23,7 +95,7 @@ export async function GET(request: NextRequest) {
       const categoryWhere = isValidObjectId(category)
         ? { id: category }
         : { slug: category }
-      
+
       const categoryRecord = await prisma.category.findFirst({
         where: categoryWhere
       })
@@ -37,7 +109,7 @@ export async function GET(request: NextRequest) {
       const subcategoryWhere = isValidObjectId(subcategory)
         ? { id: subcategory }
         : { slug: subcategory }
-      
+
       const subcategoryRecord = await prisma.subCategory.findFirst({
         where: subcategoryWhere
       })
@@ -56,7 +128,7 @@ export async function GET(request: NextRequest) {
   } catch (error: any) {
     console.error('Error counting products:', error)
     return NextResponse.json(
-      { 
+      {
         error: 'Failed to count products',
         message: error?.message || 'Unknown error',
         code: error?.code || 'UNKNOWN_ERROR',
