@@ -545,17 +545,19 @@ export default function OrdersManagement() {
                     <div className="flex justify-between items-center">
                       <span className="text-sm font-medium text-green-800">💰 Net Amount (Actual Received)</span>
                       <span className="text-xl font-bold text-green-600">
-                        ${(
-                          parseFloat(selectedOrder.billingAddress.mcGross || '0') -
-                          parseFloat(selectedOrder.billingAddress.mcFee || '0') -
-                          parseFloat(selectedOrder.billingAddress.mcShipping || '0')
-                        ).toFixed(2)}
+                        ${(() => {
+                          const gross = Math.abs(parseFloat(selectedOrder.billingAddress?.mcGross || '0'))
+                          const fee = Math.abs(parseFloat(selectedOrder.billingAddress?.mcFee || '0'))
+                          const shipping = parseFloat(selectedOrder.billingAddress?.mcShipping || '0')
+                          // Net = Gross - Fee (shipping is paid by customer, not deducted from seller)
+                          const net = gross - fee
+                          return net.toFixed(2)
+                        })()}
                       </span>
                     </div>
                     <p className="text-xs text-green-600 mt-1">
-                      = ${selectedOrder.billingAddress.mcGross} (Gross) 
-                      - ${selectedOrder.billingAddress.mcFee || '0'} (PayPal Fee) 
-                      - ${selectedOrder.billingAddress.mcShipping || '0'} (Shipping)
+                      = ${Math.abs(parseFloat(selectedOrder.billingAddress.mcGross || '0')).toFixed(2)} (Gross) 
+                      - ${Math.abs(parseFloat(selectedOrder.billingAddress.mcFee || '0')).toFixed(2)} (PayPal Fee)
                     </p>
                   </div>
                 )}

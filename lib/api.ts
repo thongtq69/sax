@@ -24,10 +24,26 @@ export function extractSkuFromParam(param: string): string {
   const decoded = decodeURIComponent(param)
   
   // If param contains JSC- prefix, extract just the SKU part
-  // SKU format: JSC-XXXXXX (JSC- followed by alphanumeric)
-  const jscMatch = decoded.match(/^(JSC-[A-Z0-9]+)/i)
-  if (jscMatch) {
-    return jscMatch[1]
+  // SKU format: JSC-XXXXXX (JSC- followed by alphanumeric, may contain multiple dashes)
+  // Examples: JSC-C143LF, JSC-YCS-S62III0069, JSC-ABC-DEF-123
+  // The SKU ends when we hit a lowercase letter after a dash (which indicates the slug part)
+  if (decoded.startsWith('JSC-')) {
+    // Find where the slug part starts (lowercase word after dash)
+    // SKU parts are uppercase/numbers, slug parts are lowercase
+    const parts = decoded.split('-')
+    const skuParts: string[] = ['JSC']
+    
+    for (let i = 1; i < parts.length; i++) {
+      const part = parts[i]
+      // If part starts with lowercase letter, it's the start of the slug
+      if (part && /^[a-z]/.test(part)) {
+        break
+      }
+      // Otherwise it's part of the SKU (uppercase letters, numbers, or mixed)
+      skuParts.push(part)
+    }
+    
+    return skuParts.join('-')
   }
   
   // For non-JSC SKUs (like TEST-PRODUCT-10), try to match the SKU pattern
