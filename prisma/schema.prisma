@@ -310,3 +310,14 @@ model ShippingZone {
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
 }
+
+model Brand {
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  name      String   @unique
+  slug      String   @unique
+  logo      String?  // Brand logo URL
+  isActive  Boolean  @default(true)
+  order     Int      @default(0)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}

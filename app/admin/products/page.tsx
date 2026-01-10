@@ -28,6 +28,7 @@ import { ImageUpload } from '@/components/admin/ImageUpload'
 export default function ProductsManagement() {
   const [productList, setProductList] = useState<Product[]>([])
   const [categories, setCategories] = useState<any[]>([])
+  const [brands, setBrands] = useState<{ id: string; name: string; isActive: boolean }[]>([])
   const [filteredProducts, setFilteredProducts] = useState<Product[]>([])
   const [searchTerm, setSearchTerm] = useState('')
   const [selectedCategory, setSelectedCategory] = useState<string>('all')
@@ -40,6 +41,7 @@ export default function ProductsManagement() {
   const [editingProduct, setEditingProduct] = useState<Product | null>(null)
   const [viewMode, setViewMode] = useState<'table' | 'grid'>('table')
   const [activeTab, setActiveTab] = useState('basic')
+  const [customBrand, setCustomBrand] = useState('')
   const [formData, setFormData] = useState<Partial<Product> & { 
     stockStatus?: string
     productType?: string
@@ -77,9 +79,10 @@ export default function ProductsManagement() {
     async function fetchData() {
       try {
         setIsLoading(true)
-        const [productsResponse, categoriesData] = await Promise.all([
+        const [productsResponse, categoriesData, brandsData] = await Promise.all([
           getProducts({ limit: 1000 }),
           getCategories(),
+          fetch('/api/admin/brands').then(res => res.json()),
         ])
         
         const transformedProducts = productsResponse.products.map(transformProduct)
@@ -87,6 +90,7 @@ export default function ProductsManagement() {
         
         setProductList(transformedProducts)
         setCategories(transformedCategories)
+        setBrands(brandsData.filter((b: any) => b.isActive))
       } catch (error) {
         console.error('Error fetching data:', error)
         alert('Failed to load data. Please refresh the page.')
@@ -136,6 +140,9 @@ export default function ProductsManagement() {
   const handleOpenDialog = (product?: Product) => {
     if (product) {
       setEditingProduct(product)
+      // Check if brand exists in brands list
+      const brandExists = brands.some(b => b.name === product.brand)
+      setCustomBrand(brandExists ? '' : product.brand)
       setFormData({
         ...product,
         images: product.images || [],
@@ -152,6 +159,7 @@ export default function ProductsManagement() {
       } as any)
     } else {
       setEditingProduct(null)
+      setCustomBrand('')
       setFormData({
         name: '',
         slug: '',
@@ -655,11 +663,43 @@ export default function ProductsManagement() {
                   <label className="block text-sm font-medium text-gray-700 mb-2">
                     Brand <span className="text-red-500">*</span>
                   </label>
-                  <Input
-                    value={formData.brand}
-                    onChange={(e) => setFormData({ ...formData, brand: e.target.value })}
-                    placeholder="e.g., Selmer, Yamaha"
-                  />
+                  <Select
+                    value={brands.some(b => b.name === formData.brand) ? formData.brand : '__custom__'}
+                    onValueChange={(value) => {
+                      if (value === '__custom__') {
+                        setFormData({ ...formData, brand: customBrand })
+                      } else {
+                        setFormData({ ...formData, brand: value })
+                        setCustomBrand('')
+                      }
+                    }}
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select brand" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {brands.map((brand) => (
+                        <SelectItem key={brand.id} value={brand.name}>
+                          {brand.name}
+                        </SelectItem>
+                      ))}
+                      <SelectItem value="__custom__">✏️ Enter custom brand...</SelectItem>
+                    </SelectContent>
+                  </Select>
+                  {(!brands.some(b => b.name === formData.brand) || formData.brand === '') && (
+                    <Input
+                      value={customBrand || formData.brand}
+                      onChange={(e) => {
+                        setCustomBrand(e.target.value)
+                        setFormData({ ...formData, brand: e.target.value })
+                      }}
+                      placeholder="Enter brand name"
+                      className="mt-2"
+                    />
+                  )}
+                  <p className="text-xs text-gray-500 mt-1">
+                    Select from list or enter custom brand. <a href="/admin/brands" target="_blank" className="text-primary hover:underline">Manage brands →</a>
+                  </p>
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
