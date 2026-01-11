@@ -364,3 +364,16 @@ model DescriptionTemplate {
 
   @@index([type])
 }
+
+
+model Announcement {
+  id          String   @id @default(auto()) @map("_id") @db.ObjectId
+  title       String   // e.g., "Professional Setup"
+  description String   // e.g., "Every instrument professionally set up before shipping"
+  ctaText     String?  // Optional button text
+  ctaLink     String?  // Optional button link
+  order       Int      @default(0)
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}

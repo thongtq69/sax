@@ -39,6 +39,7 @@ export const menuItems: { href: string; label: string; icon: any; exact?: boolea
   { href: '/admin/featured-collections', label: 'Featured Collections', icon: Star },
   { href: '/admin/blog', label: 'Blog Posts', icon: FileText },
   { href: '/admin/categories', label: 'Categories', icon: FolderTree },
+  { href: '/admin/announcements', label: 'Announcement Bar', icon: Megaphone },
   { href: '/admin/faqs', label: 'FAQs', icon: HelpCircle },
   { href: '/admin/quick-faq', label: 'Quick FAQ (Product)', icon: CircleHelp },
   { href: '/admin/inquiry-titles', label: 'Inquiry Titles', icon: MessageSquareText },

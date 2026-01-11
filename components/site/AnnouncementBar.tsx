@@ -1,8 +1,10 @@
 'use client'
 
+import { useEffect, useState } from 'react'
 import { PromoCarousel } from './PromoCarousel'
 
-const announcementPromos = [
+// Default announcements (fallback if no data from DB)
+const defaultAnnouncements = [
   {
     id: 'professional-setup',
     title: 'Professional Setup',
@@ -37,6 +39,36 @@ const announcementPromos = [
   },
 ]
 
+interface Announcement {
+  id: string
+  title: string
+  description: string
+  ctaText: string | null
+  ctaLink: string | null
+}
+
 export function AnnouncementBar() {
-  return <PromoCarousel promos={announcementPromos} />
+  const [announcements, setAnnouncements] = useState(defaultAnnouncements)
+
+  useEffect(() => {
+    fetch('/api/announcements')
+      .then(res => res.json())
+      .then(data => {
+        if (Array.isArray(data) && data.length > 0) {
+          setAnnouncements(data.map((item: Announcement) => ({
+            id: item.id,
+            title: item.title,
+            description: item.description,
+            image: '',
+            ctaText: item.ctaText || '',
+            ctaLink: item.ctaLink || '',
+          })))
+        }
+      })
+      .catch(() => {
+        // Keep default announcements on error
+      })
+  }, [])
+
+  return <PromoCarousel promos={announcements} />
 }
