@@ -1,9 +1,65 @@
 import { notFound } from 'next/navigation'
+import type { Metadata } from 'next'
 import Link from 'next/link'
 import { prisma } from '@/lib/prisma'
 import { transformProduct, extractSkuFromParam } from '@/lib/api'
 import { ProductDetailClient } from '@/components/product/ProductDetailClient'
 import { ChevronRight, Home } from 'lucide-react'
+
+export async function generateMetadata({
+  params,
+}: {
+  params: { slug: string }
+}): Promise<Metadata> {
+  try {
+    const sku = extractSkuFromParam(params.slug)
+
+    let apiProduct = await prisma.product.findUnique({
+      where: { sku },
+      include: {
+        category: true,
+      },
+    })
+
+    if (!apiProduct) {
+      apiProduct = await prisma.product.findUnique({
+        where: { slug: params.slug },
+        include: {
+          category: true,
+        },
+      })
+    }
+
+    if (!apiProduct) {
+      return {
+        title: 'Product Not Found',
+        description: 'The requested product could not be found.',
+      }
+    }
+
+    const product = transformProduct(apiProduct)
+    const title = `${product.name} | James Sax Corner`
+    const description = product.description
+      ? product.description.substring(0, 160).replace(/\n/g, ' ') + '...'
+      : `Buy ${product.name} at James Sax Corner. Premium saxophone.`
+
+    return {
+      title,
+      description,
+      openGraph: {
+        title,
+        description,
+        images: product.images.length > 0 ? [{ url: product.images[0] }] : [],
+        type: 'website',
+      },
+    }
+  } catch (error) {
+    return {
+      title: 'James Sax Corner',
+      description: 'Premium Saxophones and Instruments',
+    }
+  }
+}
 
 export default async function ProductPage({
   params,
@@ -14,7 +70,7 @@ export default async function ProductPage({
     // New URL format: /product/SKU-slug (e.g., /product/JSC-C143LF-yamaha-yts-62-tenor-saxophone)
     // Extract SKU from the param and look up product by SKU
     const sku = extractSkuFromParam(params.slug)
-    
+
     // First try to find by SKU (new format)
     let apiProduct = await prisma.product.findUnique({
       where: { sku },
