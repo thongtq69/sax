@@ -76,7 +76,7 @@ interface HomepageSection {
 
 const sectionLabels: Record<string, string> = {
   'hero': 'Hero Section',
-  'why-choose-us': 'Why Musicians Choose Us',
+  'why-choose-us': 'Why Choose Us',
   'featured-review': 'Featured Review',
   'newsletter': 'Newsletter Section',
 }

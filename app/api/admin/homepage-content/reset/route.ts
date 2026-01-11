@@ -1,8 +1,6 @@
 import { NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 
-export const dynamic = 'force-dynamic'
-
 // Default homepage sections - based on actual website content
 const defaultSections = [
   {
@@ -62,40 +60,32 @@ const defaultSections = [
   },
 ]
 
-// GET /api/admin/homepage-content - Get all homepage sections
-export async function GET() {
+// POST /api/admin/homepage-content/reset - Reset all homepage content to defaults
+export async function POST() {
   try {
-    let sections = await prisma.homepageContent.findMany({
+    // Delete all existing homepage content
+    await prisma.homepageContent.deleteMany({})
+    
+    // Create new defaults
+    for (const section of defaultSections) {
+      await prisma.homepageContent.create({
+        data: section,
+      })
+    }
+    
+    const sections = await prisma.homepageContent.findMany({
       orderBy: { order: 'asc' },
     })
 
-    // Check if we have the correct sections (4 sections with correct keys)
-    const validKeys = ['hero', 'why-choose-us', 'featured-review', 'newsletter']
-    const existingKeys = sections.map(s => s.sectionKey)
-    const hasAllValidKeys = validKeys.every(key => existingKeys.includes(key))
-    const hasInvalidKeys = existingKeys.some(key => !validKeys.includes(key))
-
-    // If sections are missing or have invalid keys, reset to defaults
-    if (sections.length === 0 || !hasAllValidKeys || hasInvalidKeys) {
-      // Delete all existing sections
-      await prisma.homepageContent.deleteMany({})
-      
-      // Create defaults
-      for (const section of defaultSections) {
-        await prisma.homepageContent.create({
-          data: section,
-        })
-      }
-      sections = await prisma.homepageContent.findMany({
-        orderBy: { order: 'asc' },
-      })
-    }
-
-    return NextResponse.json(sections)
+    return NextResponse.json({ 
+      success: true, 
+      message: 'Homepage content reset to defaults',
+      sections 
+    })
   } catch (error: any) {
-    console.error('Error fetching homepage content:', error)
+    console.error('Error resetting homepage content:', error)
     return NextResponse.json(
-      { error: 'Failed to load homepage content' },
+      { error: 'Failed to reset homepage content' },
       { status: 500 }
     )
   }
