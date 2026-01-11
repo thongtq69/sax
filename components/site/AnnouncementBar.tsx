@@ -3,42 +3,6 @@
 import { useEffect, useState } from 'react'
 import { PromoCarousel } from './PromoCarousel'
 
-// Default announcements (fallback if no data from DB)
-const defaultAnnouncements = [
-  {
-    id: 'professional-setup',
-    title: 'Professional Setup',
-    description: 'Every instrument professionally set up before shipping. Play-tested by our experts',
-    image: '',
-    ctaText: '',
-    ctaLink: '/inquiry',
-  },
-  {
-    id: 'free-shipping',
-    title: 'Free Shipping',
-    description: 'Free worldwide shipping on all orders over $500. Fast & secure delivery',
-    image: '',
-    ctaText: '',
-    ctaLink: '/shop',
-  },
-  {
-    id: 'expert-support',
-    title: 'Expert Support',
-    description: 'Professional musicians available 24/7 to answer your questions',
-    image: '',
-    ctaText: '',
-    ctaLink: '/contact',
-  },
-  {
-    id: 'warranty',
-    title: '2-Year Warranty',
-    description: 'All instruments come with comprehensive 2-year warranty coverage',
-    image: '',
-    ctaText: '',
-    ctaLink: '/about',
-  },
-]
-
 interface Announcement {
   id: string
   title: string
@@ -47,14 +11,24 @@ interface Announcement {
   ctaLink: string | null
 }
 
+interface PromoItem {
+  id: string
+  title: string
+  description: string
+  image: string
+  ctaText: string
+  ctaLink: string
+}
+
 export function AnnouncementBar() {
-  const [announcements, setAnnouncements] = useState(defaultAnnouncements)
+  const [announcements, setAnnouncements] = useState<PromoItem[] | null>(null)
+  const [loaded, setLoaded] = useState(false)
 
   useEffect(() => {
     fetch('/api/announcements')
       .then(res => res.json())
       .then(data => {
-        if (Array.isArray(data) && data.length > 0) {
+        if (Array.isArray(data)) {
           setAnnouncements(data.map((item: Announcement) => ({
             id: item.id,
             title: item.title,
@@ -64,11 +38,16 @@ export function AnnouncementBar() {
             ctaLink: item.ctaLink || '',
           })))
         }
+        setLoaded(true)
       })
       .catch(() => {
-        // Keep default announcements on error
+        setLoaded(true)
       })
   }, [])
+
+  // Don't render until loaded, and if no announcements, don't show the bar
+  if (!loaded) return null
+  if (!announcements || announcements.length === 0) return null
 
   return <PromoCarousel promos={announcements} />
 }
