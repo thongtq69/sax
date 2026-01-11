@@ -505,7 +505,7 @@ export function ImageUpload({
       {images.length > 0 && (
         <div>
           <p className="text-sm text-gray-500 mb-2">
-            💡 Kéo thả để sắp xếp lại thứ tự ảnh
+            💡 Drag and drop to reorder images
           </p>
           <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
             {images.map((url, index) => (

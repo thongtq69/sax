@@ -142,14 +142,6 @@ function SuccessContent() {
             <Link href="/">Back to Home</Link>
           </Button>
         </div>
-
-        {/* Support Info */}
-        <p className="mt-8 text-xs text-muted-foreground">
-          Questions about your order? Contact us at{' '}
-          <a href="mailto:support@jamessaxcorner.com" className="text-primary hover:underline">
-            support@jamessaxcorner.com
-          </a>
-        </p>
       </div>
     </div>
   )

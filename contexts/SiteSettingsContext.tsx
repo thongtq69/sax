@@ -7,6 +7,7 @@ interface SocialLinks {
     youtube?: string
     instagram?: string
     twitter?: string
+    tiktok?: string
 }
 
 interface SiteSettings {
@@ -31,6 +32,7 @@ const defaultSettings: SiteSettings = {
         youtube: 'https://www.youtube.com/@jamessaxcorner',
         instagram: 'https://instagram.com',
         twitter: 'https://twitter.com',
+        tiktok: 'https://tiktok.com/@jamessaxcorner',
     },
     footerText: '',
     copyrightText: '© 2024 James Sax Corner. All rights reserved.',
@@ -75,6 +77,7 @@ export function SiteSettingsProvider({ children }: { children: ReactNode }) {
                             youtube: data.socialLinks?.youtube || defaultSettings.socialLinks.youtube,
                             instagram: data.socialLinks?.instagram || defaultSettings.socialLinks.instagram,
                             twitter: data.socialLinks?.twitter || defaultSettings.socialLinks.twitter,
+                            tiktok: data.socialLinks?.tiktok || defaultSettings.socialLinks.tiktok,
                         },
                         footerText: data.footerText || defaultSettings.footerText,
                         copyrightText: data.copyrightText || defaultSettings.copyrightText,

@@ -11,6 +11,7 @@ interface SocialLinks {
   youtube?: string
   instagram?: string
   twitter?: string
+  tiktok?: string
 }
 
 interface SiteSettings {
@@ -40,6 +41,7 @@ export default function SettingsPage() {
     youtube: '',
     instagram: '',
     twitter: '',
+    tiktok: '',
     footerText: '',
     copyrightText: '',
   })
@@ -67,6 +69,7 @@ export default function SettingsPage() {
           youtube: socialLinks.youtube || '',
           instagram: socialLinks.instagram || '',
           twitter: socialLinks.twitter || '',
+          tiktok: socialLinks.tiktok || '',
           footerText: data.footerText || '',
           copyrightText: data.copyrightText || '',
         })
@@ -90,6 +93,7 @@ export default function SettingsPage() {
       if (formData.youtube.trim()) socialLinksData.youtube = formData.youtube.trim()
       if (formData.instagram.trim()) socialLinksData.instagram = formData.instagram.trim()
       if (formData.twitter.trim()) socialLinksData.twitter = formData.twitter.trim()
+      if (formData.tiktok.trim()) socialLinksData.tiktok = formData.tiktok.trim()
 
       const response = await fetch('/api/admin/site-settings', {
         method: 'PUT',
@@ -281,6 +285,21 @@ export default function SettingsPage() {
                 value={formData.twitter}
                 onChange={(e) => setFormData({ ...formData, twitter: e.target.value })}
                 placeholder="https://twitter.com/yourhandle"
+                className="pl-10"
+              />
+            </div>
+          </div>
+          <div>
+            <Label htmlFor="tiktok">TikTok</Label>
+            <div className="relative">
+              <svg className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M19.59 6.69a4.83 4.83 0 0 1-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 0 1-5.2 1.74 2.89 2.89 0 0 1 2.31-4.64 2.93 2.93 0 0 1 .88.13V9.4a6.84 6.84 0 0 0-1-.05A6.33 6.33 0 0 0 5 20.1a6.34 6.34 0 0 0 10.86-4.43v-7a8.16 8.16 0 0 0 4.77 1.52v-3.4a4.85 4.85 0 0 1-1-.1z" />
+              </svg>
+              <Input
+                id="tiktok"
+                value={formData.tiktok}
+                onChange={(e) => setFormData({ ...formData, tiktok: e.target.value })}
+                placeholder="https://tiktok.com/@yourhandle"
                 className="pl-10"
               />
             </div>

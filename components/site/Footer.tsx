@@ -47,6 +47,13 @@ const XIcon = ({ className, style }: { className?: string; style?: React.CSSProp
   </svg>
 )
 
+// TikTok icon component
+const TikTokIcon = ({ className, style }: { className?: string; style?: React.CSSProperties }) => (
+  <svg viewBox="0 0 24 24" className={className} style={style} fill="currentColor">
+    <path d="M19.59 6.69a4.83 4.83 0 0 1-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 0 1-5.2 1.74 2.89 2.89 0 0 1 2.31-4.64 2.93 2.93 0 0 1 .88.13V9.4a6.84 6.84 0 0 0-1-.05A6.33 6.33 0 0 0 5 20.1a6.34 6.34 0 0 0 10.86-4.43v-7a8.16 8.16 0 0 0 4.77 1.52v-3.4a4.85 4.85 0 0 1-1-.1z" />
+  </svg>
+)
+
 export function Footer() {
   const [showTestimonials, setShowTestimonials] = useState(false)
   const settings = useSiteSettings()
@@ -57,6 +64,7 @@ export function Footer() {
     { href: settings.socialLinks.instagram, icon: InstagramIcon, label: 'Instagram' },
     { href: settings.socialLinks.youtube, icon: YoutubeIcon, label: 'YouTube' },
     { href: settings.socialLinks.twitter, icon: XIcon, label: 'X' },
+    { href: settings.socialLinks.tiktok, icon: TikTokIcon, label: 'TikTok' },
   ].filter(s => s.href)
 
   return (
@@ -89,20 +97,18 @@ export function Footer() {
             </div>
             <div className="text-[9px] text-white/70 space-y-0.5 min-w-0 flex-1">
               <p className="flex items-center gap-1">
-                <MapPin className="h-2.5 w-2.5 text-[#D4AF37] flex-shrink-0" />
+                <MapPin className="h-2.5 w-2.5 text-[#58510D] flex-shrink-0" />
                 <span>{settings.address}</span>
               </p>
               {settings.phone && (
                 <Link href={`https://wa.me/${settings.phone.replace(/[^0-9]/g, '')}`} target="_blank" rel="noopener noreferrer" className="flex items-center gap-1 hover:text-white transition-colors">
-                  <span className="flex items-center justify-center w-4 h-4 rounded-full bg-[#D4AF37] flex-shrink-0">
-                    <WhatsAppIcon className="h-2.5 w-2.5 text-white" />
-                  </span>
+                  <Image src="/whatsapp.svg" alt="WhatsApp" width={20} height={20} className="w-5 h-5 object-contain flex-shrink-0 -ml-1" />
                   <span>{settings.phone}</span>
                 </Link>
               )}
               {settings.email && (
                 <p className="flex items-center gap-1">
-                  <Mail className="h-2.5 w-2.5 text-[#D4AF37] flex-shrink-0" />
+                  <Mail className="h-2.5 w-2.5 text-[#58510D] flex-shrink-0" />
                   <span className="truncate">{settings.email}</span>
                 </p>
               )}
@@ -212,20 +218,18 @@ export function Footer() {
               </div>
               <div className="space-y-1.5 text-sm text-white/80">
                 <div className="flex items-start gap-2">
-                  <MapPin className="h-4 w-4 text-[#D4AF37] mt-0.5 flex-shrink-0" />
+                  <MapPin className="h-4 w-4 text-[#58510D] mt-0.5 flex-shrink-0" />
                   <span>{settings.address}</span>
                 </div>
                 {settings.phone && (
                   <Link href={`https://wa.me/${settings.phone.replace(/[^0-9]/g, '')}`} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 hover:text-white transition-colors">
-                    <span className="flex items-center justify-center w-5 h-5 rounded-full bg-[#D4AF37] flex-shrink-0">
-                      <WhatsAppIcon className="h-3 w-3 text-white" />
-                    </span>
+                    <Image src="/whatsapp.svg" alt="WhatsApp" width={24} height={24} className="w-6 h-6 object-contain flex-shrink-0 -ml-1" />
                     <span>{settings.phone}</span>
                   </Link>
                 )}
                 {settings.email && (
                   <Link href={`mailto:${settings.email}`} className="flex items-center gap-2 hover:text-white transition-colors">
-                    <Mail className="h-4 w-4 text-[#D4AF37] flex-shrink-0" />
+                    <Mail className="h-4 w-4 text-[#58510D] flex-shrink-0" />
                     <span className="truncate">{settings.email}</span>
                   </Link>
                 )}

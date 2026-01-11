@@ -514,7 +514,7 @@ export default function ProductsManagement() {
                     <tr key={product.id} className="hover:bg-gray-50 transition-colors">
                       <td className="px-6 py-4">
                         <div className="flex items-center gap-4">
-                          <div className="h-14 w-14 rounded-lg overflow-hidden bg-gray-100 flex-shrink-0">
+                          <Link href={getProductUrl(product.sku, product.slug)} target="_blank" className="h-14 w-14 rounded-lg overflow-hidden bg-gray-100 flex-shrink-0 hover:opacity-80 transition-opacity cursor-pointer">
                             {product.images?.[0] ? (
                               <Image
                                 src={product.images[0]}
@@ -528,9 +528,9 @@ export default function ProductsManagement() {
                                 <Package className="h-6 w-6 text-gray-400" />
                               </div>
                             )}
-                          </div>
+                          </Link>
                           <div className="min-w-0">
-                            <div className="font-medium text-gray-900 truncate max-w-[300px]">{product.name}</div>
+                            <Link href={getProductUrl(product.sku, product.slug)} target="_blank" className="font-medium text-gray-900 truncate max-w-[300px] hover:text-primary hover:underline cursor-pointer block">{product.name}</Link>
                             <div className="text-sm text-gray-500">{product.brand} • {product.sku}</div>
                           </div>
                         </div>
