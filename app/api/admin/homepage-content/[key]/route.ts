@@ -8,46 +8,16 @@ const defaultSections: Record<string, any> = {
   'hero': {
     sectionKey: 'hero',
     title: 'James Sax Corner',
-    subtitle: 'Premium Japanese saxophones, expertly maintained for peak performance.',
+    subtitle: 'Premium Japanese saxophones, expertly maintained for peak performance. Trusted by musicians worldwide, backed by outstanding reviews. Unmatched customer service—your satisfaction comes first! Buy with confidence!',
     content: '',
     image: '/homepage3.png',
     isVisible: true,
     order: 0,
     metadata: { 
-      buttonText: 'Buy with confidence!', 
+      buttonText: 'Shop now!', 
       buttonLink: '/shop',
-      logoImage: '/jsc-logo-cropped.svg'
+      logoImage: '/jsc-logo-transparent.svg'
     },
-  },
-  'why-choose-us': {
-    sectionKey: 'why-choose-us',
-    title: 'Why Musicians Choose Us',
-    subtitle: '',
-    content: '',
-    image: '',
-    isVisible: true,
-    order: 1,
-    metadata: {},
-  },
-  'featured-review': {
-    sectionKey: 'featured-review',
-    title: 'Featured Review',
-    subtitle: '',
-    content: '',
-    image: '',
-    isVisible: true,
-    order: 2,
-    metadata: { authorName: '', rating: 5 },
-  },
-  'newsletter': {
-    sectionKey: 'newsletter',
-    title: 'Join Our Musical Community',
-    subtitle: 'Get exclusive deals, tips, and industry news',
-    content: '',
-    image: '',
-    isVisible: true,
-    order: 3,
-    metadata: { buttonText: 'Subscribe' },
   },
 }
 
@@ -72,17 +42,16 @@ export async function GET(
 
     if (!section) {
       return NextResponse.json(
-        { error: 'Không tìm thấy section', message: 'Section với key này không tồn tại trong hệ thống' },
+        { error: 'Section not found' },
         { status: 404 }
       )
     }
 
     return NextResponse.json(section)
   } catch (error: unknown) {
-    const errorMessage = error instanceof Error ? error.message : 'Unknown error'
     console.error('Error fetching homepage section:', error)
     return NextResponse.json(
-      { error: 'Lỗi tải section', message: 'Không thể tải thông tin section. Vui lòng thử lại sau.' },
+      { error: 'Failed to load section' },
       { status: 500 }
     )
   }
@@ -105,10 +74,16 @@ export async function PUT(
 
     if (!existingSection) {
       return NextResponse.json(
-        { error: 'Không tìm thấy section', message: 'Section với key này không tồn tại trong hệ thống' },
+        { error: 'Section not found' },
         { status: 404 }
       )
     }
+
+    // Merge metadata instead of replacing
+    const existingMetadata = (existingSection.metadata as Record<string, any>) || {}
+    const mergedMetadata = metadata !== undefined 
+      ? { ...existingMetadata, ...metadata }
+      : existingMetadata
 
     const section = await prisma.homepageContent.update({
       where: { sectionKey: key },
@@ -119,23 +94,22 @@ export async function PUT(
         ...(image !== undefined && { image }),
         ...(isVisible !== undefined && { isVisible }),
         ...(order !== undefined && { order }),
-        ...(metadata !== undefined && { metadata }),
+        metadata: mergedMetadata,
       },
     })
 
     return NextResponse.json(section)
   } catch (error: unknown) {
     const prismaError = error as { code?: string }
-    const errorMessage = error instanceof Error ? error.message : 'Unknown error'
     console.error('Error updating homepage section:', error)
     if (prismaError.code === 'P2025') {
       return NextResponse.json(
-        { error: 'Không tìm thấy section', message: 'Section với key này không tồn tại trong hệ thống' },
+        { error: 'Section not found' },
         { status: 404 }
       )
     }
     return NextResponse.json(
-      { error: 'Lỗi cập nhật section', message: 'Không thể cập nhật section. Vui lòng thử lại sau.' },
+      { error: 'Failed to update section' },
       { status: 500 }
     )
   }
