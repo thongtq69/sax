@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { generateUniqueOrderNumber } from '@/lib/order-utils'
+import { sendOrderConfirmationEmail } from '@/lib/email'
 
 const PAYPAL_API_URL = process.env.PAYPAL_MODE === 'sandbox' 
   ? 'https://api-m.sandbox.paypal.com'
@@ -133,6 +134,63 @@ export async function POST(request: NextRequest) {
 
     console.log('Order saved to database:', order.orderNumber)
     console.log('Shipping address source:', finalShippingAddress ? (shippingInfo?.firstName ? 'user-provided' : 'paypal') : 'none')
+
+    // Send order confirmation email
+    try {
+      const customerEmail = finalShippingAddress?.email || captureData.payer?.email_address
+      const customerName = finalShippingAddress 
+        ? `${finalShippingAddress.firstName} ${finalShippingAddress.lastName}`
+        : `${captureData.payer?.name?.given_name || ''} ${captureData.payer?.name?.surname || ''}`.trim()
+
+      if (customerEmail) {
+        // Fetch product details for email
+        const productIds = items.map((item: any) => item.productId)
+        const products = await prisma.product.findMany({
+          where: { id: { in: productIds } },
+          select: { id: true, name: true, sku: true, images: true }
+        })
+
+        const productMap = new Map(products.map(p => [p.id, p]))
+
+        const emailItems = items.map((item: any) => {
+          const product = productMap.get(item.productId)
+          return {
+            name: product?.name || item.name || 'Product',
+            sku: product?.sku || item.sku || '',
+            quantity: item.quantity,
+            price: item.price,
+            image: product?.images?.[0] || undefined
+          }
+        })
+
+        await sendOrderConfirmationEmail({
+          orderNumber: order.orderNumber!,
+          customerEmail,
+          customerName: customerName || 'Valued Customer',
+          items: emailItems,
+          subtotal,
+          shipping,
+          tax,
+          total,
+          shippingAddress: finalShippingAddress ? {
+            firstName: finalShippingAddress.firstName,
+            lastName: finalShippingAddress.lastName,
+            address1: finalShippingAddress.address1,
+            address2: finalShippingAddress.address2,
+            city: finalShippingAddress.city,
+            state: finalShippingAddress.state,
+            zip: finalShippingAddress.zip,
+            country: finalShippingAddress.country,
+            phone: finalShippingAddress.phone,
+          } : undefined
+        })
+
+        console.log('Order confirmation email sent to:', customerEmail)
+      }
+    } catch (emailError) {
+      // Don't fail the order if email fails
+      console.error('Failed to send order confirmation email:', emailError)
+    }
 
     return NextResponse.json({
       status: captureData.status,
