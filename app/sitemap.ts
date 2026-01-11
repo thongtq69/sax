@@ -2,6 +2,10 @@ import { MetadataRoute } from 'next'
 import { prisma } from '@/lib/prisma'
 import { generateProductSlug } from '@/lib/api'
 
+// Force dynamic rendering - sitemap needs database access
+export const dynamic = 'force-dynamic'
+export const revalidate = 3600 // Revalidate every hour
+
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'https://jamessaxcorner.com'
 
