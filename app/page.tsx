@@ -42,7 +42,15 @@ export default function HomePage() {
     'student-instruments': 'STUDENT INSTRUMENTS',
   })
   const [collectionBackgrounds, setCollectionBackgrounds] = useState<Record<string, string>>({})
-  const [heroBackgroundImage, setHeroBackgroundImage] = useState('/homepage3.png')
+  
+  // Hero content from admin
+  const [heroContent, setHeroContent] = useState({
+    image: '/homepage3.png',
+    logoImage: '/jsc-logo-transparent.svg',
+    buttonText: 'Shop now!',
+    buttonLink: '/shop',
+  })
+  
   const [allProducts, setAllProducts] = useState<Product[]>([])
   const [categories, setCategories] = useState<any[]>([])
   const [categoryCounts, setCategoryCounts] = useState<Record<string, number>>({})
@@ -56,25 +64,24 @@ export default function HomePage() {
     getAllReviewsAsync().then(setReviews)
   }, [])
 
-  // Fetch hero background image from admin settings
+  // Fetch hero content from admin settings
   useEffect(() => {
     async function fetchHeroContent() {
       try {
-        // Add cache-busting to ensure fresh data
         const response = await fetch('/api/admin/homepage-content/hero', {
           cache: 'no-store',
-          headers: {
-            'Cache-Control': 'no-cache',
-          },
         })
         if (response.ok) {
           const data = await response.json()
-          if (data.image) {
-            setHeroBackgroundImage(data.image)
-          }
+          setHeroContent({
+            image: data.image || '/homepage3.png',
+            logoImage: data.metadata?.logoImage || '/jsc-logo-transparent.svg',
+            buttonText: data.metadata?.buttonText || 'Shop now!',
+            buttonLink: data.metadata?.buttonLink || '/shop',
+          })
         }
       } catch (error) {
-        console.log('Using default hero background')
+        console.log('Using default hero content')
       }
     }
     fetchHeroContent()
@@ -195,21 +202,21 @@ export default function HomePage() {
       <ScrollAnimations />
       <section className="homepage-hero relative overflow-hidden">
         <div className="absolute inset-0">
-          <Image src={heroBackgroundImage} alt="Saxophones Background" fill className="object-cover" priority sizes="100vw" quality={85} />
+          <Image src={heroContent.image} alt="Saxophones Background" fill className="object-cover" priority sizes="100vw" quality={85} />
         </div>
         <div className="relative min-h-[280px] md:min-h-[350px] lg:min-h-[420px]">
           <div className="container mx-auto flex min-h-[280px] md:min-h-[350px] lg:min-h-[420px] items-center justify-center px-4 py-8 md:py-12">
             <div className="text-center space-y-4 md:space-y-6">
               <div className="hero-title flex justify-center">
-                <Image src="/jsc-logo-transparent.svg" alt="James Sax Corner" width={760} height={220} className="h-[70px] md:h-[90px] lg:h-[110px] w-auto drop-shadow-[0_2px_4px_rgba(255,255,255,0.8)]" priority />
+                <Image src={heroContent.logoImage} alt="James Sax Corner" width={760} height={220} className="h-[70px] md:h-[90px] lg:h-[110px] w-auto drop-shadow-[0_2px_4px_rgba(255,255,255,0.8)]" priority />
               </div>
               <p className="hero-cta text-base md:text-lg lg:text-xl leading-relaxed text-white max-w-3xl mx-auto font-body drop-shadow-lg">
-                Premium Japanese saxophones, expertly maintained for peak performance. Trusted by musicians worldwide, backed by outstanding reviews. Unmatched customer service—your satisfaction comes first! Buy with confidence!
+                Premium saxophones, expertly maintained for peak performance. Trusted by musicians worldwide, backed by outstanding reviews. Unmatched customer service—your satisfaction comes first! Buy with confidence!
               </p>
               <div className="hero-cta flex justify-center pt-2">
                 <Button size="lg" variant="outline" className="border-2 border-white bg-white text-black hover:bg-white/90 hover:text-secondary hover:scale-105 group transition-all duration-300 font-body text-base md:text-lg px-6 md:px-8" asChild>
-                  <Link href="/shop" className="flex items-center">
-                    Shop now!
+                  <Link href={heroContent.buttonLink} className="flex items-center">
+                    {heroContent.buttonText}
                     <ChevronRight className="ml-2 h-5 w-5 group-hover:translate-x-1 transition-transform" />
                   </Link>
                 </Button>

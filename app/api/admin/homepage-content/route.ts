@@ -7,7 +7,7 @@ export const dynamic = 'force-dynamic'
 const defaultHero = {
   sectionKey: 'hero',
   title: 'James Sax Corner',
-  subtitle: 'Premium Japanese saxophones, expertly maintained for peak performance. Trusted by musicians worldwide, backed by outstanding reviews. Unmatched customer service—your satisfaction comes first! Buy with confidence!',
+  subtitle: 'Premium saxophones, expertly maintained for peak performance. Trusted by musicians worldwide, backed by outstanding reviews. Unmatched customer service—your satisfaction comes first! Buy with confidence!',
   content: '',
   image: '/homepage3.png',
   isVisible: true,
