@@ -342,9 +342,10 @@ export async function sendOrderConfirmationEmail(data: OrderEmailData) {
         <div style="background: #fff8e1; padding: 20px; border-radius: 8px; margin-top: 20px; border-left: 4px solid #ffc107;">
           <h4 style="margin: 0 0 10px 0; color: #856404;">📋 What's Next?</h4>
           <ul style="margin: 0; padding-left: 20px; color: #856404;">
-            <li>We'll process your order within 1-2 business days</li>
+            <li>Your order will ship within 2-3 business days</li>
             <li>You'll receive a shipping confirmation email with tracking info</li>
-            <li>Estimated delivery: 5-10 business days (international)</li>
+            <li>Fast worldwide delivery with secure packaging</li>
+            <li>30-day return policy for your peace of mind</li>
           </ul>
         </div>
 

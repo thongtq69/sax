@@ -31,7 +31,6 @@ export default function ProductsManagement() {
   const [brands, setBrands] = useState<{ id: string; name: string; isActive: boolean }[]>([])
   const [specKeys, setSpecKeys] = useState<{ id: string; name: string; isActive: boolean }[]>([])
   const [newSpecKey, setNewSpecKey] = useState('')
-  const [newSpecKeyValue, setNewSpecKeyValue] = useState('')
   const [descTemplates, setDescTemplates] = useState<{ id: string; name: string; content: string; type: string }[]>([])
   const [selectedHeader, setSelectedHeader] = useState('')
   const [selectedFooter, setSelectedFooter] = useState('')
@@ -151,6 +150,46 @@ export default function ProductsManagement() {
     setFilteredProducts(filtered)
   }, [searchTerm, selectedCategory, selectedBadge, selectedProductType, selectedCondition, productList])
 
+  // Auto-sync Brand, Model (SKU), Condition to specs when they change
+  useEffect(() => {
+    if (!isDialogOpen) return
+    
+    const currentSpecs = formData.specs || {}
+    const newSpecs = { ...currentSpecs }
+    
+    // Auto-fill Brand
+    if (formData.brand) {
+      newSpecs['Brand'] = formData.brand
+    }
+    
+    // Auto-fill Model (SKU without JSC- prefix)
+    if (formData.sku && formData.sku !== 'JSC-') {
+      const model = formData.sku.startsWith('JSC-') ? formData.sku.slice(4) : formData.sku
+      if (model) {
+        newSpecs['Model'] = model
+      }
+    }
+    
+    // Auto-fill Condition (only for used products)
+    if (formData.productType === 'used' && formData.condition) {
+      const conditionLabels: Record<string, string> = {
+        'mint': 'Mint',
+        'excellent': 'Excellent',
+        'very-good': 'Very Good',
+        'good': 'Good',
+        'fair': 'Fair'
+      }
+      newSpecs['Condition'] = conditionLabels[formData.condition] || formData.condition
+    } else if (formData.productType === 'new') {
+      newSpecs['Condition'] = 'New'
+    }
+    
+    // Only update if specs actually changed
+    if (JSON.stringify(newSpecs) !== JSON.stringify(currentSpecs)) {
+      setFormData(prev => ({ ...prev, specs: newSpecs }))
+    }
+  }, [formData.brand, formData.sku, formData.condition, formData.productType, isDialogOpen])
+
   const handleOpenDialog = (product?: Product) => {
     // Reset template states
     setSelectedHeader('')
@@ -228,7 +267,11 @@ export default function ProductsManagement() {
         conditionNotes: '',
         videoUrls: ['', '', '', ''],
         description: '',
-        specs: {},
+        specs: {
+          'Brand': '',
+          'Model': '',
+          'Condition': '',
+        },
         included: [],
         warranty: '',
         sku: 'JSC-',
@@ -1074,13 +1117,7 @@ export default function ProductsManagement() {
                     <Input
                       value={newSpecKey}
                       onChange={(e) => setNewSpecKey(e.target.value)}
-                      placeholder="Key name (e.g., Material)"
-                      className="flex-1"
-                    />
-                    <Input
-                      value={newSpecKeyValue}
-                      onChange={(e) => setNewSpecKeyValue(e.target.value)}
-                      placeholder="Default value (e.g., Brass)"
+                      placeholder="Key name (e.g., Material, Finish)"
                       className="flex-1"
                     />
                     <Button
@@ -1097,13 +1134,7 @@ export default function ProductsManagement() {
                           if (response.ok) {
                             const newKey = await response.json()
                             setSpecKeys([...specKeys, newKey])
-                            // Also add to current product specs with the default value
-                            if (newSpecKeyValue.trim()) {
-                              const newSpecs = { ...formData.specs, [newSpecKey.trim()]: newSpecKeyValue.trim() }
-                              setFormData({ ...formData, specs: newSpecs })
-                            }
                             setNewSpecKey('')
-                            setNewSpecKeyValue('')
                           } else {
                             const error = await response.json()
                             alert(error.error || 'Failed to add spec key')
