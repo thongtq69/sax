@@ -32,8 +32,8 @@ export function SiteLayout({ children }: { children: React.ReactNode }) {
         <main className="min-h-screen">{children}</main>
         <Footer />
 
-        {/* New Year 2026 Flash Sale Popup - lazy loaded */}
-        <NewYearPopup />
+        {/* New Year 2026 Flash Sale Popup - temporarily hidden */}
+        {/* <NewYearPopup /> */}
 
         {/* Global Navigation Loading Indicator - Lightweight progress bar */}
         {isNavigating && (
