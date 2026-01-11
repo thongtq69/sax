@@ -67,6 +67,7 @@ export async function POST(request: NextRequest) {
           name: item.name.substring(0, 127),
           quantity: item.quantity.toString(),
           unit_amount: { currency_code: 'USD', value: item.price.toFixed(2) },
+          category: 'PHYSICAL_GOODS',
         })),
       }],
     }

@@ -41,10 +41,20 @@ function PayPalButtonInner({ shippingInfo, onSuccess, onError, total }: PayPalBu
 
   const createOrder = async () => {
     try {
+      // Only send necessary fields to PayPal (exclude productId, id, etc.)
+      const cleanItems = items.map(item => ({
+        name: item.name,
+        price: item.price,
+        quantity: item.quantity,
+        sku: item.sku,
+        image: item.image,
+        shippingCost: item.shippingCost,
+      }))
+      
       const response = await fetch('/api/paypal/create-order', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ items, shippingInfo }),
+        body: JSON.stringify({ items: cleanItems, shippingInfo }),
       })
 
       const data = await response.json()
