@@ -33,7 +33,7 @@ export async function sendVerificationEmail(email: string, token: string, name?:
     </head>
     <body style="font-family: Arial, sans-serif; line-height: 1.6; color: #333; max-width: 600px; margin: 0 auto; padding: 20px;">
       <div style="background: linear-gradient(135deg, #1a365d 0%, #2d4a7c 100%); padding: 30px; text-align: center; border-radius: 10px 10px 0 0;">
-        <img src="${baseUrl}/email-logo.svg" alt="James Sax Corner" style="height: 80px; width: auto; margin: 0 auto;" />
+        <img src="${baseUrl}/Banner.png" alt="James Sax Corner" style="height: 80px; width: auto; margin: 0 auto;" />
         <p style="color: #ffd700; margin: 10px 0 0 0;">Premium Saxophones</p>
       </div>
       
@@ -88,7 +88,7 @@ export async function sendOTPEmail(email: string, otp: string, name?: string) {
     </head>
     <body style="font-family: Arial, sans-serif; line-height: 1.6; color: #333; max-width: 600px; margin: 0 auto; padding: 20px;">
       <div style="background: linear-gradient(135deg, #1a365d 0%, #2d4a7c 100%); padding: 30px; text-align: center; border-radius: 10px 10px 0 0;">
-        <img src="${baseUrl}/email-logo.svg" alt="James Sax Corner" style="height: 80px; width: auto; margin: 0 auto;" />
+        <img src="${baseUrl}/Banner.png" alt="James Sax Corner" style="height: 80px; width: auto; margin: 0 auto;" />
         <p style="color: #ffd700; margin: 10px 0 0 0;">Premium Saxophones</p>
       </div>
       
@@ -151,7 +151,7 @@ export async function sendPasswordResetEmail(email: string, token: string, name?
     </head>
     <body style="font-family: Arial, sans-serif; line-height: 1.6; color: #333; max-width: 600px; margin: 0 auto; padding: 20px;">
       <div style="background: linear-gradient(135deg, #1a365d 0%, #2d4a7c 100%); padding: 30px; text-align: center; border-radius: 10px 10px 0 0;">
-        <img src="${baseUrl}/email-logo.svg" alt="James Sax Corner" style="height: 80px; width: auto; margin: 0 auto;" />
+        <img src="${baseUrl}/Banner.png" alt="James Sax Corner" style="height: 80px; width: auto; margin: 0 auto;" />
         <p style="color: #ffd700; margin: 10px 0 0 0;">Premium Saxophones</p>
       </div>
       
@@ -284,7 +284,7 @@ export async function sendOrderConfirmationEmail(data: OrderEmailData) {
     </head>
     <body style="font-family: Arial, sans-serif; line-height: 1.6; color: #333; max-width: 700px; margin: 0 auto; padding: 20px; background: #f5f5f5;">
       <div style="background: linear-gradient(135deg, #1a365d 0%, #2d4a7c 100%); padding: 30px; text-align: center; border-radius: 10px 10px 0 0;">
-        <img src="${baseUrl}/email-logo.svg" alt="James Sax Corner" style="height: 80px; width: auto; margin: 0 auto;" />
+        <img src="${baseUrl}/Banner.png" alt="James Sax Corner" style="height: 80px; width: auto; margin: 0 auto;" />
         <p style="color: #ffd700; margin: 10px 0 0 0; font-size: 14px;">Premium Saxophones</p>
       </div>
       
@@ -398,7 +398,7 @@ export async function sendNewsletterWelcomeEmail(email: string) {
     </head>
     <body style="font-family: Arial, sans-serif; line-height: 1.6; color: #333; max-width: 600px; margin: 0 auto; padding: 20px; background: #f5f5f5;">
       <div style="background: linear-gradient(135deg, #1a365d 0%, #2d4a7c 100%); padding: 30px; text-align: center; border-radius: 10px 10px 0 0;">
-        <img src="${baseUrl}/email-logo.svg" alt="James Sax Corner" style="height: 80px; width: auto; margin: 0 auto;" />
+        <img src="${baseUrl}/Banner.png" alt="James Sax Corner" style="height: 80px; width: auto; margin: 0 auto;" />
         <p style="color: #ffd700; margin: 10px 0 0 0; font-size: 14px;">Premium Saxophones</p>
       </div>
       
