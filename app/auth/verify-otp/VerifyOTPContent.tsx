@@ -227,6 +227,9 @@ export default function VerifyOTPContent() {
               <p className="text-sm text-gray-600">
                 Didn't receive the code?
               </p>
+              <p className="text-xs text-gray-500">
+                Please check your Spam, Promotions, or Junk folder if you don't see it in your inbox.
+              </p>
               <Button
                 type="button"
                 variant="link"
