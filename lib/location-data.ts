@@ -72,6 +72,9 @@ export const countries: Country[] = [
     ]
   },
   // Rest alphabetically sorted (A-Z)
+  { name: 'Albania', code: 'AL', states: [] },
+  { name: 'Andorra', code: 'AD', states: [] },
+  { name: 'Armenia', code: 'AM', states: [] },
   {
     name: 'Australia',
     code: 'AU',
@@ -86,8 +89,13 @@ export const countries: Country[] = [
       { name: 'Western Australia', code: 'WA' },
     ]
   },
+  { name: 'Austria', code: 'AT', states: [] },
+  { name: 'Azerbaijan', code: 'AZ', states: [] },
+  { name: 'Belarus', code: 'BY', states: [] },
   { name: 'Belgium', code: 'BE', states: [] },
+  { name: 'Bosnia and Herzegovina', code: 'BA', states: [] },
   { name: 'Brazil', code: 'BR', states: [] },
+  { name: 'Bulgaria', code: 'BG', states: [] },
   {
     name: 'Canada',
     code: 'CA',
@@ -114,7 +122,12 @@ export const countries: Country[] = [
     { name: 'Zhejiang', code: 'ZJ' },
     { name: 'Jiangsu', code: 'JS' },
   ]},
+  { name: 'Croatia', code: 'HR', states: [] },
+  { name: 'Cyprus', code: 'CY', states: [] },
+  { name: 'Czechia', code: 'CZ', states: [] },
   { name: 'Denmark', code: 'DK', states: [] },
+  { name: 'Estonia', code: 'EE', states: [] },
+  { name: 'Finland', code: 'FI', states: [] },
   {
     name: 'France',
     code: 'FR',
@@ -156,7 +169,11 @@ export const countries: Country[] = [
       { name: 'Thuringia', code: 'TH' },
     ]
   },
+  { name: 'Georgia', code: 'GE', states: [] },
+  { name: 'Greece', code: 'GR', states: [] },
   { name: 'Hong Kong', code: 'HK', states: [] },
+  { name: 'Hungary', code: 'HU', states: [] },
+  { name: 'Iceland', code: 'IS', states: [] },
   { name: 'India', code: 'IN', states: [
     { name: 'Andhra Pradesh', code: 'AP' },
     { name: 'Delhi', code: 'DL' },
@@ -173,6 +190,7 @@ export const countries: Country[] = [
     { name: 'East Java', code: 'JI' },
     { name: 'Bali', code: 'BA' },
   ]},
+  { name: 'Ireland', code: 'IE', states: [] },
   { name: 'Italy', code: 'IT', states: [] },
   {
     name: 'Japan',
@@ -227,6 +245,12 @@ export const countries: Country[] = [
       { name: 'Okinawa', code: 'ON' },
     ]
   },
+  { name: 'Kazakhstan', code: 'KZ', states: [] },
+  { name: 'Kosovo', code: 'XK', states: [] },
+  { name: 'Latvia', code: 'LV', states: [] },
+  { name: 'Liechtenstein', code: 'LI', states: [] },
+  { name: 'Lithuania', code: 'LT', states: [] },
+  { name: 'Luxembourg', code: 'LU', states: [] },
   { name: 'Malaysia', code: 'MY', states: [
     { name: 'Johor', code: 'JH' },
     { name: 'Kedah', code: 'KD' },
@@ -245,16 +269,29 @@ export const countries: Country[] = [
     { name: 'Selangor', code: 'SL' },
     { name: 'Terengganu', code: 'TR' },
   ]},
+  { name: 'Malta', code: 'MT', states: [] },
   { name: 'Mexico', code: 'MX', states: [] },
+  { name: 'Moldova', code: 'MD', states: [] },
+  { name: 'Monaco', code: 'MC', states: [] },
+  { name: 'Montenegro', code: 'ME', states: [] },
   { name: 'Netherlands', code: 'NL', states: [] },
   { name: 'New Zealand', code: 'NZ', states: [] },
+  { name: 'North Macedonia', code: 'MK', states: [] },
   { name: 'Norway', code: 'NO', states: [] },
   { name: 'Philippines', code: 'PH', states: [
     { name: 'Metro Manila', code: 'NCR' },
     { name: 'Cebu', code: 'CEB' },
     { name: 'Davao', code: 'DAV' },
   ]},
+  { name: 'Poland', code: 'PL', states: [] },
+  { name: 'Portugal', code: 'PT', states: [] },
+  { name: 'Romania', code: 'RO', states: [] },
+  { name: 'Russia', code: 'RU', states: [] },
+  { name: 'San Marino', code: 'SM', states: [] },
+  { name: 'Serbia', code: 'RS', states: [] },
   { name: 'Singapore', code: 'SG', states: [] },
+  { name: 'Slovakia', code: 'SK', states: [] },
+  { name: 'Slovenia', code: 'SI', states: [] },
   { name: 'South Korea', code: 'KR', states: [
     { name: 'Seoul', code: 'SE' },
     { name: 'Busan', code: 'BS' },
@@ -291,6 +328,8 @@ export const countries: Country[] = [
     { name: 'Chonburi', code: 'CB' },
     { name: 'Nonthaburi', code: 'NB' },
   ]},
+  { name: 'Turkey', code: 'TR', states: [] },
+  { name: 'Ukraine', code: 'UA', states: [] },
   {
     name: 'United Kingdom',
     code: 'GB',
@@ -301,6 +340,7 @@ export const countries: Country[] = [
       { name: 'Northern Ireland', code: 'NIR' },
     ]
   },
+  { name: 'Vatican City', code: 'VA', states: [] },
   {
     name: 'Vietnam',
     code: 'VN',
