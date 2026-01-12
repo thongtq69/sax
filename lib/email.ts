@@ -378,3 +378,73 @@ export async function sendOrderConfirmationEmail(data: OrderEmailData) {
     html,
   })
 }
+
+
+export async function sendNewsletterWelcomeEmail(email: string) {
+  const html = `
+    <!DOCTYPE html>
+    <html>
+    <head>
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <title>Welcome to James Sax Corner</title>
+    </head>
+    <body style="font-family: Arial, sans-serif; line-height: 1.6; color: #333; max-width: 600px; margin: 0 auto; padding: 20px; background: #f5f5f5;">
+      <div style="background: linear-gradient(135deg, #1a365d 0%, #2d4a7c 100%); padding: 30px; text-align: center; border-radius: 10px 10px 0 0;">
+        <img src="${baseUrl}/email-logo.svg" alt="James Sax Corner" style="height: 80px; width: auto; margin: 0 auto;" />
+        <p style="color: #ffd700; margin: 10px 0 0 0; font-size: 14px;">Premium Saxophones</p>
+      </div>
+      
+      <div style="background: #fff; padding: 30px; border: 1px solid #e0e0e0; border-top: none; border-radius: 0 0 10px 10px;">
+        <div style="text-align: center; margin-bottom: 20px;">
+          <span style="font-size: 48px;">🎷</span>
+        </div>
+        
+        <h2 style="color: #1a365d; margin-top: 0; text-align: center;">Welcome to Our Musical Community!</h2>
+        
+        <p style="text-align: center; font-size: 16px;">
+          Thank you for subscribing to the James Sax Corner newsletter!
+        </p>
+        
+        <p style="text-align: center; color: #666;">
+          You're now part of an exclusive community of saxophone enthusiasts. Here's what you can expect:
+        </p>
+        
+        <div style="background: #f9f9f9; padding: 20px; border-radius: 8px; margin: 20px 0;">
+          <ul style="margin: 0; padding-left: 20px; color: #555;">
+            <li style="margin-bottom: 10px;">🎵 <strong>New Arrivals</strong> - Be the first to know about new instruments</li>
+            <li style="margin-bottom: 10px;">💰 <strong>Exclusive Deals</strong> - Special discounts for subscribers only</li>
+            <li style="margin-bottom: 10px;">📚 <strong>Expert Tips</strong> - Saxophone care and playing advice</li>
+            <li style="margin-bottom: 10px;">🎶 <strong>Community Updates</strong> - News from the saxophone world</li>
+          </ul>
+        </div>
+        
+        <div style="text-align: center; margin: 30px 0;">
+          <a href="${baseUrl}/shop" style="background: #1a365d; color: #fff; padding: 15px 30px; text-decoration: none; border-radius: 5px; font-weight: bold; display: inline-block;">
+            Browse Our Collection
+          </a>
+        </div>
+        
+        <p style="text-align: center; color: #666; font-size: 14px;">
+          Follow us on social media for daily updates!
+        </p>
+        
+        <hr style="border: none; border-top: 1px solid #e0e0e0; margin: 30px 0;">
+        
+        <p style="color: #999; font-size: 12px; text-align: center;">
+          © ${new Date().getFullYear()} James Sax Corner. All rights reserved.<br>
+          Hanoi, Vietnam<br><br>
+          <a href="${baseUrl}/unsubscribe?email=${encodeURIComponent(email)}" style="color: #999;">Unsubscribe</a>
+        </p>
+      </div>
+    </body>
+    </html>
+  `
+
+  await transporter.sendMail({
+    from: `"James Sax Corner" <${fromEmail}>`,
+    to: email,
+    subject: "🎷 Welcome to James Sax Corner!",
+    html,
+  })
+}

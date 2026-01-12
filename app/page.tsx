@@ -26,6 +26,12 @@ const ReviewsCarousel = dynamic(
   { ssr: false }
 )
 
+// Lazy load NewsletterPopup
+const NewsletterPopup = dynamic(
+  () => import('@/components/site/NewsletterPopup').then(m => m.NewsletterPopup),
+  { ssr: false }
+)
+
 export default function HomePage() {
   const [featuredProducts, setFeaturedProducts] = useState<Product[]>([])
   const [saleProducts, setSaleProducts] = useState<Product[]>([])
@@ -57,6 +63,7 @@ export default function HomePage() {
   const [subcategories, setSubcategories] = useState<any[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [showTestimonials, setShowTestimonials] = useState(false)
+  const [showNewsletter, setShowNewsletter] = useState(false)
   const [reviews, setReviews] = useState<Review[]>([])
 
   // Fetch reviews from API
@@ -487,7 +494,7 @@ export default function HomePage() {
         </div>
       </section>
 
-      <section className="hidden lg:block bg-gradient-to-r from-primary to-primary/80 py-3 relative overflow-hidden">
+      <section className="hidden lg:block bg-gradient-to-r from-primary to-primary/80 py-3 relative overflow-hidden cursor-pointer" onClick={() => setShowNewsletter(true)}>
         <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent animate-shimmer" />
         <div className="container mx-auto px-6">
           {/* Join Our Musical Community */}
@@ -496,17 +503,18 @@ export default function HomePage() {
               <Sparkles className="h-4 w-4" />
               Join Our Musical Community
             </span>
-            <form onSubmit={(e) => { e.preventDefault(); const formData = new FormData(e.currentTarget); const email = formData.get('email'); if (email) { alert('Thank you for subscribing!'); e.currentTarget.reset(); } }} className="flex gap-2 flex-1 max-w-md">
-              <input type="email" name="email" placeholder="Enter your email" className="bg-white/20 border border-white/30 placeholder:text-white/60 text-white min-w-0 flex-1 px-4 py-1.5 rounded text-sm h-9" required />
-              <Button type="submit" size="sm" className="bg-secondary hover:bg-secondary/90 text-white px-4 text-sm h-9">
+            <div className="flex gap-2 flex-1 max-w-md">
+              <input type="email" placeholder="Enter your email" className="bg-white/20 border border-white/30 placeholder:text-white/60 text-white min-w-0 flex-1 px-4 py-1.5 rounded text-sm h-9 cursor-pointer" readOnly />
+              <Button size="sm" className="bg-secondary hover:bg-secondary/90 text-white px-4 text-sm h-9">
                 <ChevronRight className="h-4 w-4" />
               </Button>
-            </form>
+            </div>
           </div>
         </div>
       </section>
 
       <TestimonialsPopup isOpen={showTestimonials} onClose={() => setShowTestimonials(false)} />
+      <NewsletterPopup isOpen={showNewsletter} onClose={() => setShowNewsletter(false)} />
     </div>
   )
 }

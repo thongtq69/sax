@@ -4,7 +4,6 @@ import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { Button } from '@/components/ui/button'
 import {
-  LayoutDashboard,
   Package,
   FileText,
   FolderTree,
@@ -14,7 +13,6 @@ import {
   Settings,
   LogOut,
   ChevronRight,
-  Image,
   HelpCircle,
   MessageSquare,
   Home,
@@ -23,6 +21,7 @@ import {
   MessageSquareText,
   Truck,
   Tag,
+  Mail,
 } from 'lucide-react'
 
 interface AdminSidebarProps {
@@ -45,6 +44,7 @@ export const menuItems: { href: string; label: string; icon: any; exact?: boolea
   { href: '/admin/inquiry-titles', label: 'Inquiry Titles', icon: MessageSquareText },
   { href: '/admin/testimonials', label: 'Testimonials & Reviews', icon: MessageSquare },
   { href: '/admin/content', label: 'Homepage Content', icon: Home },
+  { href: '/admin/subscribers', label: 'Subscribers', icon: Mail },
   { href: '/admin/orders', label: 'Orders', icon: ShoppingCart },
   { href: '/admin/shipping', label: 'Shipping Zones', icon: Truck },
   { href: '/admin/users', label: 'Users', icon: Users },
