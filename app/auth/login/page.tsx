@@ -19,10 +19,10 @@ export default function LoginPage({ searchParams }: LoginPageProps) {
         <div className="text-center mb-8">
           <Link href="/" className="inline-block mb-4">
             <Image 
-              src="/jsc.svg" 
+              src="/Banner.png" 
               alt="James Sax Corner" 
-              width={200} 
-              height={60} 
+              width={280} 
+              height={80} 
               className="h-12 w-auto"
             />
           </Link>
