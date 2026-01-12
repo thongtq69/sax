@@ -260,9 +260,9 @@ export default function HomePage() {
 
 
       {saleProducts.length > 0 && (
-        <section className="relative overflow-hidden" style={collectionBackgrounds['new-arrivals'] ? { backgroundImage: `url(${collectionBackgrounds['new-arrivals']})`, backgroundSize: 'cover', backgroundPosition: 'center' } : {}}>
-          {collectionBackgrounds['new-arrivals'] && <div className="absolute inset-0 bg-white/5" />}
-          <div className="relative">
+        <section className="relative overflow-hidden">
+          {/* Title section - no background */}
+          <div className="bg-white">
             <div className="container mx-auto px-4 py-3 sm:py-4">
               <div className="flex items-center justify-center gap-3">
                 <div className="flex-1 h-px bg-primary/30" />
@@ -277,7 +277,11 @@ export default function HomePage() {
                 </Link>
               </div>
             </div>
-            <div className="container mx-auto px-4 pb-4 sm:pb-6">
+          </div>
+          {/* Products section - with background */}
+          <div className="relative" style={collectionBackgrounds['new-arrivals'] ? { backgroundImage: `url(${collectionBackgrounds['new-arrivals']})`, backgroundSize: 'cover', backgroundPosition: 'center' } : {}}>
+            {collectionBackgrounds['new-arrivals'] && <div className="absolute inset-0 bg-white/5" />}
+            <div className="relative container mx-auto px-4 py-4 sm:py-6">
               <StaticProductGrid products={saleProducts} id="new-arrivals" />
             </div>
           </div>
@@ -285,9 +289,9 @@ export default function HomePage() {
       )}
 
       {featuredProducts.length > 0 && (
-        <section className="relative overflow-hidden" style={collectionBackgrounds['featured-instruments'] ? { backgroundImage: `url(${collectionBackgrounds['featured-instruments']})`, backgroundSize: 'cover', backgroundPosition: 'center' } : {}}>
-          {collectionBackgrounds['featured-instruments'] && <div className="absolute inset-0 bg-white/5" />}
-          <div className="relative">
+        <section className="relative overflow-hidden">
+          {/* Title section - no background */}
+          <div className="bg-white">
             <div className="container mx-auto px-4 py-3 sm:py-4">
               <div className="flex items-center justify-center gap-3">
                 <div className="flex-1 h-px bg-primary/30" />
@@ -302,7 +306,11 @@ export default function HomePage() {
                 </Link>
               </div>
             </div>
-            <div className="container mx-auto px-4 pb-4 sm:pb-6">
+          </div>
+          {/* Products section - with background */}
+          <div className="relative" style={collectionBackgrounds['featured-instruments'] ? { backgroundImage: `url(${collectionBackgrounds['featured-instruments']})`, backgroundSize: 'cover', backgroundPosition: 'center' } : {}}>
+            {collectionBackgrounds['featured-instruments'] && <div className="absolute inset-0 bg-white/5" />}
+            <div className="relative container mx-auto px-4 py-4 sm:py-6">
               <StaticProductGrid products={featuredProducts} id="featured" />
             </div>
           </div>
@@ -311,9 +319,9 @@ export default function HomePage() {
 
       {/* On Sale Section */}
       {onSaleProducts.length > 0 && (
-        <section className="relative overflow-hidden" style={collectionBackgrounds['on-sale'] ? { backgroundImage: `url(${collectionBackgrounds['on-sale']})`, backgroundSize: 'cover', backgroundPosition: 'center' } : {}}>
-          {collectionBackgrounds['on-sale'] ? <div className="absolute inset-0 bg-white/5" /> : <div className="absolute inset-0 bg-gradient-to-br from-red-50/30 via-white to-amber-50/30" />}
-          <div className="relative">
+        <section className="relative overflow-hidden">
+          {/* Title section - no background */}
+          <div className="bg-white">
             <div className="container mx-auto px-4 py-3 sm:py-4">
               <div className="flex items-center justify-center gap-3">
                 <div className="flex-1 h-px bg-red-400/30" />
@@ -328,7 +336,11 @@ export default function HomePage() {
                 </Link>
               </div>
             </div>
-            <div className="container mx-auto px-4 pb-4 sm:pb-6">
+          </div>
+          {/* Products section - with background */}
+          <div className="relative" style={collectionBackgrounds['on-sale'] ? { backgroundImage: `url(${collectionBackgrounds['on-sale']})`, backgroundSize: 'cover', backgroundPosition: 'center' } : { background: 'linear-gradient(to bottom right, rgba(254, 242, 242, 0.3), white, rgba(254, 243, 199, 0.3))' }}>
+            {collectionBackgrounds['on-sale'] && <div className="absolute inset-0 bg-white/5" />}
+            <div className="relative container mx-auto px-4 py-4 sm:py-6">
               <StaticProductGrid products={onSaleProducts} id="on-sale" />
             </div>
           </div>
@@ -337,9 +349,9 @@ export default function HomePage() {
 
       {/* Professional Flutes Section */}
       {professionalFlutesProducts.length > 0 && (
-        <section className="relative overflow-hidden" style={collectionBackgrounds['professional-flutes'] ? { backgroundImage: `url(${collectionBackgrounds['professional-flutes']})`, backgroundSize: 'cover', backgroundPosition: 'center' } : {}}>
-          {collectionBackgrounds['professional-flutes'] && <div className="absolute inset-0 bg-white/5" />}
-          <div className="relative">
+        <section className="relative overflow-hidden">
+          {/* Title section - no background */}
+          <div className="bg-white">
             <div className="container mx-auto px-4 py-3 sm:py-4">
               <div className="flex items-center justify-center gap-3">
                 <div className="flex-1 h-px bg-primary/30" />
@@ -354,7 +366,11 @@ export default function HomePage() {
                 </Link>
               </div>
             </div>
-            <div className="container mx-auto px-4 pb-4 sm:pb-6">
+          </div>
+          {/* Products section - with background */}
+          <div className="relative" style={collectionBackgrounds['professional-flutes'] ? { backgroundImage: `url(${collectionBackgrounds['professional-flutes']})`, backgroundSize: 'cover', backgroundPosition: 'center' } : {}}>
+            {collectionBackgrounds['professional-flutes'] && <div className="absolute inset-0 bg-white/5" />}
+            <div className="relative container mx-auto px-4 py-4 sm:py-6">
               <StaticProductGrid products={professionalFlutesProducts} id="professional-flutes" />
             </div>
           </div>
@@ -363,9 +379,9 @@ export default function HomePage() {
 
       {/* Saxophones Section */}
       {saxophonesProducts.length > 0 && (
-        <section className="relative overflow-hidden" style={collectionBackgrounds['saxophones'] ? { backgroundImage: `url(${collectionBackgrounds['saxophones']})`, backgroundSize: 'cover', backgroundPosition: 'center' } : {}}>
-          {collectionBackgrounds['saxophones'] ? <div className="absolute inset-0 bg-white/5" /> : <div className="absolute inset-0 bg-gradient-to-br from-amber-50/30 via-white to-blue-50/30" />}
-          <div className="relative">
+        <section className="relative overflow-hidden">
+          {/* Title section - no background */}
+          <div className="bg-white">
             <div className="container mx-auto px-4 py-3 sm:py-4">
               <div className="flex items-center justify-center gap-3">
                 <div className="flex-1 h-px bg-primary/30" />
@@ -380,7 +396,11 @@ export default function HomePage() {
                 </Link>
               </div>
             </div>
-            <div className="container mx-auto px-4 pb-4 sm:pb-6">
+          </div>
+          {/* Products section - with background */}
+          <div className="relative" style={collectionBackgrounds['saxophones'] ? { backgroundImage: `url(${collectionBackgrounds['saxophones']})`, backgroundSize: 'cover', backgroundPosition: 'center' } : { background: 'linear-gradient(to bottom right, rgba(254, 243, 199, 0.3), white, rgba(219, 234, 254, 0.3))' }}>
+            {collectionBackgrounds['saxophones'] && <div className="absolute inset-0 bg-white/5" />}
+            <div className="relative container mx-auto px-4 py-4 sm:py-6">
               <StaticProductGrid products={saxophonesProducts} id="saxophones" />
             </div>
           </div>
@@ -389,9 +409,9 @@ export default function HomePage() {
 
       {/* Student Instruments Section */}
       {studentInstrumentsProducts.length > 0 && (
-        <section className="relative overflow-hidden" style={collectionBackgrounds['student-instruments'] ? { backgroundImage: `url(${collectionBackgrounds['student-instruments']})`, backgroundSize: 'cover', backgroundPosition: 'center' } : {}}>
-          {collectionBackgrounds['student-instruments'] && <div className="absolute inset-0 bg-white/5" />}
-          <div className="relative">
+        <section className="relative overflow-hidden">
+          {/* Title section - no background */}
+          <div className="bg-white">
             <div className="container mx-auto px-4 py-3 sm:py-4">
               <div className="flex items-center justify-center gap-3">
                 <div className="flex-1 h-px bg-primary/30" />
@@ -406,7 +426,11 @@ export default function HomePage() {
                 </Link>
               </div>
             </div>
-            <div className="container mx-auto px-4 pb-4 sm:pb-6">
+          </div>
+          {/* Products section - with background */}
+          <div className="relative" style={collectionBackgrounds['student-instruments'] ? { backgroundImage: `url(${collectionBackgrounds['student-instruments']})`, backgroundSize: 'cover', backgroundPosition: 'center' } : {}}>
+            {collectionBackgrounds['student-instruments'] && <div className="absolute inset-0 bg-white/5" />}
+            <div className="relative container mx-auto px-4 py-4 sm:py-6">
               <StaticProductGrid products={studentInstrumentsProducts} id="student-instruments" />
             </div>
           </div>
