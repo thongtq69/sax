@@ -6,13 +6,12 @@ const isZoho = process.env.SMTP_HOST?.includes('zoho')
 const transporter = nodemailer.createTransport({
   host: process.env.SMTP_HOST || "smtp.gmail.com",
   port: parseInt(process.env.SMTP_PORT || "587"),
-  secure: isZoho ? false : false, // Zoho uses STARTTLS on port 587
+  secure: isZoho ? false : false,
   auth: {
     user: process.env.SMTP_USER,
     pass: process.env.SMTP_PASSWORD,
   },
   tls: {
-    // Required for Zoho
     ciphers: 'SSLv3',
     rejectUnauthorized: false,
   },
@@ -34,10 +33,20 @@ const orderTransporter = nodemailer.createTransport({
 })
 
 const baseUrl = process.env.NEXTAUTH_URL || process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:3000"
-// Use Cloudinary URL for email images - more reliable for email clients
-const emailBannerImage = "https://res.cloudinary.com/drjcfrxdg/image/upload/v1768243995/email/banner.png"
 const fromEmail = process.env.EMAIL_FROM || "noreply@jamessaxcorner.com"
 const orderFromEmail = "order@jamessaxcorner.com"
+
+// Email header with logo - using table layout for better email client compatibility
+const getEmailHeader = () => `
+  <table width="100%" cellpadding="0" cellspacing="0" border="0" style="background: linear-gradient(135deg, #1a365d 0%, #2d4a7c 100%); border-radius: 10px 10px 0 0;">
+    <tr>
+      <td align="center" style="padding: 30px;">
+        <img src="https://res.cloudinary.com/drjcfrxdg/image/upload/v1768243995/email/banner.png" alt="James Sax Corner" width="200" style="display: block; max-width: 200px; height: auto; border: 0;" />
+        <p style="color: #ffd700; margin: 10px 0 0 0; font-size: 14px;">Premium Saxophones</p>
+      </td>
+    </tr>
+  </table>
+`
 
 export async function sendVerificationEmail(email: string, token: string, name?: string) {
   const verifyUrl = `${baseUrl}/auth/verify-email?token=${token}`
@@ -51,10 +60,7 @@ export async function sendVerificationEmail(email: string, token: string, name?:
       <title>Verify Your Email</title>
     </head>
     <body style="font-family: Arial, sans-serif; line-height: 1.6; color: #333; max-width: 600px; margin: 0 auto; padding: 20px;">
-      <div style="background: linear-gradient(135deg, #1a365d 0%, #2d4a7c 100%); padding: 30px; text-align: center; border-radius: 10px 10px 0 0;">
-        <img src="${emailBannerImage}" alt="James Sax Corner" style="height: 80px; width: auto; margin: 0 auto;" />
-        <p style="color: #ffd700; margin: 10px 0 0 0;">Premium Saxophones</p>
-      </div>
+      ${getEmailHeader()}
       
       <div style="background: #fff; padding: 30px; border: 1px solid #e0e0e0; border-top: none; border-radius: 0 0 10px 10px;">
         <h2 style="color: #1a365d; margin-top: 0;">Welcome${name ? `, ${name}` : ''}!</h2>
@@ -106,10 +112,7 @@ export async function sendOTPEmail(email: string, otp: string, name?: string) {
       <title>Email Verification OTP</title>
     </head>
     <body style="font-family: Arial, sans-serif; line-height: 1.6; color: #333; max-width: 600px; margin: 0 auto; padding: 20px;">
-      <div style="background: linear-gradient(135deg, #1a365d 0%, #2d4a7c 100%); padding: 30px; text-align: center; border-radius: 10px 10px 0 0;">
-        <img src="${emailBannerImage}" alt="James Sax Corner" style="height: 80px; width: auto; margin: 0 auto;" />
-        <p style="color: #ffd700; margin: 10px 0 0 0;">Premium Saxophones</p>
-      </div>
+      ${getEmailHeader()}
       
       <div style="background: #fff; padding: 30px; border: 1px solid #e0e0e0; border-top: none; border-radius: 0 0 10px 10px;">
         <h2 style="color: #1a365d; margin-top: 0;">Welcome${name ? `, ${name}` : ''}!</h2>
@@ -169,10 +172,7 @@ export async function sendPasswordResetEmail(email: string, token: string, name?
       <title>Reset Your Password</title>
     </head>
     <body style="font-family: Arial, sans-serif; line-height: 1.6; color: #333; max-width: 600px; margin: 0 auto; padding: 20px;">
-      <div style="background: linear-gradient(135deg, #1a365d 0%, #2d4a7c 100%); padding: 30px; text-align: center; border-radius: 10px 10px 0 0;">
-        <img src="${emailBannerImage}" alt="James Sax Corner" style="height: 80px; width: auto; margin: 0 auto;" />
-        <p style="color: #ffd700; margin: 10px 0 0 0;">Premium Saxophones</p>
-      </div>
+      ${getEmailHeader()}
       
       <div style="background: #fff; padding: 30px; border: 1px solid #e0e0e0; border-top: none; border-radius: 0 0 10px 10px;">
         <h2 style="color: #1a365d; margin-top: 0;">Password Reset Request</h2>
@@ -258,7 +258,6 @@ export async function sendOrderConfirmationEmail(data: OrderEmailData) {
     total,
   } = data
 
-  // Get instrument names from items
   const instrumentNames = items.map(item => item.name).join(', ')
 
   const html = `
@@ -270,12 +269,14 @@ export async function sendOrderConfirmationEmail(data: OrderEmailData) {
       <title>Order Confirmation</title>
     </head>
     <body style="font-family: Georgia, 'Times New Roman', serif; line-height: 1.8; color: #333; max-width: 600px; margin: 0 auto; padding: 0; background: #ffffff;">
-      <!-- Banner -->
-      <div style="text-align: center; padding: 0;">
-        <img src="${emailBannerImage}" alt="James Sax Corner" style="width: 100%; max-width: 600px; height: auto; display: block;" />
-      </div>
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td align="center" style="padding: 0;">
+            <img src="https://res.cloudinary.com/drjcfrxdg/image/upload/v1768243995/email/banner.png" alt="James Sax Corner" width="600" style="display: block; width: 100%; max-width: 600px; height: auto; border: 0;" />
+          </td>
+        </tr>
+      </table>
       
-      <!-- Content -->
       <div style="padding: 30px 40px;">
         <p style="margin: 0 0 20px 0; font-size: 16px;">
           Dear ${customerName},
@@ -285,7 +286,6 @@ export async function sendOrderConfirmationEmail(data: OrderEmailData) {
           Thank you for your purchase at James Sax Corner. We are pleased to confirm that your order has been successfully placed.
         </p>
         
-        <!-- Order Details -->
         <div style="margin: 25px 0; font-size: 16px;">
           <p style="margin: 0 0 10px 0;">
             <strong>Order Number:</strong> #${orderNumber}
@@ -301,7 +301,6 @@ export async function sendOrderConfirmationEmail(data: OrderEmailData) {
           </p>
         </div>
         
-        <!-- Important Information -->
         <div style="margin: 30px 0;">
           <p style="margin: 0 0 15px 0; font-size: 16px; font-weight: bold;">
             Important Information:
@@ -320,7 +319,6 @@ export async function sendOrderConfirmationEmail(data: OrderEmailData) {
           If you have any questions, simply reply to this email — all updates for this order will be kept in one conversation for your convenience.
         </p>
         
-        <!-- Signature -->
         <div style="margin-top: 40px; font-size: 16px;">
           <p style="margin: 0 0 15px 0;">Kind regards,</p>
           <p style="margin: 0 0 5px 0; font-weight: bold;">James</p>
@@ -334,7 +332,6 @@ export async function sendOrderConfirmationEmail(data: OrderEmailData) {
           </p>
         </div>
         
-        <!-- Footer -->
         <hr style="border: none; border-top: 1px solid #ddd; margin: 40px 0 20px 0;">
         
         <p style="color: #888; font-size: 12px; text-align: center; margin: 0;">
@@ -365,10 +362,7 @@ export async function sendNewsletterWelcomeEmail(email: string) {
       <title>Welcome to James Sax Corner</title>
     </head>
     <body style="font-family: Arial, sans-serif; line-height: 1.6; color: #333; max-width: 600px; margin: 0 auto; padding: 20px; background: #f5f5f5;">
-      <div style="background: linear-gradient(135deg, #1a365d 0%, #2d4a7c 100%); padding: 30px; text-align: center; border-radius: 10px 10px 0 0;">
-        <img src="${emailBannerImage}" alt="James Sax Corner" style="height: 80px; width: auto; margin: 0 auto;" />
-        <p style="color: #ffd700; margin: 10px 0 0 0; font-size: 14px;">Premium Saxophones</p>
-      </div>
+      ${getEmailHeader()}
       
       <div style="background: #fff; padding: 30px; border: 1px solid #e0e0e0; border-top: none; border-radius: 0 0 10px 10px;">
         <div style="text-align: center; margin-bottom: 20px;">
