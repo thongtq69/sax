@@ -182,20 +182,42 @@ export default function FeaturedCollectionsPage() {
   const handleBackgroundUpload = async (slug: string, file: File) => {
     setUploadingBg(slug)
     try {
-      const formData = new FormData()
-      formData.append('file', file)
-      formData.append('folder', 'sax/collections')
-
-      const uploadResponse = await fetch('/api/upload', {
+      // Get signature for direct Cloudinary upload
+      const sigResponse = await fetch('/api/upload/signature', {
         method: 'POST',
-        body: formData,
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ folder: 'sax/collections' }),
       })
 
-      if (!uploadResponse.ok) {
-        throw new Error('Upload failed')
+      if (!sigResponse.ok) {
+        throw new Error('Failed to get upload signature')
       }
 
-      const { url } = await uploadResponse.json()
+      const { signature, timestamp, cloudName, apiKey, folder } = await sigResponse.json()
+
+      // Upload directly to Cloudinary
+      const formData = new FormData()
+      formData.append('file', file)
+      formData.append('api_key', apiKey)
+      formData.append('timestamp', timestamp.toString())
+      formData.append('signature', signature)
+      formData.append('folder', folder)
+
+      const uploadResponse = await fetch(
+        `https://api.cloudinary.com/v1_1/${cloudName}/image/upload`,
+        {
+          method: 'POST',
+          body: formData,
+        }
+      )
+
+      if (!uploadResponse.ok) {
+        const errorData = await uploadResponse.json()
+        throw new Error(errorData.error?.message || 'Upload failed')
+      }
+
+      const uploadData = await uploadResponse.json()
+      const url = uploadData.secure_url
 
       // Save to collection
       const response = await fetch(`/api/admin/featured-collections/${slug}`, {
