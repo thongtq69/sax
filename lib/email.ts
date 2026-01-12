@@ -1,12 +1,19 @@
 import nodemailer from "nodemailer"
 
+const isZoho = process.env.SMTP_HOST?.includes('zoho')
+
 const transporter = nodemailer.createTransport({
   host: process.env.SMTP_HOST || "smtp.gmail.com",
   port: parseInt(process.env.SMTP_PORT || "587"),
-  secure: false,
+  secure: isZoho ? false : false, // Zoho uses STARTTLS on port 587
   auth: {
     user: process.env.SMTP_USER,
     pass: process.env.SMTP_PASSWORD,
+  },
+  tls: {
+    // Required for Zoho
+    ciphers: 'SSLv3',
+    rejectUnauthorized: false,
   },
 })
 
