@@ -52,7 +52,7 @@ export default function HomePage() {
   // Hero content from admin
   const [heroContent, setHeroContent] = useState({
     image: '/homepage3.png',
-    logoImage: '/jsc-logo-transparent.svg',
+    logoImage: '/LOGO JAMES (1).svg',
     buttonText: 'Shop now!',
     buttonLink: '/shop',
   })
@@ -82,7 +82,7 @@ export default function HomePage() {
           const data = await response.json()
           setHeroContent({
             image: data.image || '/homepage3.png',
-            logoImage: data.metadata?.logoImage || '/jsc-logo-transparent.svg',
+            logoImage: data.metadata?.logoImage || '/LOGO JAMES (1).svg',
             buttonText: data.metadata?.buttonText || 'Shop now!',
             buttonLink: data.metadata?.buttonLink || '/shop',
           })

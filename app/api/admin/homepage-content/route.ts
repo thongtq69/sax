@@ -15,7 +15,7 @@ const defaultHero = {
   metadata: { 
     buttonText: 'Shop now!', 
     buttonLink: '/shop',
-    logoImage: '/jsc-logo-transparent.svg'
+    logoImage: '/LOGO JAMES (1).svg'
   },
 }
 
