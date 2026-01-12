@@ -94,6 +94,9 @@ export function ImageUpload({
   const abortControllerRef = useRef<AbortController | null>(null)
   const isCancelledRef = useRef<boolean>(false)
   
+  // Track uploaded images during async upload to avoid stale closure
+  const uploadedImagesRef = useRef<string[]>([])
+  
   // Drag and drop state
   const [draggedIndex, setDraggedIndex] = useState<number | null>(null)
   const [dragOverIndex, setDragOverIndex] = useState<number | null>(null)
@@ -197,6 +200,9 @@ export function ImageUpload({
     isCancelledRef.current = false
     abortControllerRef.current = new AbortController()
     
+    // Initialize ref with current images at start of upload
+    uploadedImagesRef.current = [...images]
+    
     setIsUploading(true)
     setError(null)
     setUploadProgress(0)
@@ -208,7 +214,6 @@ export function ImageUpload({
     const processUploads = async () => {
       try {
         const filesToUpload = files.length
-        const newUrls: string[] = []
         
         for (let i = 0; i < filesToUpload; i++) {
           // Check if cancelled
@@ -254,10 +259,9 @@ export function ImageUpload({
             break
           }
           
-          newUrls.push(url)
-          
-          // Update images immediately after each successful upload
-          onChange([...images, ...newUrls].slice(0, maxImages))
+          // Add to ref and call onChange with accumulated images
+          uploadedImagesRef.current = [...uploadedImagesRef.current, url]
+          onChange(uploadedImagesRef.current.slice(0, maxImages))
         }
         
         if (!isCancelledRef.current) {

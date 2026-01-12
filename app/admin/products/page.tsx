@@ -944,7 +944,7 @@ export default function ProductsManagement() {
                 </p>
                 <ImageUpload
                   images={formData.images || []}
-                  onChange={(images) => setFormData({ ...formData, images })}
+                  onChange={(images) => setFormData(prev => ({ ...prev, images }))}
                   folder="sax/products"
                 />
               </div>
