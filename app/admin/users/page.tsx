@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
-import { Search, Users, Mail, Shield, ShoppingBag, Heart, CheckCircle, XCircle, Loader2 } from 'lucide-react'
+import { Search, Users, Mail, Shield, ShoppingBag, Heart, CheckCircle, XCircle, Loader2, Trash2 } from 'lucide-react'
 
 // Format date helper
 function formatDate(dateString: string): string {
@@ -38,6 +38,7 @@ export default function UsersManagement() {
   const [searchTerm, setSearchTerm] = useState('')
   const [isLoading, setIsLoading] = useState(true)
   const [currentPage, setCurrentPage] = useState(1)
+  const [deletingId, setDeletingId] = useState<string | null>(null)
 
   const fetchUsers = async (page: number = 1, search: string = '') => {
     setIsLoading(true)
@@ -75,6 +76,34 @@ export default function UsersManagement() {
     }, 300)
     return () => clearTimeout(timer)
   }, [searchTerm])
+
+  const handleDeleteUser = async (userId: string, userEmail: string) => {
+    if (!confirm(`Are you sure you want to delete user "${userEmail}"? This action cannot be undone.`)) {
+      return
+    }
+
+    setDeletingId(userId)
+    try {
+      const response = await fetch(`/api/admin/users/${userId}`, {
+        method: 'DELETE',
+      })
+
+      if (response.ok) {
+        setUsers(users.filter(u => u.id !== userId))
+        if (pagination) {
+          setPagination({ ...pagination, total: pagination.total - 1 })
+        }
+      } else {
+        const data = await response.json()
+        alert(data.error || 'Failed to delete user')
+      }
+    } catch (error) {
+      console.error('Error deleting user:', error)
+      alert('Failed to delete user')
+    } finally {
+      setDeletingId(null)
+    }
+  }
 
   return (
     <div className="space-y-6">
@@ -135,6 +164,9 @@ export default function UsersManagement() {
                     </th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                       Joined
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Actions
                     </th>
                   </tr>
                 </thead>
@@ -206,6 +238,22 @@ export default function UsersManagement() {
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                         {formatDate(user.createdAt)}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm">
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => handleDeleteUser(user.id, user.email)}
+                          disabled={deletingId === user.id || user.role === 'admin'}
+                          className="text-red-500 hover:text-red-700 hover:bg-red-50"
+                          title={user.role === 'admin' ? 'Cannot delete admin users' : 'Delete user'}
+                        >
+                          {deletingId === user.id ? (
+                            <Loader2 className="h-4 w-4 animate-spin" />
+                          ) : (
+                            <Trash2 className="h-4 w-4" />
+                          )}
+                        </Button>
                       </td>
                     </tr>
                   ))}

@@ -452,7 +452,7 @@ export default function ProductsManagement() {
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="all">All Badges</SelectItem>
-              <SelectItem value="none">No Badge</SelectItem>
+              <SelectItem value="none">Low Price</SelectItem>
               <SelectItem value="new">New</SelectItem>
               <SelectItem value="sale">Sale</SelectItem>
               <SelectItem value="rare">Rare</SelectItem>
@@ -858,10 +858,10 @@ export default function ProductsManagement() {
                     onValueChange={(value) => setFormData({ ...formData, badge: value === 'none' ? undefined : value as any })}
                   >
                     <SelectTrigger>
-                      <SelectValue placeholder="No badge" />
+                      <SelectValue placeholder="Low Price" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="none">No badge</SelectItem>
+                      <SelectItem value="none">💰 Low Price</SelectItem>
                       <SelectItem value="new">🆕 New</SelectItem>
                       <SelectItem value="sale">🔥 Sale</SelectItem>
                       <SelectItem value="rare">⭐ Rare</SelectItem>
