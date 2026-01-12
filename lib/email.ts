@@ -1,4 +1,5 @@
 import nodemailer from "nodemailer"
+import { emailBannerBase64 } from "./email-banner-base64"
 
 const isZoho = process.env.SMTP_HOST?.includes('zoho')
 
@@ -36,12 +37,12 @@ const baseUrl = process.env.NEXTAUTH_URL || process.env.NEXT_PUBLIC_BASE_URL || 
 const fromEmail = process.env.EMAIL_FROM || "noreply@jamessaxcorner.com"
 const orderFromEmail = "order@jamessaxcorner.com"
 
-// Email header with text logo - always displays without image blocking issues
+// Email header with logo - using base64 embedded image for reliable display
 const getEmailHeader = () => `
   <table width="100%" cellpadding="0" cellspacing="0" border="0" style="background: linear-gradient(135deg, #1a365d 0%, #2d4a7c 100%); border-radius: 10px 10px 0 0;">
     <tr>
       <td align="center" style="padding: 30px;">
-        <h1 style="color: #ffffff; font-family: Georgia, 'Times New Roman', serif; font-size: 28px; margin: 0; font-weight: bold; letter-spacing: 1px;">🎷 James Sax Corner</h1>
+        <img src="data:image/png;base64,${emailBannerBase64}" alt="James Sax Corner" width="200" style="display: block; max-width: 200px; height: auto; border: 0;" />
         <p style="color: #ffd700; margin: 10px 0 0 0; font-size: 14px;">Premium Saxophones</p>
       </td>
     </tr>
@@ -269,11 +270,10 @@ export async function sendOrderConfirmationEmail(data: OrderEmailData) {
       <title>Order Confirmation</title>
     </head>
     <body style="font-family: Georgia, 'Times New Roman', serif; line-height: 1.8; color: #333; max-width: 600px; margin: 0 auto; padding: 0; background: #ffffff;">
-      <table width="100%" cellpadding="0" cellspacing="0" border="0" style="background: linear-gradient(135deg, #1a365d 0%, #2d4a7c 100%);">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
         <tr>
-          <td align="center" style="padding: 30px;">
-            <h1 style="color: #ffffff; font-family: Georgia, 'Times New Roman', serif; font-size: 28px; margin: 0; font-weight: bold; letter-spacing: 1px;">🎷 James Sax Corner</h1>
-            <p style="color: #ffd700; margin: 10px 0 0 0; font-size: 14px;">Premium Saxophones</p>
+          <td align="center" style="padding: 0;">
+            <img src="data:image/png;base64,${emailBannerBase64}" alt="James Sax Corner" width="600" style="display: block; width: 100%; max-width: 600px; height: auto; border: 0;" />
           </td>
         </tr>
       </table>
