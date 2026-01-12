@@ -101,7 +101,7 @@ export default function HomePage() {
         const backgrounds: Record<string, string> = {}
 
         try {
-          const response = await fetch('/api/homepage-data')
+          const response = await fetch('/api/homepage-data', { cache: 'no-store' })
           if (response.ok) {
             const data = await response.json()
 

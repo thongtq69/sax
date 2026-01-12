@@ -1,7 +1,10 @@
 import { NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 
-// GET /api/homepage-data - Combined endpoint for homepage data with caching
+export const dynamic = 'force-dynamic'
+export const revalidate = 0
+
+// GET /api/homepage-data - Combined endpoint for homepage data
 // This reduces 6 separate API calls to 1 for the homepage
 export async function GET() {
     try {
@@ -77,10 +80,10 @@ export async function GET() {
             }
         }
 
-        // Return with cache headers - cache for 5 minutes, serve stale for up to 10 min while revalidating
+        // Return without cache to ensure fresh data
         return NextResponse.json(result, {
             headers: {
-                'Cache-Control': 'public, s-maxage=300, stale-while-revalidate=600',
+                'Cache-Control': 'no-store, no-cache, must-revalidate',
             },
         })
     } catch (error: unknown) {
