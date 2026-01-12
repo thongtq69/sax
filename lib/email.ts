@@ -35,7 +35,7 @@ const orderTransporter = nodemailer.createTransport({
 
 const baseUrl = process.env.NEXTAUTH_URL || process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:3000"
 // Always use production URL for email images to ensure they display correctly
-const emailImageUrl = "https://jamessaxcorner.com"
+const emailImageUrl = "https://www.jamessaxcorner.com"
 const fromEmail = process.env.EMAIL_FROM || "noreply@jamessaxcorner.com"
 const orderFromEmail = "order@jamessaxcorner.com"
 
