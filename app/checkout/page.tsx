@@ -340,7 +340,6 @@ function CheckoutContent() {
                         : "$" + shippingCost}
                   </span>
                 </div>
-                <div className="flex justify-between"><span>Tax (0%)</span><span>$0.00</span></div>
                 <Separator />
                 <div className="flex justify-between text-lg font-bold"><span>Total</span><span className="text-primary">${total.toFixed(2)}</span></div>
               </div>

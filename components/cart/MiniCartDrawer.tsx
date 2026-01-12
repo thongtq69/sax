@@ -194,7 +194,7 @@ export function MiniCartDrawer({ open, onOpenChange }: MiniCartDrawerProps) {
               </div>
 
               <p className="text-xs text-muted-foreground text-center">
-                Shipping & taxes calculated at checkout
+                Shipping calculated at checkout
               </p>
 
               <Separator />
