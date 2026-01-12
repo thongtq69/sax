@@ -36,12 +36,12 @@ const baseUrl = process.env.NEXTAUTH_URL || process.env.NEXT_PUBLIC_BASE_URL || 
 const fromEmail = process.env.EMAIL_FROM || "noreply@jamessaxcorner.com"
 const orderFromEmail = "order@jamessaxcorner.com"
 
-// Email header with logo - using table layout for better email client compatibility
+// Email header with text logo - always displays without image blocking issues
 const getEmailHeader = () => `
   <table width="100%" cellpadding="0" cellspacing="0" border="0" style="background: linear-gradient(135deg, #1a365d 0%, #2d4a7c 100%); border-radius: 10px 10px 0 0;">
     <tr>
       <td align="center" style="padding: 30px;">
-        <img src="https://res.cloudinary.com/drjcfrxdg/image/upload/v1768243995/email/banner.png" alt="James Sax Corner" width="200" style="display: block; max-width: 200px; height: auto; border: 0;" />
+        <h1 style="color: #ffffff; font-family: Georgia, 'Times New Roman', serif; font-size: 28px; margin: 0; font-weight: bold; letter-spacing: 1px;">🎷 James Sax Corner</h1>
         <p style="color: #ffd700; margin: 10px 0 0 0; font-size: 14px;">Premium Saxophones</p>
       </td>
     </tr>
@@ -269,10 +269,11 @@ export async function sendOrderConfirmationEmail(data: OrderEmailData) {
       <title>Order Confirmation</title>
     </head>
     <body style="font-family: Georgia, 'Times New Roman', serif; line-height: 1.8; color: #333; max-width: 600px; margin: 0 auto; padding: 0; background: #ffffff;">
-      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0" style="background: linear-gradient(135deg, #1a365d 0%, #2d4a7c 100%);">
         <tr>
-          <td align="center" style="padding: 0;">
-            <img src="https://res.cloudinary.com/drjcfrxdg/image/upload/v1768243995/email/banner.png" alt="James Sax Corner" width="600" style="display: block; width: 100%; max-width: 600px; height: auto; border: 0;" />
+          <td align="center" style="padding: 30px;">
+            <h1 style="color: #ffffff; font-family: Georgia, 'Times New Roman', serif; font-size: 28px; margin: 0; font-weight: bold; letter-spacing: 1px;">🎷 James Sax Corner</h1>
+            <p style="color: #ffd700; margin: 10px 0 0 0; font-size: 14px;">Premium Saxophones</p>
           </td>
         </tr>
       </table>
