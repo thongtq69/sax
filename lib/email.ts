@@ -2,6 +2,7 @@ import nodemailer from "nodemailer"
 
 const isZoho = process.env.SMTP_HOST?.includes('zoho')
 
+// Main transporter for general emails (info@jamessaxcorner.com)
 const transporter = nodemailer.createTransport({
   host: process.env.SMTP_HOST || "smtp.gmail.com",
   port: parseInt(process.env.SMTP_PORT || "587"),
@@ -17,8 +18,24 @@ const transporter = nodemailer.createTransport({
   },
 })
 
+// Order transporter for order confirmation emails (order@jamessaxcorner.com)
+const orderTransporter = nodemailer.createTransport({
+  host: "smtp.zoho.com",
+  port: 587,
+  secure: false,
+  auth: {
+    user: process.env.ORDER_SMTP_USER || "order@jamessaxcorner.com",
+    pass: process.env.ORDER_SMTP_PASSWORD || "",
+  },
+  tls: {
+    ciphers: 'SSLv3',
+    rejectUnauthorized: false,
+  },
+})
+
 const baseUrl = process.env.NEXTAUTH_URL || process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:3000"
 const fromEmail = process.env.EMAIL_FROM || "noreply@jamessaxcorner.com"
+const orderFromEmail = "order@jamessaxcorner.com"
 
 export async function sendVerificationEmail(email: string, token: string, name?: string) {
   const verifyUrl = `${baseUrl}/auth/verify-email?token=${token}`
@@ -364,7 +381,7 @@ export async function sendOrderConfirmationEmail(data: OrderEmailData) {
 
         <p style="text-align: center; margin-top: 30px; color: #666;">
           Have questions? Reply to this email or contact us at<br>
-          <a href="mailto:${fromEmail}" style="color: #1a365d;">${fromEmail}</a>
+          <a href="mailto:${orderFromEmail}" style="color: #1a365d;">${orderFromEmail}</a>
         </p>
         
         <hr style="border: none; border-top: 1px solid #e0e0e0; margin: 30px 0;">
@@ -378,8 +395,8 @@ export async function sendOrderConfirmationEmail(data: OrderEmailData) {
     </html>
   `
 
-  await transporter.sendMail({
-    from: `"James Sax Corner" <${fromEmail}>`,
+  await orderTransporter.sendMail({
+    from: `"James Sax Corner Orders" <${orderFromEmail}>`,
     to: customerEmail,
     subject: `Order Confirmation #${orderNumber} - James Sax Corner`,
     html,
