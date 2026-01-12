@@ -34,9 +34,8 @@ const orderTransporter = nodemailer.createTransport({
 })
 
 const baseUrl = process.env.NEXTAUTH_URL || process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:3000"
-// Always use production URL for email images to ensure they display correctly
-const emailImageUrl = "https://www.jamessaxcorner.com"
-const emailBannerImage = `${emailImageUrl}/email-banner.png`
+// Use Cloudinary URL for email images - more reliable for email clients
+const emailBannerImage = "https://res.cloudinary.com/drjcfrxdg/image/upload/v1768243995/email/banner.png"
 const fromEmail = process.env.EMAIL_FROM || "noreply@jamessaxcorner.com"
 const orderFromEmail = "order@jamessaxcorner.com"
 
