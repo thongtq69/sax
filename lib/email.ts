@@ -36,6 +36,7 @@ const orderTransporter = nodemailer.createTransport({
 const baseUrl = process.env.NEXTAUTH_URL || process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:3000"
 // Always use production URL for email images to ensure they display correctly
 const emailImageUrl = "https://www.jamessaxcorner.com"
+const emailBannerImage = `${emailImageUrl}/email-banner.png`
 const fromEmail = process.env.EMAIL_FROM || "noreply@jamessaxcorner.com"
 const orderFromEmail = "order@jamessaxcorner.com"
 
@@ -52,7 +53,7 @@ export async function sendVerificationEmail(email: string, token: string, name?:
     </head>
     <body style="font-family: Arial, sans-serif; line-height: 1.6; color: #333; max-width: 600px; margin: 0 auto; padding: 20px;">
       <div style="background: linear-gradient(135deg, #1a365d 0%, #2d4a7c 100%); padding: 30px; text-align: center; border-radius: 10px 10px 0 0;">
-        <img src="${emailImageUrl}/Banner.png" alt="James Sax Corner" style="height: 80px; width: auto; margin: 0 auto;" />
+        <img src="${emailBannerImage}" alt="James Sax Corner" style="height: 80px; width: auto; margin: 0 auto;" />
         <p style="color: #ffd700; margin: 10px 0 0 0;">Premium Saxophones</p>
       </div>
       
@@ -107,7 +108,7 @@ export async function sendOTPEmail(email: string, otp: string, name?: string) {
     </head>
     <body style="font-family: Arial, sans-serif; line-height: 1.6; color: #333; max-width: 600px; margin: 0 auto; padding: 20px;">
       <div style="background: linear-gradient(135deg, #1a365d 0%, #2d4a7c 100%); padding: 30px; text-align: center; border-radius: 10px 10px 0 0;">
-        <img src="${emailImageUrl}/Banner.png" alt="James Sax Corner" style="height: 80px; width: auto; margin: 0 auto;" />
+        <img src="${emailBannerImage}" alt="James Sax Corner" style="height: 80px; width: auto; margin: 0 auto;" />
         <p style="color: #ffd700; margin: 10px 0 0 0;">Premium Saxophones</p>
       </div>
       
@@ -170,7 +171,7 @@ export async function sendPasswordResetEmail(email: string, token: string, name?
     </head>
     <body style="font-family: Arial, sans-serif; line-height: 1.6; color: #333; max-width: 600px; margin: 0 auto; padding: 20px;">
       <div style="background: linear-gradient(135deg, #1a365d 0%, #2d4a7c 100%); padding: 30px; text-align: center; border-radius: 10px 10px 0 0;">
-        <img src="${emailImageUrl}/Banner.png" alt="James Sax Corner" style="height: 80px; width: auto; margin: 0 auto;" />
+        <img src="${emailBannerImage}" alt="James Sax Corner" style="height: 80px; width: auto; margin: 0 auto;" />
         <p style="color: #ffd700; margin: 10px 0 0 0;">Premium Saxophones</p>
       </div>
       
@@ -272,7 +273,7 @@ export async function sendOrderConfirmationEmail(data: OrderEmailData) {
     <body style="font-family: Georgia, 'Times New Roman', serif; line-height: 1.8; color: #333; max-width: 600px; margin: 0 auto; padding: 0; background: #ffffff;">
       <!-- Banner -->
       <div style="text-align: center; padding: 0;">
-        <img src="${emailImageUrl}/Banner.png" alt="James Sax Corner" style="width: 100%; max-width: 600px; height: auto; display: block;" />
+        <img src="${emailBannerImage}" alt="James Sax Corner" style="width: 100%; max-width: 600px; height: auto; display: block;" />
       </div>
       
       <!-- Content -->
@@ -366,7 +367,7 @@ export async function sendNewsletterWelcomeEmail(email: string) {
     </head>
     <body style="font-family: Arial, sans-serif; line-height: 1.6; color: #333; max-width: 600px; margin: 0 auto; padding: 20px; background: #f5f5f5;">
       <div style="background: linear-gradient(135deg, #1a365d 0%, #2d4a7c 100%); padding: 30px; text-align: center; border-radius: 10px 10px 0 0;">
-        <img src="${emailImageUrl}/Banner.png" alt="James Sax Corner" style="height: 80px; width: auto; margin: 0 auto;" />
+        <img src="${emailBannerImage}" alt="James Sax Corner" style="height: 80px; width: auto; margin: 0 auto;" />
         <p style="color: #ffd700; margin: 10px 0 0 0; font-size: 14px;">Premium Saxophones</p>
       </div>
       
