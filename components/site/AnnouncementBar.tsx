@@ -25,7 +25,7 @@ export function AnnouncementBar() {
   const [loaded, setLoaded] = useState(false)
 
   useEffect(() => {
-    fetch('/api/announcements')
+    fetch('/api/announcements', { cache: 'no-store' })
       .then(res => res.json())
       .then(data => {
         if (Array.isArray(data)) {
