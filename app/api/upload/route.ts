@@ -10,6 +10,12 @@ export async function POST(request: NextRequest) {
   try {
     // Check Cloudinary configuration first
     const config = cloudinary.config()
+    console.log('Cloudinary config check:', { 
+      cloud_name: config.cloud_name, 
+      api_key: config.api_key ? 'set' : 'not set',
+      api_secret: config.api_secret ? 'set' : 'not set'
+    })
+    
     if (!config.cloud_name || !config.api_key) {
       return NextResponse.json(
         { error: 'Cloudinary is not configured. Please set CLOUDINARY_URL environment variable.' },
@@ -67,9 +73,10 @@ export async function POST(request: NextRequest) {
     })
   } catch (error: any) {
     console.error('Upload error:', error)
+    console.error('Error details:', JSON.stringify(error, null, 2))
     return NextResponse.json(
-      { error: error.message || 'Upload failed' },
-      { status: 500 }
+      { error: error.message || 'Upload failed', details: error.http_code || error.code },
+      { status: error.http_code || 500 }
     )
   }
 }
