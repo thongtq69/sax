@@ -92,7 +92,7 @@ export default function AboutPage() {
               </div>
               <div className="relative h-64 md:h-72 rounded-2xl overflow-hidden shadow-xl">
                 <Image
-                  src="/images/products/selmer-sa80-alto-main.jpg"
+                  src="/20260112_0006.jpg"
                   alt="James Sax Corner - Professional Saxophone"
                   fill
                   className="object-cover"
@@ -105,7 +105,7 @@ export default function AboutPage() {
             <div className="grid md:grid-cols-2 gap-6 items-center mb-6">
               <div className="order-2 md:order-1 relative h-64 md:h-72 rounded-2xl overflow-hidden shadow-xl">
                 <Image
-                  src="/homepage2.png"
+                  src="/20260112_0005.jpg"
                   alt="Our Values"
                   fill
                   className="object-cover"
