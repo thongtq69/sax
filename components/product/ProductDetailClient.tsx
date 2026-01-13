@@ -49,7 +49,7 @@ export function ProductDetailClient({ product }: ProductDetailClientProps) {
   const [showShareMenu, setShowShareMenu] = useState(false)
   const [userAddress, setUserAddress] = useState<{ country: string; zip: string } | null>(null)
   const router = useRouter()
-  const { data: session } = useSession()
+  const { data: session, status } = useSession()
   const addItem = useCartStore((state) => state.addItem)
   const clearCart = useCartStore((state) => state.clearCart)
 
@@ -59,13 +59,18 @@ export function ProductDetailClient({ product }: ProductDetailClientProps) {
   // Fetch user's default address and auto-calculate shipping
   useEffect(() => {
     const fetchUserAddress = async () => {
-      if (session?.user) {
+      // Wait for session to be loaded
+      if (status === 'loading') return
+      
+      if (session?.user?.id) {
         try {
           const res = await fetch('/api/user/address')
           const data = await res.json()
-          if (data.success && data.addresses.length > 0) {
+          console.log('User address data:', data) // Debug log
+          if (data.success && data.addresses && data.addresses.length > 0) {
             const defaultAddr = data.addresses.find((a: any) => a.isDefault) || data.addresses[0]
             if (defaultAddr) {
+              console.log('Using address:', defaultAddr.country) // Debug log
               setUserAddress({ country: defaultAddr.country, zip: defaultAddr.zip })
               setShippingCountry(defaultAddr.country)
               // Auto-calculate shipping
@@ -78,7 +83,7 @@ export function ProductDetailClient({ product }: ProductDetailClientProps) {
       }
     }
     fetchUserAddress()
-  }, [session])
+  }, [session?.user?.id, status, product.id])
 
   const autoCalculateShipping = async (country: string, zip: string) => {
     setIsCalculatingShipping(true)
