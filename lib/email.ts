@@ -42,11 +42,10 @@ const emailBannerPath = path.join(process.cwd(), 'public', 'email-banner.png')
 
 // Email header with CID image - embedded as attachment for reliable display
 const getEmailHeader = () => `
-  <table width="100%" cellpadding="0" cellspacing="0" border="0" style="background: linear-gradient(135deg, #1a365d 0%, #2d4a7c 100%); border-radius: 10px 10px 0 0;">
+  <table width="100%" cellpadding="0" cellspacing="0" border="0">
     <tr>
       <td align="center" style="padding: 30px;">
         <img src="cid:emailbanner" alt="James Sax Corner" style="max-width: 300px; height: auto; display: block; margin: 0 auto;" />
-        <p style="color: #ffd700; margin: 10px 0 0 0; font-size: 14px;">Premium Saxophones</p>
       </td>
     </tr>
   </table>
@@ -376,10 +375,6 @@ export async function sendNewsletterWelcomeEmail(email: string) {
       ${getEmailHeader()}
       
       <div style="background: #fff; padding: 30px; border: 1px solid #e0e0e0; border-top: none; border-radius: 0 0 10px 10px;">
-        <div style="text-align: center; margin-bottom: 20px;">
-          <span style="font-size: 48px;">🎷</span>
-        </div>
-        
         <h2 style="color: #1a365d; margin-top: 0; text-align: center;">Welcome to Our Musical Community!</h2>
         
         <p style="text-align: center; font-size: 16px;">
@@ -520,6 +515,63 @@ ${message}
     from: `"James Sax Corner" <${fromEmail}>`,
     to: email,
     subject: `Inquiry Received - James Sax Corner`,
+    html,
+    attachments: getEmailAttachments(),
+  })
+}
+
+
+export async function sendEmailChangeVerification(email: string, token: string, name?: string) {
+  const verifyUrl = `${baseUrl}/auth/verify-email-change?token=${token}`
+
+  const html = `
+    <!DOCTYPE html>
+    <html>
+    <head>
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <title>Verify Your New Email</title>
+    </head>
+    <body style="font-family: Arial, sans-serif; line-height: 1.6; color: #333; max-width: 600px; margin: 0 auto; padding: 20px;">
+      ${getEmailHeader()}
+      
+      <div style="background: #fff; padding: 30px; border: 1px solid #e0e0e0; border-top: none; border-radius: 0 0 10px 10px;">
+        <h2 style="color: #1a365d; margin-top: 0;">Verify Your New Email Address</h2>
+        
+        <p>Hi${name ? ` ${name}` : ''},</p>
+        
+        <p>You requested to change your email address to this one. Please verify by clicking the button below:</p>
+        
+        <div style="text-align: center; margin: 30px 0;">
+          <a href="${verifyUrl}" style="background: #1a365d; color: #fff; padding: 15px 30px; text-decoration: none; border-radius: 5px; font-weight: bold; display: inline-block;">
+            Verify New Email
+          </a>
+        </div>
+        
+        <p style="color: #666; font-size: 14px;">Or copy and paste this link into your browser:</p>
+        <p style="background: #f5f5f5; padding: 10px; border-radius: 5px; word-break: break-all; font-size: 12px;">
+          ${verifyUrl}
+        </p>
+        
+        <p style="color: #666; font-size: 14px; margin-top: 30px;">
+          This link will expire in 24 hours. If you didn't request this change, you can safely ignore this email.
+        </p>
+        
+        <hr style="border: none; border-top: 1px solid #e0e0e0; margin: 30px 0;">
+        
+        <p style="color: #999; font-size: 12px; text-align: center;">
+          © ${new Date().getFullYear()} James Sax Corner. All rights reserved.<br>
+          Hanoi, Vietnam
+        </p>
+      </div>
+    </body>
+    </html>
+  `
+
+  await transporter.sendMail({
+    from: `"James Sax Corner" <${fromEmail}>`,
+    to: email,
+    subject: "Verify Your New Email - James Sax Corner",
     html,
     attachments: getEmailAttachments(),
   })

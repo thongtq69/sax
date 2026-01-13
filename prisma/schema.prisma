@@ -122,8 +122,29 @@ model User {
   sessions      Session[]
   orders        Order[]
   wishlist      Wishlist[]
+  addresses     Address[]
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt
+}
+
+model Address {
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  userId    String   @db.ObjectId
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  firstName String
+  lastName  String
+  address1  String
+  address2  String?
+  city      String
+  state     String
+  zip       String
+  country   String
+  phone     String
+  isDefault Boolean  @default(false)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([userId])
 }
 
 model Account {

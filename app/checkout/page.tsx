@@ -4,25 +4,89 @@ import { useState, useEffect, Suspense, useMemo } from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
 import { useSearchParams } from 'next/navigation'
+import { useSession } from 'next-auth/react'
 import { useCartStore } from '@/lib/store/cart'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Separator } from '@/components/ui/separator'
-import { ShieldCheck, Lock, Package, Truck, ArrowLeft, AlertCircle, Loader2, MapPin, Calculator } from 'lucide-react'
+import { ShieldCheck, Lock, Package, Truck, ArrowLeft, AlertCircle, Loader2, MapPin, Calculator, ChevronDown } from 'lucide-react'
 import { PayPalStandardButton } from '@/components/checkout/PayPalStandardButton'
 import { countries, getStatesByCountry, getCountryByName } from '@/lib/location-data'
 // import { PayPalMeButton } from '@/components/checkout/PayPalMeButton' // Temporarily hidden
 
+interface SavedAddress {
+  id: string
+  firstName: string
+  lastName: string
+  address1: string
+  address2?: string
+  city: string
+  state: string
+  zip: string
+  country: string
+  phone: string
+  isDefault: boolean
+}
+
 function CheckoutContent() {
   const searchParams = useSearchParams()
+  const { data: session } = useSession()
   const [paymentError, setPaymentError] = useState<string | null>(null)
   const items = useCartStore((state) => state.items)
   const subtotal = useCartStore((state) => state.getSubtotal())
+
+  // Saved addresses
+  const [savedAddresses, setSavedAddresses] = useState<SavedAddress[]>([])
+  const [selectedAddressId, setSelectedAddressId] = useState<string | null>(null)
+  const [showAddressSelector, setShowAddressSelector] = useState(false)
 
   const [shippingInfo, setShippingInfo] = useState({
     email: '', firstName: '', lastName: '', address1: '', address2: '',
     city: '', state: '', zip: '', country: 'United States', phone: '',
   })
+
+  // Fetch saved addresses when user is logged in
+  useEffect(() => {
+    if (session?.user) {
+      fetchSavedAddresses()
+    }
+  }, [session])
+
+  const fetchSavedAddresses = async () => {
+    try {
+      const res = await fetch('/api/user/address')
+      const data = await res.json()
+      if (data.success && data.addresses.length > 0) {
+        setSavedAddresses(data.addresses)
+        // Auto-fill with default address
+        const defaultAddress = data.addresses.find((a: SavedAddress) => a.isDefault) || data.addresses[0]
+        if (defaultAddress) {
+          applyAddress(defaultAddress)
+          setSelectedAddressId(defaultAddress.id)
+        }
+      }
+    } catch (error) {
+      console.error('Failed to fetch addresses:', error)
+    }
+  }
+
+  const applyAddress = (address: SavedAddress) => {
+    setShippingInfo(prev => ({
+      ...prev,
+      email: session?.user?.email || prev.email,
+      firstName: address.firstName,
+      lastName: address.lastName,
+      address1: address.address1,
+      address2: address.address2 || '',
+      city: address.city,
+      state: address.state,
+      zip: address.zip,
+      country: address.country,
+      phone: address.phone,
+    }))
+    setSelectedAddressId(address.id)
+    setShowAddressSelector(false)
+  }
 
   // Shipping calculation based on zipcode
   const [shippingCost, setShippingCost] = useState<number | null>(null)
@@ -187,6 +251,71 @@ function CheckoutContent() {
                 <Truck className="h-5 w-5 text-primary" />
                 <h2 className="text-xl font-semibold">Shipping Information</h2>
               </div>
+
+              {/* Saved Address Selector */}
+              {savedAddresses.length > 0 && (
+                <div className="mb-6">
+                  <div className="relative">
+                    <button
+                      type="button"
+                      onClick={() => setShowAddressSelector(!showAddressSelector)}
+                      className="w-full flex items-center justify-between p-3 bg-blue-50 border border-blue-200 rounded-lg text-left hover:bg-blue-100 transition-colors"
+                    >
+                      <div className="flex items-center gap-2">
+                        <MapPin className="h-4 w-4 text-blue-600" />
+                        <span className="text-sm font-medium text-blue-700">
+                          {selectedAddressId 
+                            ? `Using: ${savedAddresses.find(a => a.id === selectedAddressId)?.firstName} ${savedAddresses.find(a => a.id === selectedAddressId)?.lastName}`
+                            : 'Select a saved address'
+                          }
+                        </span>
+                      </div>
+                      <ChevronDown className={`h-4 w-4 text-blue-600 transition-transform ${showAddressSelector ? 'rotate-180' : ''}`} />
+                    </button>
+                    
+                    {showAddressSelector && (
+                      <div className="absolute z-10 w-full mt-1 bg-white border rounded-lg shadow-lg max-h-60 overflow-y-auto">
+                        {savedAddresses.map((address) => (
+                          <button
+                            key={address.id}
+                            type="button"
+                            onClick={() => applyAddress(address)}
+                            className={`w-full p-3 text-left hover:bg-gray-50 border-b last:border-b-0 ${
+                              selectedAddressId === address.id ? 'bg-blue-50' : ''
+                            }`}
+                          >
+                            <div className="flex items-center justify-between">
+                              <span className="font-medium text-sm">{address.firstName} {address.lastName}</span>
+                              {address.isDefault && (
+                                <span className="text-xs bg-blue-100 text-blue-700 px-2 py-0.5 rounded">Default</span>
+                              )}
+                            </div>
+                            <p className="text-xs text-gray-500 mt-1">
+                              {address.address1}, {address.city}, {address.state} {address.zip}
+                            </p>
+                          </button>
+                        ))}
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setSelectedAddressId(null)
+                            setShippingInfo({
+                              email: session?.user?.email || '',
+                              firstName: '', lastName: '', address1: '', address2: '',
+                              city: '', state: '', zip: '', country: 'United States', phone: '',
+                            })
+                            setShowAddressSelector(false)
+                          }}
+                          className="w-full p-3 text-left hover:bg-gray-50 text-sm text-gray-600"
+                        >
+                          + Enter new address
+                        </button>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              )}
+
               <div className="space-y-4">
                 {/* Row 1: Email */}
                 <Input placeholder="Email *" value={shippingInfo.email} onChange={(e) => handleChange('email', e.target.value)} />
