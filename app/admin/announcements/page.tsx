@@ -96,8 +96,8 @@ export default function AnnouncementsPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     
-    if (!formData.title.trim() || !formData.description.trim()) {
-      toast.error('Title and description are required')
+    if (!formData.title.trim()) {
+      toast.error('Title is required')
       return
     }
 
@@ -204,7 +204,7 @@ export default function AnnouncementsPage() {
                 />
               </div>
               <div>
-                <Label htmlFor="description">Description *</Label>
+                <Label htmlFor="description">Description (optional)</Label>
                 <Textarea
                   id="description"
                   value={formData.description}
