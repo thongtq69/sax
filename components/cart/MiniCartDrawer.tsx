@@ -36,10 +36,6 @@ export function MiniCartDrawer({ open, onOpenChange }: MiniCartDrawerProps) {
     }, 300)
   }
 
-  const freeShippingThreshold = 10000
-  const progressToFreeShipping = Math.min((subtotal / freeShippingThreshold) * 100, 100)
-  const amountToFreeShipping = Math.max(freeShippingThreshold - subtotal, 0)
-
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
       <SheetContent className="flex w-full flex-col sm:max-w-lg p-0 border-l-0 shadow-2xl">
@@ -58,27 +54,6 @@ export function MiniCartDrawer({ open, onOpenChange }: MiniCartDrawerProps) {
                 : 'Your cart is empty'}
             </SheetDescription>
           </SheetHeader>
-
-          {/* Free shipping progress */}
-          {items.length > 0 && (
-            <div className="mt-4 animate-fade-in-up">
-              <div className="flex items-center justify-between text-sm mb-2">
-                <span className="flex items-center gap-1.5">
-                  <Package className="h-4 w-4" />
-                  {amountToFreeShipping > 0
-                    ? `$${amountToFreeShipping.toFixed(0)} away from free shipping!`
-                    : '🎉 You qualify for free shipping!'
-                  }
-                </span>
-              </div>
-              <div className="h-2 bg-white/20 rounded-full overflow-hidden">
-                <div
-                  className="h-full bg-gradient-to-r from-accent to-primary rounded-full transition-all duration-700 ease-out"
-                  style={{ width: `${progressToFreeShipping}%` }}
-                />
-              </div>
-            </div>
-          )}
         </div>
 
         {items.length === 0 ? (
@@ -227,4 +202,3 @@ export function MiniCartDrawer({ open, onOpenChange }: MiniCartDrawerProps) {
     </Sheet>
   )
 }
-

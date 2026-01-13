@@ -168,7 +168,6 @@ export function InquiryFormContent({
         </div>
         <div className="relative z-10">
           <h1 className="text-xl md:text-2xl font-bold">Inquiry</h1>
-          <p className="text-sm text-white/90">Ask about availability, setup, or shipping.</p>
         </div>
       </div>
 
@@ -287,23 +286,7 @@ export function InquiryFormContent({
         </div>
 
         {/* Contact info & buttons */}
-        <div className="flex flex-col md:flex-row md:items-center gap-4 justify-between pt-2 animate-fade-in-up" style={{ animationDelay: '0.25s' }}>
-          <div className="flex flex-wrap items-center gap-3 text-sm text-muted-foreground">
-            {[
-              { icon: Mail, text: siteSettings.email },
-              { icon: Phone, text: siteSettings.phone },
-              { icon: MapPin, text: siteSettings.address },
-            ].map((item, i) => (
-              <span 
-                key={i} 
-                className="flex items-center gap-1.5 hover:text-primary transition-colors cursor-default group"
-              >
-                <item.icon className="h-4 w-4 transition-transform group-hover:scale-110" />
-                <span className="hidden sm:inline">{item.text}</span>
-              </span>
-            ))}
-          </div>
-          
+        <div className="flex flex-col md:flex-row md:items-center gap-4 justify-end pt-2 animate-fade-in-up" style={{ animationDelay: '0.25s' }}>
           <div className="flex gap-2">
             <Button 
               type="submit" 
