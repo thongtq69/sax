@@ -9,7 +9,7 @@ export interface Product {
   subcategory?: string
   images: string[]
   videoUrl?: string
-  badge?: 'new' | 'sale' | 'rare' | 'coming-soon' | 'out-of-stock'
+  badge?: 'new' | 'sale' | 'rare' | 'coming-soon' | 'out-of-stock' | 'premium' | 'top-tier'
   inStock: boolean
   stock?: number
   stockStatus?: 'in-stock' | 'sold-out' | 'pre-order'
