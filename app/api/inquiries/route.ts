@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
+import { sendInquiryConfirmationEmail } from '@/lib/email'
 
 // POST - Create new inquiry
 export async function POST(request: NextRequest) {
@@ -25,6 +26,21 @@ export async function POST(request: NextRequest) {
         status: 'new',
       },
     })
+
+    // Send confirmation email to customer
+    try {
+      await sendInquiryConfirmationEmail({
+        name,
+        email,
+        inquiryType,
+        message: message || '',
+        productName: productName || undefined,
+        productSku: productSku || undefined,
+      })
+    } catch (emailError) {
+      console.error('Error sending inquiry confirmation email:', emailError)
+      // Don't fail the request if email fails
+    }
 
     return NextResponse.json({ success: true, inquiry })
   } catch (error: any) {

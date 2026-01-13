@@ -429,3 +429,98 @@ export async function sendNewsletterWelcomeEmail(email: string) {
     attachments: getEmailAttachments(),
   })
 }
+
+
+interface InquiryEmailData {
+  name: string
+  email: string
+  inquiryType: string
+  message: string
+  productName?: string
+  productSku?: string
+}
+
+export async function sendInquiryConfirmationEmail(data: InquiryEmailData) {
+  const { name, email, inquiryType, message, productName, productSku } = data
+
+  const html = `
+    <!DOCTYPE html>
+    <html>
+    <head>
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <title>Inquiry Received</title>
+    </head>
+    <body style="font-family: Georgia, 'Times New Roman', serif; line-height: 1.8; color: #333; max-width: 600px; margin: 0 auto; padding: 0; background: #ffffff;">
+      ${getEmailHeader()}
+      
+      <div style="padding: 30px 40px;">
+        <p style="margin: 0 0 20px 0; font-size: 16px;">
+          Dear ${name},
+        </p>
+        
+        <p style="margin: 0 0 25px 0; font-size: 16px;">
+          Thank you for reaching out to James Sax Corner. We have received your inquiry and will get back to you as soon as possible.
+        </p>
+        
+        <div style="background: #f9f9f9; padding: 20px; border-radius: 8px; margin: 25px 0;">
+          <p style="margin: 0 0 15px 0; font-size: 16px; font-weight: bold; color: #1a365d;">
+            Your Inquiry Details:
+          </p>
+          <p style="margin: 0 0 10px 0; font-size: 15px;">
+            <strong>Type:</strong> ${inquiryType}
+          </p>
+          ${productName ? `
+          <p style="margin: 0 0 10px 0; font-size: 15px;">
+            <strong>Product:</strong> ${productName}${productSku ? ` (${productSku})` : ''}
+          </p>
+          ` : ''}
+          <p style="margin: 0 0 10px 0; font-size: 15px;">
+            <strong>Message:</strong>
+          </p>
+          <p style="margin: 0; font-size: 15px; color: #555; white-space: pre-wrap; background: #fff; padding: 15px; border-radius: 5px; border: 1px solid #e0e0e0;">
+${message}
+          </p>
+        </div>
+        
+        <p style="margin: 20px 0; font-size: 15px;">
+          Our team typically responds within <strong>24-48 hours</strong>. If your inquiry is urgent, please feel free to reply directly to this email.
+        </p>
+        
+        <div style="text-align: center; margin: 30px 0;">
+          <a href="${baseUrl}/shop" style="background: #1a365d; color: #fff; padding: 15px 30px; text-decoration: none; border-radius: 5px; font-weight: bold; display: inline-block;">
+            Continue Browsing
+          </a>
+        </div>
+        
+        <div style="margin-top: 40px; font-size: 16px;">
+          <p style="margin: 0 0 15px 0;">Kind regards,</p>
+          <p style="margin: 0 0 5px 0; font-weight: bold;">James</p>
+          <p style="margin: 0 0 5px 0;">James Sax Corner</p>
+          <p style="margin: 0 0 5px 0;">
+            <a href="mailto:info@jamessaxcorner.com" style="color: #1a365d; text-decoration: none;">info@jamessaxcorner.com</a>
+          </p>
+          <p style="margin: 0;">
+            <a href="https://jamessaxcorner.com" style="color: #1a365d; text-decoration: none;">https://jamessaxcorner.com</a>
+          </p>
+        </div>
+        
+        <hr style="border: none; border-top: 1px solid #ddd; margin: 40px 0 20px 0;">
+        
+        <p style="color: #888; font-size: 12px; text-align: center; margin: 0;">
+          © ${new Date().getFullYear()} James Sax Corner. All rights reserved.<br>
+          Hanoi, Vietnam
+        </p>
+      </div>
+    </body>
+    </html>
+  `
+
+  await transporter.sendMail({
+    from: `"James Sax Corner" <${fromEmail}>`,
+    to: email,
+    subject: `Inquiry Received - James Sax Corner`,
+    html,
+    attachments: getEmailAttachments(),
+  })
+}
