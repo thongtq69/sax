@@ -65,6 +65,7 @@ export async function POST(request: NextRequest) {
         },
         items: items.map((item: any) => ({
           name: item.name.substring(0, 127),
+          sku: item.sku || undefined,
           quantity: item.quantity.toString(),
           unit_amount: { currency_code: 'USD', value: item.price.toFixed(2) },
           category: 'PHYSICAL_GOODS',
