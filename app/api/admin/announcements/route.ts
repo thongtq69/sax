@@ -20,14 +20,14 @@ export async function POST(request: NextRequest) {
     const body = await request.json()
     const { title, description, ctaText, ctaLink, order, isActive } = body
 
-    if (!title || !description) {
-      return NextResponse.json({ error: 'Title and description are required' }, { status: 400 })
+    if (!title) {
+      return NextResponse.json({ error: 'Title is required' }, { status: 400 })
     }
 
     const announcement = await prisma.announcement.create({
       data: {
         title,
-        description,
+        description: description || '',
         ctaText: ctaText || null,
         ctaLink: ctaLink || null,
         order: order ?? 0,
