@@ -1,5 +1,6 @@
 import nodemailer from "nodemailer"
 import path from "path"
+import { emailBannerBase64 } from "./email-banner-base64"
 
 const isZoho = process.env.SMTP_HOST?.includes('zoho')
 
@@ -42,7 +43,7 @@ const getEmailHeader = () => `
   <table width="100%" cellpadding="0" cellspacing="0" border="0">
     <tr>
       <td align="center" style="padding: 30px;">
-        <img src="cid:logo_banner_v2" alt="James Sax Corner" style="max-width: 300px; height: auto; display: block; margin: 0 auto;" />
+        <img src="cid:logo_banner_v3" alt="James Sax Corner" style="max-width: 300px; height: auto; display: block; margin: 0 auto;" />
       </td>
     </tr>
   </table>
@@ -50,12 +51,12 @@ const getEmailHeader = () => `
 
 // Common attachments for all emails
 const getEmailAttachments = () => {
-  const emailBannerPath = path.join(process.cwd(), 'public', 'email-banner.png')
+  const content = Buffer.from(emailBannerBase64.replace(/^data:image\/\w+;base64,/, ""), 'base64')
   return [
     {
       filename: 'email-banner.png',
-      path: emailBannerPath,
-      cid: 'logo_banner_v2' // Changed CID to bust cache
+      content,
+      cid: 'logo_banner_v3' // Changed CID to bust cache
     }
   ]
 }
