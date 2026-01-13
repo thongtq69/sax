@@ -1,4 +1,5 @@
 import nodemailer from "nodemailer"
+import path from "path"
 
 const isZoho = process.env.SMTP_HOST?.includes('zoho')
 
@@ -36,21 +37,33 @@ const baseUrl = process.env.NEXTAUTH_URL || process.env.NEXT_PUBLIC_BASE_URL || 
 const fromEmail = process.env.EMAIL_FROM || "noreply@jamessaxcorner.com"
 const orderFromEmail = "order@jamessaxcorner.com"
 
-// Email header with text logo - always displays without image blocking issues
+// Path to email banner image for CID attachment
+const emailLogoPath = path.join(process.cwd(), 'public', 'jsc-logo-white.svg')
+
+// Email header with CID image - embedded as attachment for reliable display
 const getEmailHeader = () => `
   <table width="100%" cellpadding="0" cellspacing="0" border="0" style="background: linear-gradient(135deg, #1a365d 0%, #2d4a7c 100%); border-radius: 10px 10px 0 0;">
     <tr>
       <td align="center" style="padding: 30px;">
-        <h1 style="color: #ffffff; font-family: Georgia, 'Times New Roman', serif; font-size: 28px; margin: 0; font-weight: bold; letter-spacing: 1px;">🎷 James Sax Corner</h1>
+        <img src="cid:emaillogo" alt="James Sax Corner" style="max-width: 200px; height: auto; display: block; margin: 0 auto;" />
         <p style="color: #ffd700; margin: 10px 0 0 0; font-size: 14px;">Premium Saxophones</p>
       </td>
     </tr>
   </table>
 `
 
+// Common attachments for all emails
+const getEmailAttachments = () => [
+  {
+    filename: 'logo.svg',
+    path: emailLogoPath,
+    cid: 'emaillogo' // This CID is referenced in the HTML as src="cid:emaillogo"
+  }
+]
+
 export async function sendVerificationEmail(email: string, token: string, name?: string) {
   const verifyUrl = `${baseUrl}/auth/verify-email?token=${token}`
-  
+
   const html = `
     <!DOCTYPE html>
     <html>
@@ -98,6 +111,7 @@ export async function sendVerificationEmail(email: string, token: string, name?:
     to: email,
     subject: "Verify Your Email - James Sax Corner",
     html,
+    attachments: getEmailAttachments(),
   })
 }
 
@@ -156,13 +170,14 @@ export async function sendOTPEmail(email: string, otp: string, name?: string) {
     to: email,
     subject: "Email Verification OTP - James Sax Corner",
     html,
+    attachments: getEmailAttachments(),
   })
 }
 
 
 export async function sendPasswordResetEmail(email: string, token: string, name?: string) {
   const resetUrl = `${baseUrl}/auth/reset-password?token=${token}`
-  
+
   const html = `
     <!DOCTYPE html>
     <html>
@@ -212,6 +227,7 @@ export async function sendPasswordResetEmail(email: string, token: string, name?
     to: email,
     subject: "Reset Your Password - James Sax Corner",
     html,
+    attachments: getEmailAttachments(),
   })
 }
 
@@ -349,6 +365,7 @@ export async function sendOrderConfirmationEmail(data: OrderEmailData) {
     to: customerEmail,
     subject: `Order Confirmation #${orderNumber} - James Sax Corner`,
     html,
+    attachments: getEmailAttachments(),
   })
 }
 
@@ -416,5 +433,6 @@ export async function sendNewsletterWelcomeEmail(email: string) {
     to: email,
     subject: "🎷 Welcome to James Sax Corner!",
     html,
+    attachments: getEmailAttachments(),
   })
 }
