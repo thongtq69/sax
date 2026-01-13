@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
+import { sendOrderConfirmationEmail } from '@/lib/email'
 
 export const dynamic = 'force-dynamic'
 
@@ -129,10 +130,25 @@ export async function POST(request: NextRequest) {
     console.log(`Processing payment status "${paymentStatus}" for order ${orderId}`)
 
     try {
-      // Check if order exists
-      const existingOrder = await prisma.order.findUnique({
-        where: { id: orderId },
+      // Check if order exists - try by orderNumber first, then by id
+      let existingOrder = await prisma.order.findFirst({
+        where: { orderNumber: orderId },
+        include: { 
+          items: true,
+          user: { select: { email: true, name: true } }
+        }
       })
+
+      if (!existingOrder) {
+        // Fallback to id
+        existingOrder = await prisma.order.findUnique({
+          where: { id: orderId },
+          include: { 
+            items: true,
+            user: { select: { email: true, name: true } }
+          }
+        })
+      }
 
       if (!existingOrder) {
         console.error(`Order ${orderId} not found in database`)
@@ -233,7 +249,7 @@ export async function POST(request: NextRequest) {
       }
 
       await prisma.order.update({
-        where: { id: orderId },
+        where: { id: existingOrder.id },
         data: updateData,
       })
       
@@ -243,6 +259,72 @@ export async function POST(request: NextRequest) {
         payerEmail,
         txnId,
       })
+
+      // Send order confirmation email when payment is completed
+      if (paymentStatus === 'Completed') {
+        try {
+          // Determine customer email: prefer user account email, then shipping email, then PayPal email
+          const customerEmail = existingOrder.user?.email 
+            || (existingOrder.shippingAddress as any)?.email 
+            || payerEmail
+
+          const customerName = existingOrder.user?.name 
+            || (existingOrder.shippingAddress as any)?.name
+            || `${payerFirstName || ''} ${payerLastName || ''}`.trim()
+            || 'Valued Customer'
+
+          if (customerEmail) {
+            // Fetch product details for email
+            const productIds = existingOrder.items.map((item: any) => item.productId)
+            const products = await prisma.product.findMany({
+              where: { id: { in: productIds } },
+              select: { id: true, name: true, sku: true, images: true }
+            })
+            const productMap = new Map(products.map(p => [p.id, p]))
+
+            const emailItems = existingOrder.items.map((item: any) => {
+              const product = productMap.get(item.productId)
+              return {
+                name: product?.name || 'Product',
+                sku: product?.sku || '',
+                quantity: item.quantity,
+                price: item.price,
+                image: product?.images?.[0] || undefined
+              }
+            })
+
+            const shippingAddr = updateData.shippingAddress || existingOrder.shippingAddress as any
+
+            await sendOrderConfirmationEmail({
+              orderNumber: existingOrder.orderNumber || existingOrder.id,
+              customerEmail,
+              customerName,
+              items: emailItems,
+              subtotal: existingOrder.total,
+              shipping: parseFloat(mcShipping || '0'),
+              tax: parseFloat(tax || '0'),
+              total: parseFloat(mcGross || existingOrder.total.toString()),
+              shippingAddress: shippingAddr ? {
+                firstName: shippingAddr.firstName || payerFirstName || '',
+                lastName: shippingAddr.lastName || payerLastName || '',
+                address1: shippingAddr.address1 || addressStreet || '',
+                address2: shippingAddr.address2 || '',
+                city: shippingAddr.city || addressCity || '',
+                state: shippingAddr.state || addressState || '',
+                zip: shippingAddr.zip || addressZip || '',
+                country: shippingAddr.country || addressCountry || '',
+                phone: shippingAddr.phone || contactPhone || '',
+              } : undefined
+            })
+
+            console.log('Order confirmation email sent to:', customerEmail)
+          } else {
+            console.log('No customer email found for order confirmation')
+          }
+        } catch (emailError) {
+          console.error('Failed to send order confirmation email:', emailError)
+        }
+      }
 
     } catch (dbError: any) {
       console.error('Database error:', dbError.message)

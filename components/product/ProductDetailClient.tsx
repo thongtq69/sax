@@ -59,11 +59,14 @@ export function ProductDetailClient({ product }: ProductDetailClientProps) {
   // Fetch user's default address and auto-calculate shipping
   useEffect(() => {
     const fetchUserAddress = async () => {
+      console.log('Session status:', status, 'User:', session?.user) // Debug
+      
       // Wait for session to be loaded
       if (status === 'loading') return
       
       if (session?.user?.id) {
         try {
+          console.log('Fetching address for user:', session.user.id) // Debug
           const res = await fetch('/api/user/address')
           const data = await res.json()
           console.log('User address data:', data) // Debug log
@@ -80,6 +83,8 @@ export function ProductDetailClient({ product }: ProductDetailClientProps) {
         } catch (error) {
           console.error('Error fetching user address:', error)
         }
+      } else {
+        console.log('No user id in session') // Debug
       }
     }
     fetchUserAddress()
