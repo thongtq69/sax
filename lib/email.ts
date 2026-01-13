@@ -72,14 +72,21 @@ export async function sendVerificationEmail(email: string, token: string, name?:
       <meta name="viewport" content="width=device-width, initial-scale=1.0">
       <title>Verify Your Email</title>
     </head>
-    <body style="font-family: Arial, sans-serif; line-height: 1.6; color: #333; max-width: 600px; margin: 0 auto; padding: 0; background: #ffffff;">
+    <body style="font-family: Georgia, 'Times New Roman', serif; line-height: 1.8; color: #333; max-width: 600px; margin: 0 auto; padding: 0; background: #ffffff;">
       ${getEmailHeader()}
       
-      <div style="padding: 20px;">
-        <div style="background: #fff; padding: 30px; border: 1px solid #e0e0e0; border-top: none; border-radius: 0 0 10px 10px;">
-        <h2 style="color: #1a365d; margin-top: 0;">Welcome${name ? `, ${name}` : ''}!</h2>
+      <div style="padding: 30px 40px;">
+        <p style="margin: 0 0 20px 0; font-size: 16px;">
+          Dear ${name || 'User'},
+        </p>
         
-        <p>Thank you for registering at James Sax Corner. Please verify your email address by clicking the button below:</p>
+        <p style="margin: 0 0 25px 0; font-size: 16px;">
+          Thank you for registering at James Sax Corner.
+        </p>
+        
+        <p style="margin: 20px 0; font-size: 15px;">
+          Please verify your email address by clicking the button below:
+        </p>
         
         <div style="text-align: center; margin: 30px 0;">
           <a href="${verifyUrl}" style="background: #1a365d; color: #fff; padding: 15px 30px; text-decoration: none; border-radius: 5px; font-weight: bold; display: inline-block;">
@@ -87,22 +94,34 @@ export async function sendVerificationEmail(email: string, token: string, name?:
           </a>
         </div>
         
-        <p style="color: #666; font-size: 14px;">Or copy and paste this link into your browser:</p>
-        <p style="background: #f5f5f5; padding: 10px; border-radius: 5px; word-break: break-all; font-size: 12px;">
-          ${verifyUrl}
+        <p style="margin: 20px 0; font-size: 15px;">
+          Or copy and paste this link into your browser:
         </p>
+        <div style="background: #f9f9f9; padding: 15px; border-radius: 8px; margin: 25px 0;">
+          <p style="margin: 0; font-size: 14px; word-break: break-all; color: #1a365d;">
+            ${verifyUrl}
+          </p>
+        </div>
         
-        <p style="color: #666; font-size: 14px; margin-top: 30px;">
+        <p style="margin: 20px 0; font-size: 15px;">
           This link will expire in 24 hours. If you didn't create an account, you can safely ignore this email.
         </p>
         
-        <hr style="border: none; border-top: 1px solid #e0e0e0; margin: 30px 0;">
+        <div style="margin-top: 40px; font-size: 16px;">
+          <p style="margin: 0 0 15px 0;">Kind regards,</p>
+          <p style="margin: 0 0 5px 0; font-weight: bold;">James</p>
+          <p style="margin: 0 0 5px 0;">James Sax Corner</p>
+          <p style="margin: 0;">
+            <a href="https://jamessaxcorner.com" style="color: #1a365d; text-decoration: none;">https://jamessaxcorner.com</a>
+          </p>
+        </div>
         
-        <p style="color: #999; font-size: 12px; text-align: center;">
+        <hr style="border: none; border-top: 1px solid #ddd; margin: 40px 0 20px 0;">
+        
+        <p style="color: #888; font-size: 12px; text-align: center; margin: 0;">
           © ${new Date().getFullYear()} James Sax Corner. All rights reserved.<br>
           Hanoi, Vietnam
         </p>
-      </div>
       </div>
     </body>
     </html>
@@ -127,43 +146,54 @@ export async function sendOTPEmail(email: string, otp: string, name?: string) {
       <meta name="viewport" content="width=device-width, initial-scale=1.0">
       <title>Email Verification OTP</title>
     </head>
-    <body style="font-family: Arial, sans-serif; line-height: 1.6; color: #333; max-width: 600px; margin: 0 auto; padding: 0; background: #ffffff;">
+    <body style="font-family: Georgia, 'Times New Roman', serif; line-height: 1.8; color: #333; max-width: 600px; margin: 0 auto; padding: 0; background: #ffffff;">
       ${getEmailHeader()}
       
-      <div style="padding: 20px;">
-        <div style="background: #fff; padding: 30px; border: 1px solid #e0e0e0; border-top: none; border-radius: 0 0 10px 10px;">
-        <h2 style="color: #1a365d; margin-top: 0;">Welcome${name ? `, ${name}` : ''}!</h2>
-        
-        <p>Thank you for registering at James Sax Corner. Please use the following OTP code to verify your email address:</p>
-        
-        <div style="text-align: center; margin: 30px 0;">
-          <div style="background: #f9f9f9; padding: 20px; border-radius: 8px; display: inline-block; min-width: 200px;">
-            <p style="margin: 0; color: #1a365d; font-size: 14px; font-weight: bold;">YOUR OTP CODE</p>
-            <p style="margin: 10px 0 0 0; font-size: 32px; font-weight: bold; color: #1a365d; letter-spacing: 5px; font-family: Georgia, 'Times New Roman', serif;">
-              ${otp}
-            </p>
-          </div>
-        </div>
-        
-        <p style="color: #666; font-size: 14px; text-align: center;">
-          Enter this code on the verification page to complete your registration.
+      <div style="padding: 30px 40px;">
+        <p style="margin: 0 0 20px 0; font-size: 16px;">
+          Dear ${name || 'User'},
         </p>
         
-        <p style="color: #666; font-size: 14px; margin-top: 30px; text-align: center;">
+        <p style="margin: 0 0 25px 0; font-size: 16px;">
+          Thank you for registering at James Sax Corner.
+        </p>
+        
+        <div style="background: #f9f9f9; padding: 20px; border-radius: 8px; margin: 25px 0;">
+          <p style="margin: 0 0 15px 0; font-size: 16px; font-weight: bold; color: #1a365d;">
+            Your Verification Code:
+          </p>
+          <p style="margin: 0; font-size: 32px; font-weight: bold; color: #1a365d; letter-spacing: 5px; text-align: center;">
+            ${otp}
+          </p>
+        </div>
+        
+        <p style="margin: 20px 0; font-size: 15px;">
+          Enter this code on the verification page to complete your registration.
+        </p>
+
+        <p style="margin: 20px 0; font-size: 15px;">
           This code will expire in 15 minutes.
         </p>
         
-        <p style="color: #666; font-size: 14px; margin-top: 20px;">
+        <p style="margin: 20px 0; font-size: 15px;">
           If you didn't create an account, you can safely ignore this email.
         </p>
         
-        <hr style="border: none; border-top: 1px solid #e0e0e0; margin: 30px 0;">
+        <div style="margin-top: 40px; font-size: 16px;">
+          <p style="margin: 0 0 15px 0;">Kind regards,</p>
+          <p style="margin: 0 0 5px 0; font-weight: bold;">James</p>
+          <p style="margin: 0 0 5px 0;">James Sax Corner</p>
+          <p style="margin: 0;">
+            <a href="https://jamessaxcorner.com" style="color: #1a365d; text-decoration: none;">https://jamessaxcorner.com</a>
+          </p>
+        </div>
         
-        <p style="color: #999; font-size: 12px; text-align: center;">
+        <hr style="border: none; border-top: 1px solid #ddd; margin: 40px 0 20px 0;">
+        
+        <p style="color: #888; font-size: 12px; text-align: center; margin: 0;">
           © ${new Date().getFullYear()} James Sax Corner. All rights reserved.<br>
           Hanoi, Vietnam
         </p>
-      </div>
       </div>
     </body>
     </html>
@@ -190,16 +220,21 @@ export async function sendPasswordResetEmail(email: string, token: string, name?
       <meta name="viewport" content="width=device-width, initial-scale=1.0">
       <title>Reset Your Password</title>
     </head>
-    <body style="font-family: Arial, sans-serif; line-height: 1.6; color: #333; max-width: 600px; margin: 0 auto; padding: 0; background: #ffffff;">
+    <body style="font-family: Georgia, 'Times New Roman', serif; line-height: 1.8; color: #333; max-width: 600px; margin: 0 auto; padding: 0; background: #ffffff;">
       ${getEmailHeader()}
       
-      <div style="padding: 20px;">
-        <div style="background: #fff; padding: 30px; border: 1px solid #e0e0e0; border-top: none; border-radius: 0 0 10px 10px;">
-        <h2 style="color: #1a365d; margin-top: 0;">Password Reset Request</h2>
+      <div style="padding: 30px 40px;">
+        <p style="margin: 0 0 20px 0; font-size: 16px;">
+          Dear ${name || 'User'},
+        </p>
         
-        <p>Hi${name ? ` ${name}` : ''},</p>
+        <p style="margin: 0 0 25px 0; font-size: 16px;">
+          We received a request to reset your password for your James Sax Corner account.
+        </p>
         
-        <p>We received a request to reset your password. Click the button below to create a new password:</p>
+        <p style="margin: 20px 0; font-size: 15px;">
+          Click the button below to create a new password:
+        </p>
         
         <div style="text-align: center; margin: 30px 0;">
           <a href="${resetUrl}" style="background: #1a365d; color: #fff; padding: 15px 30px; text-decoration: none; border-radius: 5px; font-weight: bold; display: inline-block;">
@@ -207,22 +242,34 @@ export async function sendPasswordResetEmail(email: string, token: string, name?
           </a>
         </div>
         
-        <p style="color: #666; font-size: 14px;">Or copy and paste this link into your browser:</p>
-        <p style="background: #f5f5f5; padding: 10px; border-radius: 5px; word-break: break-all; font-size: 12px;">
-          ${resetUrl}
+        <p style="margin: 20px 0; font-size: 15px;">
+          Or copy and paste this link into your browser:
         </p>
+        <div style="background: #f9f9f9; padding: 15px; border-radius: 8px; margin: 25px 0;">
+          <p style="margin: 0; font-size: 14px; word-break: break-all; color: #1a365d;">
+            ${resetUrl}
+          </p>
+        </div>
         
-        <p style="color: #666; font-size: 14px; margin-top: 30px;">
+        <p style="margin: 20px 0; font-size: 15px;">
           This link will expire in 1 hour. If you didn't request a password reset, you can safely ignore this email.
         </p>
         
-        <hr style="border: none; border-top: 1px solid #e0e0e0; margin: 30px 0;">
+        <div style="margin-top: 40px; font-size: 16px;">
+          <p style="margin: 0 0 15px 0;">Kind regards,</p>
+          <p style="margin: 0 0 5px 0; font-weight: bold;">James</p>
+          <p style="margin: 0 0 5px 0;">James Sax Corner</p>
+          <p style="margin: 0;">
+            <a href="https://jamessaxcorner.com" style="color: #1a365d; text-decoration: none;">https://jamessaxcorner.com</a>
+          </p>
+        </div>
         
-        <p style="color: #999; font-size: 12px; text-align: center;">
+        <hr style="border: none; border-top: 1px solid #ddd; margin: 40px 0 20px 0;">
+        
+        <p style="color: #888; font-size: 12px; text-align: center; margin: 0;">
           © ${new Date().getFullYear()} James Sax Corner. All rights reserved.<br>
           Hanoi, Vietnam
         </p>
-      </div>
       </div>
     </body>
     </html>
@@ -546,16 +593,21 @@ export async function sendEmailChangeVerification(email: string, token: string, 
       <meta name="viewport" content="width=device-width, initial-scale=1.0">
       <title>Verify Your New Email</title>
     </head>
-    <body style="font-family: Arial, sans-serif; line-height: 1.6; color: #333; max-width: 600px; margin: 0 auto; padding: 0; background: #ffffff;">
+    <body style="font-family: Georgia, 'Times New Roman', serif; line-height: 1.8; color: #333; max-width: 600px; margin: 0 auto; padding: 0; background: #ffffff;">
       ${getEmailHeader()}
       
-      <div style="padding: 20px;">
-        <div style="background: #fff; padding: 30px; border: 1px solid #e0e0e0; border-top: none; border-radius: 0 0 10px 10px;">
-        <h2 style="color: #1a365d; margin-top: 0;">Verify Your New Email Address</h2>
+      <div style="padding: 30px 40px;">
+        <p style="margin: 0 0 20px 0; font-size: 16px;">
+          Dear ${name || 'User'},
+        </p>
         
-        <p>Hi${name ? ` ${name}` : ''},</p>
+        <p style="margin: 0 0 25px 0; font-size: 16px;">
+          You have requested to change your email address to this one.
+        </p>
         
-        <p>You requested to change your email address to this one. Please verify by clicking the button below:</p>
+        <p style="margin: 20px 0; font-size: 15px;">
+          Please verify by clicking the button below:
+        </p>
         
         <div style="text-align: center; margin: 30px 0;">
           <a href="${verifyUrl}" style="background: #1a365d; color: #fff; padding: 15px 30px; text-decoration: none; border-radius: 5px; font-weight: bold; display: inline-block;">
@@ -563,22 +615,34 @@ export async function sendEmailChangeVerification(email: string, token: string, 
           </a>
         </div>
         
-        <p style="color: #666; font-size: 14px;">Or copy and paste this link into your browser:</p>
-        <p style="background: #f5f5f5; padding: 10px; border-radius: 5px; word-break: break-all; font-size: 12px;">
-          ${verifyUrl}
+        <p style="margin: 20px 0; font-size: 15px;">
+          Or copy and paste this link into your browser:
         </p>
+        <div style="background: #f9f9f9; padding: 15px; border-radius: 8px; margin: 25px 0;">
+          <p style="margin: 0; font-size: 14px; word-break: break-all; color: #1a365d;">
+            ${verifyUrl}
+          </p>
+        </div>
         
-        <p style="color: #666; font-size: 14px; margin-top: 30px;">
+        <p style="margin: 20px 0; font-size: 15px;">
           This link will expire in 24 hours. If you didn't request this change, you can safely ignore this email.
         </p>
         
-        <hr style="border: none; border-top: 1px solid #e0e0e0; margin: 30px 0;">
+        <div style="margin-top: 40px; font-size: 16px;">
+          <p style="margin: 0 0 15px 0;">Kind regards,</p>
+          <p style="margin: 0 0 5px 0; font-weight: bold;">James</p>
+          <p style="margin: 0 0 5px 0;">James Sax Corner</p>
+          <p style="margin: 0;">
+            <a href="https://jamessaxcorner.com" style="color: #1a365d; text-decoration: none;">https://jamessaxcorner.com</a>
+          </p>
+        </div>
         
-        <p style="color: #999; font-size: 12px; text-align: center;">
+        <hr style="border: none; border-top: 1px solid #ddd; margin: 40px 0 20px 0;">
+        
+        <p style="color: #888; font-size: 12px; text-align: center; margin: 0;">
           © ${new Date().getFullYear()} James Sax Corner. All rights reserved.<br>
           Hanoi, Vietnam
         </p>
-      </div>
       </div>
     </body>
     </html>
