@@ -43,7 +43,7 @@ const getEmailHeader = () => `
   <table width="100%" cellpadding="0" cellspacing="0" border="0">
     <tr>
       <td align="center" style="padding: 30px;">
-        <img src="cid:logo_banner_v3" alt="James Sax Corner" style="max-width: 300px; height: auto; display: block; margin: 0 auto;" />
+        <img src="cid:logo_banner_v4" alt="James Sax Corner" style="max-width: 300px; height: auto; display: block; margin: 0 auto;" />
       </td>
     </tr>
   </table>
@@ -56,7 +56,7 @@ const getEmailAttachments = () => {
     {
       filename: 'email-banner.png',
       content,
-      cid: 'logo_banner_v3' // Changed CID to bust cache
+      cid: 'logo_banner_v4' // Changed CID to bust cache again
     }
   ]
 }
@@ -72,10 +72,11 @@ export async function sendVerificationEmail(email: string, token: string, name?:
       <meta name="viewport" content="width=device-width, initial-scale=1.0">
       <title>Verify Your Email</title>
     </head>
-    <body style="font-family: Arial, sans-serif; line-height: 1.6; color: #333; max-width: 600px; margin: 0 auto; padding: 20px;">
+    <body style="font-family: Arial, sans-serif; line-height: 1.6; color: #333; max-width: 600px; margin: 0 auto; padding: 0; background: #ffffff;">
       ${getEmailHeader()}
       
-      <div style="background: #fff; padding: 30px; border: 1px solid #e0e0e0; border-top: none; border-radius: 0 0 10px 10px;">
+      <div style="padding: 20px;">
+        <div style="background: #fff; padding: 30px; border: 1px solid #e0e0e0; border-top: none; border-radius: 0 0 10px 10px;">
         <h2 style="color: #1a365d; margin-top: 0;">Welcome${name ? `, ${name}` : ''}!</h2>
         
         <p>Thank you for registering at James Sax Corner. Please verify your email address by clicking the button below:</p>
@@ -102,6 +103,7 @@ export async function sendVerificationEmail(email: string, token: string, name?:
           Hanoi, Vietnam
         </p>
       </div>
+      </div>
     </body>
     </html>
   `
@@ -125,18 +127,19 @@ export async function sendOTPEmail(email: string, otp: string, name?: string) {
       <meta name="viewport" content="width=device-width, initial-scale=1.0">
       <title>Email Verification OTP</title>
     </head>
-    <body style="font-family: Arial, sans-serif; line-height: 1.6; color: #333; max-width: 600px; margin: 0 auto; padding: 20px;">
+    <body style="font-family: Arial, sans-serif; line-height: 1.6; color: #333; max-width: 600px; margin: 0 auto; padding: 0; background: #ffffff;">
       ${getEmailHeader()}
       
-      <div style="background: #fff; padding: 30px; border: 1px solid #e0e0e0; border-top: none; border-radius: 0 0 10px 10px;">
+      <div style="padding: 20px;">
+        <div style="background: #fff; padding: 30px; border: 1px solid #e0e0e0; border-top: none; border-radius: 0 0 10px 10px;">
         <h2 style="color: #1a365d; margin-top: 0;">Welcome${name ? `, ${name}` : ''}!</h2>
         
         <p>Thank you for registering at James Sax Corner. Please use the following OTP code to verify your email address:</p>
         
         <div style="text-align: center; margin: 30px 0;">
-          <div style="background: #f5f5f5; border: 2px dashed #1a365d; padding: 20px; border-radius: 10px; display: inline-block;">
-            <p style="margin: 0; color: #666; font-size: 14px; font-weight: bold;">YOUR OTP CODE</p>
-            <p style="margin: 10px 0 0 0; font-size: 36px; font-weight: bold; color: #1a365d; letter-spacing: 8px; font-family: 'Courier New', monospace;">
+          <div style="background: #f9f9f9; padding: 20px; border-radius: 8px; display: inline-block; min-width: 200px;">
+            <p style="margin: 0; color: #1a365d; font-size: 14px; font-weight: bold;">YOUR OTP CODE</p>
+            <p style="margin: 10px 0 0 0; font-size: 32px; font-weight: bold; color: #1a365d; letter-spacing: 5px; font-family: Georgia, 'Times New Roman', serif;">
               ${otp}
             </p>
           </div>
@@ -146,8 +149,8 @@ export async function sendOTPEmail(email: string, otp: string, name?: string) {
           Enter this code on the verification page to complete your registration.
         </p>
         
-        <p style="color: #e53e3e; font-size: 14px; margin-top: 30px; text-align: center; font-weight: bold;">
-          ⚠️ This code will expire in 15 minutes
+        <p style="color: #666; font-size: 14px; margin-top: 30px; text-align: center;">
+          This code will expire in 15 minutes.
         </p>
         
         <p style="color: #666; font-size: 14px; margin-top: 20px;">
@@ -160,6 +163,7 @@ export async function sendOTPEmail(email: string, otp: string, name?: string) {
           © ${new Date().getFullYear()} James Sax Corner. All rights reserved.<br>
           Hanoi, Vietnam
         </p>
+      </div>
       </div>
     </body>
     </html>
@@ -186,10 +190,11 @@ export async function sendPasswordResetEmail(email: string, token: string, name?
       <meta name="viewport" content="width=device-width, initial-scale=1.0">
       <title>Reset Your Password</title>
     </head>
-    <body style="font-family: Arial, sans-serif; line-height: 1.6; color: #333; max-width: 600px; margin: 0 auto; padding: 20px;">
+    <body style="font-family: Arial, sans-serif; line-height: 1.6; color: #333; max-width: 600px; margin: 0 auto; padding: 0; background: #ffffff;">
       ${getEmailHeader()}
       
-      <div style="background: #fff; padding: 30px; border: 1px solid #e0e0e0; border-top: none; border-radius: 0 0 10px 10px;">
+      <div style="padding: 20px;">
+        <div style="background: #fff; padding: 30px; border: 1px solid #e0e0e0; border-top: none; border-radius: 0 0 10px 10px;">
         <h2 style="color: #1a365d; margin-top: 0;">Password Reset Request</h2>
         
         <p>Hi${name ? ` ${name}` : ''},</p>
@@ -217,6 +222,7 @@ export async function sendPasswordResetEmail(email: string, token: string, name?
           © ${new Date().getFullYear()} James Sax Corner. All rights reserved.<br>
           Hanoi, Vietnam
         </p>
+      </div>
       </div>
     </body>
     </html>
@@ -540,10 +546,11 @@ export async function sendEmailChangeVerification(email: string, token: string, 
       <meta name="viewport" content="width=device-width, initial-scale=1.0">
       <title>Verify Your New Email</title>
     </head>
-    <body style="font-family: Arial, sans-serif; line-height: 1.6; color: #333; max-width: 600px; margin: 0 auto; padding: 20px;">
+    <body style="font-family: Arial, sans-serif; line-height: 1.6; color: #333; max-width: 600px; margin: 0 auto; padding: 0; background: #ffffff;">
       ${getEmailHeader()}
       
-      <div style="background: #fff; padding: 30px; border: 1px solid #e0e0e0; border-top: none; border-radius: 0 0 10px 10px;">
+      <div style="padding: 20px;">
+        <div style="background: #fff; padding: 30px; border: 1px solid #e0e0e0; border-top: none; border-radius: 0 0 10px 10px;">
         <h2 style="color: #1a365d; margin-top: 0;">Verify Your New Email Address</h2>
         
         <p>Hi${name ? ` ${name}` : ''},</p>
@@ -571,6 +578,7 @@ export async function sendEmailChangeVerification(email: string, token: string, 
           © ${new Date().getFullYear()} James Sax Corner. All rights reserved.<br>
           Hanoi, Vietnam
         </p>
+      </div>
       </div>
     </body>
     </html>
