@@ -31,6 +31,8 @@ export default function ProductsManagement() {
   const [brands, setBrands] = useState<{ id: string; name: string; isActive: boolean }[]>([])
   const [specKeys, setSpecKeys] = useState<{ id: string; name: string; isActive: boolean }[]>([])
   const [newSpecKey, setNewSpecKey] = useState('')
+  const [accessories, setAccessories] = useState<{ id: string; name: string; isActive: boolean }[]>([])
+  const [newAccessory, setNewAccessory] = useState('')
   const [descTemplates, setDescTemplates] = useState<{ id: string; name: string; content: string; type: string }[]>([])
   const [selectedHeader, setSelectedHeader] = useState('')
   const [selectedFooter, setSelectedFooter] = useState('')
@@ -88,12 +90,13 @@ export default function ProductsManagement() {
     async function fetchData() {
       try {
         setIsLoading(true)
-        const [productsResponse, categoriesData, brandsData, specKeysData, templatesData] = await Promise.all([
+        const [productsResponse, categoriesData, brandsData, specKeysData, templatesData, accessoriesData] = await Promise.all([
           getProducts({ limit: 1000 }),
           getCategories(),
           fetch('/api/admin/brands').then(res => res.json()),
           fetch('/api/admin/spec-keys').then(res => res.json()),
           fetch('/api/admin/description-templates').then(res => res.json()),
+          fetch('/api/admin/accessories').then(res => res.json()),
         ])
         
         const transformedProducts = productsResponse.products.map(transformProduct)
@@ -103,6 +106,7 @@ export default function ProductsManagement() {
         setCategories(transformedCategories)
         setBrands(brandsData.filter((b: any) => b.isActive))
         setSpecKeys(specKeysData.filter((s: any) => s.isActive))
+        setAccessories(accessoriesData.filter((a: any) => a.isActive))
         setDescTemplates(templatesData)
       } catch (error) {
         console.error('Error fetching data:', error)
@@ -1446,31 +1450,154 @@ export default function ProductsManagement() {
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
-                  What&apos;s Included (comma separated)
+                  What&apos;s Included
                 </label>
-                <Input
-                  value={formData.included?.join(', ') || ''}
-                  onChange={(e) => {
-                    // Preserve the raw input value including spaces
-                    const rawValue = e.target.value
-                    // Split by comma only, preserve spaces within items
-                    const items = rawValue.split(',').map(s => s.trimStart())
-                    setFormData({ 
-                      ...formData, 
-                      included: items
-                    })
-                  }}
-                  onBlur={(e) => {
-                    // Clean up on blur - trim and filter empty items
-                    const rawValue = e.target.value
-                    const items = rawValue.split(',').map(s => s.trim()).filter(Boolean)
-                    setFormData({ 
-                      ...formData, 
-                      included: items
-                    })
-                  }}
-                  placeholder="e.g., Case, Mouthpiece, Cleaning Kit"
-                />
+                <p className="text-sm text-gray-500 mb-3">
+                  Click to add accessories, or type custom items
+                </p>
+                
+                {/* Selected accessories */}
+                <div className="flex flex-wrap gap-2 mb-3">
+                  {(formData.included || []).map((item, index) => (
+                    <span
+                      key={index}
+                      className="inline-flex items-center gap-1 px-3 py-1.5 bg-primary/10 text-primary rounded-full text-sm"
+                    >
+                      {item}
+                      <button
+                        type="button"
+                        onClick={() => {
+                          const newIncluded = [...(formData.included || [])]
+                          newIncluded.splice(index, 1)
+                          setFormData({ ...formData, included: newIncluded })
+                        }}
+                        className="text-primary/60 hover:text-red-500 ml-1"
+                      >
+                        ×
+                      </button>
+                    </span>
+                  ))}
+                </div>
+
+                {/* Available accessories to add */}
+                <div className="flex flex-wrap gap-2 mb-3">
+                  {accessories
+                    .filter(acc => !(formData.included || []).includes(acc.name))
+                    .map((acc) => (
+                      <button
+                        key={acc.id}
+                        type="button"
+                        onClick={() => {
+                          setFormData({
+                            ...formData,
+                            included: [...(formData.included || []), acc.name]
+                          })
+                        }}
+                        className="inline-flex items-center gap-1 px-3 py-1.5 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-full text-sm transition-colors"
+                      >
+                        <Plus className="h-3 w-3" />
+                        {acc.name}
+                      </button>
+                    ))}
+                </div>
+
+                {/* Add custom accessory */}
+                <div className="flex gap-2 mt-4 pt-4 border-t">
+                  <Input
+                    value={newAccessory}
+                    onChange={(e) => setNewAccessory(e.target.value)}
+                    placeholder="Add custom item or new accessory..."
+                    className="flex-1"
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter' && newAccessory.trim()) {
+                        e.preventDefault()
+                        setFormData({
+                          ...formData,
+                          included: [...(formData.included || []), newAccessory.trim()]
+                        })
+                        setNewAccessory('')
+                      }
+                    }}
+                  />
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={() => {
+                      if (newAccessory.trim()) {
+                        setFormData({
+                          ...formData,
+                          included: [...(formData.included || []), newAccessory.trim()]
+                        })
+                        setNewAccessory('')
+                      }
+                    }}
+                  >
+                    Add
+                  </Button>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={async () => {
+                      if (!newAccessory.trim()) return
+                      try {
+                        const response = await fetch('/api/admin/accessories', {
+                          method: 'POST',
+                          headers: { 'Content-Type': 'application/json' },
+                          body: JSON.stringify({ name: newAccessory.trim() }),
+                        })
+                        if (response.ok) {
+                          const newAcc = await response.json()
+                          setAccessories([...accessories, newAcc])
+                          setFormData({
+                            ...formData,
+                            included: [...(formData.included || []), newAcc.name]
+                          })
+                          setNewAccessory('')
+                        } else {
+                          const error = await response.json()
+                          alert(error.error || 'Failed to save accessory')
+                        }
+                      } catch (error) {
+                        console.error('Error saving accessory:', error)
+                      }
+                    }}
+                    title="Save as reusable accessory"
+                  >
+                    Save & Add
+                  </Button>
+                </div>
+
+                {/* Manage saved accessories */}
+                {accessories.length > 0 && (
+                  <div className="mt-3 pt-3 border-t">
+                    <p className="text-xs text-gray-500 mb-2">Saved Accessories (click × to delete):</p>
+                    <div className="flex flex-wrap gap-2">
+                      {accessories.map((acc) => (
+                        <span
+                          key={acc.id}
+                          className="inline-flex items-center gap-1 px-2 py-1 bg-gray-100 rounded text-xs"
+                        >
+                          {acc.name}
+                          <button
+                            type="button"
+                            onClick={async () => {
+                              if (!confirm(`Delete accessory "${acc.name}"?`)) return
+                              try {
+                                await fetch(`/api/admin/accessories?id=${acc.id}`, { method: 'DELETE' })
+                                setAccessories(accessories.filter(a => a.id !== acc.id))
+                              } catch (error) {
+                                console.error('Error deleting accessory:', error)
+                              }
+                            }}
+                            className="text-gray-400 hover:text-red-500"
+                          >
+                            ×
+                          </button>
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                )}
               </div>
             </TabsContent>
           </Tabs>

@@ -285,14 +285,7 @@ export async function sendOrderConfirmationEmail(data: OrderEmailData) {
       <title>Order Confirmation</title>
     </head>
     <body style="font-family: Georgia, 'Times New Roman', serif; line-height: 1.8; color: #333; max-width: 600px; margin: 0 auto; padding: 0; background: #ffffff;">
-      <table width="100%" cellpadding="0" cellspacing="0" border="0" style="background: linear-gradient(135deg, #1a365d 0%, #2d4a7c 100%);">
-        <tr>
-          <td align="center" style="padding: 30px;">
-            <h1 style="color: #ffffff; font-family: Georgia, 'Times New Roman', serif; font-size: 28px; margin: 0; font-weight: bold; letter-spacing: 1px;">🎷 James Sax Corner</h1>
-            <p style="color: #ffd700; margin: 10px 0 0 0; font-size: 14px;">Premium Saxophones</p>
-          </td>
-        </tr>
-      </table>
+      ${getEmailHeader()}
       
       <div style="padding: 30px 40px;">
         <p style="margin: 0 0 20px 0; font-size: 16px;">
