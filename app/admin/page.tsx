@@ -252,6 +252,12 @@ export default function AdminDashboard() {
               <span className="truncate">Categories</span>
             </Button>
           </Link>
+          <Link href="/admin/announcements">
+            <Button className="w-full justify-start text-xs sm:text-sm h-9 sm:h-10 px-2 sm:px-4" variant="outline">
+              <MessageSquare className="h-3 w-3 sm:h-4 sm:w-4 mr-2 sm:mr-3 flex-shrink-0" />
+              <span className="truncate">Announcements</span>
+            </Button>
+          </Link>
           <Link href="/admin/faqs">
             <Button className="w-full justify-start text-xs sm:text-sm h-9 sm:h-10 px-2 sm:px-4" variant="outline">
               <HelpCircle className="h-3 w-3 sm:h-4 sm:w-4 mr-2 sm:mr-3 flex-shrink-0" />
@@ -264,16 +270,16 @@ export default function AdminDashboard() {
               <span className="truncate">Quick FAQ</span>
             </Button>
           </Link>
-          <Link href="/admin/inquiries">
-            <Button className="w-full justify-start text-xs sm:text-sm h-9 sm:h-10 px-2 sm:px-4" variant="outline">
-              <MessageSquare className="h-3 w-3 sm:h-4 sm:w-4 mr-2 sm:mr-3 flex-shrink-0" />
-              <span className="truncate">Inquiries</span>
-            </Button>
-          </Link>
           <Link href="/admin/inquiry-titles">
             <Button className="w-full justify-start text-xs sm:text-sm h-9 sm:h-10 px-2 sm:px-4" variant="outline">
               <ListOrdered className="h-3 w-3 sm:h-4 sm:w-4 mr-2 sm:mr-3 flex-shrink-0" />
               <span className="truncate">Inquiry Titles</span>
+            </Button>
+          </Link>
+          <Link href="/admin/inquiries">
+            <Button className="w-full justify-start text-xs sm:text-sm h-9 sm:h-10 px-2 sm:px-4" variant="outline">
+              <MessageSquare className="h-3 w-3 sm:h-4 sm:w-4 mr-2 sm:mr-3 flex-shrink-0" />
+              <span className="truncate">Inquiries</span>
             </Button>
           </Link>
           <Link href="/admin/testimonials">
@@ -282,10 +288,28 @@ export default function AdminDashboard() {
               <span className="truncate">Testimonials</span>
             </Button>
           </Link>
+          <Link href="/admin/reviews">
+            <Button className="w-full justify-start text-xs sm:text-sm h-9 sm:h-10 px-2 sm:px-4" variant="outline">
+              <Star className="h-3 w-3 sm:h-4 sm:w-4 mr-2 sm:mr-3 flex-shrink-0" />
+              <span className="truncate">Reviews</span>
+            </Button>
+          </Link>
           <Link href="/admin/content">
             <Button className="w-full justify-start text-xs sm:text-sm h-9 sm:h-10 px-2 sm:px-4" variant="outline">
               <Home className="h-3 w-3 sm:h-4 sm:w-4 mr-2 sm:mr-3 flex-shrink-0" />
               <span className="truncate">Homepage</span>
+            </Button>
+          </Link>
+          <Link href="/admin/banners">
+            <Button className="w-full justify-start text-xs sm:text-sm h-9 sm:h-10 px-2 sm:px-4" variant="outline">
+              <ImageIcon className="h-3 w-3 sm:h-4 sm:w-4 mr-2 sm:mr-3 flex-shrink-0" />
+              <span className="truncate">Banners</span>
+            </Button>
+          </Link>
+          <Link href="/admin/subscribers">
+            <Button className="w-full justify-start text-xs sm:text-sm h-9 sm:h-10 px-2 sm:px-4" variant="outline">
+              <Users className="h-3 w-3 sm:h-4 sm:w-4 mr-2 sm:mr-3 flex-shrink-0" />
+              <span className="truncate">Subscribers</span>
             </Button>
           </Link>
           <Link href="/admin/orders">
