@@ -860,68 +860,6 @@ export function ProductDetailClient({ product }: ProductDetailClientProps) {
                 </>
               )}
             </div>
-                  <Truck className="h-4 w-4 flex-shrink-0" />
-                  <span>Shipping</span>
-                  <Calculator className="h-3.5 w-3.5" />
-                  <span className="text-gray-400 text-xs">(Click to calculate)</span>
-                </button>
-
-                {/* Shipping Calculator Popup */}
-                {showShippingCalc && (
-                  <div className="mt-3 p-3 bg-white rounded-lg border border-primary/20 shadow-lg animate-fade-in">
-                    <div className="flex items-center gap-2 mb-2">
-                      <MapPin className="h-4 w-4 text-primary" />
-                      <span className="text-sm font-medium text-secondary">Calculate Shipping Cost</span>
-                    </div>
-                    <div className="flex gap-2">
-                      {/* Country Selection */}
-                      <select
-                        value={shippingCountry}
-                        onChange={(e) => setShippingCountry(e.target.value)}
-                        className="flex-1 px-3 py-2 text-sm border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/30 bg-white"
-                      >
-                        <option value="">Select Country</option>
-                        <option value="Vietnam">Vietnam</option>
-                        <option value="United States">United States</option>
-                        <option value="Canada">Canada</option>
-                        <option value="United Kingdom">United Kingdom</option>
-                        <option value="Australia">Australia</option>
-                        <option value="Germany">Germany</option>
-                        <option value="France">France</option>
-                        <option value="Japan">Japan</option>
-                        <option value="South Korea">South Korea</option>
-                        <option value="Singapore">Singapore</option>
-                        <option value="Thailand">Thailand</option>
-                        <option value="Malaysia">Malaysia</option>
-                        <option value="Indonesia">Indonesia</option>
-                        <option value="Philippines">Philippines</option>
-                        <option value="China">China</option>
-                        <option value="Taiwan">Taiwan</option>
-                        <option value="Hong Kong">Hong Kong</option>
-                        <option value="India">India</option>
-                        <option value="Other">Other</option>
-                      </select>
-                      <button
-                        onClick={calculateShipping}
-                        disabled={isCalculatingShipping || !shippingCountry}
-                        className="px-4 py-2 bg-primary text-white text-sm font-medium rounded-lg hover:bg-primary/90 transition-colors disabled:opacity-50"
-                      >
-                        {isCalculatingShipping ? (
-                          <Loader2 className="h-4 w-4 animate-spin" />
-                        ) : (
-                          'Calculate'
-                        )}
-                      </button>
-                    </div>
-                    {shippingMessage && (
-                      <p className={`mt-2 text-sm font-medium ${shippingCost === 25 ? 'text-green-600' : 'text-amber-600'}`}>
-                        {shippingMessage}
-                      </p>
-                    )}
-                  </div>
-                )}
-              </div>
-            </div>
 
             {/* Stock Status */}
             {!isSoldOut && (
