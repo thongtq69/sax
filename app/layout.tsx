@@ -13,7 +13,7 @@ const lora = Lora({
 export const metadata: Metadata = {
   metadataBase: new URL(process.env.NEXT_PUBLIC_BASE_URL || 'https://jamessaxcorner.com'),
   title: 'James Sax Corner - Premium Saxophones',
-  description: 'Family-owned wind instrument specialists since 1985. Expert advice, professional setup, and personalized service for students, educators, and professionals.',
+  description: 'Premium saxophones, expertly maintained for peak performance. Trusted by musicians worldwide, backed by outstanding reviews. Unmatched customer service—your satisfaction comes first! Buy with confidence!',
   verification: {
     google: 'YOUR_GOOGLE_VERIFICATION_CODE', // TODO: Add your Google Search Console verification code here
   },

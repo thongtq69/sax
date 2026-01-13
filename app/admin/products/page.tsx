@@ -154,7 +154,7 @@ export default function ProductsManagement() {
     setFilteredProducts(filtered)
   }, [searchTerm, selectedCategory, selectedBadge, selectedProductType, selectedCondition, productList])
 
-  // Auto-sync Brand, Model (SKU), Condition to specs when they change
+  // Auto-sync Brand, SKU, Condition to specs when they change
   useEffect(() => {
     if (!isDialogOpen) return
     
@@ -166,12 +166,9 @@ export default function ProductsManagement() {
       newSpecs['Brand'] = formData.brand
     }
     
-    // Auto-fill Model (SKU without JSC- prefix)
+    // Auto-fill SKU
     if (formData.sku && formData.sku !== 'JSC-') {
-      const model = formData.sku.startsWith('JSC-') ? formData.sku.slice(4) : formData.sku
-      if (model) {
-        newSpecs['Model'] = model
-      }
+      newSpecs['SKU'] = formData.sku
     }
     
     // Auto-fill Condition (only for used products)
@@ -273,7 +270,7 @@ export default function ProductsManagement() {
         description: '',
         specs: {
           'Brand': '',
-          'Model': '',
+          'SKU': '',
           'Condition': '',
         },
         included: [],
@@ -857,25 +854,49 @@ export default function ProductsManagement() {
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Badge
+                    Badges (select multiple)
                   </label>
-                  <Select
-                    value={formData.badge || 'none'}
-                    onValueChange={(value) => setFormData({ ...formData, badge: value === 'none' ? undefined : value as any })}
-                  >
-                    <SelectTrigger>
-                      <SelectValue placeholder="Special Pricing" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="none">💰 Special Pricing</SelectItem>
-                      <SelectItem value="new">🆕 New Arrival</SelectItem>
-                      <SelectItem value="sale">🔥 Sale</SelectItem>
-                      <SelectItem value="rare">⭐ Limited Availability</SelectItem>
-                      <SelectItem value="coming-soon">🔜 Arriving Soon</SelectItem>
-                      <SelectItem value="premium">👑 Premium Selection</SelectItem>
-                      <SelectItem value="top-tier">🏆 Top-Tier</SelectItem>
-                    </SelectContent>
-                  </Select>
+                  <div className="grid grid-cols-2 gap-2">
+                    {[
+                      { value: 'new', label: '🆕 New Arrival' },
+                      { value: 'sale', label: '🔥 Sale' },
+                      { value: 'rare', label: '⭐ Limited Availability' },
+                      { value: 'coming-soon', label: '🔜 Arriving Soon' },
+                      { value: 'premium', label: '👑 Premium Selection' },
+                      { value: 'top-tier', label: '🏆 Top-Tier' },
+                    ].map((badge) => {
+                      const badges = formData.badge ? formData.badge.split(',') : []
+                      const isSelected = badges.includes(badge.value)
+                      return (
+                        <label
+                          key={badge.value}
+                          className={`flex items-center gap-2 p-2 rounded-lg border cursor-pointer transition-all ${
+                            isSelected 
+                              ? 'border-primary bg-primary/10 text-primary' 
+                              : 'border-gray-200 hover:border-gray-300'
+                          }`}
+                        >
+                          <input
+                            type="checkbox"
+                            checked={isSelected}
+                            onChange={(e) => {
+                              let newBadges = badges.filter(b => b !== badge.value)
+                              if (e.target.checked) {
+                                newBadges.push(badge.value)
+                              }
+                              setFormData({ 
+                                ...formData, 
+                                badge: newBadges.length > 0 ? newBadges.join(',') : undefined 
+                              } as any)
+                            }}
+                            className="rounded border-gray-300 text-primary focus:ring-primary"
+                          />
+                          <span className="text-sm">{badge.label}</span>
+                        </label>
+                      )
+                    })}
+                  </div>
+                  <p className="text-xs text-gray-500 mt-2">Leave all unchecked for "Special Pricing" default</p>
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">

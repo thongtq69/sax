@@ -40,13 +40,14 @@ const orderFromEmail = "order@jamessaxcorner.com"
 // Path to email banner image for CID attachment
 const emailBannerPath = path.join(process.cwd(), 'public', 'email-banner.png')
 
-// Email header with CID image - embedded as attachment for reliable display
+// Email header with text-based logo for reliable display
 const getEmailHeader = () => `
-  <table width="100%" cellpadding="0" cellspacing="0" border="0" style="background: linear-gradient(135deg, #1a365d 0%, #2d4a7c 100%); border-radius: 10px 10px 0 0;">
+  <table width="100%" cellpadding="0" cellspacing="0" border="0" style="border-radius: 10px 10px 0 0;">
     <tr>
       <td align="center" style="padding: 30px;">
-        <img src="cid:emailbanner" alt="James Sax Corner" style="max-width: 300px; height: auto; display: block; margin: 0 auto;" />
-        <p style="color: #ffd700; margin: 10px 0 0 0; font-size: 14px;">Premium Saxophones</p>
+        <p style="margin: 0; font-size: 28px; font-weight: bold; color: #1a365d; font-family: Georgia, 'Times New Roman', serif;">
+          🎷 James Sax Corner
+        </p>
       </td>
     </tr>
   </table>
