@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import { useSession } from 'next-auth/react'
 import { useCartStore } from '@/lib/store/cart'
 import { Button } from '@/components/ui/button'
 import { Loader2 } from 'lucide-react'
@@ -62,6 +63,7 @@ interface PayPalStandardButtonProps {
 
 export function PayPalStandardButton({ shippingInfo, shippingCost, onError, disabled }: PayPalStandardButtonProps) {
   const [isLoading, setIsLoading] = useState(false)
+  const { data: session } = useSession()
   const items = useCartStore((state) => state.items)
   const subtotal = useCartStore((state) => state.getSubtotal())
   // Use calculated shipping cost if provided, otherwise 0 (will be handled in PayPal)
@@ -99,6 +101,7 @@ export function PayPalStandardButton({ shippingInfo, shippingCost, onError, disa
           items,
           shippingInfo,
           total,
+          userId: session?.user?.id || null, // Include userId if logged in
         }),
       })
 

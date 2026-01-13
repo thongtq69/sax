@@ -47,10 +47,83 @@ export function ProductDetailClient({ product }: ProductDetailClientProps) {
   const [shippingMessage, setShippingMessage] = useState('')
   const [isCalculatingShipping, setIsCalculatingShipping] = useState(false)
   const [showShareMenu, setShowShareMenu] = useState(false)
+  const [userAddress, setUserAddress] = useState<{ country: string; zip: string } | null>(null)
   const router = useRouter()
   const { data: session } = useSession()
   const addItem = useCartStore((state) => state.addItem)
   const clearCart = useCartStore((state) => state.clearCart)
+
+  // Check if product is sold out
+  const isSoldOut = !product.inStock || (product as any).stockStatus === 'sold-out' || (product as any).stock === 0
+
+  // Fetch user's default address and auto-calculate shipping
+  useEffect(() => {
+    const fetchUserAddress = async () => {
+      if (session?.user) {
+        try {
+          const res = await fetch('/api/user/address')
+          const data = await res.json()
+          if (data.success && data.addresses.length > 0) {
+            const defaultAddr = data.addresses.find((a: any) => a.isDefault) || data.addresses[0]
+            if (defaultAddr) {
+              setUserAddress({ country: defaultAddr.country, zip: defaultAddr.zip })
+              setShippingCountry(defaultAddr.country)
+              // Auto-calculate shipping
+              autoCalculateShipping(defaultAddr.country, defaultAddr.zip)
+            }
+          }
+        } catch (error) {
+          console.error('Error fetching user address:', error)
+        }
+      }
+    }
+    fetchUserAddress()
+  }, [session])
+
+  const autoCalculateShipping = async (country: string, zip: string) => {
+    setIsCalculatingShipping(true)
+    try {
+      // Get country code
+      const countryMap: Record<string, string> = {
+        'Vietnam': 'VN', 'United States': 'US', 'Canada': 'CA', 'United Kingdom': 'GB',
+        'Australia': 'AU', 'Germany': 'DE', 'France': 'FR', 'Japan': 'JP',
+        'South Korea': 'KR', 'Singapore': 'SG', 'Thailand': 'TH', 'Malaysia': 'MY',
+        'Indonesia': 'ID', 'Philippines': 'PH', 'China': 'CN', 'Taiwan': 'TW',
+        'Hong Kong': 'HK', 'India': 'IN'
+      }
+      const countryCode = countryMap[country] || country
+
+      const response = await fetch('/api/shipping/calculate', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          countryCode,
+          items: [{ productId: product.id, quantity: 1, shippingCost: product.shippingCost ?? null }]
+        }),
+      })
+
+      if (response.ok) {
+        const data = await response.json()
+        setShippingCost(data.shippingCost)
+        if (data.shippingCost === 0) {
+          setShippingMessage(`Free shipping to ${country}`)
+        } else {
+          setShippingMessage(`Shipping to ${country}: $${data.shippingCost}`)
+        }
+      } else {
+        // Fallback
+        const isVietnam = country === 'Vietnam'
+        setShippingCost(isVietnam ? 25 : 200)
+        setShippingMessage(isVietnam ? 'Domestic shipping: $25' : 'International shipping: $200')
+      }
+    } catch {
+      const isVietnam = country === 'Vietnam'
+      setShippingCost(isVietnam ? 25 : 200)
+      setShippingMessage(isVietnam ? 'Domestic shipping: $25' : 'International shipping: $200')
+    } finally {
+      setIsCalculatingShipping(false)
+    }
+  }
 
   // Fetch wishlist status when user is logged in
   useEffect(() => {
@@ -111,25 +184,14 @@ export function ProductDetailClient({ product }: ProductDetailClientProps) {
 
   const reviewStats = useMemo(() => getProductRatingStats(product.name), [product.name])
 
-  const calculateShipping = () => {
+  const calculateShipping = async () => {
     if (!shippingCountry) {
       setShippingMessage('Please select a country')
       return
     }
 
     setIsCalculatingShipping(true)
-    setTimeout(() => {
-      // Shipping based on country: Vietnam = $25, International = $200
-      const isVietnam = shippingCountry === 'Vietnam'
-      if (isVietnam) {
-        setShippingCost(25)
-        setShippingMessage('Domestic shipping (Vietnam): $25')
-      } else {
-        setShippingCost(200)
-        setShippingMessage('International shipping: $200')
-      }
-      setIsCalculatingShipping(false)
-    }, 500)
+    await autoCalculateShipping(shippingCountry, '')
   }
   const displayRating = useMemo(() =>
     reviews.length > 0 ? reviewStats.rating : product.rating || 0,
@@ -693,31 +755,106 @@ export function ProductDetailClient({ product }: ProductDetailClientProps) {
 
             {/* Pricing */}
             <div className="p-4 md:p-6 rounded-xl md:rounded-2xl bg-gradient-to-br from-primary/5 to-primary/10 border border-primary/20">
-              <div className="flex items-baseline gap-2 md:gap-3 mb-2 flex-wrap">
-                {!product.inStock ? (
+              {isSoldOut ? (
+                <div className="text-center py-2">
                   <span className="text-3xl md:text-4xl font-bold text-red-500">
-                    SOLD
+                    SOLD OUT
                   </span>
-                ) : (
-                  <>
+                  <p className="text-sm text-gray-500 mt-2">This item is no longer available</p>
+                </div>
+              ) : (
+                <>
+                  <div className="flex items-baseline gap-2 md:gap-3 mb-2 flex-wrap">
                     <span className="text-3xl md:text-4xl font-bold text-primary">
                       ${product.price.toLocaleString()}
                     </span>
-                    {product.shippingCost && product.shippingCost > 0 && (
-                      <span className="text-lg md:text-xl text-blue-600">
-                        Ship: ${product.shippingCost.toLocaleString()}
-                      </span>
-                    )}
-                  </>
-                )}
-              </div>
+                  </div>
 
-              {/* Shipping - Click to calculate */}
-              <div className="mt-2 md:mt-3">
-                <button
-                  onClick={() => setShowShippingCalc(!showShippingCalc)}
-                  className="flex items-center gap-2 text-xs md:text-sm text-primary font-medium hover:text-primary/80 transition-colors"
-                >
+                  {/* Shipping Info - Auto-show if user has address */}
+                  <div className="mt-2 md:mt-3">
+                    {shippingCost !== null && userAddress ? (
+                      <div className="flex items-center gap-2 text-sm">
+                        <Truck className="h-4 w-4 text-primary flex-shrink-0" />
+                        <span className={`font-medium ${shippingCost === 0 ? 'text-green-600' : shippingCost <= 25 ? 'text-green-600' : 'text-amber-600'}`}>
+                          {shippingMessage}
+                        </span>
+                        <button
+                          onClick={() => setShowShippingCalc(!showShippingCalc)}
+                          className="text-xs text-gray-400 hover:text-primary underline"
+                        >
+                          Change
+                        </button>
+                      </div>
+                    ) : (
+                      <button
+                        onClick={() => setShowShippingCalc(!showShippingCalc)}
+                        className="flex items-center gap-2 text-xs md:text-sm text-primary font-medium hover:text-primary/80 transition-colors"
+                      >
+                        <Truck className="h-4 w-4 flex-shrink-0" />
+                        <span>Shipping</span>
+                        <Calculator className="h-3.5 w-3.5" />
+                        <span className="text-gray-400 text-xs">(Click to calculate)</span>
+                      </button>
+                    )}
+
+                    {/* Shipping Calculator Popup */}
+                    {showShippingCalc && (
+                      <div className="mt-3 p-3 bg-white rounded-lg border border-primary/20 shadow-lg animate-fade-in">
+                        <div className="flex items-center gap-2 mb-2">
+                          <MapPin className="h-4 w-4 text-primary" />
+                          <span className="text-sm font-medium text-secondary">Calculate Shipping Cost</span>
+                        </div>
+                        <div className="flex gap-2">
+                          {/* Country Selection */}
+                          <select
+                            value={shippingCountry}
+                            onChange={(e) => setShippingCountry(e.target.value)}
+                            className="flex-1 px-3 py-2 text-sm border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/30 bg-white"
+                          >
+                            <option value="">Select Country</option>
+                            <option value="Vietnam">Vietnam</option>
+                            <option value="United States">United States</option>
+                            <option value="Canada">Canada</option>
+                            <option value="United Kingdom">United Kingdom</option>
+                            <option value="Australia">Australia</option>
+                            <option value="Germany">Germany</option>
+                            <option value="France">France</option>
+                            <option value="Japan">Japan</option>
+                            <option value="South Korea">South Korea</option>
+                            <option value="Singapore">Singapore</option>
+                            <option value="Thailand">Thailand</option>
+                            <option value="Malaysia">Malaysia</option>
+                            <option value="Indonesia">Indonesia</option>
+                            <option value="Philippines">Philippines</option>
+                            <option value="China">China</option>
+                            <option value="Taiwan">Taiwan</option>
+                            <option value="Hong Kong">Hong Kong</option>
+                            <option value="India">India</option>
+                            <option value="Other">Other</option>
+                          </select>
+                          <button
+                            onClick={calculateShipping}
+                            disabled={isCalculatingShipping || !shippingCountry}
+                            className="px-4 py-2 bg-primary text-white text-sm font-medium rounded-lg hover:bg-primary/90 transition-colors disabled:opacity-50"
+                          >
+                            {isCalculatingShipping ? (
+                              <Loader2 className="h-4 w-4 animate-spin" />
+                            ) : (
+                              'Calculate'
+                            )}
+                          </button>
+                        </div>
+                        {shippingMessage && !userAddress && (
+                          <p className={`mt-2 text-sm font-medium ${shippingCost !== null && shippingCost <= 25 ? 'text-green-600' : 'text-amber-600'}`}>
+                            {shippingMessage}
+                          </p>
+                        )}
+                      </div>
+                    )}
+                  </div>
+                </>
+              )}
+            </div>
                   <Truck className="h-4 w-4 flex-shrink-0" />
                   <span>Shipping</span>
                   <Calculator className="h-3.5 w-3.5" />
@@ -782,38 +919,33 @@ export function ProductDetailClient({ product }: ProductDetailClientProps) {
             </div>
 
             {/* Stock Status */}
-            <div className={`flex items-center gap-2 text-xs md:text-sm font-medium ${product.inStock ? 'text-green-600' : 'text-red-600'
-              }`}>
-              {(() => {
-                const stockStatus = (product as any).stockStatus || (product.inStock ? 'in-stock' : 'sold-out')
-                switch (stockStatus) {
-                  case 'in-stock':
-                    return (
-                      <>
-                        <Check className="h-5 w-5" />
-                        <span>In Stock - Ships within 1-2 business days</span>
-                      </>
-                    )
-                  case 'sold-out':
-                    return (
-                      <span className="text-red-600">Sold Out - This item is currently unavailable</span>
-                    )
-                  case 'pre-order':
-                    return (
-                      <span className="text-amber-600">Pre-Order - This item is under maintenance, ready to ship in 7-10 days</span>
-                    )
-                  default:
-                    return product.inStock ? (
-                      <>
-                        <Check className="h-5 w-5" />
-                        <span>In Stock - Ships within 1-2 business days</span>
-                      </>
-                    ) : (
-                      <span>Currently Out of Stock</span>
-                    )
-                }
-              })()}
-            </div>
+            {!isSoldOut && (
+              <div className={`flex items-center gap-2 text-xs md:text-sm font-medium ${product.inStock ? 'text-green-600' : 'text-red-600'}`}>
+                {(() => {
+                  const stockStatus = (product as any).stockStatus || (product.inStock ? 'in-stock' : 'sold-out')
+                  switch (stockStatus) {
+                    case 'in-stock':
+                      return (
+                        <>
+                          <Check className="h-5 w-5" />
+                          <span>In Stock - Ships within 1-2 business days</span>
+                        </>
+                      )
+                    case 'pre-order':
+                      return (
+                        <span className="text-amber-600">Pre-Order - This item is under maintenance, ready to ship in 7-10 days</span>
+                      )
+                    default:
+                      return (
+                        <>
+                          <Check className="h-5 w-5" />
+                          <span>In Stock - Ships within 1-2 business days</span>
+                        </>
+                      )
+                  }
+                })()}
+              </div>
+            )}
 
             {/* Condition Notes for Used Products */}
             {product.productType === 'used' && product.conditionNotes && (
@@ -831,8 +963,13 @@ export function ProductDetailClient({ product }: ProductDetailClientProps) {
               {/* Row 1: Buy Now - Gold/Primary */}
               <Button
                 size="lg"
-                className="w-full text-sm md:text-base font-semibold bg-[#D4AF37] hover:bg-[#c9a432] text-secondary transition-all duration-300 hover:shadow-lg rounded-full h-12"
+                className={`w-full text-sm md:text-base font-semibold transition-all duration-300 rounded-full h-12 ${
+                  isSoldOut 
+                    ? 'bg-gray-300 text-gray-500 cursor-not-allowed' 
+                    : 'bg-[#D4AF37] hover:bg-[#c9a432] text-secondary hover:shadow-lg'
+                }`}
                 onClick={() => {
+                  if (isSoldOut) return
                   // Clear cart first, then add only this product for immediate checkout
                   clearCart()
                   addItem({
@@ -847,23 +984,28 @@ export function ProductDetailClient({ product }: ProductDetailClientProps) {
                   })
                   router.push('/checkout')
                 }}
-                disabled={!product.inStock || isAddingToCart}
+                disabled={isSoldOut || isAddingToCart}
               >
-                Buy it now
+                {isSoldOut ? 'Sold Out' : 'Buy it now'}
               </Button>
 
               {/* Row 2: Add to Cart - Gray */}
               <Button
                 size="lg"
                 variant="outline"
-                className={`w-full text-sm md:text-base font-semibold transition-all duration-300 rounded-full h-12 ${isAddedToCart
-                  ? 'bg-green-500 hover:bg-green-600 text-white border-green-500'
-                  : 'bg-gray-100 hover:bg-[#D4AF37] hover:text-secondary hover:border-[#D4AF37] text-gray-800 border-gray-200'
-                  }`}
+                className={`w-full text-sm md:text-base font-semibold transition-all duration-300 rounded-full h-12 ${
+                  isSoldOut
+                    ? 'bg-gray-100 text-gray-400 border-gray-200 cursor-not-allowed'
+                    : isAddedToCart
+                      ? 'bg-green-500 hover:bg-green-600 text-white border-green-500'
+                      : 'bg-gray-100 hover:bg-[#D4AF37] hover:text-secondary hover:border-[#D4AF37] text-gray-800 border-gray-200'
+                }`}
                 onClick={handleAddToCart}
-                disabled={!product.inStock || isAddingToCart}
+                disabled={isSoldOut || isAddingToCart}
               >
-                {isAddingToCart ? (
+                {isSoldOut ? (
+                  'Not Available'
+                ) : isAddingToCart ? (
                   <span className="flex items-center gap-2">
                     <Loader2 className="h-4 w-4 animate-spin" />
                     Adding...

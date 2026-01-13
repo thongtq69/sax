@@ -8,7 +8,7 @@ export const dynamic = 'force-dynamic'
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json()
-    const { items, shippingInfo, total } = body
+    const { items, shippingInfo, total, userId } = body
 
     if (!items || items.length === 0) {
       return NextResponse.json(
@@ -33,6 +33,8 @@ export async function POST(request: NextRequest) {
         orderNumber,
         status: 'pending',
         total: total,
+        // Link to user if logged in
+        ...(userId && { userId }),
         shippingAddress: shippingInfo ? {
           email: shippingInfo.email,
           firstName: shippingInfo.firstName,

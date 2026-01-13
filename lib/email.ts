@@ -656,3 +656,79 @@ export async function sendEmailChangeVerification(email: string, token: string, 
     attachments: getEmailAttachments(),
   })
 }
+
+
+export async function sendWelcomeEmail(email: string, name?: string) {
+  const html = `
+    <!DOCTYPE html>
+    <html>
+    <head>
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <title>Welcome to James Sax Corner</title>
+    </head>
+    <body style="font-family: Georgia, 'Times New Roman', serif; line-height: 1.8; color: #333; max-width: 600px; margin: 0 auto; padding: 0; background: #ffffff;">
+      ${getEmailHeader()}
+      
+      <div style="padding: 30px 40px;">
+        <p style="margin: 0 0 20px 0; font-size: 16px;">
+          Dear ${name || 'Valued Customer'},
+        </p>
+        
+        <p style="margin: 0 0 25px 0; font-size: 16px;">
+          Welcome to <strong>James Sax Corner</strong>, and thank you for creating an account with us.
+        </p>
+        
+        <p style="margin: 0 0 20px 0; font-size: 16px;">
+          Your account has been successfully set up. You can now:
+        </p>
+        
+        <ul style="margin: 0 0 25px 0; padding-left: 20px; font-size: 15px;">
+          <li style="margin-bottom: 8px;">View and manage your account details</li>
+          <li style="margin-bottom: 8px;">Track orders and shipment updates</li>
+          <li style="margin-bottom: 8px;">Receive important notifications related to your purchases</li>
+        </ul>
+        
+        <p style="margin: 0 0 20px 0; font-size: 16px;">
+          We specialize exclusively in <strong>professional and premium saxophones</strong>, with each instrument carefully inspected and prepared before sale.
+        </p>
+        
+        <p style="margin: 0 0 25px 0; font-size: 16px;">
+          If you have any questions or need assistance, feel free to contact us at any time — we are always happy to help.
+        </p>
+        
+        <div style="text-align: center; margin: 30px 0;">
+          <a href="${baseUrl}/shop" style="background: #1a365d; color: #fff; padding: 15px 30px; text-decoration: none; border-radius: 5px; font-weight: bold; display: inline-block;">
+            Browse Our Collection
+          </a>
+        </div>
+        
+        <p style="margin: 20px 0 0 0; font-size: 16px;">
+          Thank you for your interest and trust.
+        </p>
+        
+        <div style="margin-top: 30px; font-size: 16px;">
+          <p style="margin: 0 0 10px 0;">Kind regards,</p>
+          <p style="margin: 0 0 5px 0; font-weight: bold;">James</p>
+          <p style="margin: 0;">James Sax Corner</p>
+        </div>
+        
+        <hr style="border: none; border-top: 1px solid #ddd; margin: 40px 0 20px 0;">
+        
+        <p style="color: #888; font-size: 12px; text-align: center; margin: 0;">
+          © ${new Date().getFullYear()} James Sax Corner. All rights reserved.<br>
+          Hanoi, Vietnam
+        </p>
+      </div>
+    </body>
+    </html>
+  `
+
+  await transporter.sendMail({
+    from: `"James Sax Corner" <${fromEmail}>`,
+    to: email,
+    subject: "Welcome to James Sax Corner",
+    html,
+    attachments: getEmailAttachments(),
+  })
+}

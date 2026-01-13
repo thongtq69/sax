@@ -121,15 +121,6 @@ function SuccessContent() {
           </div>
         )}
 
-        {/* Info Cards */}
-        <div className="mb-8">
-          <div className="p-4 bg-blue-50 border border-blue-100 rounded-lg">
-            <Mail className="h-6 w-6 text-blue-500 mx-auto mb-2" />
-            <p className="text-sm font-medium text-blue-700">Confirmation Email</p>
-            <p className="text-xs text-blue-600">Sent to your email</p>
-          </div>
-        </div>
-
         {/* Actions */}
         <div className="space-y-3">
           <Button asChild className="w-full h-12">

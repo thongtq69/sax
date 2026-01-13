@@ -28,7 +28,7 @@ async function getAccessToken() {
 
 export async function POST(request: NextRequest) {
   try {
-    const { orderID, items, shippingInfo, shippingCost } = await request.json()
+    const { orderID, items, shippingInfo, shippingCost, userId } = await request.json()
 
     const accessToken = await getAccessToken()
 
@@ -103,6 +103,8 @@ export async function POST(request: NextRequest) {
         orderNumber,
         status: 'paid',
         total: total,
+        // Link to user if logged in
+        ...(userId && { userId }),
         shippingAddress: finalShippingAddress,
         billingAddress: {
           paypalOrderId: captureData.id,
