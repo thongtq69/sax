@@ -166,7 +166,7 @@ export function ProductCard({ product, index = 0 }: ProductCardProps) {
                 className={`shadow-lg transform transition-all duration-300 hover:scale-105 ${badge === 'sale' ? 'animate-pulse-soft' : ''} ${badge === 'rare' ? 'animate-border-glow' : ''}`}
               >
                 {badge === 'new' && '✨ New Arrival'}
-                {badge === 'sale' && '🔥 On Sale'}
+                {badge === 'sale' && '🔥 Special Pricing'}
                 {badge === 'rare' && '⭐ Limited'}
                 {badge === 'coming-soon' && '🔜 Arriving Soon'}
                 {badge === 'premium' && '👑 Premium'}

@@ -859,7 +859,7 @@ export default function ProductsManagement() {
                   <div className="grid grid-cols-2 gap-2">
                     {[
                       { value: 'new', label: '🆕 New Arrival' },
-                      { value: 'sale', label: '🔥 Sale' },
+                      { value: 'sale', label: '🔥 Special Pricing' },
                       { value: 'rare', label: '⭐ Limited Availability' },
                       { value: 'coming-soon', label: '🔜 Arriving Soon' },
                       { value: 'premium', label: '👑 Premium Selection' },

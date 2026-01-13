@@ -10,7 +10,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
-import { Search, ShoppingCart, Package, Truck, CheckCircle, Loader2, Eye, RefreshCw, Trash2 } from 'lucide-react'
+import { Search, ShoppingCart, Package, Truck, CheckCircle, Loader2, RefreshCw, Trash2 } from 'lucide-react'
 import {
   Dialog,
   DialogContent,
@@ -260,7 +260,11 @@ export default function OrdersManagement() {
               </thead>
               <tbody className="bg-white divide-y divide-gray-200">
                 {orders.map((order) => (
-                  <tr key={order.id} className="hover:bg-gray-50">
+                  <tr 
+                    key={order.id} 
+                    className="hover:bg-gray-50 cursor-pointer"
+                    onClick={() => setSelectedOrder(order)}
+                  >
                     <td className="px-6 py-4 whitespace-nowrap text-sm font-mono text-gray-900">
                       #{order.orderNumber || order.id.slice(-8)}
                     </td>
@@ -285,7 +289,7 @@ export default function OrdersManagement() {
                     <td className="px-6 py-4 whitespace-nowrap text-sm font-semibold text-gray-900">
                       ${order.total.toLocaleString()}
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
+                    <td className="px-6 py-4 whitespace-nowrap" onClick={(e) => e.stopPropagation()}>
                       <Select
                         value={order.status}
                         onValueChange={(value) => updateOrderStatus(order.id, value)}
@@ -303,27 +307,16 @@ export default function OrdersManagement() {
                         </SelectContent>
                       </Select>
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                      <div className="flex items-center justify-end gap-2">
-                        <Button 
-                          variant="outline" 
-                          size="sm"
-                          onClick={() => setSelectedOrder(order)}
-                          className="gap-1"
-                        >
-                          <Eye className="h-4 w-4" />
-                          View
-                        </Button>
-                        <Button 
-                          variant="outline" 
-                          size="sm"
-                          onClick={() => deleteOrder(order.id)}
-                          disabled={updating === order.id}
-                          className="gap-1 text-red-600 hover:text-red-700 hover:bg-red-50 border-red-200"
-                        >
-                          <Trash2 className="h-4 w-4" />
-                        </Button>
-                      </div>
+                    <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium" onClick={(e) => e.stopPropagation()}>
+                      <Button 
+                        variant="outline" 
+                        size="sm"
+                        onClick={() => deleteOrder(order.id)}
+                        disabled={updating === order.id}
+                        className="gap-1 text-red-600 hover:text-red-700 hover:bg-red-50 border-red-200"
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
                     </td>
                   </tr>
                 ))}
@@ -509,7 +502,12 @@ export default function OrdersManagement() {
                         )}
                       </>
                     ) : (
-                      <p className="text-gray-400 italic">No payment info</p>
+                      <div className="flex items-center gap-2 text-blue-600">
+                        <svg className="h-5 w-5" viewBox="0 0 24 24" fill="currentColor">
+                          <path d="M7.076 21.337H2.47a.641.641 0 0 1-.633-.74L4.944 3.72a.77.77 0 0 1 .757-.629h6.724c2.231 0 3.957.459 5.03 1.339 1.137.934 1.553 2.392 1.268 4.453-.026.188-.06.384-.102.587-.5 2.393-1.596 4.243-3.26 5.502-1.594 1.207-3.65 1.82-6.11 1.82H7.787a.77.77 0 0 0-.757.629l-.954 4.916z"/>
+                        </svg>
+                        <span className="font-medium">PayPal</span>
+                      </div>
                     )}
                   </div>
                 </div>
