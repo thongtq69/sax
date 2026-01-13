@@ -176,24 +176,20 @@ export function ProductCard({ product, index = 0 }: ProductCardProps) {
                 className={`shadow-lg transform transition-all duration-300 hover:scale-105 ${product.badge === 'sale' ? 'animate-pulse-soft' : ''
                   } ${product.badge === 'rare' ? 'animate-border-glow' : ''}`}
               >
-                {product.badge === 'new' && '✨ New'}
+                {product.badge === 'new' && '✨ New Arrival'}
                 {product.badge === 'sale' && `🔥 Save $${savings.toFixed(0)}`}
-                {product.badge === 'rare' && '⭐ Rare'}
-                {product.badge === 'coming-soon' && '🎵 Coming Soon'}
+                {product.badge === 'rare' && '⭐ Limited'}
+                {product.badge === 'coming-soon' && '🔜 Arriving Soon'}
+                {product.badge === 'premium' && '👑 Premium'}
+                {product.badge === 'top-tier' && '🏆 Top-Tier'}
                 {product.badge === 'out-of-stock' && 'Out of Stock'}
               </Badge>
             )}
-            {product.stock && product.stock <= 2 && product.inStock && (
-              <Badge variant="destructive" className="stock-warning shadow-lg text-xs">
-                Only {product.stock} left!
+            {/* Stock badge - only show for new products */}
+            {product.badge === 'new' && product.stock && product.stock > 0 && product.inStock && (
+              <Badge variant="secondary" className="shadow-lg text-xs bg-white/90 text-gray-700">
+                Stock: {product.stock}
               </Badge>
-            )}
-            {/* Condition badge for used products */}
-            {product.productType === 'used' && product.condition && (
-              <ConditionTooltip
-                condition={product.condition as ConditionRating}
-                className="shadow-lg"
-              />
             )}
           </div>
 

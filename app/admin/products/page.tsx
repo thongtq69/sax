@@ -452,11 +452,13 @@ export default function ProductsManagement() {
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="all">All Badges</SelectItem>
-              <SelectItem value="none">Low Price</SelectItem>
-              <SelectItem value="new">New</SelectItem>
+              <SelectItem value="none">Special Pricing</SelectItem>
+              <SelectItem value="new">New Arrival</SelectItem>
               <SelectItem value="sale">Sale</SelectItem>
-              <SelectItem value="rare">Rare</SelectItem>
-              <SelectItem value="coming-soon">Coming Soon</SelectItem>
+              <SelectItem value="rare">Limited Availability</SelectItem>
+              <SelectItem value="coming-soon">Arriving Soon</SelectItem>
+              <SelectItem value="premium">Premium Selection</SelectItem>
+              <SelectItem value="top-tier">Top-Tier</SelectItem>
             </SelectContent>
           </Select>
 
@@ -858,14 +860,16 @@ export default function ProductsManagement() {
                     onValueChange={(value) => setFormData({ ...formData, badge: value === 'none' ? undefined : value as any })}
                   >
                     <SelectTrigger>
-                      <SelectValue placeholder="Low Price" />
+                      <SelectValue placeholder="Special Pricing" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="none">💰 Low Price</SelectItem>
-                      <SelectItem value="new">🆕 New</SelectItem>
+                      <SelectItem value="none">💰 Special Pricing</SelectItem>
+                      <SelectItem value="new">🆕 New Arrival</SelectItem>
                       <SelectItem value="sale">🔥 Sale</SelectItem>
-                      <SelectItem value="rare">⭐ Rare</SelectItem>
-                      <SelectItem value="coming-soon">🔜 Coming Soon</SelectItem>
+                      <SelectItem value="rare">⭐ Limited Availability</SelectItem>
+                      <SelectItem value="coming-soon">🔜 Arriving Soon</SelectItem>
+                      <SelectItem value="premium">👑 Premium Selection</SelectItem>
+                      <SelectItem value="top-tier">🏆 Top-Tier</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
@@ -1040,72 +1044,79 @@ export default function ProductsManagement() {
                   Product Specifications
                 </label>
                 <p className="text-sm text-gray-500 mb-4">
-                  Select specification keys from the list or add new ones
+                  All specification fields are shown below. Fill in the values as needed.
                 </p>
                 <div className="space-y-3">
-                  {Object.entries(formData.specs || {}).map(([key, value], index) => (
-                    <div key={index} className="flex gap-2 items-center">
-                      {/* Spec Key Dropdown */}
-                      <Select
-                        value={key}
-                        onValueChange={(newKey) => {
-                          const newSpecs = { ...formData.specs }
-                          const oldValue = newSpecs[key]
-                          delete newSpecs[key]
-                          if (newKey) {
-                            newSpecs[newKey] = oldValue
-                          }
-                          setFormData({ ...formData, specs: newSpecs })
-                        }}
-                      >
-                        <SelectTrigger className="flex-1">
-                          <SelectValue placeholder="Select spec key" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {specKeys.map((specKey) => (
-                            <SelectItem key={specKey.id} value={specKey.name}>
-                              {specKey.name}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
+                  {/* Auto-populate all spec keys */}
+                  {specKeys.map((specKey) => (
+                    <div key={specKey.id} className="flex gap-2 items-center">
+                      <div className="flex-1 px-3 py-2 bg-gray-50 border border-gray-200 rounded-md text-sm font-medium text-gray-700">
+                        {specKey.name}
+                      </div>
                       <Input
-                        value={value as string}
+                        value={(formData.specs?.[specKey.name] as string) || ''}
                         onChange={(e) => {
-                          const newSpecs = { ...formData.specs, [key]: e.target.value }
+                          const newSpecs = { ...formData.specs, [specKey.name]: e.target.value }
                           setFormData({ ...formData, specs: newSpecs })
                         }}
-                        placeholder="Value (e.g., Brass)"
+                        placeholder={`Enter ${specKey.name.toLowerCase()}...`}
                         className="flex-1"
                       />
-                      <Button
-                        type="button"
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => {
-                          const newSpecs = { ...formData.specs }
-                          delete newSpecs[key]
-                          setFormData({ ...formData, specs: newSpecs })
-                        }}
-                        className="text-red-500 hover:text-red-700 hover:bg-red-50 px-2"
-                      >
-                        <Trash2 className="h-4 w-4" />
-                      </Button>
                     </div>
                   ))}
-                  <Button
-                    type="button"
-                    variant="outline"
-                    size="sm"
-                    onClick={() => {
-                      const newSpecs = { ...formData.specs, '': '' }
-                      setFormData({ ...formData, specs: newSpecs })
-                    }}
-                    className="w-full"
-                  >
-                    <Plus className="h-4 w-4 mr-2" />
-                    Add Specification
-                  </Button>
+                  
+                  {/* Show any custom specs that are not in specKeys */}
+                  {Object.entries(formData.specs || {})
+                    .filter(([key]) => !specKeys.some(sk => sk.name === key))
+                    .map(([key, value], index) => (
+                      <div key={`custom-${index}`} className="flex gap-2 items-center">
+                        <Select
+                          value={key}
+                          onValueChange={(newKey) => {
+                            const newSpecs = { ...formData.specs }
+                            const oldValue = newSpecs[key]
+                            delete newSpecs[key]
+                            if (newKey) {
+                              newSpecs[newKey] = oldValue
+                            }
+                            setFormData({ ...formData, specs: newSpecs })
+                          }}
+                        >
+                          <SelectTrigger className="flex-1">
+                            <SelectValue placeholder="Select spec key" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {specKeys.map((specKey) => (
+                              <SelectItem key={specKey.id} value={specKey.name}>
+                                {specKey.name}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                        <Input
+                          value={value as string}
+                          onChange={(e) => {
+                            const newSpecs = { ...formData.specs, [key]: e.target.value }
+                            setFormData({ ...formData, specs: newSpecs })
+                          }}
+                          placeholder="Value"
+                          className="flex-1"
+                        />
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => {
+                            const newSpecs = { ...formData.specs }
+                            delete newSpecs[key]
+                            setFormData({ ...formData, specs: newSpecs })
+                          }}
+                          className="text-red-500 hover:text-red-700 hover:bg-red-50 px-2"
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      </div>
+                    ))}
                 </div>
 
                 {/* Add New Spec Key */}

@@ -38,7 +38,7 @@ const fromEmail = process.env.EMAIL_FROM || "noreply@jamessaxcorner.com"
 const orderFromEmail = "order@jamessaxcorner.com"
 
 // Path to email banner image for CID attachment
-const emailLogoPath = path.join(process.cwd(), 'public', 'jsc-logo-white.svg')
+const emailLogoPath = path.join(process.cwd(), 'public', 'email-logo-fixed.png')
 
 // Email header with CID image - embedded as attachment for reliable display
 const getEmailHeader = () => `
@@ -55,7 +55,7 @@ const getEmailHeader = () => `
 // Common attachments for all emails
 const getEmailAttachments = () => [
   {
-    filename: 'logo.svg',
+    filename: 'logo.png',
     path: emailLogoPath,
     cid: 'emaillogo' // This CID is referenced in the HTML as src="cid:emaillogo"
   }

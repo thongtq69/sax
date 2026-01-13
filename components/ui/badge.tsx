@@ -20,6 +20,8 @@ const badgeVariants = cva(
         rare: "border-transparent bg-teal-500 text-white",
         "coming-soon": "border-transparent bg-gray-500 text-white",
         "out-of-stock": "border-transparent bg-red-500 text-white",
+        premium: "border-transparent bg-purple-600 text-white",
+        "top-tier": "border-transparent bg-amber-600 text-white",
       },
     },
     defaultVariants: {
