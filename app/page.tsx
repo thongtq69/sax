@@ -48,7 +48,7 @@ export default function HomePage() {
     'student-instruments': 'STUDENT INSTRUMENTS',
   })
   const [collectionBackgrounds, setCollectionBackgrounds] = useState<Record<string, string>>({})
-  
+
   // Hero content from admin
   const [heroContent, setHeroContent] = useState({
     image: '/homepage3.png',
@@ -56,7 +56,7 @@ export default function HomePage() {
     buttonText: 'Shop now!',
     buttonLink: '/shop',
   })
-  
+
   const [allProducts, setAllProducts] = useState<Product[]>([])
   const [categories, setCategories] = useState<any[]>([])
   const [categoryCounts, setCategoryCounts] = useState<Record<string, number>>({})
@@ -263,7 +263,7 @@ export default function HomePage() {
         <section className="relative overflow-hidden">
           {/* Title section - no background */}
           <div className="bg-white">
-            <div className="container mx-auto px-4 py-3 sm:py-4">
+            <div className="container mx-auto px-4 pt-1 pb-0">
               <div className="flex items-center justify-center gap-3">
                 <div className="flex-1 h-px bg-primary/30" />
                 <span className="text-2xl sm:text-3xl text-primary">♪</span>
@@ -292,7 +292,7 @@ export default function HomePage() {
         <section className="relative overflow-hidden">
           {/* Title section - no background */}
           <div className="bg-white">
-            <div className="container mx-auto px-4 py-3 sm:py-4">
+            <div className="container mx-auto px-4 pt-1 pb-0">
               <div className="flex items-center justify-center gap-3">
                 <div className="flex-1 h-px bg-primary/30" />
                 <span className="text-2xl sm:text-3xl text-primary">♫</span>
@@ -322,7 +322,7 @@ export default function HomePage() {
         <section className="relative overflow-hidden">
           {/* Title section - no background */}
           <div className="bg-white">
-            <div className="container mx-auto px-4 py-3 sm:py-4">
+            <div className="container mx-auto px-4 pt-1 pb-0">
               <div className="flex items-center justify-center gap-3">
                 <div className="flex-1 h-px bg-red-400/30" />
                 <span className="text-2xl sm:text-3xl text-red-500">🔥</span>
@@ -352,7 +352,7 @@ export default function HomePage() {
         <section className="relative overflow-hidden">
           {/* Title section - no background */}
           <div className="bg-white">
-            <div className="container mx-auto px-4 py-3 sm:py-4">
+            <div className="container mx-auto px-4 pt-1 pb-0">
               <div className="flex items-center justify-center gap-3">
                 <div className="flex-1 h-px bg-primary/30" />
                 <span className="text-2xl sm:text-3xl text-primary">🎵</span>
@@ -382,7 +382,7 @@ export default function HomePage() {
         <section className="relative overflow-hidden">
           {/* Title section - no background */}
           <div className="bg-white">
-            <div className="container mx-auto px-4 py-3 sm:py-4">
+            <div className="container mx-auto px-4 pt-1 pb-0">
               <div className="flex items-center justify-center gap-3">
                 <div className="flex-1 h-px bg-primary/30" />
                 <span className="text-2xl sm:text-3xl text-primary">🎷</span>
@@ -412,7 +412,7 @@ export default function HomePage() {
         <section className="relative overflow-hidden">
           {/* Title section - no background */}
           <div className="bg-white">
-            <div className="container mx-auto px-4 py-3 sm:py-4">
+            <div className="container mx-auto px-4 pt-1 pb-0">
               <div className="flex items-center justify-center gap-3">
                 <div className="flex-1 h-px bg-primary/30" />
                 <span className="text-2xl sm:text-3xl text-primary">📚</span>
@@ -438,7 +438,7 @@ export default function HomePage() {
       )}
 
       <section className="bg-gradient-to-br from-amber-50/50 via-white to-blue-50/50">
-        <div className="container mx-auto px-4 py-3 sm:py-4">
+        <div className="container mx-auto px-4 pt-1 pb-0">
           <div className="flex items-center justify-center gap-3">
             <div className="flex-1 h-px bg-primary/30" />
             <span className="text-2xl sm:text-3xl text-primary">♬</span>
