@@ -15,7 +15,7 @@ Your Trusted Partner in Music Excellence
 
 ### Subheadline / Description
 ```
-Family-owned specialty music store since [year]. We carefully curate the finest instruments and accessories from leading brands worldwide. Our expert team brings decades of experience to help you find the perfect gear for your musical journey—whether you're a student, educator, or professional performer.
+Premium saxophones, expertly maintained for peak performance. Trusted by musicians worldwide, backed by outstanding reviews. Unmatched customer service—your satisfaction comes first! Buy with confidence!
 ```
 
 ### CTA Buttons

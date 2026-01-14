@@ -7,9 +7,10 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { 
   User, Mail, Calendar, Shield, Edit2, Save, X, 
-  Lock, MapPin, Plus, Trash2, Star, Eye, EyeOff 
+  Lock, MapPin, Plus, Trash2, Star, Eye, EyeOff, LayoutDashboard
 } from 'lucide-react'
 import { countries, getStatesByCountry } from '@/lib/location-data'
+import Link from 'next/link'
 
 interface Address {
   id: string
@@ -283,9 +284,18 @@ export function ProfileContent({ user }: ProfileContentProps) {
           <h2 className="text-xl font-semibold text-gray-900">{user.name || 'User'}</h2>
           <p className="text-gray-600">{user.email}</p>
           {user.role === 'admin' && (
-            <div className="flex items-center mt-2">
-              <Shield className="h-4 w-4 text-blue-600 mr-1" />
-              <span className="text-sm text-blue-600 font-medium">Administrator</span>
+            <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2 mt-2">
+              <div className="flex items-center">
+                <Shield className="h-4 w-4 text-blue-600 mr-1" />
+                <span className="text-sm text-blue-600 font-medium">Administrator</span>
+              </div>
+              <Link 
+                href="/admin" 
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium rounded-md transition-colors"
+              >
+                <LayoutDashboard className="h-4 w-4" />
+                <span>Admin Dashboard</span>
+              </Link>
             </div>
           )}
         </div>

@@ -96,7 +96,7 @@ export async function PATCH(request: NextRequest) {
       )
     }
 
-    const validStatuses = ['pending', 'processing', 'shipped', 'delivered', 'cancelled']
+    const validStatuses = ['pending', 'paid', 'processing', 'shipped', 'delivered', 'cancelled']
     if (!validStatuses.includes(status)) {
       return NextResponse.json(
         { error: 'Trạng thái không hợp lệ', message: `Trạng thái phải là một trong: ${validStatuses.join(', ')}` },
