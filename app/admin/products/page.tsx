@@ -167,7 +167,7 @@ export default function ProductsManagement() {
     }
     
     // Auto-fill SKU
-    if (formData.sku && formData.sku !== 'JSC-') {
+    if (formData.sku && formData.sku.trim() !== '') {
       newSpecs['SKU'] = formData.sku
     }
     
@@ -275,7 +275,7 @@ export default function ProductsManagement() {
         },
         included: [],
         warranty: '',
-        sku: 'JSC-',
+        sku: '',
         rating: 0,
         reviewCount: 0,
       } as any)
@@ -290,8 +290,8 @@ export default function ProductsManagement() {
       alert('Product name is required')
       return
     }
-    if (!formData.sku?.trim() || formData.sku === 'JSC-' || formData.sku.length <= 4) {
-      alert('SKU is required. Please enter a code after JSC-')
+    if (!formData.sku?.trim()) {
+      alert('SKU is required. Please enter a SKU code.')
       return
     }
     if (!formData.brand?.trim()) {
@@ -730,7 +730,19 @@ export default function ProductsManagement() {
                   </label>
                   <Input
                     value={formData.name}
-                    onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                    onChange={(e) => {
+                      const newName = e.target.value
+                      // Auto-generate slug if slug is empty
+                      if (!formData.slug || formData.slug === '') {
+                        const autoSlug = newName
+                          .toLowerCase()
+                          .replace(/\s+/g, '-')
+                          .replace(/[^a-z0-9-]/g, '')
+                        setFormData({ ...formData, name: newName, slug: autoSlug })
+                      } else {
+                        setFormData({ ...formData, name: newName })
+                      }
+                    }}
                     placeholder="Enter product name"
                     className="text-lg"
                   />
@@ -739,21 +751,40 @@ export default function ProductsManagement() {
                   <label className="block text-sm font-medium text-gray-700 mb-2">
                     SKU <span className="text-red-500">*</span>
                   </label>
-                  <div className="flex">
-                    <span className="inline-flex items-center px-3 rounded-l-md border border-r-0 border-gray-300 bg-gray-100 text-gray-600 text-sm font-medium">
-                      JSC-
-                    </span>
+                  <div className="space-y-2">
+                    <div className="flex items-center gap-2">
+                      <label className="flex items-center gap-2 cursor-pointer">
+                        <input
+                          type="checkbox"
+                          checked={formData.sku?.startsWith('JSC-') || false}
+                          onChange={(e) => {
+                            const currentSku = formData.sku || ''
+                            if (e.target.checked) {
+                              // Add JSC- prefix
+                              const skuWithoutPrefix = currentSku.startsWith('JSC-') ? currentSku.slice(4) : currentSku
+                              setFormData({ ...formData, sku: `JSC-${skuWithoutPrefix}` })
+                            } else {
+                              // Remove JSC- prefix
+                              const skuWithoutPrefix = currentSku.startsWith('JSC-') ? currentSku.slice(4) : currentSku
+                              setFormData({ ...formData, sku: skuWithoutPrefix })
+                            }
+                          }}
+                          className="rounded border-gray-300 text-primary focus:ring-primary"
+                        />
+                        <span className="text-sm text-gray-600">Use JSC- prefix</span>
+                      </label>
+                    </div>
                     <Input
-                      value={formData.sku?.startsWith('JSC-') ? formData.sku.slice(4) : formData.sku}
+                      value={formData.sku || ''}
                       onChange={(e) => {
-                        const value = e.target.value.toUpperCase().replace(/[^A-Z0-9-]/g, '')
-                        setFormData({ ...formData, sku: `JSC-${value}` })
+                        const value = e.target.value.toUpperCase()
+                        setFormData({ ...formData, sku: value })
                       }}
-                      placeholder="e.g., A3WIIU"
-                      className="rounded-l-none"
+                      placeholder="e.g., JSC-A3WIIU or A-9910042"
+                      className="font-mono"
                     />
                   </div>
-                  <p className="text-xs text-gray-500 mt-1">SKU will be prefixed with JSC-</p>
+                  <p className="text-xs text-gray-500 mt-1">Enter SKU with or without JSC- prefix</p>
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -843,14 +874,28 @@ export default function ProductsManagement() {
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Slug
+                    Slug (URL Path)
                   </label>
                   <Input
                     value={formData.slug}
-                    onChange={(e) => setFormData({ ...formData, slug: e.target.value })}
-                    placeholder="Auto-generated from name"
+                    onChange={(e) => {
+                      // Auto-format slug: lowercase, replace spaces with hyphens, remove special chars
+                      const formatted = e.target.value
+                        .toLowerCase()
+                        .replace(/\s+/g, '-')
+                        .replace(/[^a-z0-9-]/g, '')
+                      setFormData({ ...formData, slug: formatted })
+                    }}
+                    placeholder="auto-generated-from-product-name"
                   />
-                  <p className="text-xs text-gray-500 mt-1">Leave empty to auto-generate</p>
+                  <p className="text-xs text-gray-500 mt-1">
+                    Leave empty to auto-generate from product name. This will be used in the product URL.
+                  </p>
+                  {(formData.slug || formData.sku) && (
+                    <p className="text-xs text-blue-600 mt-1">
+                      URL: /product/{formData.sku || 'SKU'}-{formData.slug || 'slug'}
+                    </p>
+                  )}
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">

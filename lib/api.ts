@@ -46,11 +46,25 @@ export function extractSkuFromParam(param: string): string {
     return skuParts.join('-')
   }
   
-  // For non-JSC SKUs (like TEST-PRODUCT-10), try to match the SKU pattern
-  // Look for pattern like WORD-WORD-NUMBER at the start
-  const genericMatch = decoded.match(/^([A-Z]+-[A-Z]+-\d+)/i)
-  if (genericMatch) {
-    return genericMatch[1]
+  // For non-JSC SKUs, extract SKU before the slug part
+  // SKU is typically uppercase/numbers, slug is lowercase
+  // Examples: A-9910042-yanagisawa-alto, TEST-123-product-name
+  const parts = decoded.split('-')
+  const skuParts: string[] = []
+  
+  for (let i = 0; i < parts.length; i++) {
+    const part = parts[i]
+    // If part starts with lowercase letter and we already have some SKU parts, it's the start of the slug
+    if (part && /^[a-z]/.test(part) && skuParts.length > 0) {
+      break
+    }
+    // Add part to SKU (could be uppercase, numbers, or mixed case for first part)
+    skuParts.push(part)
+  }
+  
+  // If we found SKU parts, return them joined
+  if (skuParts.length > 0) {
+    return skuParts.join('-')
   }
   
   // Fallback: return the whole param (for old URLs or simple SKUs)
