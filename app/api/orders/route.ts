@@ -104,10 +104,85 @@ export async function PATCH(request: NextRequest) {
       )
     }
 
+    // Get order details before updating (to check previous status)
+    const existingOrder = await prisma.order.findUnique({
+      where: { id },
+      include: {
+        items: true,
+        user: true,
+      },
+    })
+
+    if (!existingOrder) {
+      return NextResponse.json(
+        { error: 'Không tìm thấy đơn hàng', message: 'Đơn hàng với ID này không tồn tại trong hệ thống' },
+        { status: 404 }
+      )
+    }
+
+    // Update order status
     const order = await prisma.order.update({
       where: { id },
       data: { status },
     })
+
+    // Send order confirmation email when status changes to "paid"
+    if (status === 'paid' && existingOrder.status !== 'paid') {
+      try {
+        // Get customer email from multiple sources (priority order)
+        const shippingAddress = existingOrder.shippingAddress as any
+        const customerEmail = existingOrder.user?.email || shippingAddress?.email || null
+
+        if (customerEmail) {
+          // Fetch product details for order items
+          const productIds = existingOrder.items.map(item => item.productId)
+          const products = await prisma.product.findMany({
+            where: { id: { in: productIds } },
+            select: { id: true, name: true, sku: true },
+          })
+          
+          const productMap = new Map(products.map(p => [p.id, p]))
+
+          // Prepare email data
+          const { sendOrderConfirmationEmail } = await import('@/lib/email')
+          
+          await sendOrderConfirmationEmail({
+            orderNumber: existingOrder.orderNumber || existingOrder.id,
+            customerEmail,
+            customerName: shippingAddress?.firstName 
+              ? `${shippingAddress.firstName} ${shippingAddress.lastName || ''}`.trim()
+              : existingOrder.user?.name || 'Valued Customer',
+            items: existingOrder.items.map(item => {
+              const product = productMap.get(item.productId)
+              return {
+                name: product?.name || 'Product',
+                quantity: item.quantity,
+                price: item.price,
+              }
+            }),
+            total: existingOrder.total,
+            shippingAddress: shippingAddress ? {
+              firstName: shippingAddress.firstName || '',
+              lastName: shippingAddress.lastName || '',
+              address1: shippingAddress.address1 || '',
+              address2: shippingAddress.address2 || '',
+              city: shippingAddress.city || '',
+              state: shippingAddress.state || '',
+              zip: shippingAddress.zip || '',
+              country: shippingAddress.country || '',
+              phone: shippingAddress.phone || '',
+            } : undefined,
+          })
+
+          console.log(`✅ Order confirmation email sent to ${customerEmail} for order ${existingOrder.orderNumber || existingOrder.id}`)
+        } else {
+          console.warn(`⚠️ No email found for order ${existingOrder.orderNumber || existingOrder.id}`)
+        }
+      } catch (emailError) {
+        console.error('Error sending order confirmation email:', emailError)
+        // Don't fail the status update if email fails
+      }
+    }
 
     return NextResponse.json(order)
   } catch (error: any) {

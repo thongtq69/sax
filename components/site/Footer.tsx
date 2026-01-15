@@ -4,7 +4,7 @@ import dynamic from 'next/dynamic'
 import { useState } from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
-import { Phone, MapPin, Clock, Music, Heart, Mail, MessageCircle } from 'lucide-react'
+import { Phone, MapPin, Clock, Music, Heart, Mail, MessageCircle, Sparkles, ChevronRight } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { useSiteSettings } from '@/contexts/SiteSettingsContext'
 
@@ -73,6 +73,25 @@ export function Footer() {
 
         {/* Mobile Layout */}
         <div className="lg:hidden">
+          {/* Join Our Musical Community - Mobile (like desktop) */}
+          <div className="flex items-center justify-between gap-2 pb-2 mb-2 border-b border-white/10 bg-gradient-to-r from-primary/80 to-primary -mx-3 px-3 py-1.5">
+            <span className="text-[8px] font-semibold text-white flex items-center gap-0.5 whitespace-nowrap">
+              <Sparkles className="h-2.5 w-2.5" />
+              Join Our Musical Community
+            </span>
+            <div className="flex gap-1 flex-1 max-w-[140px]">
+              <input
+                type="email"
+                placeholder="Enter your email"
+                className="bg-white/20 border border-white/30 placeholder:text-white/60 text-white text-[7px] px-2 py-0.5 rounded flex-1 min-w-0 h-5"
+                readOnly
+              />
+              <Button size="sm" className="bg-secondary hover:bg-secondary/90 text-white px-1.5 text-[7px] h-5 min-w-0">
+                <ChevronRight className="h-2.5 w-2.5" />
+              </Button>
+            </div>
+          </div>
+
           {/* Need Help Section - Mobile (horizontal like desktop) */}
           <div className="flex items-center justify-between gap-2 pb-2 mb-2 border-b border-white/10">
             <span className="text-[9px] font-semibold text-white flex items-center gap-0.5 whitespace-nowrap">
@@ -87,36 +106,36 @@ export function Footer() {
             </Button>
           </div>
 
-          {/* Main Grid - 4 columns like desktop: Hours | Shop | Support | Follow Us */}
-          <div className="grid grid-cols-4 gap-2 text-[8px] mb-2">
+          {/* Main 5-column Grid like desktop: Logo | Hours | Shop | Support | Follow Us */}
+          <div className="grid grid-cols-5 gap-1.5 text-[7px] mb-2">
             {/* Column 1: Logo & Contact */}
-            <div className="col-span-4 flex items-start gap-2 pb-2 mb-1 border-b border-white/10">
-              <div className="border border-[#D4AF37]/50 rounded p-0.5 bg-[#D4AF37]/5 flex-shrink-0">
-                <Image src="/logo.png" alt={settings.companyName} width={60} height={20} className="h-4 w-auto" priority />
+            <div>
+              <div className="border border-[#D4AF37]/50 rounded p-0.5 bg-[#D4AF37]/5 inline-block mb-1">
+                <Image src="/logo.png" alt={settings.companyName} width={50} height={16} className="h-3 w-auto" priority />
               </div>
-              <div className="text-[8px] text-white/70 space-y-0 min-w-0 flex-1">
-                <p className="flex items-center gap-0.5">
-                  <MapPin className="h-2 w-2 text-[#58510D] flex-shrink-0" />
-                  <span className="truncate">{settings.address}</span>
+              <div className="text-white/70 space-y-0 leading-tight">
+                <p className="flex items-start gap-0.5">
+                  <MapPin className="h-2 w-2 text-[#58510D] flex-shrink-0 mt-0.5" />
+                  <span className="break-words">{settings.address}</span>
                 </p>
                 {settings.phone && (
                   <Link href={`https://wa.me/${settings.phone.replace(/[^0-9]/g, '')}`} target="_blank" rel="noopener noreferrer" className="flex items-center gap-0.5 hover:text-white transition-colors">
                     <Phone className="h-2 w-2 text-[#58510D] flex-shrink-0" />
-                    <span>{settings.phone}</span>
+                    <span className="text-[6px]">{settings.phone}</span>
                   </Link>
                 )}
                 {settings.email && (
                   <p className="flex items-center gap-0.5">
                     <Mail className="h-2 w-2 text-[#58510D] flex-shrink-0" />
-                    <span className="truncate">{settings.email}</span>
+                    <span className="text-[6px] break-all">{settings.email}</span>
                   </p>
                 )}
               </div>
             </div>
 
-            {/* Column 1: Hours */}
+            {/* Column 2: Hours */}
             <div>
-              <h4 className="font-semibold text-[9px] mb-0.5 flex items-center gap-0.5 text-white">
+              <h4 className="font-semibold text-[8px] mb-0.5 flex items-center gap-0.5 text-white">
                 <Clock className="h-2 w-2 text-[#D4AF37]" />
                 Hours
               </h4>
@@ -126,9 +145,9 @@ export function Footer() {
               </div>
             </div>
 
-            {/* Column 2: Shop */}
+            {/* Column 3: Shop */}
             <div>
-              <h4 className="font-semibold text-[9px] mb-0.5 flex items-center gap-0.5 text-white">
+              <h4 className="font-semibold text-[8px] mb-0.5 flex items-center gap-0.5 text-white">
                 <Music className="h-2 w-2 text-[#D4AF37]" />
                 Shop
               </h4>
@@ -139,9 +158,9 @@ export function Footer() {
               </div>
             </div>
 
-            {/* Column 3: Support */}
+            {/* Column 4: Support */}
             <div>
-              <h4 className="font-semibold text-[9px] mb-0.5 flex items-center gap-0.5 text-white">
+              <h4 className="font-semibold text-[8px] mb-0.5 flex items-center gap-0.5 text-white">
                 <Heart className="h-2 w-2 text-[#D4AF37]" />
                 Support
               </h4>
@@ -150,42 +169,54 @@ export function Footer() {
                 <p><Link href="/account" className="hover:text-white transition-colors">Account</Link></p>
                 <p><Link href="/blog" className="hover:text-white transition-colors">Blog</Link></p>
                 <p>
-                  <button onClick={() => setShowTestimonials(true)} className="hover:text-white transition-colors">
+                  <button
+                    onClick={() => setShowTestimonials(true)}
+                    className="hover:text-white transition-colors text-left"
+                    style={{
+                      fontSize: 'inherit',
+                      minHeight: 'unset',
+                      minWidth: 'unset',
+                      padding: 0,
+                      background: 'none',
+                      border: 'none',
+                      fontWeight: 'normal'
+                    }}
+                  >
                     Testimonials
                   </button>
                 </p>
               </div>
             </div>
 
-            {/* Column 4: Follow Us */}
+            {/* Column 5: Follow Us */}
             <div>
-              <h4 className="font-semibold text-[9px] mb-0.5 text-white">Follow Us</h4>
+              <h4 className="font-semibold text-[8px] mb-0.5 text-white">Follow Us</h4>
               <div className="flex gap-0.5 mb-1 flex-wrap">
                 {socialLinks.map((social) => (
                   <Link
                     key={social.label}
                     href={social.href || '#'}
                     className="rounded-full bg-white/10 hover:bg-[#D4AF37] flex items-center justify-center text-white hover:text-[#2f3f4f] transition-all"
-                    style={{ width: '14px', height: '14px', minWidth: '14px', minHeight: '14px' }}
+                    style={{ width: '12px', height: '12px', minWidth: '12px', minHeight: '12px' }}
                     target="_blank"
                     rel="noopener noreferrer"
                     aria-label={social.label}
                   >
-                    <social.icon style={{ width: '7px', height: '7px' }} />
+                    <social.icon style={{ width: '6px', height: '6px' }} />
                   </Link>
                 ))}
               </div>
               <div className="flex items-center gap-0.5">
-                <span className="text-[#D4AF37] text-[9px]">★</span>
-                <span className="text-white font-bold text-[9px]">4.9/5</span>
-                <span className="text-white/60 text-[7px]">500+</span>
+                <span className="text-[#D4AF37] text-[8px]">★</span>
+                <span className="text-white font-bold text-[8px]">4.9/5</span>
+                <span className="text-white/60 text-[6px]">500+</span>
               </div>
             </div>
           </div>
 
           {/* Copyright - Mobile */}
           <div className="pt-1.5 border-t border-white/10 text-center">
-            <p className="text-[7px] text-white/50">{settings.copyrightText}</p>
+            <p className="text-[6px] text-white/50">{settings.copyrightText}</p>
           </div>
         </div>
 
