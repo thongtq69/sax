@@ -33,7 +33,7 @@ export async function GET(request: NextRequest) {
           by: ['categoryId'],
           where: {
             ...where,
-            categoryId: { not: null }
+            categoryId: { isSet: true }
           },
           _count: {
             categoryId: true
@@ -43,7 +43,7 @@ export async function GET(request: NextRequest) {
           by: ['subcategoryId'],
           where: {
             ...where,
-            subcategoryId: { not: null }
+            subcategoryId: { isSet: true }
           },
           _count: {
             subcategoryId: true

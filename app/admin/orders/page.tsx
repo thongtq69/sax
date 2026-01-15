@@ -535,17 +535,37 @@ export default function OrdersManagement() {
 
               {/* Total */}
               <div className="pt-4 border-t space-y-2">
+                {/* Customer Paid (Full Amount) */}
                 <div className="flex justify-between items-center">
-                  <span className="text-lg font-semibold">Total</span>
-                  <span className="text-2xl font-bold text-primary">${selectedOrder.total.toLocaleString()}</span>
+                  <span className="text-sm font-medium text-gray-600">Customer Paid</span>
+                  <span className="text-lg font-semibold text-gray-900">${selectedOrder.total.toLocaleString()}</span>
                 </div>
                 
-                {/* Net Amount (Actual Received) */}
+                {/* Net Amount (After deducting shipping) */}
+                <div className="bg-green-50 p-3 rounded-lg">
+                  <div className="flex justify-between items-center">
+                    <span className="text-sm font-medium text-green-800">💰 Net Amount (Product Value)</span>
+                    <span className="text-2xl font-bold text-green-600">
+                      ${(() => {
+                        // Calculate product subtotal
+                        const subtotal = selectedOrder.items.reduce((sum: number, item: any) => 
+                          sum + (item.price * item.quantity), 0
+                        )
+                        return subtotal.toLocaleString()
+                      })()}
+                    </span>
+                  </div>
+                  <p className="text-xs text-green-600 mt-1">
+                    Product value only (shipping excluded)
+                  </p>
+                </div>
+                
+                {/* PayPal Net Amount (if available) */}
                 {selectedOrder.billingAddress?.mcGross && (
-                  <div className="bg-green-50 p-3 rounded-lg">
+                  <div className="bg-blue-50 p-3 rounded-lg mt-2">
                     <div className="flex justify-between items-center">
-                      <span className="text-sm font-medium text-green-800">💰 Net Amount (Actual Received)</span>
-                      <span className="text-xl font-bold text-green-600">
+                      <span className="text-sm font-medium text-blue-800">💳 PayPal Net (After Fees)</span>
+                      <span className="text-xl font-bold text-blue-600">
                         ${(() => {
                           const gross = Math.abs(parseFloat(selectedOrder.billingAddress?.mcGross || '0'))
                           const fee = Math.abs(parseFloat(selectedOrder.billingAddress?.mcFee || '0'))
@@ -556,7 +576,7 @@ export default function OrdersManagement() {
                         })()}
                       </span>
                     </div>
-                    <p className="text-xs text-green-600 mt-1">
+                    <p className="text-xs text-blue-600 mt-1">
                       = ${Math.abs(parseFloat(selectedOrder.billingAddress.mcGross || '0')).toFixed(2)} (Gross) 
                       - ${Math.abs(parseFloat(selectedOrder.billingAddress.mcFee || '0')).toFixed(2)} (PayPal Fee)
                       - ${Math.abs(parseFloat(selectedOrder.billingAddress.mcShipping || '0')).toFixed(2)} (Shipping)

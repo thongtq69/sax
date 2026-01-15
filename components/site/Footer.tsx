@@ -73,34 +73,34 @@ export function Footer() {
 
         {/* Mobile Layout */}
         <div className="lg:hidden">
-          {/* Join Our Musical Community - Mobile (like desktop) */}
-          <div className="flex items-center justify-between gap-2 pb-2 mb-2 border-b border-white/10 bg-gradient-to-r from-primary/80 to-primary -mx-3 px-3 py-1.5">
-            <span className="text-[8px] font-semibold text-white flex items-center gap-0.5 whitespace-nowrap">
-              <Sparkles className="h-2.5 w-2.5" />
+          {/* Join Our Musical Community - Mobile (ultra compact) */}
+          <div className="flex items-center justify-between gap-1 bg-gradient-to-r from-primary/80 to-primary -mx-3 px-2 py-0.5">
+            <span className="text-[6px] font-semibold text-white flex items-center gap-0.5 whitespace-nowrap">
+              <Sparkles className="h-1.5 w-1.5" />
               Join Our Musical Community
             </span>
-            <div className="flex gap-1 flex-1 max-w-[140px]">
+            <div className="flex gap-0.5 flex-1 max-w-[25px]">
               <input
                 type="email"
                 placeholder="Enter your email"
-                className="bg-white/20 border border-white/30 placeholder:text-white/60 text-white text-[7px] px-2 py-0.5 rounded flex-1 min-w-0 h-5"
+                className="bg-white/20 border border-white/30 placeholder:text-white/60 text-white text-[5px] px-1 py-px rounded flex-1 min-w-0 h-3"
                 readOnly
               />
-              <Button size="sm" className="bg-secondary hover:bg-secondary/90 text-white px-1.5 text-[7px] h-5 min-w-0">
-                <ChevronRight className="h-2.5 w-2.5" />
+              <Button size="sm" className="bg-secondary hover:bg-secondary/90 text-white px-0.5 text-[5px] h-3 min-w-0">
+                <ChevronRight className="h-1.5 w-1.5" />
               </Button>
             </div>
           </div>
 
-          {/* Need Help Section - Mobile (horizontal like desktop) */}
-          <div className="flex items-center justify-between gap-2 pb-2 mb-2 border-b border-white/10">
-            <span className="text-[9px] font-semibold text-white flex items-center gap-0.5 whitespace-nowrap">
+          {/* Need Help Section - Mobile (ultra compact) */}
+          <div className="flex items-center justify-between gap-1 -mx-3 px-2 py-0.5 bg-[#2f3f4f] border-b border-white/10">
+            <span className="text-[6px] font-semibold text-white flex items-center gap-0.5 whitespace-nowrap">
               <span className="text-[#D4AF37]">★</span>
               Need Help Choosing?
             </span>
-            <Button size="sm" className="bg-[#D4AF37] hover:bg-[#c9a432] text-[#2f3f4f] font-semibold text-[8px] px-2 h-5" asChild>
+            <Button size="sm" className="bg-[#D4AF37] hover:bg-[#c9a432] text-[#2f3f4f] font-semibold text-[5px] px-1 h-3" asChild>
               <Link href="/inquiry">
-                <MessageCircle className="mr-0.5 h-2.5 w-2.5" />
+                <MessageCircle className="mr-0.5 h-1.5 w-1.5" />
                 Ask Now
               </Link>
             </Button>
@@ -116,7 +116,7 @@ export function Footer() {
               <div className="text-white/70 space-y-0 leading-tight">
                 <p className="flex items-start gap-0.5">
                   <MapPin className="h-2 w-2 text-[#58510D] flex-shrink-0 mt-0.5" />
-                  <span className="break-words">{settings.address}</span>
+                  <span className="break-words text-[6px]">{settings.address}</span>
                 </p>
                 {settings.phone && (
                   <Link href={`https://wa.me/${settings.phone.replace(/[^0-9]/g, '')}`} target="_blank" rel="noopener noreferrer" className="flex items-center gap-0.5 hover:text-white transition-colors">
@@ -139,7 +139,7 @@ export function Footer() {
                 <Clock className="h-2 w-2 text-[#D4AF37]" />
                 Hours
               </h4>
-              <div className="text-white/70 space-y-0 leading-tight">
+              <div className="text-white/70 space-y-0 leading-tight text-[6px]">
                 <p>{settings.workingHours}</p>
                 <p>Always Open</p>
               </div>
@@ -151,7 +151,7 @@ export function Footer() {
                 <Music className="h-2 w-2 text-[#D4AF37]" />
                 Shop
               </h4>
-              <div className="text-white/70 space-y-0 leading-tight">
+              <div className="text-white/70 space-y-0 leading-tight text-[6px]">
                 <p><Link href="/shop" className="hover:text-white transition-colors">All Instruments</Link></p>
                 <p><Link href="/cart" className="hover:text-white transition-colors">Cart</Link></p>
                 <p><Link href="/checkout" className="hover:text-white transition-colors">Checkout</Link></p>
@@ -164,7 +164,7 @@ export function Footer() {
                 <Heart className="h-2 w-2 text-[#D4AF37]" />
                 Support
               </h4>
-              <div className="text-white/70 space-y-0 leading-tight">
+              <div className="text-white/70 space-y-0 leading-tight text-[6px]">
                 <p><Link href="/inquiry" className="hover:text-white transition-colors">Inquiry</Link></p>
                 <p><Link href="/account" className="hover:text-white transition-colors">Account</Link></p>
                 <p><Link href="/blog" className="hover:text-white transition-colors">Blog</Link></p>
