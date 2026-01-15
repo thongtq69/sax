@@ -60,10 +60,10 @@ export function ProductDetailClient({ product }: ProductDetailClientProps) {
   useEffect(() => {
     const fetchUserAddress = async () => {
       console.log('Session status:', status, 'User:', session?.user) // Debug
-      
+
       // Wait for session to be loaded
       if (status === 'loading') return
-      
+
       if (session?.user?.id) {
         try {
           console.log('Fetching address for user:', session.user.id) // Debug
@@ -488,11 +488,11 @@ export function ProductDetailClient({ product }: ProductDetailClientProps) {
   }
 
   return (
-    <div className="relative">
+    <div className="relative flex flex-col">
 
       {/* Navigation Buttons - Next/Previous */}
       {(navigationProducts.prev || navigationProducts.next) && (
-        <div className="mb-4 md:mb-6 flex items-center justify-between gap-4 animate-fade-in">
+        <div className="mb-0 mt-4 md:mt-0 md:mb-6 flex items-center justify-between gap-4 animate-fade-in order-2 md:order-none">
           {navigationProducts.prev ? (
             <Button
               variant="outline"
@@ -523,10 +523,10 @@ export function ProductDetailClient({ product }: ProductDetailClientProps) {
         </div>
       )}
 
-      <div className="bg-white rounded-2xl border shadow-sm">
+      <div className="bg-white rounded-2xl border shadow-sm order-1 md:order-none">
         <div className="flex flex-col lg:grid lg:grid-cols-10 lg:items-start">
           {/* Image Gallery */}
-          <div className="animate-fade-in-left lg:col-span-6 p-4 md:p-6">
+          <div className="animate-fade-in-left lg:col-span-6 p-3 md:p-6">
             {/* Main Display - Video or Image */}
             <div className="relative aspect-[4/3] sm:aspect-[4/5] md:aspect-[4/5] lg:aspect-[4/5] overflow-hidden rounded-xl md:rounded-2xl border-2 border-gray-100 bg-gradient-to-br from-gray-50 to-gray-100 group">
               {showVideo && videoIds[currentVideoIndex] ? (
@@ -911,11 +911,10 @@ export function ProductDetailClient({ product }: ProductDetailClientProps) {
               {/* Row 1: Buy Now - Gold/Primary */}
               <Button
                 size="lg"
-                className={`w-full text-sm md:text-base font-semibold transition-all duration-300 rounded-full h-12 ${
-                  isSoldOut 
-                    ? 'bg-gray-300 text-gray-500 cursor-not-allowed' 
+                className={`w-full text-sm md:text-base font-semibold transition-all duration-300 rounded-full h-12 ${isSoldOut
+                    ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
                     : 'bg-[#D4AF37] hover:bg-[#c9a432] text-secondary hover:shadow-lg'
-                }`}
+                  }`}
                 onClick={() => {
                   if (isSoldOut) return
                   // Clear cart first, then add only this product for immediate checkout
@@ -941,13 +940,12 @@ export function ProductDetailClient({ product }: ProductDetailClientProps) {
               <Button
                 size="lg"
                 variant="outline"
-                className={`w-full text-sm md:text-base font-semibold transition-all duration-300 rounded-full h-12 ${
-                  isSoldOut
+                className={`w-full text-sm md:text-base font-semibold transition-all duration-300 rounded-full h-12 ${isSoldOut
                     ? 'bg-gray-100 text-gray-400 border-gray-200 cursor-not-allowed'
                     : isAddedToCart
                       ? 'bg-green-500 hover:bg-green-600 text-white border-green-500'
                       : 'bg-gray-100 hover:bg-[#D4AF37] hover:text-secondary hover:border-[#D4AF37] text-gray-800 border-gray-200'
-                }`}
+                  }`}
                 onClick={handleAddToCart}
                 disabled={isSoldOut || isAddingToCart}
               >

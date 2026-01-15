@@ -52,11 +52,11 @@ function ShopPageContent() {
           getProducts({ limit: 200 }), // Reduced from 1000 - enough for initial display and filtering
           getCategories(),
         ])
-        
+
         const transformedProducts = productsResponse.products.map(transformProduct)
         const transformedCategories = categoriesData.map(transformCategory)
         const maxPrice = transformedProducts.length ? Math.max(...transformedProducts.map((p) => p.price)) : 0
-        
+
         setProducts(transformedProducts)
         setCategories(transformedCategories)
         setPriceRange((prev) => {
@@ -342,45 +342,45 @@ function ShopPageContent() {
             filter: 'invert(1)',
           }} />
         </div>
-        
+
         {/* Gradient overlay for depth */}
         <div className="absolute inset-0 bg-gradient-to-r from-secondary/50 via-transparent to-secondary/50" />
-        
+
         {/* Decorative circles */}
         <div className="absolute -top-20 -right-20 w-64 h-64 bg-primary/10 rounded-full blur-3xl" />
         <div className="absolute -bottom-20 -left-20 w-64 h-64 bg-primary/10 rounded-full blur-3xl" />
-        
-        <div className="container mx-auto px-4 py-6 md:py-8 relative">
+
+        <div className="container mx-auto px-4 py-3 md:py-8 relative">
           <div className="text-center animate-fade-in-up">
             {/* Decorative element */}
-            <div className="flex items-center justify-center gap-3 mb-2">
-              <div className="h-px w-12 md:w-16 bg-gradient-to-r from-transparent via-primary to-primary" />
-              <Music className="h-5 w-5 md:h-6 md:w-6 text-primary" />
-              <div className="h-px w-12 md:w-16 bg-gradient-to-l from-transparent via-primary to-primary" />
+            <div className="flex items-center justify-center gap-2 md:gap-3 mb-1 md:mb-2">
+              <div className="h-px w-8 md:w-16 bg-gradient-to-r from-transparent via-primary to-primary" />
+              <Music className="h-4 w-4 md:h-6 md:w-6 text-primary" />
+              <div className="h-px w-8 md:w-16 bg-gradient-to-l from-transparent via-primary to-primary" />
             </div>
-            
-            <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold text-white mb-2 tracking-tight">
+
+            <h1 className="text-xl md:text-4xl lg:text-5xl font-bold text-white mb-1 md:mb-2 tracking-tight">
               Shop All Instruments
             </h1>
-            <p className="text-sm md:text-base lg:text-lg text-white/70 max-w-2xl mx-auto">
+            <p className="text-xs md:text-base lg:text-lg text-white/70 max-w-2xl mx-auto line-clamp-1 md:line-clamp-none">
               Professional wind instruments, handpicked for musicians who demand excellence.
             </p>
-            
+
             {/* Stats - Compact */}
-            <div className="flex justify-center gap-6 md:gap-8 mt-4">
+            <div className="flex justify-center gap-4 md:gap-8 mt-2 md:mt-4">
               <div className="text-center">
-                <div className="text-2xl md:text-3xl font-bold text-primary">{products.length}</div>
-                <div className="text-xs md:text-sm text-white/50">Products</div>
+                <div className="text-lg md:text-3xl font-bold text-primary">{products.length}</div>
+                <div className="text-[10px] md:text-sm text-white/50">Products</div>
               </div>
-              <div className="h-10 w-px bg-white/20" />
+              <div className="h-8 md:h-10 w-px bg-white/20" />
               <div className="text-center">
-                <div className="text-2xl md:text-3xl font-bold text-primary">{brands.length}</div>
-                <div className="text-xs md:text-sm text-white/50">Brands</div>
+                <div className="text-lg md:text-3xl font-bold text-primary">{brands.length}</div>
+                <div className="text-[10px] md:text-sm text-white/50">Brands</div>
               </div>
-              <div className="h-10 w-px bg-white/20" />
+              <div className="h-8 md:h-10 w-px bg-white/20" />
               <div className="text-center">
-                <div className="text-2xl md:text-3xl font-bold text-primary">{subcategories.size}</div>
-                <div className="text-xs md:text-sm text-white/50">Categories</div>
+                <div className="text-lg md:text-3xl font-bold text-primary">{subcategories.size}</div>
+                <div className="text-[10px] md:text-sm text-white/50">Categories</div>
               </div>
             </div>
           </div>
@@ -389,46 +389,44 @@ function ShopPageContent() {
         {/* Wave decoration - smaller */}
         <div className="absolute bottom-0 left-0 right-0">
           <svg viewBox="0 0 1440 50" fill="none" xmlns="http://www.w3.org/2000/svg" className="w-full">
-            <path d="M0 50L60 42C120 34 240 18 360 14C480 10 600 18 720 22C840 26 960 26 1080 22C1200 18 1320 10 1380 6L1440 2V50H1380C1320 50 1200 50 1080 50C960 50 840 50 720 50C600 50 480 50 360 50C240 50 120 50 60 50H0Z" fill="hsl(45 20% 97%)"/>
+            <path d="M0 50L60 42C120 34 240 18 360 14C480 10 600 18 720 22C840 26 960 26 1080 22C1200 18 1320 10 1380 6L1440 2V50H1380C1320 50 1200 50 1080 50C960 50 840 50 720 50C600 50 480 50 360 50C240 50 120 50 60 50H0Z" fill="hsl(45 20% 97%)" />
           </svg>
         </div>
       </section>
 
       <div className="container mx-auto px-4 py-8">
         {/* Category Tabs */}
-        <div className="mb-8 animate-fade-in-up" style={{ animationDelay: '0.2s' }}>
-          <div className="flex flex-wrap gap-2 justify-center">
+        <div className="mb-4 md:mb-8 animate-fade-in-up" style={{ animationDelay: '0.2s' }}>
+          <div className="flex overflow-x-auto pb-2 -mx-4 px-4 md:mx-0 md:px-0 md:flex-wrap md:justify-center gap-2 scrollbar-hide">
             <button
               onClick={() => setSelectedSubcategories([])}
-              className={`px-4 py-2 rounded-full font-medium text-sm transition-all duration-300 ${
-                selectedSubcategories.length === 0
+              className={`px-3 py-1.5 md:px-4 md:py-2 rounded-full font-medium text-xs md:text-sm whitespace-nowrap transition-all duration-300 ${selectedSubcategories.length === 0
                   ? 'bg-primary text-white shadow-lg scale-105'
                   : 'bg-white border-2 border-gray-200 text-gray-600 hover:border-primary hover:text-primary'
-              }`}
+                }`}
             >
               <span className="flex items-center gap-2">
-                <Sparkles className="h-4 w-4" />
+                <Sparkles className="h-3 w-3 md:h-4 md:w-4" />
                 All Products
-                <Badge variant="secondary" className="ml-1 text-xs">
+                <Badge variant="secondary" className="ml-1 text-[10px] md:text-xs">
                   {products.length}
                 </Badge>
               </span>
             </button>
-            
+
             {Array.from(subcategories).map(([slug, { name, count }], index) => (
               <button
                 key={slug}
                 onClick={() => setSelectedSubcategories([slug])}
-                className={`px-3 py-1.5 md:px-4 md:py-2 rounded-full font-medium text-xs md:text-sm transition-all duration-300 ${
-                  selectedSubcategories.length === 1 && selectedSubcategories[0] === slug
+                className={`px-3 py-1.5 md:px-4 md:py-2 rounded-full font-medium text-xs md:text-sm whitespace-nowrap transition-all duration-300 ${selectedSubcategories.length === 1 && selectedSubcategories[0] === slug
                     ? 'bg-primary text-white shadow-lg scale-105'
                     : 'bg-white border-2 border-gray-200 text-gray-600 hover:border-primary hover:text-primary'
-                }`}
+                  }`}
                 style={{ animationDelay: `${0.1 * index}s` }}
               >
                 <span className="flex items-center gap-2 capitalize">
                   {name}
-                  <Badge variant="outline" className="ml-1 text-xs">
+                  <Badge variant="outline" className="ml-1 text-[10px] md:text-xs">
                     {count}
                   </Badge>
                 </span>
@@ -494,7 +492,7 @@ function ShopPageContent() {
                   Showing <span className="font-semibold text-secondary">{paginatedProducts.length}</span> of{' '}
                   <span className="font-semibold text-secondary">{filteredProducts.length}</span> products
                 </div>
-                
+
                 {/* Grid toggle */}
                 <div className="hidden md:flex items-center gap-1 border rounded-lg p-1">
                   <button
@@ -511,7 +509,7 @@ function ShopPageContent() {
                   </button>
                 </div>
               </div>
-              
+
               <Select
                 value={sortBy}
                 onValueChange={(value) => setSortBy(value as SortOption)}
@@ -536,8 +534,8 @@ function ShopPageContent() {
                 <div className="text-6xl mb-4">🎷</div>
                 <h3 className="text-xl font-semibold text-secondary mb-2">No instruments found</h3>
                 <p className="text-muted-foreground mb-4">Try adjusting your filters or search criteria</p>
-                <Button 
-                  variant="outline" 
+                <Button
+                  variant="outline"
                   onClick={() => {
                     setSelectedBrands([])
                     setSelectedSubcategories([])
@@ -559,11 +557,10 @@ function ShopPageContent() {
                   <LoadingSpinner text="Filtering products..." />
                 </div>
               )}
-              <div className={`grid gap-6 ${
-                gridCols === 4 
-                  ? 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4' 
+              <div className={`grid gap-6 ${gridCols === 4
+                  ? 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4'
                   : 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-3'
-              } ${isFiltering ? 'opacity-50' : 'opacity-100'} transition-opacity duration-300`}>
+                } ${isFiltering ? 'opacity-50' : 'opacity-100'} transition-opacity duration-300`}>
                 {paginatedProducts.map((product, index) => (
                   <ProductCard key={product.id} product={product} index={index} />
                 ))}
@@ -577,7 +574,7 @@ function ShopPageContent() {
                 <p className="text-sm text-muted-foreground">
                   Page {currentPage} of {totalPages}
                 </p>
-                
+
                 {/* Pagination buttons */}
                 <div className="flex items-center gap-2">
                   <Button
@@ -590,7 +587,7 @@ function ShopPageContent() {
                     <ChevronLeft className="h-4 w-4 mr-1" />
                     Previous
                   </Button>
-                  
+
                   <div className="flex gap-1">
                     {Array.from({ length: totalPages }, (_, i) => i + 1)
                       .filter(
@@ -608,16 +605,15 @@ function ShopPageContent() {
                             variant={currentPage === page ? 'default' : 'outline'}
                             size="sm"
                             onClick={() => setCurrentPage(page)}
-                            className={`min-w-[40px] transition-all ${
-                              currentPage === page ? 'shadow-lg scale-105' : 'hover:shadow-md'
-                            }`}
+                            className={`min-w-[40px] transition-all ${currentPage === page ? 'shadow-lg scale-105' : 'hover:shadow-md'
+                              }`}
                           >
                             {page}
                           </Button>
                         </div>
                       ))}
                   </div>
-                  
+
                   <Button
                     variant="outline"
                     size="sm"

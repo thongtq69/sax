@@ -146,6 +146,11 @@ export async function PATCH(request: NextRequest) {
           // Prepare email data
           const { sendOrderConfirmationEmail } = await import('@/lib/email')
           
+          // Calculate subtotal, shipping, tax
+          const subtotal = existingOrder.items.reduce((sum, item) => sum + (item.price * item.quantity), 0)
+          const shipping = existingOrder.total - subtotal // Assuming total = subtotal + shipping
+          const tax = 0 // No tax
+          
           await sendOrderConfirmationEmail({
             orderNumber: existingOrder.orderNumber || existingOrder.id,
             customerEmail,
@@ -156,10 +161,14 @@ export async function PATCH(request: NextRequest) {
               const product = productMap.get(item.productId)
               return {
                 name: product?.name || 'Product',
+                sku: product?.sku || 'N/A',
                 quantity: item.quantity,
                 price: item.price,
               }
             }),
+            subtotal,
+            shipping,
+            tax,
             total: existingOrder.total,
             shippingAddress: shippingAddress ? {
               firstName: shippingAddress.firstName || '',

@@ -130,7 +130,7 @@ export default async function ProductPage({
           </div>
         </div>
 
-        <div className="container mx-auto px-4 py-4 md:py-6 lg:py-8">
+        <div className="container mx-auto px-4 py-2 md:py-6 lg:py-8">
           <ProductDetailClient product={product} />
         </div>
       </div>
