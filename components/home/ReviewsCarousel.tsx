@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect, useRef } from 'react'
-import { ChevronRight, Star } from 'lucide-react'
+import { Star } from 'lucide-react'
 import type { Review } from '@/lib/reviews'
 
 interface ReviewsCarouselProps {
@@ -45,7 +45,10 @@ export function ReviewsCarousel({ reviews, productImages = [], onViewAll }: Revi
 
     return (
         <div className="relative" onMouseEnter={() => setIsPaused(true)} onMouseLeave={() => setIsPaused(false)}>
-            <div className={`bg-white/85 backdrop-blur-md px-8 sm:px-10 md:px-12 py-6 sm:py-8 pb-10 sm:pb-12 shadow-xl border border-white/50 rounded-xl w-full transition-all duration-300 ease-out relative ${isAnimating ? 'opacity-0 scale-95' : 'opacity-100 scale-100'}`}>
+            <div 
+                className={`bg-white/85 backdrop-blur-md px-8 sm:px-10 md:px-12 py-6 sm:py-8 shadow-xl border border-white/50 rounded-xl w-full transition-all duration-300 ease-out relative ${isAnimating ? 'opacity-0 scale-95' : 'opacity-100 scale-100'} ${onViewAll ? 'cursor-pointer hover:shadow-2xl hover:scale-[1.02]' : ''}`}
+                onClick={onViewAll}
+            >
                 <div className="flex flex-col sm:flex-row sm:items-center gap-4 sm:gap-8">
                     <div className="flex-1">
                         <p className="text-gray-700 text-base sm:text-lg md:text-xl leading-relaxed italic">
@@ -69,16 +72,6 @@ export function ReviewsCarousel({ reviews, productImages = [], onViewAll }: Revi
                         </div>
                     </div>
                 </div>
-                {/* View All Reviews - positioned at bottom right of card */}
-                {onViewAll && (
-                    <button
-                        className="absolute bottom-3 right-4 sm:bottom-4 sm:right-6 text-secondary hover:text-primary font-medium text-[10px] sm:text-xs underline transition-all flex items-center gap-0.5"
-                        onClick={onViewAll}
-                    >
-                        View All Reviews
-                        <ChevronRight className="h-3 w-3 sm:h-3.5 sm:w-3.5" />
-                    </button>
-                )}
             </div>
         </div>
     )
