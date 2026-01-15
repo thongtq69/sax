@@ -132,9 +132,9 @@ function CheckoutContent() {
       }
 
       const data = await response.json()
-      
+
       setShippingCost(data.shippingCost)
-      
+
       // Format message based on zone
       if (data.shippingCost === 0) {
         setShippingMessage(`Free shipping (${data.zoneName})`)
@@ -264,7 +264,7 @@ function CheckoutContent() {
                       <div className="flex items-center gap-2">
                         <MapPin className="h-4 w-4 text-blue-600" />
                         <span className="text-sm font-medium text-blue-700">
-                          {selectedAddressId 
+                          {selectedAddressId
                             ? `Using: ${savedAddresses.find(a => a.id === selectedAddressId)?.firstName} ${savedAddresses.find(a => a.id === selectedAddressId)?.lastName}`
                             : 'Select a saved address'
                           }
@@ -272,7 +272,7 @@ function CheckoutContent() {
                       </div>
                       <ChevronDown className={`h-4 w-4 text-blue-600 transition-transform ${showAddressSelector ? 'rotate-180' : ''}`} />
                     </button>
-                    
+
                     {showAddressSelector && (
                       <div className="absolute z-10 w-full mt-1 bg-white border rounded-lg shadow-lg max-h-60 overflow-y-auto">
                         {savedAddresses.map((address) => (
@@ -280,9 +280,8 @@ function CheckoutContent() {
                             key={address.id}
                             type="button"
                             onClick={() => applyAddress(address)}
-                            className={`w-full p-3 text-left hover:bg-gray-50 border-b last:border-b-0 ${
-                              selectedAddressId === address.id ? 'bg-blue-50' : ''
-                            }`}
+                            className={`w-full p-3 text-left hover:bg-gray-50 border-b last:border-b-0 ${selectedAddressId === address.id ? 'bg-blue-50' : ''
+                              }`}
                           >
                             <div className="flex items-center justify-between">
                               <span className="font-medium text-sm">{address.firstName} {address.lastName}</span>
@@ -321,7 +320,7 @@ function CheckoutContent() {
                 <Input placeholder="Email *" value={shippingInfo.email} onChange={(e) => handleChange('email', e.target.value)} />
 
                 {/* Row 2: First Name, Last Name */}
-                <div className="grid grid-cols-2 gap-2 md:gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 md:gap-4">
                   <Input placeholder="First Name *" value={shippingInfo.firstName} onChange={(e) => handleChange('firstName', e.target.value)} />
                   <Input placeholder="Last Name *" value={shippingInfo.lastName} onChange={(e) => handleChange('lastName', e.target.value)} />
                 </div>
@@ -341,7 +340,7 @@ function CheckoutContent() {
                 </select>
 
                 {/* Row 4: State/Province, City */}
-                <div className="grid grid-cols-2 gap-2 md:gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 md:gap-4">
                   {/* State/Province - Dropdown if country has states, otherwise text input */}
                   {hasStates ? (
                     <select
@@ -357,18 +356,18 @@ function CheckoutContent() {
                       ))}
                     </select>
                   ) : (
-                    <Input 
-                      placeholder="State/Province *" 
-                      value={shippingInfo.state} 
-                      onChange={(e) => handleChange('state', e.target.value)} 
+                    <Input
+                      placeholder="State/Province *"
+                      value={shippingInfo.state}
+                      onChange={(e) => handleChange('state', e.target.value)}
                     />
                   )}
-                  
+
                   {/* City - Text input */}
-                  <Input 
-                    placeholder="City *" 
-                    value={shippingInfo.city} 
-                    onChange={(e) => handleChange('city', e.target.value)} 
+                  <Input
+                    placeholder="City *"
+                    value={shippingInfo.city}
+                    onChange={(e) => handleChange('city', e.target.value)}
                   />
                 </div>
 
@@ -462,10 +461,10 @@ function CheckoutContent() {
                     )}
                   </span>
                   <span className={shippingCost === null ? "text-amber-600 text-xs" : shippingCost === 0 ? "text-green-600" : ""}>
-                    {shippingCost === null 
-                      ? "Fill address for exact fee" 
-                      : shippingCost === 0 
-                        ? "FREE" 
+                    {shippingCost === null
+                      ? "Fill address for exact fee"
+                      : shippingCost === 0
+                        ? "FREE"
                         : "$" + shippingCost}
                   </span>
                 </div>

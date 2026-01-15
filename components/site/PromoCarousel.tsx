@@ -85,13 +85,17 @@ export function PromoCarousel({ promos = [] }: PromoCarouselProps) {
                         <span className="font-semibold font-display uppercase tracking-[0.22em] text-[#D4AF37]">
                             {slide.title}
                         </span>
-                        <span className="hidden md:inline text-white/50">-</span>
-                        <span className="hidden md:inline text-white/85 font-body">
-                            {slide.description}
-                        </span>
-                        <span className="md:hidden text-white/85 font-body line-clamp-2 max-w-[72vw]">
-                            {slide.description}
-                        </span>
+                        {slide.description && (
+                            <>
+                                <span className="hidden md:inline text-white/50">-</span>
+                                <span className="hidden md:inline text-white/85 font-body">
+                                    {slide.description}
+                                </span>
+                                <span className="md:hidden text-white/85 font-body line-clamp-2 max-w-[72vw]">
+                                    {slide.description}
+                                </span>
+                            </>
+                        )}
                         {slide.ctaLink && slide.ctaText && (
                             <div className="w-full flex justify-center sm:w-auto">
                                 <Link
