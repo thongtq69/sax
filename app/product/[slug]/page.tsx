@@ -104,10 +104,7 @@ export default async function ProductPage({
     }
 
     const product = transformProduct(apiProduct)
-    const categoryName = apiProduct.category?.name || ''
-    const categorySlug = apiProduct.category?.slug || ''
-    const subcategoryName = apiProduct.subcategory?.name || ''
-    const subcategorySlug = apiProduct.subcategory?.slug || ''
+    const brandName = product.brand || ''
 
     return (
       <div className="min-h-screen">
@@ -119,23 +116,11 @@ export default async function ProductPage({
                 <Home className="h-3 w-3 md:h-3.5 md:w-3.5" />
                 Home
               </Link>
-              <ChevronRight className="h-3 w-3 md:h-4 md:w-4 text-muted-foreground/50 flex-shrink-0" />
-              <Link href="/shop" className="inline-flex items-center text-muted-foreground hover:text-primary transition-colors whitespace-nowrap">
-                Products
-              </Link>
-              {categoryName && (
+              {brandName && (
                 <>
                   <ChevronRight className="h-3 w-3 md:h-4 md:w-4 text-muted-foreground/50 flex-shrink-0" />
-                  <Link href={`/shop?category=${categorySlug}`} className="inline-flex items-center text-muted-foreground hover:text-primary transition-colors whitespace-nowrap">
-                    {categoryName}
-                  </Link>
-                </>
-              )}
-              {subcategoryName && (
-                <>
-                  <ChevronRight className="h-3 w-3 md:h-4 md:w-4 text-muted-foreground/50 flex-shrink-0" />
-                  <Link href={`/shop?category=${categorySlug}&subcategory=${subcategorySlug}`} className="inline-flex items-center text-muted-foreground hover:text-primary transition-colors whitespace-nowrap">
-                    {subcategoryName}
+                  <Link href={`/shop?brand=${encodeURIComponent(brandName)}`} className="inline-flex items-center text-muted-foreground hover:text-primary transition-colors whitespace-nowrap">
+                    {brandName}
                   </Link>
                 </>
               )}
