@@ -893,7 +893,7 @@ export default function ProductsManagement() {
                   </p>
                   {(formData.slug || formData.sku) && (
                     <p className="text-xs text-blue-600 mt-1">
-                      URL: /product/{formData.sku || 'SKU'}-{formData.slug || 'slug'}
+                      URL: /product/{formData.sku || 'SKU'}{formData.slug ? `-${formData.slug}` : ''}
                     </p>
                   )}
                 </div>

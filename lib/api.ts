@@ -14,7 +14,11 @@ export function generateProductSlug(name: string): string {
 
 // Helper function to generate product URL with SKU and slug
 // Format: /product/SKU-slug (e.g., /product/JSC-C143LF-yamaha-yts-62-tenor-saxophone)
+// If no slug: /product/SKU (e.g., /product/A-9910042)
 export function getProductUrl(sku: string, slug: string): string {
+  if (!slug || slug.trim() === '') {
+    return `/product/${sku}`
+  }
   return `/product/${sku}-${slug}`
 }
 

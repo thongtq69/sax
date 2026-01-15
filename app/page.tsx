@@ -464,10 +464,10 @@ export default function HomePage() {
               const musicNotes = ['♪', '♫', '♬', '𝄞']
               const noteIcon = musicNotes[i % musicNotes.length]
               return (
-                <Link key={sub.slug} href={`/shop?subcategory=${sub.slug}`} className="group bg-secondary hover:bg-secondary/90 rounded-lg p-4 sm:p-5 transition-all duration-300 hover:shadow-2xl hover:scale-105 hover:-translate-y-1 animate-fade-in-up" style={{ animationDelay: `${0.1 * i}s` }}>
-                  <div className="flex items-center justify-center gap-3">
-                    <span className="text-amber-400 text-2xl sm:text-3xl group-hover:animate-bounce transition-transform duration-300">{noteIcon}</span>
-                    <h3 className="text-base sm:text-lg md:text-xl font-bold text-white group-hover:text-amber-300 transition-colors duration-300">{sub.name}</h3>
+                <Link key={sub.slug} href={`/shop?subcategory=${sub.slug}`} className="group bg-secondary hover:bg-secondary/90 rounded-lg p-3 sm:p-5 transition-all duration-300 hover:shadow-2xl hover:scale-105 hover:-translate-y-1 animate-fade-in-up" style={{ animationDelay: `${0.1 * i}s` }}>
+                  <div className="flex items-center justify-center gap-2">
+                    <span className="text-amber-400 text-xl sm:text-3xl group-hover:animate-bounce transition-transform duration-300">{noteIcon}</span>
+                    <h3 className="text-sm sm:text-lg md:text-xl font-bold text-white group-hover:text-amber-300 transition-colors duration-300">{sub.name}</h3>
                   </div>
                 </Link>
               )
@@ -481,37 +481,37 @@ export default function HomePage() {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6 items-stretch">
             <div className="animate-fade-in-left">
               <h2 className="text-xl sm:text-2xl font-bold text-secondary mb-3 uppercase tracking-wide">WHY CHOOSE US</h2>
-              <div className="space-y-1">
+              <div className="space-y-0.5">
                 {[
-                  { title: 'Saxophone Specialists', desc: 'We focus exclusively on saxophones, allowing us to maintain high standards in selection and preparation.' },
-                  { title: 'Individually Prepared', desc: 'Each instrument is inspected and adjusted before sale to ensure reliable playability.' },
-                  { title: 'Honest & Clear Listings', desc: 'Every saxophone is listed as a unique instrument with accurate descriptions.' },
-                  { title: 'Secure Purchasing', desc: 'All payments are processed through PayPal with full buyer protection.' },
-                  { title: 'Trusted Worldwide', desc: 'Serving players from different countries and musical backgrounds.' },
+                  { title: 'Saxophone Specialists', desc: 'We focus exclusively on saxophones, maintaining high standards.' },
+                  { title: 'Individually Prepared', desc: 'Each instrument is inspected and adjusted before sale.' },
+                  { title: 'Honest & Clear Listings', desc: 'Every saxophone listed as unique with accurate descriptions.' },
+                  { title: 'Secure Purchasing', desc: 'Payments processed through PayPal with buyer protection.' },
+                  { title: 'Trusted Worldwide', desc: 'Serving players from different countries worldwide.' },
                 ].map((item, i) => (
-                  <div key={i} className="flex gap-3 py-2 px-3 bg-white border border-transparent hover:border-primary/30 transition-all duration-500 hover:shadow-lg">
-                    <div className="flex-shrink-0 w-8 h-8 bg-primary/10 flex items-center justify-center rounded">
-                      <Star className="h-4 w-4 text-primary" />
+                  <div key={i} className="flex gap-2 py-1 px-2 bg-white border border-transparent hover:border-primary/30 transition-all duration-500 hover:shadow-lg">
+                    <div className="flex-shrink-0 w-5 h-5 bg-primary/10 flex items-center justify-center rounded">
+                      <Star className="h-3 w-3 text-primary" />
                     </div>
                     <div className="min-w-0">
-                      <h3 className="font-semibold text-secondary text-base leading-tight">{item.title}</h3>
-                      <p className="text-sm text-muted-foreground leading-snug">{item.desc}</p>
+                      <h3 className="font-semibold text-secondary text-sm leading-tight">{item.title}</h3>
+                      <p className="text-xs text-muted-foreground leading-snug">{item.desc}</p>
                     </div>
                   </div>
                 ))}
               </div>
             </div>
             <div className="animate-fade-in-right flex flex-col">
-              <div className="bg-gradient-to-br from-primary/10 to-primary/5 p-4 sm:p-5 h-full flex flex-col justify-center">
-                <div className="flex justify-center mb-2">
+              <div className="bg-gradient-to-br from-primary/10 to-primary/5 p-3 sm:p-4 h-full flex flex-col justify-center">
+                <div className="flex justify-center mb-1">
                   {[...Array(5)].map((_, i) => (
-                    <Star key={i} className="h-4 w-4 sm:h-5 sm:w-5 fill-amber-400 text-amber-400" />
+                    <Star key={i} className="h-3 w-3 sm:h-4 sm:w-4 fill-amber-400 text-amber-400" />
                   ))}
                 </div>
-                <blockquote className="text-xs sm:text-sm italic text-secondary mb-2 leading-relaxed text-center">
-                  &ldquo;This was the single best transaction I&apos;ve had with an online seller. James sent me a 10 minute video minutes after contacting him detailing the horn and exhibiting the condition. Shipping from Vietnam to the US east coast took 3 days and the packaging was impeccable. The horn arrived exactly as described and plays just as well as it should; James did an excellent job replacing pads and adjusting. There are no visible or audible leaks. I would purchase from him again in a heartbeat.&rdquo;
+                <blockquote className="text-[11px] sm:text-sm italic text-secondary mb-1.5 leading-snug text-center">
+                  &ldquo;This was the single best transaction I&apos;ve had with an online seller. James sent me a video detailing the horn. Shipping from Vietnam to US took 3 days with impeccable packaging. The horn arrived exactly as described. James did an excellent job replacing pads and adjusting. I would purchase from him again in a heartbeat.&rdquo;
                 </blockquote>
-                <div className="font-semibold text-secondary text-sm text-center">— Zach E.</div>
+                <div className="font-semibold text-secondary text-xs text-center">— Zach E.</div>
               </div>
             </div>
           </div>

@@ -73,126 +73,119 @@ export function Footer() {
 
         {/* Mobile Layout */}
         <div className="lg:hidden">
-          {/* Need Help Section - Mobile (single Ask Now button like desktop) */}
-          <div className="flex flex-col items-center justify-center gap-2 pb-2 mb-2 border-b border-white/10 text-center">
-            <div>
-              <h3 className="text-[10px] font-bold text-white flex items-center justify-center gap-0.5">
-                <span className="text-[#D4AF37] animate-pulse text-[9px]">★</span>
-                Need Help Choosing?
-              </h3>
-              <p className="text-[8px] text-white/60 mt-0.5">Our team is ready to help</p>
-            </div>
-            <Button size="sm" className="bg-[#25D366] hover:bg-[#20bd5a] text-white font-semibold text-[9px] px-2 h-6" asChild>
+          {/* Need Help Section - Mobile (horizontal like desktop) */}
+          <div className="flex items-center justify-between gap-2 pb-2 mb-2 border-b border-white/10">
+            <span className="text-[9px] font-semibold text-white flex items-center gap-0.5 whitespace-nowrap">
+              <span className="text-[#D4AF37]">★</span>
+              Need Help Choosing?
+            </span>
+            <Button size="sm" className="bg-[#D4AF37] hover:bg-[#c9a432] text-[#2f3f4f] font-semibold text-[8px] px-2 h-5" asChild>
               <Link href="/inquiry">
-                <WhatsAppIcon className="mr-0.5 h-3 w-3" />
+                <MessageCircle className="mr-0.5 h-2.5 w-2.5" />
                 Ask Now
               </Link>
             </Button>
           </div>
 
-          {/* Logo & Contact - Mobile */}
-          <div className="flex items-start gap-2 pb-2 mb-2 border-b border-white/10">
-            <div className="border border-[#D4AF37]/50 rounded p-1 bg-[#D4AF37]/5 flex-shrink-0">
-              <Image src="/logo.png" alt={settings.companyName} width={80} height={26} className="h-5 w-auto" priority />
-            </div>
-            <div className="text-[9px] text-white/70 space-y-0.5 min-w-0 flex-1">
-              <p className="flex items-center gap-1">
-                <MapPin className="h-2.5 w-2.5 text-[#58510D] flex-shrink-0" />
-                <span>{settings.address}</span>
-              </p>
-              {settings.phone && (
-                <Link href={`https://wa.me/${settings.phone.replace(/[^0-9]/g, '')}`} target="_blank" rel="noopener noreferrer" className="flex items-center gap-1 hover:text-white transition-colors">
-                  <Image src="/whatsapp.svg" alt="WhatsApp" width={20} height={20} className="w-5 h-5 object-contain flex-shrink-0 -ml-1" />
-                  <span>{settings.phone}</span>
-                </Link>
-              )}
-              {settings.email && (
-                <p className="flex items-center gap-1">
-                  <Mail className="h-2.5 w-2.5 text-[#58510D] flex-shrink-0" />
-                  <span className="truncate">{settings.email}</span>
+          {/* Main Grid - 4 columns like desktop: Hours | Shop | Support | Follow Us */}
+          <div className="grid grid-cols-4 gap-2 text-[8px] mb-2">
+            {/* Column 1: Logo & Contact */}
+            <div className="col-span-4 flex items-start gap-2 pb-2 mb-1 border-b border-white/10">
+              <div className="border border-[#D4AF37]/50 rounded p-0.5 bg-[#D4AF37]/5 flex-shrink-0">
+                <Image src="/logo.png" alt={settings.companyName} width={60} height={20} className="h-4 w-auto" priority />
+              </div>
+              <div className="text-[8px] text-white/70 space-y-0 min-w-0 flex-1">
+                <p className="flex items-center gap-0.5">
+                  <MapPin className="h-2 w-2 text-[#58510D] flex-shrink-0" />
+                  <span className="truncate">{settings.address}</span>
                 </p>
-              )}
-            </div>
-          </div>
-
-          {/* Links Grid - Mobile */}
-          <div className="grid grid-cols-2 gap-3 text-[9px]">
-            <div className="space-y-2">
-              {/* Hours */}
-              <div>
-                <h4 className="font-semibold text-[10px] mb-1 flex items-center gap-0.5 text-white">
-                  <Clock className="h-2.5 w-2.5 text-[#D4AF37]" />
-                  Hours
-                </h4>
-                <div className="text-white/70 space-y-0">
-                  <p>{settings.workingHours}</p>
-                  <p>Always Open</p>
-                </div>
-              </div>
-
-              {/* Support */}
-              <div>
-                <h4 className="font-semibold text-[10px] mb-1 flex items-center gap-0.5 text-white">
-                  <Heart className="h-2.5 w-2.5 text-[#D4AF37]" />
-                  Support
-                </h4>
-                <div className="text-white/70 space-y-0">
-                  <p><Link href="/inquiry" className="hover:text-white transition-colors">Inquiry</Link></p>
-                  <p><Link href="/account" className="hover:text-white transition-colors">Account</Link></p>
-                  <p><Link href="/blog" className="hover:text-white transition-colors">Blog</Link></p>
-                  <p>
-                    <button onClick={() => setShowTestimonials(true)} className="hover:text-white transition-colors">
-                      Testimonials
-                    </button>
+                {settings.phone && (
+                  <Link href={`https://wa.me/${settings.phone.replace(/[^0-9]/g, '')}`} target="_blank" rel="noopener noreferrer" className="flex items-center gap-0.5 hover:text-white transition-colors">
+                    <Phone className="h-2 w-2 text-[#58510D] flex-shrink-0" />
+                    <span>{settings.phone}</span>
+                  </Link>
+                )}
+                {settings.email && (
+                  <p className="flex items-center gap-0.5">
+                    <Mail className="h-2 w-2 text-[#58510D] flex-shrink-0" />
+                    <span className="truncate">{settings.email}</span>
                   </p>
-                </div>
+                )}
               </div>
             </div>
 
-            <div className="space-y-2">
-              {/* Shop */}
-              <div>
-                <h4 className="font-semibold text-[10px] mb-1 flex items-center gap-0.5 text-white">
-                  <Music className="h-2.5 w-2.5 text-[#D4AF37]" />
-                  Shop
-                </h4>
-                <div className="text-white/70 space-y-0">
-                  <p><Link href="/shop" className="hover:text-white transition-colors">All Instruments</Link></p>
-                  <p><Link href="/cart" className="hover:text-white transition-colors">Cart</Link></p>
-                  <p><Link href="/checkout" className="hover:text-white transition-colors">Checkout</Link></p>
-                </div>
+            {/* Column 1: Hours */}
+            <div>
+              <h4 className="font-semibold text-[9px] mb-0.5 flex items-center gap-0.5 text-white">
+                <Clock className="h-2 w-2 text-[#D4AF37]" />
+                Hours
+              </h4>
+              <div className="text-white/70 space-y-0 leading-tight">
+                <p>{settings.workingHours}</p>
+                <p>Always Open</p>
               </div>
+            </div>
 
-              {/* Follow Us */}
-              <div>
-                <h4 className="font-semibold text-[10px] mb-1 text-white">Follow Us</h4>
-                <div className="flex gap-1 mb-1.5">
-                  {socialLinks.map((social) => (
-                    <Link
-                      key={social.label}
-                      href={social.href || '#'}
-                      className="rounded-full bg-white/10 hover:bg-[#D4AF37] flex items-center justify-center text-white hover:text-[#2f3f4f] transition-all"
-                      style={{ width: '16px', height: '16px', minWidth: '16px', minHeight: '16px', maxWidth: '16px', maxHeight: '16px' }}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      aria-label={social.label}
-                    >
-                      <social.icon style={{ width: '8px', height: '8px' }} />
-                    </Link>
-                  ))}
-                </div>
-                <div className="flex items-center gap-1">
-                  <span className="text-[#D4AF37] text-[10px]">★</span>
-                  <span className="text-white font-bold text-[10px]">4.9/5</span>
-                  <span className="text-white/60 text-[8px]">500+ reviews</span>
-                </div>
+            {/* Column 2: Shop */}
+            <div>
+              <h4 className="font-semibold text-[9px] mb-0.5 flex items-center gap-0.5 text-white">
+                <Music className="h-2 w-2 text-[#D4AF37]" />
+                Shop
+              </h4>
+              <div className="text-white/70 space-y-0 leading-tight">
+                <p><Link href="/shop" className="hover:text-white transition-colors">All Instruments</Link></p>
+                <p><Link href="/cart" className="hover:text-white transition-colors">Cart</Link></p>
+                <p><Link href="/checkout" className="hover:text-white transition-colors">Checkout</Link></p>
+              </div>
+            </div>
+
+            {/* Column 3: Support */}
+            <div>
+              <h4 className="font-semibold text-[9px] mb-0.5 flex items-center gap-0.5 text-white">
+                <Heart className="h-2 w-2 text-[#D4AF37]" />
+                Support
+              </h4>
+              <div className="text-white/70 space-y-0 leading-tight">
+                <p><Link href="/inquiry" className="hover:text-white transition-colors">Inquiry</Link></p>
+                <p><Link href="/account" className="hover:text-white transition-colors">Account</Link></p>
+                <p><Link href="/blog" className="hover:text-white transition-colors">Blog</Link></p>
+                <p>
+                  <button onClick={() => setShowTestimonials(true)} className="hover:text-white transition-colors">
+                    Testimonials
+                  </button>
+                </p>
+              </div>
+            </div>
+
+            {/* Column 4: Follow Us */}
+            <div>
+              <h4 className="font-semibold text-[9px] mb-0.5 text-white">Follow Us</h4>
+              <div className="flex gap-0.5 mb-1 flex-wrap">
+                {socialLinks.map((social) => (
+                  <Link
+                    key={social.label}
+                    href={social.href || '#'}
+                    className="rounded-full bg-white/10 hover:bg-[#D4AF37] flex items-center justify-center text-white hover:text-[#2f3f4f] transition-all"
+                    style={{ width: '14px', height: '14px', minWidth: '14px', minHeight: '14px' }}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    aria-label={social.label}
+                  >
+                    <social.icon style={{ width: '7px', height: '7px' }} />
+                  </Link>
+                ))}
+              </div>
+              <div className="flex items-center gap-0.5">
+                <span className="text-[#D4AF37] text-[9px]">★</span>
+                <span className="text-white font-bold text-[9px]">4.9/5</span>
+                <span className="text-white/60 text-[7px]">500+</span>
               </div>
             </div>
           </div>
 
           {/* Copyright - Mobile */}
-          <div className="mt-2 pt-2 border-t border-white/10 text-center">
-            <p className="text-[8px] text-white/50">{settings.copyrightText}</p>
+          <div className="pt-1.5 border-t border-white/10 text-center">
+            <p className="text-[7px] text-white/50">{settings.copyrightText}</p>
           </div>
         </div>
 
