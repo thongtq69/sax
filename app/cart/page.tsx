@@ -39,13 +39,13 @@ export default function CartPage() {
     <div className="container mx-auto px-4 py-8">
       <h1 className="mb-8 text-4xl font-bold">Shopping Cart</h1>
 
-      <div className="grid grid-cols-1 gap-8 lg:grid-cols-3">
+      <div className="grid grid-cols-1 gap-6 md:gap-8 lg:grid-cols-3">
         {/* Cart Items */}
         <div className="lg:col-span-2 space-y-4">
           {items.map((item) => (
             <Card key={item.id}>
-              <CardContent className="flex items-center space-x-4 p-6">
-                <div className="relative h-24 w-24 flex-shrink-0 overflow-hidden rounded-md border">
+              <CardContent className="flex items-center space-x-3 md:space-x-4 p-3 md:p-6">
+                <div className="relative h-20 w-20 md:h-24 md:w-24 flex-shrink-0 overflow-hidden rounded-md border">
                   <Image
                     src={item.image}
                     alt={item.name}

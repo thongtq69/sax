@@ -165,10 +165,11 @@ export function PayPalStandardButton({ shippingInfo, shippingCost, onError, disa
         params[`amount_${itemNum}`] = item.price.toFixed(2)
         params[`quantity_${itemNum}`] = item.quantity.toString()
         
-        // Optional: Add item number/SKU if available
-        if (item.productId) {
-          params[`item_number_${itemNum}`] = item.productId
-        }
+        // Don't send item_number to hide "Item#" line in PayPal invoice
+        // If you want to show SKU instead, uncomment below:
+        // if (item.sku) {
+        //   params[`item_number_${itemNum}`] = item.sku
+        // }
       })
 
       // Add shipping info if provided
