@@ -401,8 +401,8 @@ function ShopPageContent() {
             <button
               onClick={() => setSelectedSubcategories([])}
               className={`px-3 py-1.5 md:px-4 md:py-2 rounded-full font-medium text-xs md:text-sm whitespace-nowrap transition-all duration-300 ${selectedSubcategories.length === 0
-                  ? 'bg-primary text-white shadow-lg scale-105'
-                  : 'bg-white border-2 border-gray-200 text-gray-600 hover:border-primary hover:text-primary'
+                ? 'bg-primary text-white shadow-lg scale-105'
+                : 'bg-white border-2 border-gray-200 text-gray-600 hover:border-primary hover:text-primary'
                 }`}
             >
               <span className="flex items-center gap-2">
@@ -419,8 +419,8 @@ function ShopPageContent() {
                 key={slug}
                 onClick={() => setSelectedSubcategories([slug])}
                 className={`px-3 py-1.5 md:px-4 md:py-2 rounded-full font-medium text-xs md:text-sm whitespace-nowrap transition-all duration-300 ${selectedSubcategories.length === 1 && selectedSubcategories[0] === slug
-                    ? 'bg-primary text-white shadow-lg scale-105'
-                    : 'bg-white border-2 border-gray-200 text-gray-600 hover:border-primary hover:text-primary'
+                  ? 'bg-primary text-white shadow-lg scale-105'
+                  : 'bg-white border-2 border-gray-200 text-gray-600 hover:border-primary hover:text-primary'
                   }`}
                 style={{ animationDelay: `${0.1 * index}s` }}
               >
@@ -486,9 +486,9 @@ function ShopPageContent() {
             </div>
 
             {/* Sort & Results Count & Grid Toggle */}
-            <div className="mb-4 md:mb-6 flex flex-wrap items-center justify-between gap-2 md:gap-4 p-3 md:p-4 bg-white rounded-lg md:rounded-xl shadow-sm border animate-fade-in-down">
-              <div className="flex items-center gap-4">
-                <div className="text-sm text-muted-foreground">
+            <div className="mb-3 md:mb-6 flex flex-wrap items-center justify-between gap-1.5 md:gap-4 p-2 md:p-4 bg-white rounded-lg md:rounded-xl shadow-sm border animate-fade-in-down">
+              <div className="flex items-center gap-2 md:gap-4">
+                <div className="text-xs md:text-sm text-muted-foreground">
                   Showing <span className="font-semibold text-secondary">{paginatedProducts.length}</span> of{' '}
                   <span className="font-semibold text-secondary">{filteredProducts.length}</span> products
                 </div>
@@ -557,9 +557,9 @@ function ShopPageContent() {
                   <LoadingSpinner text="Filtering products..." />
                 </div>
               )}
-              <div className={`grid gap-6 ${gridCols === 4
-                  ? 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4'
-                  : 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-3'
+              <div className={`grid gap-3 md:gap-6 ${gridCols === 4
+                ? 'grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4'
+                : 'grid-cols-2 sm:grid-cols-2 lg:grid-cols-3'
                 } ${isFiltering ? 'opacity-50' : 'opacity-100'} transition-opacity duration-300`}>
                 {paginatedProducts.map((product, index) => (
                   <ProductCard key={product.id} product={product} index={index} />

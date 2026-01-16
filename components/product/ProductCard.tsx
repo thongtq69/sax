@@ -108,7 +108,7 @@ export function ProductCard({ product, index = 0 }: ProductCardProps) {
   }
 
   const staggerDelay = Math.min(index * 0.05, 0.6)
-  
+
   // Parse badges - support multiple badges separated by comma
   const badges = product.badge ? product.badge.split(',').map(b => b.trim()).filter(Boolean) : []
   const hasOutOfStock = badges.includes('out-of-stock') || !product.inStock
@@ -125,7 +125,7 @@ export function ProductCard({ product, index = 0 }: ProductCardProps) {
         <div className="hidden sm:block absolute bottom-0 right-0 w-8 h-8 border-r-2 border-b-2 border-primary/0 group-hover:border-primary/50 transition-all duration-500 z-10" />
 
         <div
-          className="product-image-container relative aspect-square overflow-hidden bg-gradient-to-br from-gray-50 to-gray-100"
+          className="product-image-container relative aspect-[3/4] sm:aspect-square overflow-hidden bg-gradient-to-br from-gray-50 to-gray-100"
           onMouseEnter={() => {
             setImageHover(true)
             handleMouseEnter()
@@ -158,20 +158,20 @@ export function ProductCard({ product, index = 0 }: ProductCardProps) {
           <div className="absolute inset-0 bg-gradient-to-tr from-transparent via-white/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none transform -translate-x-full group-hover:translate-x-full" style={{ transitionDuration: '0.8s' }} />
 
           {/* Badges with animations - support multiple */}
-          <div className="absolute left-2 sm:left-3 top-2 sm:top-3 flex flex-col gap-1.5 sm:gap-2 z-20">
+          <div className="absolute left-1.5 sm:left-3 top-1.5 sm:top-3 flex flex-col gap-1 sm:gap-2 z-20">
             {badges.map((badge, idx) => (
               <Badge
                 key={idx}
                 variant={badge as any}
-                className={`shadow-lg transform transition-all duration-300 hover:scale-105 ${badge === 'sale' ? 'animate-pulse-soft' : ''} ${badge === 'rare' ? 'animate-border-glow' : ''}`}
+                className={`shadow-lg transform transition-all duration-300 hover:scale-105 text-[10px] sm:text-xs px-1.5 sm:px-2.5 py-0.5 ${badge === 'sale' ? 'animate-pulse-soft' : ''} ${badge === 'rare' ? 'animate-border-glow' : ''}`}
               >
-                {badge === 'new' && '✨ New Arrival'}
-                {badge === 'sale' && '🔥 Special Pricing'}
-                {badge === 'rare' && '⭐ Limited'}
-                {badge === 'coming-soon' && '🔜 Arriving Soon'}
+                {badge === 'new' && '✨ New'}
+                {badge === 'sale' && '🔥 Sale'}
+                {badge === 'rare' && '⭐ Rare'}
+                {badge === 'coming-soon' && '🔜 Soon'}
                 {badge === 'premium' && '👑 Premium'}
-                {badge === 'top-tier' && '🏆 Top-Tier'}
-                {badge === 'out-of-stock' && 'Out of Stock'}
+                {badge === 'top-tier' && '🏆 Top'}
+                {badge === 'out-of-stock' && 'Sold'}
               </Badge>
             ))}
           </div>
@@ -202,16 +202,16 @@ export function ProductCard({ product, index = 0 }: ProductCardProps) {
           </div>
         </div>
 
-        <CardContent className="p-3 sm:p-4 relative">
+        <CardContent className="p-2 sm:p-4 relative">
           <div className="absolute inset-0 bg-gradient-to-t from-primary/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
 
           <div className="relative z-10">
-            <p className="mb-0.5 sm:mb-1 text-[10px] sm:text-xs font-semibold uppercase tracking-widest text-accent transition-colors duration-300 group-hover:text-primary">
+            <p className="mb-0.5 text-[9px] sm:text-xs font-semibold uppercase tracking-widest text-accent transition-colors duration-300 group-hover:text-primary">
               {product.brand}
             </p>
 
             <Link href={productUrl} className="block group/title" prefetch={true}>
-              <h3 className="mb-1.5 sm:mb-2 line-clamp-2 text-xs sm:text-sm font-bold leading-tight text-secondary transition-colors duration-300 group-hover/title:text-primary">
+              <h3 className="mb-1 sm:mb-2 line-clamp-2 text-[11px] sm:text-sm font-bold leading-tight text-secondary transition-colors duration-300 group-hover/title:text-primary">
                 {product.name}
               </h3>
             </Link>
@@ -232,17 +232,17 @@ export function ProductCard({ product, index = 0 }: ProductCardProps) {
               </div>
             )}
 
-            <div className="mb-2 sm:mb-3">
-              <div className="flex items-baseline gap-1.5 sm:gap-2">
+            <div className="mb-1.5 sm:mb-3">
+              <div className="flex items-baseline gap-1 sm:gap-2">
                 {hasOutOfStock ? (
-                  <span className="price-highlight text-base sm:text-xl font-bold text-red-500">SOLD</span>
+                  <span className="price-highlight text-sm sm:text-xl font-bold text-red-500">SOLD</span>
                 ) : (
                   <>
-                    <span className="price-highlight text-base sm:text-xl font-bold text-primary transition-all duration-300 group-hover:text-lg sm:group-hover:text-2xl">
+                    <span className="price-highlight text-sm sm:text-xl font-bold text-primary transition-all duration-300 group-hover:text-base sm:group-hover:text-2xl">
                       ${product.price.toLocaleString()}
                     </span>
                     {product.shippingCost && product.shippingCost > 0 && (
-                      <span className="text-[10px] sm:text-sm text-blue-600">
+                      <span className="text-[9px] sm:text-sm text-blue-600 hidden sm:inline">
                         Ship: ${product.shippingCost.toLocaleString()}
                       </span>
                     )}
@@ -252,21 +252,22 @@ export function ProductCard({ product, index = 0 }: ProductCardProps) {
             </div>
 
             <Button
-              className={`add-to-cart-btn w-full btn-ripple font-semibold tracking-wide transition-all duration-300 text-xs sm:text-sm h-8 sm:h-10 ${isAddingToCart ? 'scale-95 bg-green-500' : ''}`}
+              className={`add-to-cart-btn w-full btn-ripple font-semibold tracking-wide transition-all duration-300 text-[10px] sm:text-sm h-7 sm:h-10 ${isAddingToCart ? 'scale-95 bg-green-500' : ''}`}
               onClick={handleAddToCart}
               disabled={hasOutOfStock || isAddingToCart}
             >
               {isAddingToCart ? (
-                <span className="flex items-center gap-1.5 sm:gap-2">
-                  <Loader2 className="h-3.5 w-3.5 sm:h-4 sm:w-4 animate-spin" />
+                <span className="flex items-center gap-1 sm:gap-2">
+                  <Loader2 className="h-3 w-3 sm:h-4 sm:w-4 animate-spin" />
                   <span className="hidden sm:inline">Adding...</span>
                 </span>
               ) : hasOutOfStock ? (
-                'Out of Stock'
+                'Sold'
               ) : (
-                <span className="flex items-center gap-1.5 sm:gap-2">
-                  <ShoppingBag className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
-                  Add to Cart
+                <span className="flex items-center gap-1 sm:gap-2">
+                  <ShoppingBag className="h-3 w-3 sm:h-4 sm:w-4" />
+                  <span className="hidden sm:inline">Add to Cart</span>
+                  <span className="sm:hidden">Add</span>
                 </span>
               )}
             </Button>

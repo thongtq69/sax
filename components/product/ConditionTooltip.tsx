@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { ConditionRating, getConditionDisplay, getConditionDescription } from '@/lib/product-conditions'
 import { Info } from 'lucide-react'
 
@@ -13,10 +13,12 @@ export function ConditionTooltip({ condition, className = '' }: ConditionTooltip
   const [isOpen, setIsOpen] = useState(false)
   const [isMobile, setIsMobile] = useState(false)
 
-  // Detect mobile on mount
-  useState(() => {
-    setIsMobile('ontouchstart' in window)
-  })
+  // Detect mobile on mount - must use useEffect to avoid SSR window error
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      setIsMobile('ontouchstart' in window)
+    }
+  }, [])
 
   const conditionColors: Record<ConditionRating, string> = {
     'mint': 'bg-emerald-100 text-emerald-800 border-emerald-200',

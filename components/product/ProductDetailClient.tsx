@@ -491,16 +491,17 @@ export function ProductDetailClient({ product }: ProductDetailClientProps) {
     <div className="relative flex flex-col">
 
       {/* Navigation Buttons - Next/Previous */}
+      {/* Navigation Buttons - Next/Previous */}
       {(navigationProducts.prev || navigationProducts.next) && (
-        <div className="mb-0 mt-4 md:mt-0 md:mb-6 flex items-center justify-between gap-4 animate-fade-in order-2 md:order-none">
+        <div className="mb-4 mt-0 md:mb-6 flex items-center justify-between gap-2 md:gap-4 animate-fade-in">
           {navigationProducts.prev ? (
             <Button
               variant="outline"
               size="sm"
               onClick={() => handleNavigation(navigationProducts.prev!.sku, navigationProducts.prev!.slug)}
-              className="group flex items-center gap-2 transition-all hover:scale-105"
+              className="group flex items-center gap-1 md:gap-2 transition-all hover:scale-105 text-xs md:text-sm h-8 md:h-9 px-2 md:px-3"
             >
-              <ChevronLeft className="h-4 w-4 transition-transform group-hover:-translate-x-1" />
+              <ChevronLeft className="h-3.5 w-3.5 md:h-4 md:w-4 transition-transform group-hover:-translate-x-1" />
               <span className="hidden sm:inline">Previous Product</span>
               <span className="sm:hidden">Prev</span>
             </Button>
@@ -513,20 +514,20 @@ export function ProductDetailClient({ product }: ProductDetailClientProps) {
               variant="outline"
               size="sm"
               onClick={() => handleNavigation(navigationProducts.next!.sku, navigationProducts.next!.slug)}
-              className="group flex items-center gap-2 transition-all hover:scale-105"
+              className="group flex items-center gap-1 md:gap-2 transition-all hover:scale-105 text-xs md:text-sm h-8 md:h-9 px-2 md:px-3"
             >
               <span className="hidden sm:inline">Next Product</span>
               <span className="sm:hidden">Next</span>
-              <ChevronRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
+              <ChevronRight className="h-3.5 w-3.5 md:h-4 md:w-4 transition-transform group-hover:translate-x-1" />
             </Button>
           )}
         </div>
       )}
 
-      <div className="bg-white rounded-2xl border shadow-sm order-1 md:order-none">
+      <div className="bg-white rounded-2xl border shadow-sm">
         <div className="flex flex-col lg:grid lg:grid-cols-10 lg:items-start">
-          {/* Image Gallery */}
-          <div className="animate-fade-in-left lg:col-span-6 p-3 md:p-6">
+          {/* Image Gallery - FIRST on mobile (order-1), normal on desktop */}
+          <div className="animate-fade-in-left lg:col-span-6 p-3 md:p-6 order-1 lg:order-none">
             {/* Main Display - Video or Image */}
             <div className="relative aspect-[4/3] sm:aspect-[4/5] md:aspect-[4/5] lg:aspect-[4/5] overflow-hidden rounded-xl md:rounded-2xl border-2 border-gray-100 bg-gradient-to-br from-gray-50 to-gray-100 group">
               {showVideo && videoIds[currentVideoIndex] ? (
@@ -737,8 +738,8 @@ export function ProductDetailClient({ product }: ProductDetailClientProps) {
             </div>
           </div>
 
-          {/* Product Info - Sticky on desktop */}
-          <div className="space-y-4 md:space-y-6 animate-fade-in-right lg:col-span-4 lg:sticky lg:top-4 lg:self-start lg:h-fit lg:max-h-[calc(100vh-2rem)] lg:overflow-y-auto p-4 md:p-6 lg:border-l">
+          {/* Product Info - SECOND on mobile (order-2), sticky on desktop */}
+          <div className="space-y-4 md:space-y-6 animate-fade-in-right lg:col-span-4 lg:sticky lg:top-4 lg:self-start lg:h-fit lg:max-h-[calc(100vh-2rem)] lg:overflow-y-auto p-4 md:p-6 lg:border-l order-2 lg:order-none">
             {/* Header */}
             <div>
               <div className="flex items-center gap-1.5 md:gap-2 mb-2 flex-wrap">
@@ -912,8 +913,8 @@ export function ProductDetailClient({ product }: ProductDetailClientProps) {
               <Button
                 size="lg"
                 className={`w-full text-sm md:text-base font-semibold transition-all duration-300 rounded-full h-12 ${isSoldOut
-                    ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
-                    : 'bg-[#D4AF37] hover:bg-[#c9a432] text-secondary hover:shadow-lg'
+                  ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                  : 'bg-[#D4AF37] hover:bg-[#c9a432] text-secondary hover:shadow-lg'
                   }`}
                 onClick={() => {
                   if (isSoldOut) return
@@ -941,10 +942,10 @@ export function ProductDetailClient({ product }: ProductDetailClientProps) {
                 size="lg"
                 variant="outline"
                 className={`w-full text-sm md:text-base font-semibold transition-all duration-300 rounded-full h-12 ${isSoldOut
-                    ? 'bg-gray-100 text-gray-400 border-gray-200 cursor-not-allowed'
-                    : isAddedToCart
-                      ? 'bg-green-500 hover:bg-green-600 text-white border-green-500'
-                      : 'bg-gray-100 hover:bg-[#D4AF37] hover:text-secondary hover:border-[#D4AF37] text-gray-800 border-gray-200'
+                  ? 'bg-gray-100 text-gray-400 border-gray-200 cursor-not-allowed'
+                  : isAddedToCart
+                    ? 'bg-green-500 hover:bg-green-600 text-white border-green-500'
+                    : 'bg-gray-100 hover:bg-[#D4AF37] hover:text-secondary hover:border-[#D4AF37] text-gray-800 border-gray-200'
                   }`}
                 onClick={handleAddToCart}
                 disabled={isSoldOut || isAddingToCart}
@@ -1071,33 +1072,33 @@ export function ProductDetailClient({ product }: ProductDetailClientProps) {
       </div>
 
       {/* Tabs Section */}
-      <div className="mt-8 md:mt-12 lg:mt-16 animate-fade-in-up" style={{ animationDelay: '0.3s' }}>
+      <div className="mt-4 md:mt-12 lg:mt-16 animate-fade-in-up" style={{ animationDelay: '0.3s' }}>
         <Tabs defaultValue="description" className="w-full">
-          <TabsList className="w-full justify-start border-b rounded-none bg-transparent h-auto p-0 gap-4 md:gap-8 overflow-x-auto">
+          <TabsList className="w-full justify-start border-b rounded-none bg-transparent h-auto p-0 gap-2 md:gap-8 overflow-x-auto">
             {['description', 'specs', 'reviews', 'faq'].map((tab) => (
               <TabsTrigger
                 key={tab}
                 value={tab}
-                className="product-tabs-trigger relative capitalize text-sm md:text-base lg:text-lg pb-3 md:pb-4 px-2 md:px-0 rounded-none bg-transparent data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:text-primary font-medium text-gray-500 hover:text-gray-700 transition-colors whitespace-nowrap after:absolute after:bottom-0 after:left-0 after:right-0 after:h-0.5 after:bg-primary after:scale-x-0 data-[state=active]:after:scale-x-100 after:transition-transform after:duration-300"
+                className="product-tabs-trigger relative capitalize text-xs md:text-base lg:text-lg pb-2 md:pb-4 px-1 md:px-0 rounded-none bg-transparent data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:text-primary font-medium text-gray-500 hover:text-gray-700 transition-colors whitespace-nowrap after:absolute after:bottom-0 after:left-0 after:right-0 after:h-0.5 after:bg-primary after:scale-x-0 data-[state=active]:after:scale-x-100 after:transition-transform after:duration-300"
               >
                 {tab === 'faq' ? 'FAQ' : tab}
               </TabsTrigger>
             ))}
           </TabsList>
 
-          <TabsContent value="description" className="mt-4 md:mt-6 lg:mt-8 animate-fade-in">
+          <TabsContent value="description" className="mt-3 md:mt-6 lg:mt-8 animate-fade-in">
             <div className="prose prose-sm md:prose-lg max-w-none">
-              <p className="text-gray-700 leading-relaxed text-base md:text-lg">{product.description}</p>
+              <p className="text-gray-700 leading-relaxed text-sm md:text-lg">{product.description}</p>
 
               {product.included && (
-                <div className="mt-6 md:mt-8 p-4 md:p-6 bg-gradient-to-br from-green-50 to-emerald-50 rounded-xl md:rounded-2xl border border-green-100">
-                  <h3 className="text-lg md:text-xl font-bold text-secondary mb-3 md:mb-4">
+                <div className="mt-4 md:mt-8 p-3 md:p-6 bg-gradient-to-br from-green-50 to-emerald-50 rounded-lg md:rounded-2xl border border-green-100">
+                  <h3 className="text-base md:text-xl font-bold text-secondary mb-2 md:mb-4">
                     What's Included
                   </h3>
-                  <ul className="space-y-2">
+                  <ul className="space-y-1.5 md:space-y-2">
                     {product.included.map((item, index) => (
-                      <li key={index} className="flex items-center gap-2 md:gap-3 text-sm md:text-base text-gray-700">
-                        <Check className="h-4 w-4 md:h-5 md:w-5 text-green-500 flex-shrink-0" />
+                      <li key={index} className="flex items-center gap-1.5 md:gap-3 text-xs md:text-base text-gray-700">
+                        <Check className="h-3.5 w-3.5 md:h-5 md:w-5 text-green-500 flex-shrink-0" />
                         {item}
                       </li>
                     ))}
@@ -1276,24 +1277,24 @@ export function ProductDetailClient({ product }: ProductDetailClientProps) {
 
       {/* Similar Listings */}
       {relatedProducts.length > 0 && (
-        <div className="mt-12 md:mt-16 lg:mt-20 animate-fade-in-up" style={{ animationDelay: '0.4s' }}>
-          <div className="flex items-center justify-between mb-4 md:mb-6">
+        <div className="mt-6 md:mt-16 lg:mt-20 animate-fade-in-up" style={{ animationDelay: '0.4s' }}>
+          <div className="flex items-center justify-between mb-3 md:mb-6">
             <div>
-              <h2 className="text-2xl md:text-3xl font-bold text-secondary">Similar Listings</h2>
-              <p className="text-muted-foreground mt-1 text-sm md:text-base">Explore other horns with matching specs and price points.</p>
+              <h2 className="text-xl md:text-3xl font-bold text-secondary">Similar Listings</h2>
+              <p className="text-muted-foreground mt-0.5 md:mt-1 text-xs md:text-base">Explore other horns with matching specs and price points.</p>
             </div>
             <Button variant="outline" asChild size="sm" className="hidden sm:flex">
               <Link href="/shop">View All →</Link>
             </Button>
           </div>
 
-          <div className="overflow-x-auto pb-3 -mx-1 snap-x snap-mandatory">
-            <div className="flex gap-4 px-1 md:grid md:grid-flow-col md:auto-cols-[minmax(240px,280px)] md:gap-5">
+          <div className="overflow-x-auto pb-2 -mx-1 snap-x snap-mandatory">
+            <div className="flex gap-2.5 px-1 md:grid md:grid-flow-col md:auto-cols-[minmax(240px,280px)] md:gap-5">
               {relatedProducts.map((item, index) => (
                 <Link
                   key={`${item.id}-${index}`}
                   href={getProductUrl(item.sku, item.slug)}
-                  className="group snap-start bg-white rounded-2xl border border-gray-100 shadow-sm hover:shadow-lg transition-all duration-300 overflow-hidden min-w-[220px] w-[220px] sm:min-w-[240px] sm:w-[240px] md:min-w-0 md:w-auto"
+                  className="group snap-start bg-white rounded-xl md:rounded-2xl border border-gray-100 shadow-sm hover:shadow-lg transition-all duration-300 overflow-hidden min-w-[160px] w-[160px] sm:min-w-[240px] sm:w-[240px] md:min-w-0 md:w-auto"
                 >
                   <div className="relative aspect-[4/5] overflow-hidden">
                     <SmartImage
@@ -1303,14 +1304,14 @@ export function ProductDetailClient({ product }: ProductDetailClientProps) {
                       className="object-cover transition-transform duration-500 group-hover:scale-105"
                     />
                   </div>
-                  <div className="p-3 md:p-4 space-y-1.5">
-                    <p className="text-[11px] md:text-xs font-semibold text-muted-foreground uppercase tracking-wide">{item.brand}</p>
-                    <p className="text-base md:text-lg font-semibold text-secondary leading-tight line-clamp-2 group-hover:text-primary">
+                  <div className="p-2 md:p-4 space-y-1">
+                    <p className="text-[10px] md:text-xs font-semibold text-muted-foreground uppercase tracking-wide">{item.brand}</p>
+                    <p className="text-sm md:text-lg font-semibold text-secondary leading-tight line-clamp-2 group-hover:text-primary">
                       {item.name}
                     </p>
-                    <p className="text-xs md:text-sm text-gray-600">{item.inStock ? 'In Stock' : 'Sold'}</p>
+                    <p className="text-[10px] md:text-sm text-gray-600">{item.inStock ? 'In Stock' : 'Sold'}</p>
                     <div className="flex items-center justify-between">
-                      <span className="text-lg md:text-xl font-bold text-primary">
+                      <span className="text-base md:text-xl font-bold text-primary">
                         ${item.price.toLocaleString()}
                       </span>
                     </div>
