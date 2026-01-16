@@ -2,10 +2,10 @@
 
 import dynamic from 'next/dynamic'
 import { useState, useEffect, useRef } from 'react'
-import { useSession } from 'next-auth/react'
+import { useSession, signOut } from 'next-auth/react'
 import Link from 'next/link'
 import Image from 'next/image'
-import { Search, ShoppingCart, Menu, X, User, LogIn, MessageCircle } from 'lucide-react'
+import { Search, ShoppingCart, Menu, X, User, LogIn, MessageCircle, Package, Heart, Settings, LogOut, Shield } from 'lucide-react'
 import { useCartStore } from '@/lib/store/cart'
 import { Button } from '@/components/ui/button'
 import { SearchBar } from './SearchBar'
@@ -345,7 +345,7 @@ export function Header() {
           </div>
 
           {/* Mobile Menu */}
-          <div className={`lg:hidden overflow-hidden transition-all duration-300 ease-in-out ${isMobileMenuOpen ? 'max-h-[350px] opacity-100 border-t border-[#2c3e50]/20' : 'max-h-0 opacity-0'
+          <div className={`lg:hidden overflow-hidden transition-all duration-300 ease-in-out ${isMobileMenuOpen ? 'max-h-[500px] opacity-100 border-t border-[#2c3e50]/20' : 'max-h-0 opacity-0'
             }`}>
             <div className="py-3 space-y-2">
               {/* Social Icons - Compact */}
@@ -364,27 +364,98 @@ export function Header() {
                 ))}
               </div>
 
-              {/* Nav Links - Compact Grid */}
-              <div className="grid grid-cols-2 gap-x-4 gap-y-1">
-                {session?.user ? (
-                  <Link
-                    href="/account/profile"
-                    className="flex items-center gap-2 text-[#2c3e50] font-medium py-1.5 text-sm font-body"
-                    onClick={() => setIsMobileMenuOpen(false)}
-                  >
-                    <User className="h-3.5 w-3.5" />
-                    My Account
-                  </Link>
-                ) : (
+              {/* User Section - Mobile Only */}
+              {session?.user ? (
+                <div className="pb-2 border-b border-[#2c3e50]/10">
+                  {/* User Info */}
+                  <div className="flex items-center gap-3 mb-3">
+                    <div className="w-10 h-10 rounded-full bg-[#2c3e50] flex items-center justify-center text-white font-semibold">
+                      {session.user.name?.charAt(0).toUpperCase() || session.user.email?.charAt(0).toUpperCase() || 'U'}
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="font-semibold text-[#2c3e50] text-sm truncate">{session.user.name || 'User'}</p>
+                      <p className="text-xs text-[#2c3e50]/60 truncate">{session.user.email}</p>
+                    </div>
+                  </div>
+                  
+                  {/* Quick Actions Grid */}
+                  <div className="grid grid-cols-4 gap-2">
+                    <Link
+                      href="/account/profile"
+                      className="flex flex-col items-center gap-1 p-2 rounded-lg bg-[#2c3e50]/10 hover:bg-[#2c3e50]/20 transition-all"
+                      onClick={() => setIsMobileMenuOpen(false)}
+                    >
+                      <User className="h-5 w-5 text-[#2c3e50]" />
+                      <span className="text-[10px] font-medium text-[#2c3e50]">Profile</span>
+                    </Link>
+                    <Link
+                      href="/account/orders"
+                      className="flex flex-col items-center gap-1 p-2 rounded-lg bg-[#2c3e50]/10 hover:bg-[#2c3e50]/20 transition-all"
+                      onClick={() => setIsMobileMenuOpen(false)}
+                    >
+                      <Package className="h-5 w-5 text-[#2c3e50]" />
+                      <span className="text-[10px] font-medium text-[#2c3e50]">Orders</span>
+                    </Link>
+                    <Link
+                      href="/account/wishlist"
+                      className="flex flex-col items-center gap-1 p-2 rounded-lg bg-[#2c3e50]/10 hover:bg-[#2c3e50]/20 transition-all"
+                      onClick={() => setIsMobileMenuOpen(false)}
+                    >
+                      <Heart className="h-5 w-5 text-[#2c3e50]" />
+                      <span className="text-[10px] font-medium text-[#2c3e50]">Wishlist</span>
+                    </Link>
+                    {(session.user as any).role === 'ADMIN' ? (
+                      <Link
+                        href="/admin"
+                        className="flex flex-col items-center gap-1 p-2 rounded-lg bg-primary/10 hover:bg-primary/20 transition-all"
+                        onClick={() => setIsMobileMenuOpen(false)}
+                      >
+                        <Shield className="h-5 w-5 text-primary" />
+                        <span className="text-[10px] font-medium text-primary">Admin</span>
+                      </Link>
+                    ) : (
+                      <button
+                        onClick={() => {
+                          setIsMobileMenuOpen(false)
+                          signOut({ callbackUrl: '/' })
+                        }}
+                        className="flex flex-col items-center gap-1 p-2 rounded-lg bg-red-50 hover:bg-red-100 transition-all"
+                      >
+                        <LogOut className="h-5 w-5 text-red-500" />
+                        <span className="text-[10px] font-medium text-red-500">Logout</span>
+                      </button>
+                    )}
+                  </div>
+                  
+                  {/* Admin Logout (if admin) */}
+                  {(session.user as any).role === 'ADMIN' && (
+                    <button
+                      onClick={() => {
+                        setIsMobileMenuOpen(false)
+                        signOut({ callbackUrl: '/' })
+                      }}
+                      className="w-full mt-2 flex items-center justify-center gap-2 py-2 rounded-lg bg-red-50 hover:bg-red-100 transition-all text-red-500 text-sm font-medium"
+                    >
+                      <LogOut className="h-4 w-4" />
+                      Sign Out
+                    </button>
+                  )}
+                </div>
+              ) : (
+                <div className="pb-2 border-b border-[#2c3e50]/10">
                   <Link
                     href="/auth/login"
-                    className="flex items-center gap-2 text-[#2c3e50] font-medium py-1.5 text-sm font-body"
+                    className="flex items-center justify-center gap-2 w-full py-2.5 rounded-lg bg-[#2c3e50] text-white font-medium text-sm hover:bg-[#1a252f] transition-all"
                     onClick={() => setIsMobileMenuOpen(false)}
                   >
-                    <LogIn className="h-3.5 w-3.5" />
+                    <LogIn className="h-4 w-4" />
                     Login / Register
                   </Link>
-                )}
+                </div>
+              )}
+
+              {/* Nav Links - Compact Grid */}
+              <div className="grid grid-cols-2 gap-x-4 gap-y-1">
                 <Link
                   href="/about"
                   className="flex items-center text-[#2c3e50] font-medium py-1.5 text-sm font-body"
@@ -410,7 +481,7 @@ export function Header() {
                 </Link>
                 <Link
                   href="/shop"
-                  className="flex items-center text-[#2c3e50] font-medium py-1.5 text-sm font-body col-span-2"
+                  className="flex items-center text-[#2c3e50] font-medium py-1.5 text-sm font-body"
                   onClick={() => setIsMobileMenuOpen(false)}
                 >
                   Shop All Instruments
