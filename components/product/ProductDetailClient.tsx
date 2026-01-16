@@ -1088,7 +1088,12 @@ export function ProductDetailClient({ product }: ProductDetailClientProps) {
 
           <TabsContent value="description" className="mt-3 md:mt-6 lg:mt-8 animate-fade-in">
             <div className="prose prose-sm md:prose-lg max-w-none">
-              <p className="text-gray-700 leading-relaxed text-sm md:text-lg">{product.description}</p>
+              {/* Split description by double newlines or periods followed by space to create paragraphs */}
+              <div className="text-gray-700 leading-relaxed text-sm md:text-lg space-y-4">
+                {product.description?.split(/\n\n|\n/).filter(Boolean).map((paragraph, index) => (
+                  <p key={index} className="text-gray-700">{paragraph.trim()}</p>
+                )) || <p>{product.description}</p>}
+              </div>
 
               {product.included && (
                 <div className="mt-4 md:mt-8 p-3 md:p-6 bg-gradient-to-br from-green-50 to-emerald-50 rounded-lg md:rounded-2xl border border-green-100">

@@ -1,5 +1,4 @@
 import nodemailer from "nodemailer"
-import path from "path"
 import { emailBannerBase64 } from "./email-banner-base64"
 
 const isZoho = process.env.SMTP_HOST?.includes('zoho')
@@ -56,10 +55,11 @@ const getEmailAttachments = () => {
     {
       filename: 'email-banner.png',
       content,
-      cid: 'logo_banner_v4' // Changed CID to bust cache again
+      cid: 'logo_banner_v4'
     }
   ]
 }
+
 
 export async function sendVerificationEmail(email: string, token: string, name?: string) {
   const verifyUrl = `${baseUrl}/auth/verify-email?token=${token}`
@@ -324,10 +324,18 @@ export async function sendOrderConfirmationEmail(data: OrderEmailData) {
     customerEmail,
     customerName,
     items,
+    subtotal,
+    shipping,
     total,
   } = data
 
-  const instrumentNames = items.map(item => item.name).join(', ')
+  // Get instrument name (first item or list all)
+  const instrumentName = items.length === 1 
+    ? items[0].name 
+    : items.map(item => item.name).join(', ')
+  
+  // Calculate price (subtotal without shipping)
+  const price = subtotal
 
   const html = `
     <!DOCTYPE html>
@@ -346,7 +354,11 @@ export async function sendOrderConfirmationEmail(data: OrderEmailData) {
         </p>
         
         <p style="margin: 0 0 25px 0; font-size: 16px;">
-          Thank you for your purchase at James Sax Corner. We are pleased to confirm that your order has been successfully placed.
+          Thank you for your purchase from <strong>James Sax Corner</strong>.
+        </p>
+        
+        <p style="margin: 0 0 25px 0; font-size: 16px;">
+          We are pleased to confirm receipt of your order:
         </p>
         
         <div style="margin: 25px 0; font-size: 16px;">
@@ -354,23 +366,31 @@ export async function sendOrderConfirmationEmail(data: OrderEmailData) {
             <strong>Order Number:</strong> #${orderNumber}
           </p>
           <p style="margin: 0 0 10px 0;">
-            <strong>Instrument:</strong> ${instrumentNames}
+            <strong>Instrument:</strong> ${instrumentName}
           </p>
           <p style="margin: 0 0 10px 0;">
-            <strong>Total Amount:</strong> $${total.toLocaleString()}
+            <strong>Price:</strong> $${price.toLocaleString()}
           </p>
           <p style="margin: 0 0 10px 0;">
-            <strong>Status:</strong> Payment Confirmed ✓
+            <strong>Shipping:</strong> $${shipping.toLocaleString()}
+          </p>
+          <p style="margin: 0 0 10px 0;">
+            <strong>Total:</strong> $${total.toLocaleString()}
+          </p>
+          <p style="margin: 0 0 10px 0;">
+            <strong>Status:</strong> Order confirmed and in preparation
           </p>
         </div>
         
         <div style="margin: 30px 0;">
-          <p style="margin: 0 0 15px 0; font-size: 16px; font-weight: bold;">
-            Important Information:
+          <p style="margin: 0 0 15px 0; font-size: 16px;">
+            Please note the following important information:
           </p>
           <ul style="margin: 0; padding-left: 20px; font-size: 15px;">
-            <li style="margin-bottom: 8px;">For <strong>US customers</strong>, we will cover import duties on your behalf.</li>
-            <li style="margin-bottom: 8px;">We will send you a <strong>detailed inspection video</strong> showing the condition and playability of the instrument before shipment. Please keep an eye on your inbox.</li>
+            <li style="margin-bottom: 10px;">All instruments are professionally inspected, regulated, and prepared before shipment.</li>
+            <li style="margin-bottom: 10px;">This is a <strong>non-returnable sale</strong>, as clearly stated in the listing, due to the nature of international logistics.</li>
+            <li style="margin-bottom: 10px;">For <strong>US customers</strong>, we will cover import duties on your behalf.</li>
+            <li style="margin-bottom: 10px;">We will send you a <strong>detailed inspection video</strong> showing the condition and playability of the instrument before shipment. Please keep an eye on your inbox.</li>
           </ul>
         </div>
         
@@ -409,7 +429,7 @@ export async function sendOrderConfirmationEmail(data: OrderEmailData) {
   await orderTransporter.sendMail({
     from: `"James Sax Corner" <${orderFromEmail}>`,
     to: customerEmail,
-    subject: `Order Confirmation #${orderNumber} - James Sax Corner`,
+    subject: `Order #${orderNumber} – James Sax Corner Order Confirmation`,
     html,
     attachments: getEmailAttachments(),
   })
