@@ -298,7 +298,7 @@ export default function BrandsManagement() {
 
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
-                Models / Series
+                Models
               </label>
               <p className="text-xs text-gray-500 mb-2">
                 Add model lines for this brand (e.g., Mark VI, Serie III, YAS-62)

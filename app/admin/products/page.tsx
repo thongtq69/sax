@@ -1196,9 +1196,28 @@ export default function ProductsManagement() {
                     </div>
                   ))}
                   
-                  {/* Show any custom specs that are not in specKeys */}
+                  {/* Model field - auto-synced from Basic Info, show if not in specKeys */}
+                  {!specKeys.some(sk => sk.name === 'Model') && (
+                    <div className="flex gap-2 items-center">
+                      <div className="flex-1 px-3 py-2 bg-amber-50 border border-amber-200 rounded-md text-sm font-medium text-amber-700">
+                        Model <span className="text-xs font-normal">(auto-synced)</span>
+                      </div>
+                      <Input
+                        value={(formData.specs?.['Model'] as string) || ''}
+                        onChange={(e) => {
+                          const newSpecs = { ...formData.specs, ['Model']: e.target.value }
+                          setFormData({ ...formData, specs: newSpecs })
+                        }}
+                        placeholder="Auto-filled from Basic Info"
+                        className="flex-1"
+                        readOnly
+                      />
+                    </div>
+                  )}
+                  
+                  {/* Show any custom specs that are not in specKeys and not Model (already shown above) */}
                   {Object.entries(formData.specs || {})
-                    .filter(([key]) => !specKeys.some(sk => sk.name === key))
+                    .filter(([key]) => !specKeys.some(sk => sk.name === key) && key !== 'Model')
                     .map(([key, value], index) => (
                       <div key={`custom-${index}`} className="flex gap-2 items-center">
                         <Select
