@@ -122,21 +122,22 @@ export function LoginForm({ callbackUrl }: LoginFormProps) {
           </div>
         </div>
 
-        <div className="flex items-center justify-between">
-          <div className="flex items-center space-x-2">
+        <div className="flex items-center justify-between gap-2">
+          <div className="flex items-center gap-2">
             <Checkbox
               id="remember"
               checked={rememberMe}
               onCheckedChange={(checked) => setRememberMe(checked as boolean)}
+              className="h-4 w-4"
             />
-            <Label htmlFor="remember" className="text-sm text-gray-600">
+            <Label htmlFor="remember" className="text-xs md:text-sm text-gray-600 cursor-pointer">
               Remember me
             </Label>
           </div>
 
           <Link
             href="/auth/forgot-password"
-            className="text-sm text-blue-600 hover:text-blue-500"
+            className="text-xs md:text-sm text-blue-600 hover:text-blue-500 whitespace-nowrap"
           >
             Forgot password?
           </Link>

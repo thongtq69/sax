@@ -22,7 +22,6 @@ import {
   Truck,
   Tag,
   Mail,
-  MailCheck,
 } from 'lucide-react'
 
 interface AdminSidebarProps {
@@ -50,7 +49,6 @@ export const menuItems: { href: string; label: string; icon: any; exact?: boolea
   { href: '/admin/shipping', label: 'Shipping Zones', icon: Truck },
   { href: '/admin/users', label: 'Users', icon: Users },
   { href: '/admin/settings', label: 'Site Settings', icon: Settings },
-  { href: '/admin/test-email', label: 'Test Email', icon: MailCheck },
 ]
 
 export default function AdminSidebar({

@@ -397,18 +397,47 @@ function ShopPageContent() {
       <div className="container mx-auto px-4 py-8">
         {/* Category Tabs */}
         <div className="mb-4 md:mb-8 animate-fade-in-up" style={{ animationDelay: '0.2s' }}>
-          <div className="flex overflow-x-auto pb-2 -mx-4 px-4 md:mx-0 md:px-0 md:flex-wrap md:justify-center gap-2 scrollbar-hide">
+          {/* Mobile: Horizontal scroll with better styling */}
+          <div className="md:hidden">
+            <div className="flex overflow-x-auto pb-3 -mx-4 px-4 gap-2 scrollbar-hide snap-x snap-mandatory">
+              <button
+                onClick={() => setSelectedSubcategories([])}
+                className={`flex-shrink-0 snap-start px-4 py-2 rounded-full font-medium text-sm whitespace-nowrap transition-all duration-300 ${selectedSubcategories.length === 0
+                  ? 'bg-primary text-white shadow-lg'
+                  : 'bg-white border border-gray-200 text-gray-600 active:bg-gray-50'
+                  }`}
+              >
+                All ({products.length})
+              </button>
+
+              {Array.from(subcategories).map(([slug, { name, count }]) => (
+                <button
+                  key={slug}
+                  onClick={() => setSelectedSubcategories([slug])}
+                  className={`flex-shrink-0 snap-start px-4 py-2 rounded-full font-medium text-sm whitespace-nowrap transition-all duration-300 capitalize ${selectedSubcategories.length === 1 && selectedSubcategories[0] === slug
+                    ? 'bg-primary text-white shadow-lg'
+                    : 'bg-white border border-gray-200 text-gray-600 active:bg-gray-50'
+                    }`}
+                >
+                  {name} ({count})
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* Desktop: Wrapped layout */}
+          <div className="hidden md:flex flex-wrap justify-center gap-2">
             <button
               onClick={() => setSelectedSubcategories([])}
-              className={`px-3 py-1.5 md:px-4 md:py-2 rounded-full font-medium text-xs md:text-sm whitespace-nowrap transition-all duration-300 ${selectedSubcategories.length === 0
+              className={`px-4 py-2 rounded-full font-medium text-sm whitespace-nowrap transition-all duration-300 ${selectedSubcategories.length === 0
                 ? 'bg-primary text-white shadow-lg scale-105'
                 : 'bg-white border-2 border-gray-200 text-gray-600 hover:border-primary hover:text-primary'
                 }`}
             >
               <span className="flex items-center gap-2">
-                <Sparkles className="h-3 w-3 md:h-4 md:w-4" />
+                <Sparkles className="h-4 w-4" />
                 All Products
-                <Badge variant="secondary" className="ml-1 text-[10px] md:text-xs">
+                <Badge variant="secondary" className="ml-1 text-xs">
                   {products.length}
                 </Badge>
               </span>
@@ -418,7 +447,7 @@ function ShopPageContent() {
               <button
                 key={slug}
                 onClick={() => setSelectedSubcategories([slug])}
-                className={`px-3 py-1.5 md:px-4 md:py-2 rounded-full font-medium text-xs md:text-sm whitespace-nowrap transition-all duration-300 ${selectedSubcategories.length === 1 && selectedSubcategories[0] === slug
+                className={`px-4 py-2 rounded-full font-medium text-sm whitespace-nowrap transition-all duration-300 ${selectedSubcategories.length === 1 && selectedSubcategories[0] === slug
                   ? 'bg-primary text-white shadow-lg scale-105'
                   : 'bg-white border-2 border-gray-200 text-gray-600 hover:border-primary hover:text-primary'
                   }`}
@@ -426,7 +455,7 @@ function ShopPageContent() {
               >
                 <span className="flex items-center gap-2 capitalize">
                   {name}
-                  <Badge variant="outline" className="ml-1 text-[10px] md:text-xs">
+                  <Badge variant="outline" className="ml-1 text-xs">
                     {count}
                   </Badge>
                 </span>
