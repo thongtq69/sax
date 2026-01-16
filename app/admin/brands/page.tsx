@@ -19,6 +19,7 @@ interface Brand {
   name: string
   slug: string
   logo: string | null
+  models: string[]
   isActive: boolean
   order: number
   createdAt: string
@@ -35,9 +36,11 @@ export default function BrandsManagement() {
   const [formData, setFormData] = useState({
     name: '',
     logo: null as string | null,
+    models: [] as string[],
     isActive: true,
     order: 0
   })
+  const [newModel, setNewModel] = useState('')
 
   // Fetch brands
   useEffect(() => {
@@ -78,6 +81,7 @@ export default function BrandsManagement() {
       setFormData({
         name: brand.name,
         logo: brand.logo,
+        models: brand.models || [],
         isActive: brand.isActive,
         order: brand.order
       })
@@ -86,10 +90,12 @@ export default function BrandsManagement() {
       setFormData({
         name: '',
         logo: null,
+        models: [],
         isActive: true,
         order: brands.length
       })
     }
+    setNewModel('')
     setIsDialogOpen(true)
   }
 
@@ -219,6 +225,11 @@ export default function BrandsManagement() {
                 <div className="flex-1 min-w-0">
                   <h3 className="font-medium text-gray-900 truncate">{brand.name}</h3>
                   <p className="text-sm text-gray-500">{brand.slug}</p>
+                  {brand.models && brand.models.length > 0 && (
+                    <p className="text-xs text-gray-400 mt-0.5 truncate">
+                      {brand.models.length} model{brand.models.length > 1 ? 's' : ''}
+                    </p>
+                  )}
                 </div>
               </div>
               
@@ -255,7 +266,7 @@ export default function BrandsManagement() {
 
       {/* Brand Form Dialog */}
       <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-        <DialogContent className="max-w-md">
+        <DialogContent className="max-w-lg">
           <DialogHeader>
             <DialogTitle>
               {editingBrand ? 'Edit Brand' : 'Add New Brand'}
@@ -283,6 +294,76 @@ export default function BrandsManagement() {
                 onChange={(logo) => setFormData({ ...formData, logo })}
                 folder="sax/brands"
               />
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Models / Series
+              </label>
+              <p className="text-xs text-gray-500 mb-2">
+                Add model lines for this brand (e.g., Mark VI, Serie III, YAS-62)
+              </p>
+              
+              {/* Current models */}
+              {formData.models.length > 0 && (
+                <div className="flex flex-wrap gap-2 mb-3">
+                  {formData.models.map((model, index) => (
+                    <span
+                      key={index}
+                      className="inline-flex items-center gap-1 px-3 py-1.5 bg-primary/10 text-primary rounded-full text-sm"
+                    >
+                      {model}
+                      <button
+                        type="button"
+                        onClick={() => {
+                          const newModels = [...formData.models]
+                          newModels.splice(index, 1)
+                          setFormData({ ...formData, models: newModels })
+                        }}
+                        className="text-primary/60 hover:text-red-500 ml-1"
+                      >
+                        ×
+                      </button>
+                    </span>
+                  ))}
+                </div>
+              )}
+
+              {/* Add new model */}
+              <div className="flex gap-2">
+                <Input
+                  value={newModel}
+                  onChange={(e) => setNewModel(e.target.value)}
+                  placeholder="Enter model name..."
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter' && newModel.trim()) {
+                      e.preventDefault()
+                      if (!formData.models.includes(newModel.trim())) {
+                        setFormData({
+                          ...formData,
+                          models: [...formData.models, newModel.trim()]
+                        })
+                      }
+                      setNewModel('')
+                    }
+                  }}
+                />
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => {
+                    if (newModel.trim() && !formData.models.includes(newModel.trim())) {
+                      setFormData({
+                        ...formData,
+                        models: [...formData.models, newModel.trim()]
+                      })
+                      setNewModel('')
+                    }
+                  }}
+                >
+                  <Plus className="h-4 w-4" />
+                </Button>
+              </div>
             </div>
 
             <div className="flex items-center gap-2">

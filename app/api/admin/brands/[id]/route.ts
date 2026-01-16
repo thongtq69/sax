@@ -37,7 +37,7 @@ export async function PUT(
 
     const { id } = await params
     const body = await request.json()
-    const { name, logo, isActive, order } = body
+    const { name, logo, models, isActive, order } = body
 
     if (!name?.trim()) {
       return NextResponse.json({ error: 'Brand name is required' }, { status: 400 })
@@ -71,6 +71,7 @@ export async function PUT(
         name: name.trim(),
         slug,
         logo: logo || null,
+        models: models || [],
         isActive: isActive ?? true,
         order: order ?? 0
       }

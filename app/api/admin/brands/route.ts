@@ -27,7 +27,7 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json()
-    const { name, logo, isActive = true, order = 0 } = body
+    const { name, logo, models = [], isActive = true, order = 0 } = body
 
     if (!name?.trim()) {
       return NextResponse.json({ error: 'Brand name is required' }, { status: 400 })
@@ -55,6 +55,7 @@ export async function POST(request: NextRequest) {
         name: name.trim(),
         slug,
         logo: logo || null,
+        models: models || [],
         isActive,
         order
       }

@@ -28,7 +28,7 @@ import { ImageUpload } from '@/components/admin/ImageUpload'
 export default function ProductsManagement() {
   const [productList, setProductList] = useState<Product[]>([])
   const [categories, setCategories] = useState<any[]>([])
-  const [brands, setBrands] = useState<{ id: string; name: string; isActive: boolean }[]>([])
+  const [brands, setBrands] = useState<{ id: string; name: string; models?: string[]; isActive: boolean }[]>([])
   const [specKeys, setSpecKeys] = useState<{ id: string; name: string; isActive: boolean }[]>([])
   const [newSpecKey, setNewSpecKey] = useState('')
   const [accessories, setAccessories] = useState<{ id: string; name: string; isActive: boolean }[]>([])
@@ -835,15 +835,51 @@ export default function ProductsManagement() {
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Sub-Brand / Model Line
+                    Model / Series
                   </label>
-                  <Input
-                    value={(formData as any).subBrand || ''}
-                    onChange={(e) => setFormData({ ...formData, subBrand: e.target.value } as any)}
-                    placeholder="e.g., Mark VI, Serie III, Custom Z, YAS-62"
-                  />
+                  {(() => {
+                    const selectedBrand = brands.find(b => b.name === formData.brand)
+                    const brandModels = selectedBrand?.models || []
+                    return (
+                      <>
+                        {brandModels.length > 0 ? (
+                          <Select
+                            value={(formData as any).subBrand || '__custom__'}
+                            onValueChange={(value) => {
+                              if (value === '__custom__') {
+                                setFormData({ ...formData, subBrand: '' } as any)
+                              } else {
+                                setFormData({ ...formData, subBrand: value } as any)
+                              }
+                            }}
+                          >
+                            <SelectTrigger>
+                              <SelectValue placeholder="Select model" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="__none__">None</SelectItem>
+                              {brandModels.map((model) => (
+                                <SelectItem key={model} value={model}>
+                                  {model}
+                                </SelectItem>
+                              ))}
+                              <SelectItem value="__custom__">✏️ Enter custom model...</SelectItem>
+                            </SelectContent>
+                          </Select>
+                        ) : null}
+                        {(brandModels.length === 0 || (formData as any).subBrand === '' || (!brandModels.includes((formData as any).subBrand || '') && (formData as any).subBrand)) && (
+                          <Input
+                            value={(formData as any).subBrand || ''}
+                            onChange={(e) => setFormData({ ...formData, subBrand: e.target.value } as any)}
+                            placeholder="e.g., Mark VI, Serie III, Custom Z, YAS-62"
+                            className={brandModels.length > 0 ? 'mt-2' : ''}
+                          />
+                        )}
+                      </>
+                    )
+                  })()}
                   <p className="text-xs text-gray-500 mt-1">
-                    Optional. Enter the model line or series name.
+                    {formData.brand ? 'Select from list or enter custom model.' : 'Select a brand first to see available models.'} <a href="/admin/brands" target="_blank" className="text-primary hover:underline">Manage models →</a>
                   </p>
                 </div>
                 <div>
