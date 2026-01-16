@@ -40,6 +40,7 @@ model Product {
   name        String
   slug        String       @unique
   brand       String
+  subBrand    String?      // Sub-brand or model line (e.g., "Mark VI", "Serie III", "Custom Z")
   price       Float
   shippingCost Float?      // Product-specific shipping cost (optional)
   categoryId  String       @db.ObjectId

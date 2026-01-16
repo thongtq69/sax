@@ -73,34 +73,33 @@ export function Footer() {
 
         {/* Mobile Layout */}
         <div className="lg:hidden">
-          {/* Join Our Musical Community - Mobile (ultra thin like desktop) */}
-          <div className="flex items-center gap-1.5 bg-gradient-to-r from-primary/80 to-primary -mx-3 px-2 overflow-hidden" style={{ height: '20px' }}>
-            <span className="font-semibold text-white flex items-center gap-0.5 whitespace-nowrap flex-shrink-0" style={{ fontSize: '6px' }}>
-              <Sparkles style={{ height: '6px', width: '6px' }} />
+          {/* Join Our Musical Community - Mobile (standardized height) */}
+          <div className="flex items-center gap-3 bg-gradient-to-r from-primary/80 to-primary -mx-3 px-4" style={{ height: '60px' }}>
+            <span className="font-semibold text-white flex items-center gap-1.5 whitespace-nowrap flex-shrink-0 text-sm">
+              <Sparkles className="h-4 w-4" />
               Join Our Musical Community
             </span>
-            <div className="flex gap-0.5 flex-1 items-center overflow-hidden">
+            <div className="flex gap-1.5 flex-1 items-center">
               <input
                 type="email"
                 placeholder="Enter your email"
-                className="bg-white/20 border border-white/30 placeholder:text-white/60 text-white rounded flex-1 min-w-0"
-                style={{ fontSize: '6px', height: '12px', padding: '0 4px', minHeight: '12px' }}
+                className="bg-white/20 border border-white/30 placeholder:text-white/60 text-white text-xs rounded flex-1 min-w-0 h-8 px-2"
                 readOnly
               />
-              <button className="bg-secondary hover:bg-secondary/90 text-white flex items-center justify-center rounded" style={{ height: '12px', width: '16px', minWidth: '16px', minHeight: '12px' }}>
-                <ChevronRight style={{ height: '6px', width: '6px' }} />
+              <button className="bg-secondary hover:bg-secondary/90 text-white flex items-center justify-center rounded h-8 w-8 flex-shrink-0">
+                <ChevronRight className="h-4 w-4" />
               </button>
             </div>
           </div>
 
-          {/* Need Help Section - Mobile (ultra thin like desktop) */}
-          <div className="flex items-center gap-1.5 -mx-3 px-2 bg-[#2f3f4f] border-b border-white/10 overflow-hidden" style={{ height: '18px' }}>
-            <span className="font-semibold text-white flex items-center gap-0.5 whitespace-nowrap flex-shrink-0" style={{ fontSize: '6px' }}>
-              <span className="text-[#D4AF37]">★</span>
+          {/* Need Help Section - Mobile (standardized height) */}
+          <div className="flex items-center justify-between gap-3 -mx-3 px-4 bg-[#2f3f4f] border-b border-white/10" style={{ height: '60px' }}>
+            <span className="font-semibold text-white flex items-center gap-1.5 whitespace-nowrap flex-shrink-0 text-sm">
+              <span className="text-[#D4AF37] text-base">★</span>
               Need Help Choosing?
             </span>
-            <Link href="/inquiry" className="bg-[#D4AF37] hover:bg-[#c9a432] text-[#2f3f4f] font-semibold flex-1 flex items-center justify-start gap-0.5 rounded overflow-hidden" style={{ fontSize: '6px', height: '12px', padding: '0 6px', minHeight: '12px' }}>
-              <MessageCircle style={{ height: '6px', width: '6px' }} />
+            <Link href="/inquiry" className="bg-[#D4AF37] hover:bg-[#c9a432] text-[#2f3f4f] font-semibold flex items-center justify-center gap-1.5 rounded px-4 h-8 text-xs whitespace-nowrap">
+              <MessageCircle className="h-3 w-3" />
               Ask Now
             </Link>
           </div>

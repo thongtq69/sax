@@ -46,6 +46,7 @@ export async function PUT(
       name,
       slug,
       brand,
+      subBrand,
       price,
       shippingCost,
       categoryId,
@@ -116,6 +117,7 @@ export async function PUT(
     }
     
     if (brand) updateData.brand = brand
+    if (subBrand !== undefined) updateData.subBrand = subBrand || null
     if (price !== undefined) updateData.price = parseFloat(price)
     if (shippingCost !== undefined) updateData.shippingCost = shippingCost ? parseFloat(shippingCost) : null
     if (categoryId) updateData.categoryId = categoryId

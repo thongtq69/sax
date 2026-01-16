@@ -59,10 +59,12 @@ export default function ProductsManagement() {
     condition?: string
     conditionNotes?: string
     videoUrls?: string[]
+    subBrand?: string
   }>({
     name: '',
     slug: '',
     brand: '',
+    subBrand: '',
     price: 0,
     shippingCost: 0,
     category: '',
@@ -240,6 +242,7 @@ export default function ProductsManagement() {
         condition: (product as any).condition || undefined,
         conditionNotes: (product as any).conditionNotes || '',
         shippingCost: (product as any).shippingCost || undefined,
+        subBrand: (product as any).subBrand || '',
         videoUrls: (product as any).videoUrls?.length > 0 
           ? [...(product as any).videoUrls, '', '', '', ''].slice(0, 4)
           : (product as any).videoUrl 
@@ -254,6 +257,7 @@ export default function ProductsManagement() {
         name: '',
         slug: '',
         brand: '',
+        subBrand: '',
         price: 0,
         shippingCost: undefined,
         category: '',
@@ -314,6 +318,7 @@ export default function ProductsManagement() {
         name: formData.name,
         slug: formData.slug || formData.name?.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '') || '',
         brand: formData.brand,
+        subBrand: (formData as any).subBrand || null,
         price: formData.price,
         shippingCost: (formData as any).shippingCost || null,
         categoryId: categoryObj?.id || formData.category,
@@ -826,6 +831,19 @@ export default function ProductsManagement() {
                   )}
                   <p className="text-xs text-gray-500 mt-1">
                     Select from list or enter custom brand. <a href="/admin/brands" target="_blank" className="text-primary hover:underline">Manage brands →</a>
+                  </p>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Sub-Brand / Model Line
+                  </label>
+                  <Input
+                    value={(formData as any).subBrand || ''}
+                    onChange={(e) => setFormData({ ...formData, subBrand: e.target.value } as any)}
+                    placeholder="e.g., Mark VI, Serie III, Custom Z, YAS-62"
+                  />
+                  <p className="text-xs text-gray-500 mt-1">
+                    Optional. Enter the model line or series name.
                   </p>
                 </div>
                 <div>
