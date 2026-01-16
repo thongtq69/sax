@@ -73,33 +73,33 @@ export function Footer() {
 
         {/* Mobile Layout */}
         <div className="lg:hidden">
-          {/* Join Our Musical Community - Mobile (standardized height) */}
-          <div className="flex items-center gap-3 bg-gradient-to-r from-primary/80 to-primary -mx-3 px-4" style={{ height: '60px' }}>
-            <span className="font-semibold text-white flex items-center gap-1.5 whitespace-nowrap flex-shrink-0 text-sm">
+          {/* Join Our Musical Community - Mobile (Stacked for safety) */}
+          <div className="flex flex-col gap-3 bg-gradient-to-r from-primary/80 to-primary -mx-3 px-4 py-4">
+            <span className="font-semibold text-white flex items-center justify-center gap-2 text-sm text-center">
               <Sparkles className="h-4 w-4" />
               Join Our Musical Community
             </span>
-            <div className="flex gap-1.5 flex-1 items-center">
+            <div className="flex gap-2 w-full max-w-xs mx-auto">
               <input
                 type="email"
                 placeholder="Enter your email"
-                className="bg-white/20 border border-white/30 placeholder:text-white/60 text-white text-xs rounded flex-1 min-w-0 h-8 px-2"
+                className="bg-white/20 border border-white/30 placeholder:text-white/60 text-white text-xs rounded flex-1 min-w-0 h-9 px-3"
                 readOnly
               />
-              <button className="bg-secondary hover:bg-secondary/90 text-white flex items-center justify-center rounded h-8 w-8 flex-shrink-0">
+              <button className="bg-secondary hover:bg-secondary/90 text-white flex items-center justify-center rounded h-9 w-9 flex-shrink-0">
                 <ChevronRight className="h-4 w-4" />
               </button>
             </div>
           </div>
 
-          {/* Need Help Section - Mobile (standardized height) */}
-          <div className="flex items-center justify-between gap-3 -mx-3 px-4 bg-[#2f3f4f] border-b border-white/10" style={{ height: '60px' }}>
-            <span className="font-semibold text-white flex items-center gap-1.5 whitespace-nowrap flex-shrink-0 text-sm">
+          {/* Need Help Section - Mobile (Stacked for consistency) */}
+          <div className="flex flex-col gap-3 -mx-3 px-4 py-4 bg-[#2f3f4f] border-b border-white/10">
+            <span className="font-semibold text-white flex items-center justify-center gap-2 text-sm text-center">
               <span className="text-[#D4AF37] text-base">★</span>
               Need Help Choosing?
             </span>
-            <Link href="/inquiry" className="bg-[#D4AF37] hover:bg-[#c9a432] text-[#2f3f4f] font-semibold flex items-center justify-center gap-1.5 rounded px-4 h-8 text-xs whitespace-nowrap">
-              <MessageCircle className="h-3 w-3" />
+            <Link href="/inquiry" className="bg-[#D4AF37] hover:bg-[#c9a432] text-[#2f3f4f] font-semibold flex items-center justify-center gap-2 rounded px-6 h-9 text-xs w-full max-w-xs mx-auto">
+              <MessageCircle className="h-4 w-4" />
               Ask Now
             </Link>
           </div>

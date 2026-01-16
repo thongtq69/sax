@@ -156,7 +156,7 @@ export default function ProductsManagement() {
     setFilteredProducts(filtered)
   }, [searchTerm, selectedCategory, selectedBadge, selectedProductType, selectedCondition, productList])
 
-  // Auto-sync Brand, SKU, Condition to specs when they change
+  // Auto-sync Brand, SKU, Condition, Model to specs when they change
   useEffect(() => {
     if (!isDialogOpen) return
     
@@ -166,6 +166,11 @@ export default function ProductsManagement() {
     // Auto-fill Brand
     if (formData.brand) {
       newSpecs['Brand'] = formData.brand
+    }
+    
+    // Auto-fill Model (from subBrand)
+    if (formData.subBrand && formData.subBrand.trim() !== '') {
+      newSpecs['Model'] = formData.subBrand
     }
     
     // Auto-fill SKU
@@ -191,7 +196,7 @@ export default function ProductsManagement() {
     if (JSON.stringify(newSpecs) !== JSON.stringify(currentSpecs)) {
       setFormData(prev => ({ ...prev, specs: newSpecs }))
     }
-  }, [formData.brand, formData.sku, formData.condition, formData.productType, isDialogOpen])
+  }, [formData.brand, formData.subBrand, formData.sku, formData.condition, formData.productType, isDialogOpen])
 
   const handleOpenDialog = (product?: Product) => {
     // Reset template states
@@ -835,7 +840,7 @@ export default function ProductsManagement() {
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Model / Series
+                    Model
                   </label>
                   {(() => {
                     const selectedBrand = brands.find(b => b.name === formData.brand)
@@ -847,6 +852,8 @@ export default function ProductsManagement() {
                             value={(formData as any).subBrand || '__custom__'}
                             onValueChange={(value) => {
                               if (value === '__custom__') {
+                                setFormData({ ...formData, subBrand: '' } as any)
+                              } else if (value === '__none__') {
                                 setFormData({ ...formData, subBrand: '' } as any)
                               } else {
                                 setFormData({ ...formData, subBrand: value } as any)
