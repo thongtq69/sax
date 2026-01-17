@@ -476,10 +476,10 @@ export default function HomePage() {
         </div>
       </section>
 
-      <section id="reviews" className="bg-gradient-to-br from-amber-50/30 via-white to-blue-50/30 py-4 sm:py-5 md:py-6">
+      <section id="reviews" className="bg-gradient-to-br from-amber-50/30 via-white to-blue-50/30 py-3 sm:py-4 md:py-6">
         <div className="container mx-auto px-4 max-w-6xl">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6 items-stretch">
-            <div className="animate-fade-in-left">
+          <div className="flex flex-col md:flex-row gap-3 md:gap-6 items-stretch">
+            <div className="animate-fade-in-left md:w-[35%] md:shrink-0">
               <h2 className="text-xl sm:text-2xl font-bold text-secondary mb-3 uppercase tracking-wide">WHY CHOOSE US</h2>
               <div className="space-y-0.5">
                 {[
@@ -501,7 +501,7 @@ export default function HomePage() {
                 ))}
               </div>
             </div>
-            <div className="animate-fade-in-right flex flex-col">
+            <div className="animate-fade-in-right flex flex-col md:flex-1">
               <div className="bg-gradient-to-br from-primary/10 to-primary/5 p-3 sm:p-4 h-full flex flex-col justify-center">
                 <div className="flex justify-center mb-1">
                   {[...Array(5)].map((_, i) => (

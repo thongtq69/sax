@@ -377,7 +377,7 @@ export function Header() {
                       <p className="text-xs text-[#2c3e50]/60 truncate">{session.user.email}</p>
                     </div>
                   </div>
-                  
+
                   {/* Quick Actions Grid */}
                   <div className="grid grid-cols-4 gap-2">
                     <Link
@@ -426,7 +426,7 @@ export function Header() {
                       </button>
                     )}
                   </div>
-                  
+
                   {/* Admin Logout (if admin) */}
                   {(session.user as any).role === 'ADMIN' && (
                     <button
@@ -484,7 +484,8 @@ export function Header() {
                   className="flex items-center text-[#2c3e50] font-medium py-1.5 text-sm font-body"
                   onClick={() => setIsMobileMenuOpen(false)}
                 >
-                  Shop All Instruments
+                  <span className="sm:hidden">Shop</span>
+                  <span className="hidden sm:inline">Shop All Instruments</span>
                 </Link>
               </div>
 

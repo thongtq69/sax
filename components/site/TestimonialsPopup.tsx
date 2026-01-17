@@ -90,9 +90,9 @@ function ReviewCard({ review }: { review: Review }) {
             className="text-[#AFA65F] hover:text-[#8a8347] text-xs font-medium mt-1 flex items-center gap-0.5 transition-colors"
           >
             {isExpanded ? (
-              <>Show less <ChevronUp className="h-3 w-3" /></>
+              <span className="flex items-center justify-center w-6 h-6 rounded-full bg-[#AFA65F]/10 hover:bg-[#AFA65F]/20"><ChevronUp className="h-4 w-4" /></span>
             ) : (
-              <>Read more <ChevronDown className="h-3 w-3" /></>
+              <span className="flex items-center justify-center w-6 h-6 rounded-full bg-[#AFA65F]/10 hover:bg-[#AFA65F]/20"><ChevronDown className="h-4 w-4" /></span>
             )}
           </button>
         )}
