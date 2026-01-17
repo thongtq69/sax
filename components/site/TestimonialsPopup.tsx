@@ -193,9 +193,10 @@ export function TestimonialsPopup({ isOpen, onClose }: TestimonialsPopupProps) {
           {/* Close Button */}
           <button
             onClick={onClose}
-            className="absolute top-3 right-3 sm:top-4 sm:right-4 p-1.5 sm:p-2 hover:bg-white/20 rounded-full transition-all duration-300 z-10 hover:rotate-90"
+            className="absolute top-2 right-2 sm:top-4 sm:right-4 min-w-10 min-h-10 sm:min-w-0 sm:min-h-0 p-2.5 sm:p-2 hover:bg-white/20 active:bg-white/30 rounded-full transition-all duration-300 z-20 hover:rotate-90 flex items-center justify-center"
+            aria-label="Close testimonials"
           >
-            <X className="h-4 w-4 sm:h-5 sm:w-5 text-white" />
+            <X className="h-5 w-5 sm:h-5 sm:w-5 text-white" />
           </button>
 
           {/* Title */}
