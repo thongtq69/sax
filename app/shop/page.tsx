@@ -81,7 +81,13 @@ function ShopPageContent() {
   const brands = useMemo(() => Array.from(new Set(products.map((p) => p.brand))).sort(), [products])
   const maxPrice = useMemo(() => (products.length ? Math.max(...products.map((p) => p.price)) : 0), [products])
   const badgeOptions = useMemo(
-    () => Array.from(new Set(products.map((p) => p.badge).filter(Boolean))) as string[],
+    () => {
+      const allBadges = products
+        .map((p) => p.badge)
+        .filter(Boolean)
+        .flatMap((badge) => badge!.split(',').map((b) => b.trim()).filter(Boolean))
+      return Array.from(new Set(allBadges)) as string[]
+    },
     [products]
   )
 
@@ -260,7 +266,11 @@ function ShopPageContent() {
 
     // Badge filter
     if (selectedBadges.length > 0) {
-      filtered = filtered.filter((p) => p.badge && selectedBadges.includes(p.badge))
+      filtered = filtered.filter((p) => {
+        if (!p.badge) return false
+        const productBadges = p.badge.split(',').map((b) => b.trim())
+        return productBadges.some((badge) => selectedBadges.includes(badge))
+      })
     }
 
     // Condition filter (for used products)

@@ -135,7 +135,7 @@ export default function AboutPage() {
             </div>
 
             {/* Services Grid */}
-            <div className="grid md:grid-cols-3 gap-4 md:gap-5 mb-6">
+            <div className="grid grid-cols-2 md:grid-cols-3 gap-4 md:gap-5 mb-6">
               <div className="p-4 md:p-5 bg-gradient-to-br from-primary/5 to-primary/10 rounded-xl border border-primary/20">
                 <h3 className="text-lg font-bold text-secondary mb-2">Instrument Sales</h3>
                 <p className="text-gray-600 text-xs md:text-sm leading-relaxed">
@@ -148,7 +148,7 @@ export default function AboutPage() {
                   Online and in-person lessons for beginners and advanced players, tailored to individual goals.
                 </p>
               </div>
-              <div className="p-4 md:p-5 bg-gradient-to-br from-amber-50 to-amber-100/50 rounded-xl border border-amber-200/50">
+              <div className="col-span-2 md:col-span-1 p-4 md:p-5 bg-gradient-to-br from-amber-50 to-amber-100/50 rounded-xl border border-amber-200/50 w-[calc(50%-0.5rem)] mx-auto md:w-auto md:mx-0">
                 <h3 className="text-lg font-bold text-secondary mb-2">Repair Services</h3>
                 <p className="text-gray-600 text-xs md:text-sm leading-relaxed">
                   Professional repair and maintenance for local clients, focusing on precision and quality.
