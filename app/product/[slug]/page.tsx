@@ -68,7 +68,7 @@ export async function generateMetadata({
           height: 600,
           alt: product.name
         }] : [],
-        type: 'product',
+        type: 'website',
         siteName: 'James Sax Corner',
       },
       twitter: {
