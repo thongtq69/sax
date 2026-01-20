@@ -10,6 +10,7 @@ import type { Product } from '@/lib/data'
 import { ChevronRight, Star, Sparkles } from 'lucide-react'
 import { getAllReviewsAsync, type Review } from '@/lib/reviews'
 import { ScrollAnimations } from '@/components/site/ScrollAnimations'
+import { StructuredData, organizationSchema, websiteSchema } from '@/components/seo/StructuredData'
 
 import { StaticProductGrid } from '@/components/home/StaticProductGrid'
 import { NewArrivalsCarousel } from '@/components/home/NewArrivalsCarousel'
@@ -206,6 +207,10 @@ export default function HomePage() {
 
   return (
     <div className="space-y-0 page-content">
+      {/* SEO Structured Data */}
+      <StructuredData data={organizationSchema} />
+      <StructuredData data={websiteSchema} />
+      
       <ScrollAnimations />
       <section className="homepage-hero relative overflow-hidden">
         <div className="absolute inset-0">

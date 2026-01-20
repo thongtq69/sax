@@ -4,6 +4,7 @@ import Link from 'next/link'
 import { prisma } from '@/lib/prisma'
 import { transformProduct, extractSkuFromParam } from '@/lib/api'
 import { ProductDetailClient } from '@/components/product/ProductDetailClient'
+import { StructuredData, generateProductSchema } from '@/components/seo/StructuredData'
 import { ChevronRight, Home } from 'lucide-react'
 
 export async function generateMetadata({
@@ -38,19 +39,46 @@ export async function generateMetadata({
     }
 
     const product = transformProduct(apiProduct)
-    const title = `${product.name} | James Sax Corner`
+    const title = `${product.name} - ${product.brand} | James Sax Corner`
     const description = product.description
-      ? product.description.substring(0, 160).replace(/\n/g, ' ') + '...'
-      : `Buy ${product.name} at James Sax Corner. Premium saxophone.`
+      ? product.description.substring(0, 160).replace(/\n/g, ' ').replace(/<[^>]*>/g, '') + '...'
+      : `Buy ${product.name} by ${product.brand} at James Sax Corner. Premium ${product.category} with professional quality. SKU: ${product.sku}. Price: $${product.price.toLocaleString()}.`
+
+    const keywords = [
+      product.name,
+      product.brand,
+      product.category,
+      'saxophone',
+      'professional saxophone',
+      'musical instrument',
+      product.sku,
+      ...(product.specs ? Object.values(product.specs).filter(Boolean) : [])
+    ].filter(Boolean).join(', ')
 
     return {
       title,
       description,
+      keywords,
       openGraph: {
         title,
         description,
-        images: product.images.length > 0 ? [{ url: product.images[0] }] : [],
-        type: 'website',
+        images: product.images.length > 0 ? [{ 
+          url: product.images[0],
+          width: 800,
+          height: 600,
+          alt: product.name
+        }] : [],
+        type: 'product',
+        siteName: 'James Sax Corner',
+      },
+      twitter: {
+        card: 'summary_large_image',
+        title,
+        description,
+        images: product.images.length > 0 ? [product.images[0]] : [],
+      },
+      alternates: {
+        canonical: `https://jamessaxcorner.com/product/${product.sku}/${product.slug}`,
       },
     }
   } catch (error) {
@@ -105,9 +133,13 @@ export default async function ProductPage({
 
     const product = transformProduct(apiProduct)
     const brandName = product.brand || ''
+    const productSchema = generateProductSchema(product)
 
     return (
       <div className="min-h-screen">
+        {/* SEO Structured Data */}
+        <StructuredData data={productSchema} />
+        
         {/* Breadcrumbs */}
         <div className="bg-muted/30 border-b">
           <div className="container mx-auto px-4 py-2 md:py-3 lg:py-4">
