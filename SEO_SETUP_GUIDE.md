@@ -7,7 +7,7 @@
 2. Đăng nhập bằng Google account
 3. Thêm property: `https://jamessaxcorner.com`
 4. Chọn phương thức verify: "HTML tag"
-5. Copy verification code và thêm vào `app/layout.tsx` (đã có sẵn)
+5. ✅ **ĐÃ HOÀN THÀNH**: Verification code đã được thêm vào website
 
 ### Bước 2: Submit Sitemap
 1. Sau khi verify thành công
@@ -45,9 +45,10 @@ import { GoogleAnalytics } from '@next/third-parties/google'
 - [x] Twitter Cards
 - [x] Structured Data schemas
 - [x] Canonical URLs
+- [x] Google Search Console verification code
 
 ### 🔄 Cần làm tiếp:
-- [ ] Verify Google Search Console
+- [x] ~~Verify Google Search Console~~ ✅ **ĐÃ XONG**
 - [ ] Setup Google Analytics
 - [ ] Tạo ảnh OG (1200x630px)
 - [ ] Thêm số điện thoại và social media links thật
@@ -154,7 +155,7 @@ import { GoogleAnalytics } from '@next/third-parties/google'
 ## 9. NEXT STEPS PRIORITY
 
 ### Week 1:
-1. ✅ Setup Google Search Console
+1. ✅ ~~Setup Google Search Console~~ **HOÀN THÀNH**
 2. ✅ Setup Google Analytics
 3. ✅ Submit sitemap
 4. ✅ Create OG images

@@ -66,7 +66,7 @@ export const metadata: Metadata = {
     images: ['/og-image.jpg'], // TODO: Tạo ảnh Twitter card
   },
   verification: {
-    google: 'YOUR_GOOGLE_VERIFICATION_CODE', // TODO: Add your Google Search Console verification code here
+    google: '_P7lYBUK9Gz8XYecWbXTg_pX3uoY4ZBU_jF6jgcqcC4',
   },
   alternates: {
     canonical: 'https://jamessaxcorner.com',
