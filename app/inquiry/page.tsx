@@ -1,5 +1,35 @@
 import { Suspense } from 'react'
+import type { Metadata } from 'next'
 import InquiryForm from './InquiryForm'
+
+export const metadata: Metadata = {
+  title: 'Product Inquiry - Contact Us | James Sax Corner',
+  description: 'Have questions about our professional saxophones? Contact James Sax Corner for expert advice, product information, and personalized recommendations. We\'re here to help you find the perfect instrument.',
+  keywords: [
+    'saxophone inquiry',
+    'contact james sax corner',
+    'saxophone questions',
+    'professional saxophone advice',
+    'instrument consultation',
+    'saxophone expert',
+    'product information',
+    'saxophone help'
+  ],
+  openGraph: {
+    title: 'Product Inquiry - Contact Us | James Sax Corner',
+    description: 'Have questions about our professional saxophones? Contact us for expert advice and personalized recommendations.',
+    type: 'website',
+    siteName: 'James Sax Corner',
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'Product Inquiry - Contact Us | James Sax Corner',
+    description: 'Have questions about our professional saxophones? Contact us for expert advice.',
+  },
+  alternates: {
+    canonical: 'https://jamessaxcorner.com/inquiry',
+  },
+}
 
 function InquiryFallback() {
   return (
