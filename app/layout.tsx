@@ -84,8 +84,8 @@ export default function RootLayout({
         <SessionProvider>
           <SiteLayout>{children}</SiteLayout>
         </SessionProvider>
-        {process.env.NODE_ENV === 'production' && (
-          <GoogleAnalytics gaId={process.env.NEXT_PUBLIC_GA_ID || 'G-XXXXXXXXXX'} />
+        {process.env.NODE_ENV === 'production' && process.env.NEXT_PUBLIC_GA_ID && (
+          <GoogleAnalytics gaId={process.env.NEXT_PUBLIC_GA_ID} />
         )}
       </body>
     </html>

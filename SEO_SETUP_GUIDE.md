@@ -49,7 +49,7 @@ import { GoogleAnalytics } from '@next/third-parties/google'
 
 ### 🔄 Cần làm tiếp:
 - [x] ~~Verify Google Search Console~~ ✅ **ĐÃ XONG**
-- [ ] Setup Google Analytics
+- [x] ~~Setup Google Analytics~~ ✅ **ĐÃ XONG** (G-MRHKG8MELS)
 - [ ] Tạo ảnh OG (1200x630px)
 - [ ] Thêm số điện thoại và social media links thật
 - [ ] Optimize images (WebP format, alt tags)
@@ -156,7 +156,7 @@ import { GoogleAnalytics } from '@next/third-parties/google'
 
 ### Week 1:
 1. ✅ ~~Setup Google Search Console~~ **HOÀN THÀNH**
-2. ✅ Setup Google Analytics
+2. ✅ ~~Setup Google Analytics~~ **HOÀN THÀNH** (G-MRHKG8MELS)
 3. ✅ Submit sitemap
 4. ✅ Create OG images
 
