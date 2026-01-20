@@ -18,8 +18,8 @@ export const organizationSchema = {
   "@context": "https://schema.org",
   "@type": "Organization",
   "name": "James Sax Corner",
-  "url": "https://jamessaxcorner.com",
-  "logo": "https://jamessaxcorner.com/logo.png",
+  "url": process.env.NEXT_PUBLIC_BASE_URL || "https://jamessaxcorner.com",
+  "logo": `${process.env.NEXT_PUBLIC_BASE_URL || "https://jamessaxcorner.com"}/logo.png`,
   "description": "Premium saxophones, expertly maintained for peak performance. Trusted by musicians worldwide.",
   "contactPoint": {
     "@type": "ContactPoint",
@@ -39,13 +39,13 @@ export const websiteSchema = {
   "@context": "https://schema.org",
   "@type": "WebSite",
   "name": "James Sax Corner",
-  "url": "https://jamessaxcorner.com",
+  "url": process.env.NEXT_PUBLIC_BASE_URL || "https://jamessaxcorner.com",
   "description": "Premium saxophones and professional wind instruments",
   "potentialAction": {
     "@type": "SearchAction",
     "target": {
       "@type": "EntryPoint",
-      "urlTemplate": "https://jamessaxcorner.com/shop?search={search_term_string}"
+      "urlTemplate": `${process.env.NEXT_PUBLIC_BASE_URL || "https://jamessaxcorner.com"}/shop?search={search_term_string}`
     },
     "query-input": "required name=search_term_string"
   }

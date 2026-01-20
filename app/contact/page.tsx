@@ -21,7 +21,7 @@ export const metadata: Metadata = {
     siteName: 'James Sax Corner',
   },
   alternates: {
-    canonical: 'https://jamessaxcorner.com/contact',
+    canonical: `${process.env.NEXT_PUBLIC_BASE_URL || 'https://jamessaxcorner.com'}/contact`,
   },
 }
 

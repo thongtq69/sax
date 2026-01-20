@@ -27,7 +27,7 @@ export const metadata: Metadata = {
     description: 'Have questions about our professional saxophones? Contact us for expert advice.',
   },
   alternates: {
-    canonical: 'https://jamessaxcorner.com/inquiry',
+    canonical: `${process.env.NEXT_PUBLIC_BASE_URL || 'https://jamessaxcorner.com'}/inquiry`,
   },
 }
 

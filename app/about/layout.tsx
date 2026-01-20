@@ -25,7 +25,7 @@ export const metadata: Metadata = {
     description: 'Learn about James Sax Corner, your trusted source for professional saxophones.',
   },
   alternates: {
-    canonical: 'https://jamessaxcorner.com/about',
+    canonical: `${process.env.NEXT_PUBLIC_BASE_URL || 'https://jamessaxcorner.com'}/about`,
   },
 }
 

@@ -4,7 +4,7 @@ export const metadata: Metadata = {
   title: 'Privacy Policy - James Sax Corner',
   description: 'Privacy Policy for James Sax Corner. Learn how we collect, use, and protect your personal information when you shop for professional saxophones.',
   alternates: {
-    canonical: 'https://jamessaxcorner.com/privacy',
+    canonical: `${process.env.NEXT_PUBLIC_BASE_URL || 'https://jamessaxcorner.com'}/privacy`,
   },
 }
 

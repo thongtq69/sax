@@ -27,7 +27,7 @@ export const metadata: Metadata = {
     description: 'Expert saxophone advice, instrument reviews, maintenance tips, and buying guides.',
   },
   alternates: {
-    canonical: 'https://jamessaxcorner.com/blog',
+    canonical: `${process.env.NEXT_PUBLIC_BASE_URL || 'https://jamessaxcorner.com'}/blog`,
   },
 }
 

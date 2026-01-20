@@ -78,7 +78,7 @@ export async function generateMetadata({
         images: product.images.length > 0 ? [product.images[0]] : [],
       },
       alternates: {
-        canonical: `https://jamessaxcorner.com/product/${product.sku}/${product.slug}`,
+        canonical: `${process.env.NEXT_PUBLIC_BASE_URL || 'https://jamessaxcorner.com'}/product/${product.sku}/${product.slug}`,
       },
     }
   } catch (error) {

@@ -2,7 +2,7 @@ import { MetadataRoute } from 'next'
 import { getProducts, getCategories } from '@/lib/api'
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
-  const baseUrl = 'https://jamessaxcorner.com' // Thay bằng domain thật của bạn
+  const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'https://jamessaxcorner.com'
   
   // Static pages
   const staticPages = [

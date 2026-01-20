@@ -46,7 +46,7 @@ export const metadata: Metadata = {
   openGraph: {
     type: 'website',
     locale: 'en_US',
-    url: 'https://jamessaxcorner.com',
+    url: process.env.NEXT_PUBLIC_BASE_URL || 'https://jamessaxcorner.com',
     title: 'James Sax Corner - Premium Saxophones & Professional Wind Instruments',
     description: 'Premium saxophones, expertly maintained for peak performance. Trusted by musicians worldwide, backed by outstanding reviews.',
     siteName: 'James Sax Corner',
@@ -69,7 +69,7 @@ export const metadata: Metadata = {
     google: '_P7lYBUK9Gz8XYecWbXTg_pX3uoY4ZBU_jF6jgcqcC4',
   },
   alternates: {
-    canonical: 'https://jamessaxcorner.com',
+    canonical: process.env.NEXT_PUBLIC_BASE_URL || 'https://jamessaxcorner.com',
   },
 }
 
