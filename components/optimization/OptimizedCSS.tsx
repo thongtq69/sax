@@ -24,7 +24,7 @@ export function OptimizedCSS() {
     }
 
     // Defer non-critical stylesheets
-    const deferredStyles: string[] = [
+    const deferredStyles = [
       // Add any non-critical CSS files here
     ]
 
