@@ -4,8 +4,39 @@ import Link from 'next/link'
 import { prisma } from '@/lib/prisma'
 import { transformProduct, extractSkuFromParam } from '@/lib/api'
 import { ProductDetailClient } from '@/components/product/ProductDetailClient'
-import { StructuredData, generateProductSchema } from '@/components/seo/StructuredData'
+import { StructuredData } from '@/components/seo/StructuredData'
 import { ChevronRight, Home } from 'lucide-react'
+
+// Server-side product schema generator
+function generateProductSchema(product: any) {
+  return {
+    "@context": "https://schema.org",
+    "@type": "Product",
+    "name": product.name,
+    "description": product.description,
+    "image": product.images,
+    "brand": {
+      "@type": "Brand",
+      "name": product.brand
+    },
+    "sku": product.sku,
+    "offers": {
+      "@type": "Offer",
+      "price": product.price,
+      "priceCurrency": "USD",
+      "availability": product.inStock ? "https://schema.org/InStock" : "https://schema.org/OutOfStock",
+      "seller": {
+        "@type": "Organization",
+        "name": "James Sax Corner"
+      }
+    },
+    "aggregateRating": product.rating > 0 ? {
+      "@type": "AggregateRating",
+      "ratingValue": product.rating,
+      "reviewCount": product.reviewCount
+    } : undefined
+  }
+}
 
 export async function generateMetadata({
   params,
