@@ -4,11 +4,14 @@ import './globals.css'
 import { SiteLayout } from '@/components/site/SiteLayout'
 import { SessionProvider } from '@/components/providers/SessionProvider'
 import { GoogleAnalytics } from '@next/third-parties/google'
+import { OptimizedCSS } from '@/components/optimization/OptimizedCSS'
 
 const lora = Lora({
   subsets: ['latin'],
   display: 'swap',
-  variable: '--font-lora'
+  variable: '--font-lora',
+  preload: true,
+  fallback: ['Georgia', 'serif']
 })
 
 export const metadata: Metadata = {
@@ -80,7 +83,13 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en">
+      <head>
+        {/* Preload critical resources */}
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
+      </head>
       <body className={lora.className}>
+        <OptimizedCSS />
         <SessionProvider>
           <SiteLayout>{children}</SiteLayout>
         </SessionProvider>

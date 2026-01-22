@@ -8,7 +8,16 @@ const nextConfig = {
     serverActions: {
       bodySizeLimit: '50mb',
     },
+    // Disable CSS optimization for now (requires critters package)
+    // optimizeCss: true,
   },
+  
+  // Compiler optimizations
+  compiler: {
+    // Remove console logs in production
+    removeConsole: process.env.NODE_ENV === 'production',
+  },
+  
   images: {
     remotePatterns: [
       {
@@ -49,6 +58,20 @@ const nextConfig = {
           {
             key: 'Access-Control-Allow-Origin',
             value: '*',
+          },
+          // Cache static assets
+          {
+            key: 'Cache-Control',
+            value: 'public, max-age=31536000, immutable',
+          },
+        ],
+      },
+      {
+        source: '/api/:path*',
+        headers: [
+          {
+            key: 'Cache-Control',
+            value: 'no-cache, no-store, must-revalidate',
           },
         ],
       },

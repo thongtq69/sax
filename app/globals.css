@@ -2,7 +2,7 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Font loaded via next/font in layout.tsx - Lora variable */
+/* Critical CSS moved to inline in layout.tsx for faster rendering */
 
 @layer base {
   :root {
@@ -12,15 +12,12 @@
     --card-foreground: 40 10% 20%;
     --popover: 45 25% 98%;
     --popover-foreground: 40 10% 20%;
-    /* Olive/Khaki primary - James Sax Corner brand */
     --primary: 52 35% 48%;
     --primary-foreground: 0 0% 100%;
-    /* Charcoal gray - vintage dark */
     --secondary: 200 8% 28%;
     --secondary-foreground: 45 20% 95%;
     --muted: 45 15% 92%;
     --muted-foreground: 40 10% 45%;
-    /* Gold/brass accent - classic sax color */
     --accent: 38 70% 50%;
     --accent-foreground: 0 0% 100%;
     --destructive: 0 65% 50%;
@@ -48,6 +45,111 @@
     --secondary: 200 8% 40%;
     --secondary-foreground: 45 20% 95%;
     --muted: 40 10% 18%;
+    --muted-foreground: 45 20% 65%;
+    --accent: 38 70% 60%;
+    --accent-foreground: 0 0% 100%;
+    --destructive: 0 65% 60%;
+    --destructive-foreground: 0 0% 98%;
+    --border: 40 10% 25%;
+    --input: 40 10% 25%;
+    --ring: 52 35% 55%;
+    --chart-1: 52 35% 60%;
+    --chart-2: 200 8% 45%;
+    --chart-3: 38 70% 65%;
+    --chart-4: 280 40% 60%;
+    --chart-5: 340 50% 60%;
+  }
+
+/* Base styles - optimized for performance */
+@layer base {
+  * {
+    @apply border-border;
+  }
+  
+  body {
+    @apply bg-background text-foreground;
+    font-feature-settings: "rlig" 1, "calt" 1;
+  }
+  
+  /* Optimize font rendering */
+  .fonts-loaded body {
+    font-display: swap;
+  }
+}
+
+/* Component styles */
+@layer components {
+  /* Optimized button styles */
+  .btn-primary {
+    @apply bg-primary text-primary-foreground hover:bg-primary/90 transition-colors;
+  }
+  
+  /* Optimized card styles */
+  .card-base {
+    @apply bg-card text-card-foreground border border-border rounded-lg;
+  }
+}
+
+/* Utility classes for performance */
+@layer utilities {
+  .text-balance {
+    text-wrap: balance;
+  }
+  
+  .gpu-accelerated {
+    transform: translateZ(0);
+    will-change: transform;
+  }
+  
+  /* Reduce layout shifts */
+  .aspect-ratio-16-9 {
+    aspect-ratio: 16 / 9;
+  }
+  
+  .aspect-ratio-4-3 {
+    aspect-ratio: 4 / 3;
+  }
+  
+  .aspect-ratio-1-1 {
+    aspect-ratio: 1 / 1;
+  }
+}
+
+/* Performance optimizations */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* Critical animations only */
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes slideUp {
+  from { 
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to { 
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-fade-in {
+  animation: fadeIn 0.3s ease-out;
+}
+
+.animate-slide-up {
+  animation: slideUp 0.4s ease-out;
+}
     --muted-foreground: 40 10% 65%;
     --accent: 38 70% 55%;
     --accent-foreground: 0 0% 100%;
@@ -58,11 +160,10 @@
     --ring: 52 35% 55%;
     --chart-1: 52 35% 60%;
     --chart-2: 200 8% 45%;
-    --chart-3: 38 70% 60%;
-    --chart-4: 280 40% 55%;
-    --chart-5: 340 50% 55%;
+    --chart-3: 38 70% 65%;
+    --chart-4: 280 40% 60%;
+    --chart-5: 340 50% 60%;
   }
-}
 
 @layer base {
   * {
