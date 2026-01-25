@@ -93,7 +93,7 @@ export async function generateMetadata({
       openGraph: {
         title,
         description,
-        images: product.images.length > 0 ? [{ 
+        images: product.images.length > 0 ? [{
           url: product.images[0],
           width: 800,
           height: 600,
@@ -109,7 +109,7 @@ export async function generateMetadata({
         images: product.images.length > 0 ? [product.images[0]] : [],
       },
       alternates: {
-        canonical: `${process.env.NEXT_PUBLIC_BASE_URL || 'https://jamessaxcorner.com'}/product/${product.sku}/${product.slug}`,
+        canonical: `${process.env.NEXT_PUBLIC_BASE_URL || 'https://jamessaxcorner.com'}/product/${product.sku}${product.slug ? '-' + product.slug : ''}`,
       },
     }
   } catch (error) {
@@ -170,7 +170,7 @@ export default async function ProductPage({
       <div className="min-h-screen">
         {/* SEO Structured Data */}
         <StructuredData data={productSchema} />
-        
+
         {/* Breadcrumbs */}
         <div className="bg-muted/30 border-b">
           <div className="container mx-auto px-4 py-2 md:py-3 lg:py-4">

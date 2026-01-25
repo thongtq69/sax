@@ -26,9 +26,6 @@ export const metadata: Metadata = {
     title: 'Saxophone Blog - Tips, Reviews & Guides | James Sax Corner',
     description: 'Expert saxophone advice, instrument reviews, maintenance tips, and buying guides.',
   },
-  alternates: {
-    canonical: `${process.env.NEXT_PUBLIC_BASE_URL || 'https://jamessaxcorner.com'}/blog`,
-  },
 }
 
 export default function BlogLayout({

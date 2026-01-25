@@ -71,9 +71,6 @@ export const metadata: Metadata = {
   verification: {
     google: '_P7lYBUK9Gz8XYecWbXTg_pX3uoY4ZBU_jF6jgcqcC4',
   },
-  alternates: {
-    canonical: process.env.NEXT_PUBLIC_BASE_URL || 'https://jamessaxcorner.com',
-  },
 }
 
 export default function RootLayout({

@@ -3,7 +3,7 @@ import { getProducts, getCategories } from '@/lib/api'
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'https://jamessaxcorner.com'
-  
+
   // Static pages
   const staticPages = [
     {
@@ -60,20 +60,33 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     // Dynamic product pages
     const productsResponse = await getProducts({ limit: 1000 })
     const productPages = productsResponse.products.map((product) => ({
-      url: `${baseUrl}/product/${product.sku}/${product.slug}`,
+      // Match the format used in getProductUrl: /product/SKU-slug
+      url: `${baseUrl}/product/${product.sku}${product.slug ? '-' + product.slug : ''}`,
       lastModified: new Date(product.updatedAt || new Date()),
       changeFrequency: 'weekly' as const,
       priority: 0.8,
     }))
 
-    // Category pages
+    // Category/Subcategory pages
     const categories = await getCategories()
-    const categoryPages = categories.map((category) => ({
-      url: `${baseUrl}/shop/${category.slug}`,
-      lastModified: new Date(),
-      changeFrequency: 'weekly' as const,
-      priority: 0.7,
-    }))
+    const categoryPages = categories.flatMap((category: any) => {
+      const pages: any[] = []
+
+      // If shop handled parent categories, we could add them here
+      // For now, we mainly want subcategories as they are the primary filter
+      if (category.subcategories && category.subcategories.length > 0) {
+        category.subcategories.forEach((sub: any) => {
+          pages.push({
+            url: `${baseUrl}/shop?subcategory=${sub.slug}`,
+            lastModified: new Date(),
+            changeFrequency: 'weekly' as const,
+            priority: 0.7,
+          })
+        })
+      }
+
+      return pages
+    })
 
     return [...staticPages, ...productPages, ...categoryPages]
   } catch (error) {

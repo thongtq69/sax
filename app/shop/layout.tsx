@@ -5,7 +5,7 @@ export const metadata: Metadata = {
   description: 'Browse our collection of professional saxophones from top brands like Selmer, Yamaha, and more. Tenor, alto, soprano, and baritone saxophones available. Expert maintenance and worldwide shipping.',
   keywords: [
     'professional saxophone',
-    'tenor saxophone', 
+    'tenor saxophone',
     'alto saxophone',
     'soprano saxophone',
     'baritone saxophone',
@@ -26,9 +26,6 @@ export const metadata: Metadata = {
     card: 'summary_large_image',
     title: 'Shop Professional Saxophones | James Sax Corner',
     description: 'Browse our collection of professional saxophones from top brands.',
-  },
-  alternates: {
-    canonical: `${process.env.NEXT_PUBLIC_BASE_URL || 'https://jamessaxcorner.com'}/shop`,
   },
 }
 
