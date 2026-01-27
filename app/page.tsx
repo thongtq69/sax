@@ -33,6 +33,11 @@ const NewsletterPopup = dynamic(
   { ssr: false }
 )
 
+const PopupAd = dynamic(
+  () => import('@/components/PopupAd'),
+  { ssr: false }
+)
+
 export default function HomePage() {
   const [featuredProducts, setFeaturedProducts] = useState<Product[]>([])
   const [saleProducts, setSaleProducts] = useState<Product[]>([])
@@ -210,7 +215,7 @@ export default function HomePage() {
       {/* SEO Structured Data */}
       <StructuredData data={organizationSchema} />
       <StructuredData data={websiteSchema} />
-      
+
       <ScrollAnimations />
       <section className="homepage-hero relative overflow-hidden">
         <div className="absolute inset-0">
@@ -544,6 +549,7 @@ export default function HomePage() {
 
       <TestimonialsPopup isOpen={showTestimonials} onClose={() => setShowTestimonials(false)} />
       <NewsletterPopup isOpen={showNewsletter} onClose={() => setShowNewsletter(false)} />
+      <PopupAd />
     </div>
   )
 }

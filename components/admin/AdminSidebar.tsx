@@ -39,6 +39,7 @@ export const menuItems: { href: string; label: string; icon: any; exact?: boolea
   { href: '/admin/blog', label: 'Blog Posts', icon: FileText },
   { href: '/admin/categories', label: 'Categories', icon: FolderTree },
   { href: '/admin/announcements', label: 'Announcement Bar', icon: Megaphone },
+  { href: '/admin/popup-ad', label: 'Popup Ads', icon: Star },
   { href: '/admin/faqs', label: 'FAQs', icon: HelpCircle },
   { href: '/admin/quick-faq', label: 'Quick FAQ (Product)', icon: CircleHelp },
   { href: '/admin/inquiry-titles', label: 'Inquiry Titles', icon: MessageSquareText },
@@ -90,8 +91,8 @@ export default function AdminSidebar({
       <nav className="flex-1 p-3 space-y-1 overflow-y-auto">
         {menuItems.map((item) => {
           const Icon = item.icon
-          const isActive = item.exact 
-            ? pathname === item.href 
+          const isActive = item.exact
+            ? pathname === item.href
             : pathname.startsWith(item.href) && item.href !== '/admin'
           return (
             <Link
@@ -129,7 +130,7 @@ export default function AdminSidebar({
         >
           <ChevronRight className={`h-5 w-5 transition-transform ${sidebarCollapsed ? '' : 'rotate-180'}`} />
         </Button>
-        
+
         {/* View Site Link */}
         <Link href="/" target="_blank">
           <Button
