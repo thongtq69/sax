@@ -47,7 +47,7 @@ export default function PopupAdManagement() {
     const [formData, setFormData] = useState({
         title: '',
         description: '',
-        image: '',
+        image: '' as string | null,
         ctaText: 'Xem ngay',
         ctaLink: '/',
         isActive: true,
@@ -73,7 +73,7 @@ export default function PopupAdManagement() {
         setFormData({
             title: '',
             description: '',
-            image: '',
+            image: '' as string | null,
             ctaText: 'Xem ngay',
             ctaLink: '/',
             isActive: true,
