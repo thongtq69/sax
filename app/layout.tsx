@@ -79,13 +79,13 @@ export default function RootLayout({
   children: React.ReactNode
 }) {
   return (
-    <html lang="en">
+    <html lang="vi" suppressHydrationWarning>
       <head>
         {/* Preload critical resources */}
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
       </head>
-      <body className={lora.className}>
+      <body className={lora.className} suppressHydrationWarning>
         <OptimizedCSS />
         <SessionProvider>
           <SiteLayout>{children}</SiteLayout>
