@@ -53,7 +53,7 @@ export default function ProductsManagement() {
   const [viewMode, setViewMode] = useState<'table' | 'grid'>('table')
   const [activeTab, setActiveTab] = useState('basic')
   const [customBrand, setCustomBrand] = useState('')
-  const [formData, setFormData] = useState<Partial<Product> & { 
+  const [formData, setFormData] = useState<Partial<Product> & {
     stockStatus?: string
     productType?: string
     condition?: string
@@ -100,10 +100,10 @@ export default function ProductsManagement() {
           fetch('/api/admin/description-templates').then(res => res.json()),
           fetch('/api/admin/accessories').then(res => res.json()),
         ])
-        
+
         const transformedProducts = productsResponse.products.map(transformProduct)
         const transformedCategories = categoriesData.map(transformCategory)
-        
+
         setProductList(transformedProducts)
         setCategories(transformedCategories)
         setBrands(brandsData.filter((b: any) => b.isActive))
@@ -159,25 +159,25 @@ export default function ProductsManagement() {
   // Auto-sync Brand, SKU, Condition, Model to specs when they change
   useEffect(() => {
     if (!isDialogOpen) return
-    
+
     const currentSpecs = formData.specs || {}
     const newSpecs = { ...currentSpecs }
-    
+
     // Auto-fill Brand
     if (formData.brand) {
       newSpecs['Brand'] = formData.brand
     }
-    
+
     // Auto-fill Model (from subBrand)
     if (formData.subBrand && formData.subBrand.trim() !== '') {
       newSpecs['Model'] = formData.subBrand
     }
-    
+
     // Auto-fill SKU
     if (formData.sku && formData.sku.trim() !== '') {
       newSpecs['SKU'] = formData.sku
     }
-    
+
     // Auto-fill Condition (only for used products)
     if (formData.productType === 'used' && formData.condition) {
       const conditionLabels: Record<string, string> = {
@@ -191,7 +191,7 @@ export default function ProductsManagement() {
     } else if (formData.productType === 'new') {
       newSpecs['Condition'] = 'New'
     }
-    
+
     // Only update if specs actually changed
     if (JSON.stringify(newSpecs) !== JSON.stringify(currentSpecs)) {
       setFormData(prev => ({ ...prev, specs: newSpecs }))
@@ -205,18 +205,18 @@ export default function ProductsManagement() {
     setNewTemplateName('')
     setNewTemplateContent('')
     setNewTemplateType('header')
-    
+
     if (product) {
       setEditingProduct(product)
       // Check if brand exists in brands list
       const brandExists = brands.some(b => b.name === product.brand)
       setCustomBrand(brandExists ? '' : product.brand)
-      
+
       // Parse existing description to find header/body/footer
       let parsedBody = product.description || ''
       let foundHeader = ''
       let foundFooter = ''
-      
+
       // Try to match header templates
       for (const template of descTemplates.filter(t => t.type === 'header')) {
         if (parsedBody.startsWith(template.content)) {
@@ -225,7 +225,7 @@ export default function ProductsManagement() {
           break
         }
       }
-      
+
       // Try to match footer templates
       for (const template of descTemplates.filter(t => t.type === 'footer')) {
         if (parsedBody.endsWith(template.content)) {
@@ -234,11 +234,11 @@ export default function ProductsManagement() {
           break
         }
       }
-      
+
       setSelectedHeader(foundHeader)
       setSelectedFooter(foundFooter)
       setDescBody(parsedBody)
-      
+
       setFormData({
         ...product,
         images: product.images || [],
@@ -248,10 +248,10 @@ export default function ProductsManagement() {
         conditionNotes: (product as any).conditionNotes || '',
         shippingCost: (product as any).shippingCost || undefined,
         subBrand: (product as any).subBrand || '',
-        videoUrls: (product as any).videoUrls?.length > 0 
+        videoUrls: (product as any).videoUrls?.length > 0
           ? [...(product as any).videoUrls, '', '', '', ''].slice(0, 4)
-          : (product as any).videoUrl 
-            ? [(product as any).videoUrl, '', '', ''] 
+          : (product as any).videoUrl
+            ? [(product as any).videoUrl, '', '', '']
             : ['', '', '', ''],
       } as any)
     } else {
@@ -314,11 +314,11 @@ export default function ProductsManagement() {
 
     try {
       setIsSaving(true)
-      
+
       // Find category and subcategory IDs
       const categoryObj = categories.find(c => c.id === formData.category || c.slug === formData.category)
       const subcategoryObj = categoryObj?.subcategories?.find((s: any) => s.id === formData.subcategory || s.slug === formData.subcategory)
-      
+
       const productData = {
         name: formData.name,
         slug: formData.slug || formData.name?.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '') || '',
@@ -345,7 +345,7 @@ export default function ProductsManagement() {
         rating: formData.rating || 0,
         reviewCount: formData.reviewCount || 0,
       }
-      
+
       console.log('Saving product with images:', productData.images)
 
       if (editingProduct) {
@@ -358,7 +358,7 @@ export default function ProductsManagement() {
       const productsResponse = await getProducts({ limit: 1000 })
       const transformedProducts = productsResponse.products.map(transformProduct)
       setProductList(transformedProducts)
-      
+
       setIsDialogOpen(false)
       setEditingProduct(null)
     } catch (error: any) {
@@ -378,7 +378,7 @@ export default function ProductsManagement() {
 
     try {
       await deleteProduct(id)
-      
+
       // Refresh data
       const productsResponse = await getProducts({ limit: 1000 })
       const transformedProducts = productsResponse.products.map(transformProduct)
@@ -440,7 +440,7 @@ export default function ProductsManagement() {
               className="pl-10"
             />
           </div>
-          
+
           {/* Category Filter */}
           <Select value={selectedCategory} onValueChange={setSelectedCategory}>
             <SelectTrigger className="w-full lg:w-[200px]">
@@ -604,9 +604,8 @@ export default function ProductsManagement() {
                       </td>
                       <td className="px-6 py-4">
                         <div className="flex items-center gap-2">
-                          <span className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium ${
-                            product.inStock ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
-                          }`}>
+                          <span className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium ${product.inStock ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
+                            }`}>
                             {product.inStock ? `${product.stock || 0} in stock` : 'Out of stock'}
                           </span>
                         </div>
@@ -976,11 +975,10 @@ export default function ProductsManagement() {
                       return (
                         <label
                           key={badge.value}
-                          className={`flex items-center gap-2 p-2 rounded-lg border cursor-pointer transition-all ${
-                            isSelected 
-                              ? 'border-primary bg-primary/10 text-primary' 
+                          className={`flex items-center gap-2 p-2 rounded-lg border cursor-pointer transition-all ${isSelected
+                              ? 'border-primary bg-primary/10 text-primary'
                               : 'border-gray-200 hover:border-gray-300'
-                          }`}
+                            }`}
                         >
                           <input
                             type="checkbox"
@@ -990,9 +988,9 @@ export default function ProductsManagement() {
                               if (e.target.checked) {
                                 newBadges.push(badge.value)
                               }
-                              setFormData({ 
-                                ...formData, 
-                                badge: newBadges.length > 0 ? newBadges.join(',') : undefined 
+                              setFormData({
+                                ...formData,
+                                badge: newBadges.length > 0 ? newBadges.join(',') : undefined
                               } as any)
                             }}
                             className="rounded border-gray-300 text-primary focus:ring-primary"
@@ -1195,7 +1193,7 @@ export default function ProductsManagement() {
                       />
                     </div>
                   ))}
-                  
+
                   {/* Model field - auto-synced from Basic Info, show if not in specKeys */}
                   {!specKeys.some(sk => sk.name === 'Model') && (
                     <div className="flex gap-2 items-center">
@@ -1214,7 +1212,7 @@ export default function ProductsManagement() {
                       />
                     </div>
                   )}
-                  
+
                   {/* Show any custom specs that are not in specKeys and not Model (already shown above) */}
                   {Object.entries(formData.specs || {})
                     .filter(([key]) => !specKeys.some(sk => sk.name === key) && key !== 'Model')
@@ -1348,7 +1346,7 @@ export default function ProductsManagement() {
                 <label className="block text-sm font-medium text-gray-700 mb-2">
                   Description <span className="text-red-500">*</span>
                 </label>
-                
+
                 {/* Header Template Selection */}
                 <div className="mb-3">
                   <label className="block text-xs text-gray-500 mb-1">Header Template (optional)</label>
@@ -1535,9 +1533,8 @@ export default function ProductsManagement() {
                         {descTemplates.map((t) => (
                           <span
                             key={t.id}
-                            className={`inline-flex items-center gap-1 px-2 py-1 rounded text-xs ${
-                              t.type === 'header' ? 'bg-blue-100 text-blue-700' : 'bg-green-100 text-green-700'
-                            }`}
+                            className={`inline-flex items-center gap-1 px-2 py-1 rounded text-xs ${t.type === 'header' ? 'bg-blue-100 text-blue-700' : 'bg-green-100 text-green-700'
+                              }`}
                           >
                             [{t.type}] {t.name}
                             <button
@@ -1601,7 +1598,7 @@ export default function ProductsManagement() {
                 <p className="text-sm text-gray-500 mb-3">
                   Click to add accessories, or type custom items
                 </p>
-                
+
                 {/* Selected accessories */}
                 <div className="flex flex-wrap gap-2 mb-3">
                   {(formData.included || []).map((item, index) => (

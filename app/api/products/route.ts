@@ -21,6 +21,12 @@ export async function GET(request: NextRequest) {
     const skip = (page - 1) * limit
 
     const where: any = {}
+    const showArchived = searchParams.get('showArchived')
+
+    // Mặc định ẩn sản phẩm archived khỏi danh sách
+    if (showArchived !== 'true') {
+      where.stockStatus = { not: 'archived' }
+    }
 
     if (category) {
       // Check if category is a slug or ID
@@ -121,7 +127,7 @@ export async function GET(request: NextRequest) {
   } catch (error: any) {
     console.error('Error fetching products:', error)
     return NextResponse.json(
-      { 
+      {
         error: 'Failed to fetch products',
         message: error?.message || 'Unknown error',
         code: error?.code || 'UNKNOWN_ERROR',
@@ -171,13 +177,13 @@ export async function POST(request: NextRequest) {
     if (!categoryId) missingFields.push('Category')
     if (!description) missingFields.push('Description')
     if (!sku) missingFields.push('SKU')
-    
+
     if (missingFields.length > 0) {
       return NextResponse.json(
-        { 
+        {
           error: 'Missing required fields',
           message: `Please fill in the following required fields: ${missingFields.join(', ')}`,
-          missingFields 
+          missingFields
         },
         { status: 400 }
       )
@@ -187,7 +193,7 @@ export async function POST(request: NextRequest) {
     let finalSlug = slug
     if (!finalSlug || finalSlug.trim() === '' || finalSlug === 'Auto-generated from name') {
       const baseSlug = generateSlug(name)
-      
+
       // Check if slug exists and make it unique
       let slugToCheck = baseSlug
       let counter = 1
@@ -204,7 +210,7 @@ export async function POST(request: NextRequest) {
 
     // Validate product type
     const validProductType = productType === 'used' ? 'used' : 'new'
-    
+
     // Validate condition for used products
     const validConditions = ['mint', 'excellent', 'very-good', 'good', 'fair']
     let validCondition = null
@@ -259,7 +265,7 @@ export async function POST(request: NextRequest) {
       // Unique constraint violation
       const field = error.meta?.target?.[0] || 'field'
       return NextResponse.json(
-        { 
+        {
           error: 'Duplicate entry',
           message: `A product with this ${field === 'sku' ? 'SKU' : field === 'slug' ? 'Slug' : field} already exists. Please use a different value.`
         },
@@ -267,7 +273,7 @@ export async function POST(request: NextRequest) {
       )
     }
     return NextResponse.json(
-      { 
+      {
         error: 'Failed to create product',
         message: error?.message || 'An unexpected error occurred. Please try again.'
       },
