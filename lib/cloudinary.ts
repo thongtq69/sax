@@ -1,20 +1,26 @@
+// Import cleanup first to handle invalid CLOUDINARY_URL before cloudinary SDK loads
+import './cloudinary-env-cleanup'
+
 import { v2 as cloudinary } from 'cloudinary'
 
-// Cloudinary auto-reads CLOUDINARY_URL. Guard against reconfig in dev HMR.
+// Guard against reconfig in dev HMR.
 declare global {
   // eslint-disable-next-line no-var
   var _cloudinaryConfigured: boolean | undefined
 }
 
 if (!global._cloudinaryConfigured) {
-  // Try to configure from CLOUDINARY_URL first
-  if (process.env.CLOUDINARY_URL) {
-    cloudinary.config({
-      secure: true,
-      url: process.env.CLOUDINARY_URL,
-    })
-  } else if (process.env.CLOUDINARY_CLOUD_NAME && process.env.CLOUDINARY_API_KEY && process.env.CLOUDINARY_API_SECRET) {
-    // Fallback to individual env vars
+  // CLOUDINARY_URL was already validated/cleaned up by the cleanup module.
+  // If it's still present, it has valid format (cloudinary://).
+  // If individual env vars are provided, use those as fallback.
+  
+  const cloudinaryUrl = process.env.CLOUDINARY_URL
+  const hasIndividualVars = process.env.CLOUDINARY_CLOUD_NAME && 
+                            process.env.CLOUDINARY_API_KEY && 
+                            process.env.CLOUDINARY_API_SECRET
+
+  if (!cloudinaryUrl && hasIndividualVars) {
+    // No valid CLOUDINARY_URL, but we have individual vars - configure manually
     cloudinary.config({
       cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
       api_key: process.env.CLOUDINARY_API_KEY,
@@ -22,6 +28,7 @@ if (!global._cloudinaryConfigured) {
       secure: true,
     })
   }
+  // If valid CLOUDINARY_URL exists, SDK auto-configured from it on import
   global._cloudinaryConfigured = true
 }
 

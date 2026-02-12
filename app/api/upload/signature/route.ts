@@ -1,3 +1,6 @@
+// Force dynamic to prevent static generation (Cloudinary SDK requires runtime env vars)
+export const dynamic = 'force-dynamic'
+
 import { NextRequest, NextResponse } from 'next/server'
 import { cloudinary } from '@/lib/cloudinary'
 
