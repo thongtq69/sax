@@ -14,6 +14,7 @@ import { StructuredData, organizationSchema, websiteSchema } from '@/components/
 
 import { StaticProductGrid } from '@/components/home/StaticProductGrid'
 import { NewArrivalsCarousel } from '@/components/home/NewArrivalsCarousel'
+import { FlashSale } from '@/components/site/FlashSale'
 
 // Lazy load popup - only when user clicks "View All Reviews"
 const TestimonialsPopup = dynamic(
@@ -327,34 +328,9 @@ export default function HomePage() {
         </section>
       )}
 
-      {/* On Sale Section */}
+      {/* Flash Sale Section */}
       {onSaleProducts.length > 0 && (
-        <section className="relative overflow-hidden">
-          {/* Title section - no background */}
-          <div className="bg-white">
-            <div className="container mx-auto px-4 pt-1 pb-0">
-              <div className="flex items-center justify-center gap-3">
-                <div className="flex-1 h-px bg-red-400/30" />
-                <span className="text-2xl sm:text-3xl text-red-500">🔥</span>
-                <h2 className="text-lg sm:text-xl md:text-2xl font-bold text-secondary tracking-wide uppercase">{collectionTitles['on-sale']}</h2>
-                <span className="text-2xl sm:text-3xl text-red-500">🔥</span>
-                <div className="flex-1 h-px bg-red-400/30" />
-              </div>
-              <div className="text-center mt-2">
-                <Link href="/shop?badge=sale" className="text-xs sm:text-sm text-primary hover:text-secondary transition-colors inline-flex items-center gap-1">
-                  View All <ChevronRight className="h-3 w-3 sm:h-4 sm:w-4" />
-                </Link>
-              </div>
-            </div>
-          </div>
-          {/* Products section - with background */}
-          <div className="relative" style={collectionBackgrounds['on-sale'] ? { backgroundImage: `url(${collectionBackgrounds['on-sale']})`, backgroundSize: 'cover', backgroundPosition: 'center' } : { background: 'linear-gradient(to bottom right, rgba(254, 242, 242, 0.3), white, rgba(254, 243, 199, 0.3))' }}>
-            {collectionBackgrounds['on-sale'] && <div className="absolute inset-0 bg-white/5" />}
-            <div className="relative container mx-auto px-4 py-4 sm:py-6">
-              <StaticProductGrid products={onSaleProducts} id="on-sale" />
-            </div>
-          </div>
-        </section>
+        <FlashSale products={onSaleProducts} title={collectionTitles['on-sale']} />
       )}
 
       {/* Professional Flutes Section */}

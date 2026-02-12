@@ -1,7 +1,7 @@
 'use client'
 
 import Link from 'next/link';
-import { User, Facebook, Instagram, Youtube, Twitter } from 'lucide-react';
+import { User, Facebook, Instagram, Youtube, Twitter, Zap } from 'lucide-react';
 
 export function TopBar() {
     return (
@@ -27,6 +27,13 @@ export function TopBar() {
                                 <social.icon className="h-3 w-3 text-[#D4AF37]" />
                             </Link>
                         ))}
+
+                        <div className="h-4 w-px bg-white/10 mx-2 hidden sm:block" />
+
+                        <Link href="/shop" className="hidden lg:flex items-center gap-1.5 px-2.5 py-1 rounded bg-orange-600/20 border border-orange-500/30 text-[10px] font-bold text-orange-400 hover:bg-orange-600 hover:text-white transition-all">
+                            <Zap className="h-3 w-3 fill-current" />
+                            FLASH SALE LIVE
+                        </Link>
                     </div>
 
                     {/* Quick Links */}
