@@ -7,7 +7,8 @@ import { getProductUrl } from '@/lib/api'
 import { Button } from '@/components/ui/button'
 import { Separator } from '@/components/ui/separator'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { X, Plus, Minus, ShoppingBag } from 'lucide-react'
+import { X, Plus, Minus, ShoppingBag, Zap } from 'lucide-react'
+import { Input } from '@/components/ui/input'
 
 export default function CartPage() {
   const items = useCartStore((state) => state.items)
@@ -134,6 +135,25 @@ export default function CartPage() {
                   <span>Total</span>
                   <span>${total.toFixed(2)}</span>
                 </div>
+              </div>
+
+              {/* Coupon Section */}
+              <div className="pt-2">
+                <div className="flex gap-2">
+                  <div className="relative flex-1">
+                    <Input
+                      placeholder="Promo code"
+                      className="h-10 text-xs"
+                    />
+                    <Zap className="absolute right-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-[#D4AF37] opacity-0 group-hover:opacity-100 transition-opacity" />
+                  </div>
+                  <Button variant="outline" className="h-10 px-4 text-xs font-bold border-zinc-200">
+                    APPLY
+                  </Button>
+                </div>
+                <p className="mt-2 text-[10px] text-zinc-500 font-medium">
+                  Try <span className="text-[#D4AF37] font-bold">WELCOME-PREMIUM</span> for $200 off!
+                </p>
               </div>
 
               <Button className="w-full" size="lg" asChild>

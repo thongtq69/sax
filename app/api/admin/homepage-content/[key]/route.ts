@@ -13,12 +13,37 @@ const defaultSections: Record<string, any> = {
     image: '/homepage3.png',
     isVisible: true,
     order: 0,
-    metadata: { 
-      buttonText: 'Shop now!', 
+    metadata: {
+      buttonText: 'Shop now!',
       buttonLink: '/shop',
       logoImage: '/LOGO JAMES (1).svg'
     },
   },
+  'flash-sale': {
+    sectionKey: 'flash-sale',
+    title: 'Flash Sale Ending Soon',
+    subtitle: 'Exclusive prices on selected professional instruments.',
+    isVisible: true,
+    metadata: {
+      endDate: '2026-03-31T23:59:59',
+      urgencyText: '🏃 HURRY! LOW STOCK',
+      showTimer: true,
+      buttonText: 'Grab Now',
+    }
+  },
+  'rewards-vouchers': {
+    sectionKey: 'rewards-vouchers',
+    title: 'EXCLUSIVE PRIVILEGES FOR PROFESSIONAL MUSICIANS',
+    subtitle: 'Unlock premium discounts and seasonal vouchers curated for our most valued collectors and performers.',
+    isVisible: true,
+    metadata: {
+      coupons: [
+        { id: '1', amount: '$500', code: 'SAX-MASTER-500', label: 'Pro Collection Voucher', description: 'Valid for all professional level alto and tenor saxophones.', minSpend: 5000, expiryDate: 'Mar 20, 2026' },
+        { id: '2', amount: '15%', code: 'FLUTE-ARTIST', label: 'Artist Series Discount', description: 'Special discount for Altus and Haynes handmade flutes.', minSpend: 3000, expiryDate: 'Apr 15, 2026' },
+        { id: '3', amount: '$200', code: 'WELCOME-PREMIUM', label: 'Welcome Bonus', description: 'A special gift for your first professional instrument purchase.', minSpend: 2000, expiryDate: 'Dec 31, 2026' }
+      ]
+    }
+  }
 }
 
 // GET /api/admin/homepage-content/[key] - Get a single section
@@ -81,7 +106,7 @@ export async function PUT(
 
     // Merge metadata instead of replacing
     const existingMetadata = (existingSection.metadata as Record<string, any>) || {}
-    const mergedMetadata = metadata !== undefined 
+    const mergedMetadata = metadata !== undefined
       ? { ...existingMetadata, ...metadata }
       : existingMetadata
 

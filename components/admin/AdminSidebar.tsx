@@ -22,6 +22,8 @@ import {
   Truck,
   Tag,
   Mail,
+  Zap,
+  Ticket,
 } from 'lucide-react'
 
 interface AdminSidebarProps {
@@ -36,10 +38,12 @@ export const menuItems: { href: string; label: string; icon: any; exact?: boolea
   { href: '/admin/products', label: 'Products', icon: Package },
   { href: '/admin/brands', label: 'Brands', icon: Tag },
   { href: '/admin/featured-collections', label: 'Featured Collections', icon: Star },
+  { href: '/admin/flash-sale', label: 'Flash Sale Setup', icon: Zap },
   { href: '/admin/blog', label: 'Blog Posts', icon: FileText },
   { href: '/admin/categories', label: 'Categories', icon: FolderTree },
   { href: '/admin/announcements', label: 'Announcement Bar', icon: Megaphone },
   { href: '/admin/popup-ad', label: 'Popup Ads', icon: Star },
+  { href: '/admin/coupons', label: 'Coupons & Vouchers', icon: Ticket },
   { href: '/admin/faqs', label: 'FAQs', icon: HelpCircle },
   { href: '/admin/quick-faq', label: 'Quick FAQ (Product)', icon: CircleHelp },
   { href: '/admin/inquiry-titles', label: 'Inquiry Titles', icon: MessageSquareText },

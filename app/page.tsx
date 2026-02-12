@@ -15,6 +15,7 @@ import { StructuredData, organizationSchema, websiteSchema } from '@/components/
 import { StaticProductGrid } from '@/components/home/StaticProductGrid'
 import { NewArrivalsCarousel } from '@/components/home/NewArrivalsCarousel'
 import { FlashSale } from '@/components/site/FlashSale'
+import { RewardShowcase } from '@/components/site/RewardShowcase'
 
 // Lazy load popup - only when user clicks "View All Reviews"
 const TestimonialsPopup = dynamic(
@@ -330,8 +331,11 @@ export default function HomePage() {
 
       {/* Flash Sale Section */}
       {onSaleProducts.length > 0 && (
-        <FlashSale products={onSaleProducts} title={collectionTitles['on-sale']} />
+        <FlashSale products={onSaleProducts} />
       )}
+
+      {/* Reward & Coupon Section */}
+      <RewardShowcase />
 
       {/* Professional Flutes Section */}
       {professionalFlutesProducts.length > 0 && (
