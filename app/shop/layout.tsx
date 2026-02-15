@@ -27,6 +27,9 @@ export const metadata: Metadata = {
     title: 'Shop Professional Saxophones | James Sax Corner',
     description: 'Browse our collection of professional saxophones from top brands.',
   },
+  alternates: {
+    canonical: `${process.env.NEXT_PUBLIC_BASE_URL || 'https://jamessaxcorner.com'}/shop`,
+  },
 }
 
 export default function ShopLayout({

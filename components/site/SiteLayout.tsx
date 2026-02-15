@@ -15,6 +15,11 @@ const NewYearPopup = dynamic(
   { ssr: false }
 )
 
+const PopupAd = dynamic(
+  () => import('@/components/PopupAd'),
+  { ssr: false }
+)
+
 export function SiteLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname()
   const isAdminRoute = pathname?.startsWith('/admin')
@@ -31,6 +36,9 @@ export function SiteLayout({ children }: { children: React.ReactNode }) {
         <AnnouncementBar />
         <main className="min-h-screen">{children}</main>
         <Footer />
+
+        {/* Global Popup Ad from Admin */}
+        <PopupAd />
 
         {/* New Year 2026 Flash Sale Popup - temporarily hidden */}
         {/* <NewYearPopup /> */}

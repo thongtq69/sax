@@ -1,5 +1,5 @@
 import { MetadataRoute } from 'next'
-import { getProducts, getCategories } from '@/lib/api'
+import { prisma } from '@/lib/prisma'
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'https://jamessaxcorner.com'
@@ -57,25 +57,37 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   ]
 
   try {
-    // Dynamic product pages
-    const productsResponse = await getProducts({ limit: 1000 })
-    const productPages = productsResponse.products.map((product) => ({
-      // Match the format used in getProductUrl: /product/SKU-slug
+    // Dynamic product pages - fetch directly from DB for reliability
+    const products = await prisma.product.findMany({
+      select: { sku: true, slug: true, updatedAt: true },
+    })
+    const productPages = products.map((product) => ({
       url: `${baseUrl}/product/${product.sku}${product.slug ? '-' + product.slug : ''}`,
       lastModified: new Date(product.updatedAt || new Date()),
       changeFrequency: 'weekly' as const,
       priority: 0.8,
     }))
 
-    // Category/Subcategory pages
-    const categories = await getCategories()
-    const categoryPages = categories.flatMap((category: any) => {
-      const pages: any[] = []
+    // Dynamic blog post pages
+    const blogPosts = await prisma.blogPost.findMany({
+      select: { slug: true, updatedAt: true },
+    })
+    const blogPages = blogPosts.map((post) => ({
+      url: `${baseUrl}/blog/${post.slug}`,
+      lastModified: new Date(post.updatedAt || new Date()),
+      changeFrequency: 'monthly' as const,
+      priority: 0.7,
+    }))
 
-      // If shop handled parent categories, we could add them here
-      // For now, we mainly want subcategories as they are the primary filter
+    // Category/Subcategory pages
+    const categories = await prisma.category.findMany({
+      include: { subcategories: true },
+    })
+    const categoryPages = categories.flatMap((category) => {
+      const pages: MetadataRoute.Sitemap = []
+
       if (category.subcategories && category.subcategories.length > 0) {
-        category.subcategories.forEach((sub: any) => {
+        category.subcategories.forEach((sub) => {
           pages.push({
             url: `${baseUrl}/shop?subcategory=${sub.slug}`,
             lastModified: new Date(),
@@ -88,7 +100,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       return pages
     })
 
-    return [...staticPages, ...productPages, ...categoryPages]
+    return [...staticPages, ...productPages, ...blogPages, ...categoryPages]
   } catch (error) {
     console.error('Error generating sitemap:', error)
     return staticPages

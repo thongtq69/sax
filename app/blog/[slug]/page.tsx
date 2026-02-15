@@ -1,66 +1,35 @@
-'use client'
-
-import { Suspense, useEffect, useState } from 'react';
-import { Metadata } from 'next';
 import Image from 'next/image';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { ChevronRight, Clock, User, Calendar, ArrowLeft, ArrowRight } from 'lucide-react';
-import { getBlogPostBySlug, getBlogPosts, transformBlogPost } from '@/lib/api';
+import { prisma } from '@/lib/prisma';
 import { BlogSidebar } from '@/components/blog/BlogSidebar';
+import { StructuredData } from '@/components/seo/StructuredData';
 
-interface BlogPostPageProps {
+export const revalidate = 300 // Revalidate every 5 minutes
+
+export default async function BlogPostPage({
+    params,
+}: {
     params: { slug: string };
-}
-
-export default function BlogPostPage({ params }: BlogPostPageProps) {
-    const [post, setPost] = useState<any>(null);
-    const [prevPost, setPrevPost] = useState<any>(null);
-    const [nextPost, setNextPost] = useState<any>(null);
-    const [isLoading, setIsLoading] = useState(true);
-
-    useEffect(() => {
-        async function fetchPost() {
-            try {
-                const postData = await getBlogPostBySlug(params.slug);
-                if (!postData) {
-                    notFound();
-                }
-                const transformedPost = transformBlogPost(postData);
-                setPost(transformedPost);
-
-                // Fetch all posts to find adjacent ones
-                const allPostsResponse = await getBlogPosts({ limit: 1000 });
-                const allPosts = allPostsResponse.posts.map(transformBlogPost);
-                const currentIndex = allPosts.findIndex(p => p.slug === params.slug);
-                
-                if (currentIndex > 0) {
-                    setPrevPost(allPosts[currentIndex - 1]);
-                }
-                if (currentIndex < allPosts.length - 1) {
-                    setNextPost(allPosts[currentIndex + 1]);
-                }
-            } catch (error) {
-                console.error('Error fetching blog post:', error);
-                notFound();
-            } finally {
-                setIsLoading(false);
-            }
-        }
-        fetchPost();
-    }, [params.slug]);
-
-    if (isLoading) {
-        return (
-            <div className="flex items-center justify-center min-h-screen">
-                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
-            </div>
-        );
-    }
+}) {
+    const post = await prisma.blogPost.findUnique({
+        where: { slug: params.slug },
+    })
 
     if (!post) {
-        notFound();
+        notFound()
     }
+
+    // Fetch adjacent posts for navigation
+    const allPosts = await prisma.blogPost.findMany({
+        select: { slug: true, title: true },
+        orderBy: { date: 'desc' },
+    })
+
+    const currentIndex = allPosts.findIndex(p => p.slug === params.slug)
+    const prevPost = currentIndex > 0 ? allPosts[currentIndex - 1] : null
+    const nextPost = currentIndex < allPosts.length - 1 ? allPosts[currentIndex + 1] : null
 
     const dateInfo = {
         full: new Date(post.date).toLocaleDateString('en-US', {
@@ -68,10 +37,54 @@ export default function BlogPostPage({ params }: BlogPostPageProps) {
             month: 'long',
             day: 'numeric',
         }),
-    };
+    }
+
+    const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'https://jamessaxcorner.com'
+
+    // Article structured data for SEO
+    const articleSchema = {
+        "@context": "https://schema.org",
+        "@type": "Article",
+        "headline": post.title,
+        "description": post.excerpt,
+        "image": post.image || undefined,
+        "datePublished": new Date(post.date).toISOString(),
+        "dateModified": new Date(post.updatedAt).toISOString(),
+        "author": {
+            "@type": "Person",
+            "name": post.author,
+        },
+        "publisher": {
+            "@type": "Organization",
+            "name": "James Sax Corner",
+            "logo": {
+                "@type": "ImageObject",
+                "url": `${baseUrl}/logo.png`,
+            },
+        },
+        "mainEntityOfPage": {
+            "@type": "WebPage",
+            "@id": `${baseUrl}/blog/${post.slug}`,
+        },
+    }
+
+    // Breadcrumb schema
+    const breadcrumbSchema = {
+        "@context": "https://schema.org",
+        "@type": "BreadcrumbList",
+        "itemListElement": [
+            { "@type": "ListItem", "position": 1, "name": "Home", "item": baseUrl },
+            { "@type": "ListItem", "position": 2, "name": "Blog", "item": `${baseUrl}/blog` },
+            { "@type": "ListItem", "position": 3, "name": post.title, "item": `${baseUrl}/blog/${post.slug}` },
+        ],
+    }
 
     return (
         <div className="min-h-screen bg-background">
+            {/* Structured Data for SEO */}
+            <StructuredData data={articleSchema} />
+            <StructuredData data={breadcrumbSchema} />
+
             {/* Hero Section */}
             <section className="relative bg-secondary py-12 overflow-hidden">
                 {/* Pattern */}

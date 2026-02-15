@@ -1,59 +1,47 @@
-'use client'
-
-import { Suspense, useEffect, useState } from 'react';
+import { Suspense } from 'react';
 import Link from 'next/link';
-import { getBlogPosts, transformBlogPost } from '@/lib/api';
+import { prisma } from '@/lib/prisma';
 import { BlogCard } from '@/components/blog/BlogCard';
 import { BlogSidebar } from '@/components/blog/BlogSidebar';
 import { BlogPagination } from '@/components/blog/BlogPagination';
 import { ChevronRight, BookOpen } from 'lucide-react';
+import { transformBlogPost } from '@/lib/api';
+
+export const revalidate = 300 // Revalidate every 5 minutes
 
 interface BlogPageProps {
     searchParams: { page?: string; category?: string };
 }
 
-export default function BlogPage({ searchParams }: BlogPageProps) {
-    const [posts, setPosts] = useState<any[]>([]);
-    const [isLoading, setIsLoading] = useState(true);
+export default async function BlogPage({ searchParams }: BlogPageProps) {
     const currentPage = parseInt(searchParams?.page || '1', 10);
     const categoryFilter = searchParams?.category;
     const itemsPerPage = 6;
 
-    useEffect(() => {
-        async function fetchPosts() {
-            try {
-                const response = await getBlogPosts({
-                    category: categoryFilter,
-                    page: currentPage,
-                    limit: itemsPerPage,
-                });
-                setPosts(response.posts.map(transformBlogPost));
-            } catch (error) {
-                console.error('Error fetching blog posts:', error);
-            } finally {
-                setIsLoading(false);
-            }
-        }
-        fetchPosts();
-    }, [currentPage, categoryFilter]);
+    // Build where clause for prisma
+    const where: any = {}
+    if (categoryFilter) {
+        where.categories = { has: categoryFilter.replace(/-/g, ' ').replace(/\b\w/g, (l: string) => l.toUpperCase()) }
+    }
 
-    // Calculate pagination
-    const totalPosts = posts.length; // This should come from API pagination
+    const [postsResult, totalPosts] = await Promise.all([
+        prisma.blogPost.findMany({
+            where,
+            orderBy: { date: 'desc' },
+            skip: (currentPage - 1) * itemsPerPage,
+            take: itemsPerPage,
+        }),
+        prisma.blogPost.count({ where }),
+    ])
+
+    const posts = postsResult.map(transformBlogPost)
     const totalPages = Math.ceil(totalPosts / itemsPerPage);
     const hasNextPage = currentPage < totalPages;
     const hasPrevPage = currentPage > 1;
 
     const categoryName = categoryFilter
-        ? categoryFilter.replace(/-/g, ' ').replace(/\b\w/g, l => l.toUpperCase())
+        ? categoryFilter.replace(/-/g, ' ').replace(/\b\w/g, (l: string) => l.toUpperCase())
         : null;
-
-    if (isLoading) {
-        return (
-            <div className="flex items-center justify-center min-h-screen">
-                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
-            </div>
-        );
-    }
 
     return (
         <div className="min-h-screen bg-background">
@@ -139,46 +127,44 @@ export default function BlogPage({ searchParams }: BlogPageProps) {
                             </div>
 
                             {/* Posts Grid */}
-                            <Suspense fallback={<BlogSkeleton />}>
-                                {posts.length > 0 ? (
-                                    <>
-                                        <div className="grid gap-4 sm:gap-6 md:gap-8 grid-cols-1 min-[480px]:grid-cols-2">
-                                            {(currentPage === 1 && !categoryFilter ? posts.slice(1) : posts).map((post) => (
-                                                <BlogCard key={post.id} post={post} />
-                                            ))}
-                                        </div>
-
-                                        {/* Pagination */}
-                                        {totalPages > 1 && (
-                                            <div className="mt-12">
-                                                <BlogPagination
-                                                    currentPage={currentPage}
-                                                    totalPages={totalPages}
-                                                />
-                                            </div>
-                                        )}
-                                    </>
-                                ) : (
-                                    <div className="rounded-lg border-2 border-dashed border-primary/30 bg-primary/5 p-12 text-center">
-                                        <BookOpen className="mx-auto mb-4 h-12 w-12 text-primary/40" />
-                                        <p className="text-lg font-medium text-secondary">No articles found</p>
-                                        <p className="mt-2 text-muted-foreground">
-                                            {categoryFilter
-                                                ? 'No articles in this category yet.'
-                                                : 'Check back soon for new content.'
-                                            }
-                                        </p>
-                                        {categoryFilter && (
-                                            <Link
-                                                href="/blog"
-                                                className="mt-4 inline-block rounded bg-primary px-4 py-2 text-sm font-medium text-white hover:bg-primary/90 transition-colors"
-                                            >
-                                                View All Articles
-                                            </Link>
-                                        )}
+                            {posts.length > 0 ? (
+                                <>
+                                    <div className="grid gap-4 sm:gap-6 md:gap-8 grid-cols-1 min-[480px]:grid-cols-2">
+                                        {(currentPage === 1 && !categoryFilter ? posts.slice(1) : posts).map((post) => (
+                                            <BlogCard key={post.id} post={post} />
+                                        ))}
                                     </div>
-                                )}
-                            </Suspense>
+
+                                    {/* Pagination */}
+                                    {totalPages > 1 && (
+                                        <div className="mt-12">
+                                            <BlogPagination
+                                                currentPage={currentPage}
+                                                totalPages={totalPages}
+                                            />
+                                        </div>
+                                    )}
+                                </>
+                            ) : (
+                                <div className="rounded-lg border-2 border-dashed border-primary/30 bg-primary/5 p-12 text-center">
+                                    <BookOpen className="mx-auto mb-4 h-12 w-12 text-primary/40" />
+                                    <p className="text-lg font-medium text-secondary">No articles found</p>
+                                    <p className="mt-2 text-muted-foreground">
+                                        {categoryFilter
+                                            ? 'No articles in this category yet.'
+                                            : 'Check back soon for new content.'
+                                        }
+                                    </p>
+                                    {categoryFilter && (
+                                        <Link
+                                            href="/blog"
+                                            className="mt-4 inline-block rounded bg-primary px-4 py-2 text-sm font-medium text-white hover:bg-primary/90 transition-colors"
+                                        >
+                                            View All Articles
+                                        </Link>
+                                    )}
+                                </div>
+                            )}
                         </div>
 
                         {/* Sidebar - Always after content */}
@@ -188,22 +174,6 @@ export default function BlogPage({ searchParams }: BlogPageProps) {
                     </div>
                 </div>
             </section>
-        </div>
-    );
-}
-
-function BlogSkeleton() {
-    return (
-        <div className="grid gap-8 sm:grid-cols-2">
-            {[1, 2, 3, 4].map((i) => (
-                <div key={i} className="animate-pulse rounded-lg border border-primary/20 bg-white p-4">
-                    <div className="aspect-[4/3] rounded bg-gray-200 mb-4" />
-                    <div className="h-4 bg-gray-200 rounded w-1/4 mb-3" />
-                    <div className="h-6 bg-gray-200 rounded w-3/4 mb-2" />
-                    <div className="h-4 bg-gray-200 rounded w-full mb-2" />
-                    <div className="h-4 bg-gray-200 rounded w-2/3" />
-                </div>
-            ))}
         </div>
     );
 }

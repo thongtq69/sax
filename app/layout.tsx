@@ -53,23 +53,17 @@ export const metadata: Metadata = {
     title: 'James Sax Corner - Premium Saxophones & Professional Wind Instruments',
     description: 'Premium saxophones, expertly maintained for peak performance. Trusted by musicians worldwide, backed by outstanding reviews.',
     siteName: 'James Sax Corner',
-    images: [
-      {
-        url: '/og-image.jpg', // TODO: Tạo ảnh OG 1200x630px
-        width: 1200,
-        height: 630,
-        alt: 'James Sax Corner - Premium Saxophones',
-      },
-    ],
   },
   twitter: {
     card: 'summary_large_image',
     title: 'James Sax Corner - Premium Saxophones',
     description: 'Premium saxophones, expertly maintained for peak performance. Trusted by musicians worldwide.',
-    images: ['/og-image.jpg'], // TODO: Tạo ảnh Twitter card
   },
   verification: {
     google: '_P7lYBUK9Gz8XYecWbXTg_pX3uoY4ZBU_jF6jgcqcC4',
+  },
+  alternates: {
+    canonical: process.env.NEXT_PUBLIC_BASE_URL || 'https://jamessaxcorner.com',
   },
 }
 
@@ -79,7 +73,7 @@ export default function RootLayout({
   children: React.ReactNode
 }) {
   return (
-    <html lang="vi" suppressHydrationWarning>
+    <html lang="en" suppressHydrationWarning>
       <head>
         {/* Preload critical resources */}
         <link rel="preconnect" href="https://fonts.googleapis.com" />

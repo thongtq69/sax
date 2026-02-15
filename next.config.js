@@ -53,16 +53,26 @@ const nextConfig = {
   async headers() {
     return [
       {
+        // Cache static assets (images, fonts, JS/CSS bundles)
+        source: '/_next/static/:path*',
+        headers: [
+          {
+            key: 'Cache-Control',
+            value: 'public, max-age=31536000, immutable',
+          },
+        ],
+      },
+      {
+        // HTML pages should be revalidated by crawlers
         source: '/:path*',
         headers: [
           {
             key: 'Access-Control-Allow-Origin',
             value: '*',
           },
-          // Cache static assets
           {
-            key: 'Cache-Control',
-            value: 'public, max-age=31536000, immutable',
+            key: 'X-Robots-Tag',
+            value: 'index, follow',
           },
         ],
       },
@@ -72,6 +82,16 @@ const nextConfig = {
           {
             key: 'Cache-Control',
             value: 'no-cache, no-store, must-revalidate',
+          },
+        ],
+      },
+      {
+        // Disallow indexing of admin, auth, account pages
+        source: '/(admin|auth|account|checkout)/:path*',
+        headers: [
+          {
+            key: 'X-Robots-Tag',
+            value: 'noindex, nofollow',
           },
         ],
       },

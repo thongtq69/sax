@@ -20,12 +20,7 @@ export default function PopupAd() {
     const [isVisible, setIsVisible] = useState(false)
 
     useEffect(() => {
-        // Check if user has already seen the popup in this session/ever
-        const hasSeenPopup = localStorage.getItem('has_seen_popup_ad')
-
-        if (!hasSeenPopup) {
-            fetchActiveAd()
-        }
+        fetchActiveAd()
     }, [])
 
     const fetchActiveAd = async () => {
@@ -34,11 +29,16 @@ export default function PopupAd() {
             if (res.ok) {
                 const data = await res.json()
                 if (data && data.isActive) {
-                    setAd(data)
-                    // Show popup after a short delay
-                    setTimeout(() => {
-                        setIsVisible(true)
-                    }, 1500)
+                    // Check if user has already seen THIS specific popup
+                    const seenPopupId = localStorage.getItem('seen_popup_ad_id')
+
+                    if (seenPopupId !== data.id) {
+                        setAd(data)
+                        // Show popup after a short delay
+                        setTimeout(() => {
+                            setIsVisible(true)
+                        }, 1500)
+                    }
                 }
             }
         } catch (error) {
@@ -48,7 +48,12 @@ export default function PopupAd() {
 
     const handleClose = () => {
         setIsVisible(false)
-        localStorage.setItem('has_seen_popup_ad', 'true')
+        if (ad) {
+            localStorage.setItem('seen_popup_ad_id', ad.id)
+            // Also keep the old key for compatibility/cleanup if needed, 
+            // but we primary use the ID now
+            localStorage.setItem('has_seen_popup_ad', 'true')
+        }
     }
 
     if (!ad || !isVisible) return null
@@ -56,39 +61,68 @@ export default function PopupAd() {
     return (
         <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in duration-300">
             <div
-                className="relative w-full max-w-lg bg-white rounded-2xl overflow-hidden shadow-2xl animate-in zoom-in-95 duration-300"
+                className="relative w-full max-w-2xl bg-white rounded-3xl overflow-hidden shadow-2xl animate-in zoom-in-95 duration-300"
                 onClick={(e) => e.stopPropagation()}
             >
                 {/* Close Button */}
                 <button
                     onClick={handleClose}
-                    className="absolute top-3 right-3 z-10 p-2 bg-black/20 hover:bg-black/40 text-white rounded-full transition-colors"
+                    className="absolute top-4 right-4 z-20 p-2 bg-black/20 hover:bg-black/40 text-white rounded-full transition-colors backdrop-blur-sm"
                 >
-                    <X className="h-5 w-5" />
+                    <X className="h-6 w-6" />
                 </button>
 
-                {/* Ad Image */}
-                <div className="relative aspect-[4/3] w-full">
-                    <Image
-                        src={ad.image}
-                        alt={ad.title}
-                        fill
-                        className="object-cover"
-                        priority
-                    />
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
+                {/* Ad Content */}
+                <div className="flex flex-col">
+                    {/* Image Header */}
+                    <div className="relative aspect-[16/9] w-full">
+                        <Image
+                            src={ad.image}
+                            alt={ad.title}
+                            fill
+                            className="object-cover"
+                            priority
+                        />
+                        <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
+                        <div className="absolute bottom-6 left-6 right-6">
+                            <h2 className="text-3xl md:text-4xl font-bold text-white drop-shadow-md">{ad.title}</h2>
+                        </div>
+                    </div>
 
-                    <div className="absolute bottom-0 left-0 right-0 p-6 text-white">
-                        <h2 className="text-2xl font-bold mb-2">{ad.title}</h2>
-                        <p className="text-white/90 mb-6 line-clamp-2">{ad.description}</p>
+                    {/* Content Detail */}
+                    <div className="p-8 md:p-10 space-y-6">
+                        <div className="max-h-[30vh] overflow-y-auto pr-2 custom-scrollbar">
+                            <p className="text-gray-600 text-lg md:text-xl leading-relaxed whitespace-pre-line">
+                                {ad.description}
+                            </p>
+                        </div>
 
-                        <Link href={ad.ctaLink} onClick={handleClose}>
-                            <Button className="w-full bg-primary hover:bg-primary/90 text-white font-semibold py-6 rounded-xl text-lg shadow-lg shadow-primary/30">
-                                {ad.ctaText || 'Xem ngay'}
-                            </Button>
-                        </Link>
+                        <div className="pt-4">
+                            <Link href={ad.ctaLink} onClick={handleClose}>
+                                <Button className="w-full bg-primary hover:bg-primary/90 text-white font-bold py-8 rounded-2xl text-xl shadow-xl shadow-primary/20 transition-all hover:scale-[1.02] active:scale-[0.98]">
+                                    {ad.ctaText || 'Xem ngay'}
+                                </Button>
+                            </Link>
+                        </div>
                     </div>
                 </div>
+
+                <style jsx global>{`
+                    .custom-scrollbar::-webkit-scrollbar {
+                        width: 6px;
+                    }
+                    .custom-scrollbar::-webkit-scrollbar-track {
+                        background: #f1f1f1;
+                        border-radius: 10px;
+                    }
+                    .custom-scrollbar::-webkit-scrollbar-thumb {
+                        background: #ccc;
+                        border-radius: 10px;
+                    }
+                    .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+                        background: #primary;
+                    }
+                `}</style>
             </div>
 
             {/* Click outside to close */}

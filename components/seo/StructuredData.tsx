@@ -23,15 +23,11 @@ export const organizationSchema = {
   "description": "Premium saxophones, expertly maintained for peak performance. Trusted by musicians worldwide.",
   "contactPoint": {
     "@type": "ContactPoint",
-    "telephone": "+1-XXX-XXX-XXXX", // TODO: Thêm số điện thoại thật
     "contactType": "Customer Service",
-    "availableLanguage": ["English"]
+    "availableLanguage": ["English"],
+    "email": "contact@jamessaxcorner.com"
   },
-  "sameAs": [
-    "https://facebook.com/jamessaxcorner", // TODO: Thêm social media links thật
-    "https://instagram.com/jamessaxcorner",
-    "https://twitter.com/jamessaxcorner"
-  ]
+  "sameAs": []
 }
 
 // Website Schema
@@ -79,5 +75,55 @@ export function generateProductSchema(product: any) {
       "ratingValue": product.rating,
       "reviewCount": product.reviewCount
     } : undefined
+  }
+}
+
+// BreadcrumbList Schema Generator
+export function generateBreadcrumbSchema(items: { name: string; url: string }[]) {
+  return {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    "itemListElement": items.map((item, index) => ({
+      "@type": "ListItem",
+      "position": index + 1,
+      "name": item.name,
+      "item": item.url,
+    })),
+  }
+}
+
+// FAQ Schema Generator (for About page)
+export function generateFAQSchema(faqs: { question: string; answer: string }[]) {
+  return {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    "mainEntity": faqs.map((faq) => ({
+      "@type": "Question",
+      "name": faq.question,
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": faq.answer,
+      },
+    })),
+  }
+}
+
+// Local Business Schema
+export const localBusinessSchema = {
+  "@context": "https://schema.org",
+  "@type": "Store",
+  "name": "James Sax Corner",
+  "url": process.env.NEXT_PUBLIC_BASE_URL || "https://jamessaxcorner.com",
+  "logo": `${process.env.NEXT_PUBLIC_BASE_URL || "https://jamessaxcorner.com"}/logo.png`,
+  "description": "Premium saxophones, expertly maintained for peak performance. Trusted by musicians worldwide.",
+  "priceRange": "$$",
+  "currenciesAccepted": "USD",
+  "paymentAccepted": "PayPal",
+  "makesOffer": {
+    "@type": "Offer",
+    "itemOffered": {
+      "@type": "Product",
+      "name": "Professional Saxophones"
+    }
   }
 }
