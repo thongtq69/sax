@@ -20,6 +20,12 @@ const PopupAd = dynamic(
   { ssr: false }
 )
 
+// Lazy load Lunar New Year effect
+const LunarNewYearEffect = dynamic(
+  () => import('./LunarNewYearEffect').then(m => m.LunarNewYearEffect),
+  { ssr: false }
+)
+
 export function SiteLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname()
   const isAdminRoute = pathname?.startsWith('/admin')
@@ -39,6 +45,9 @@ export function SiteLayout({ children }: { children: React.ReactNode }) {
 
         {/* Global Popup Ad from Admin */}
         <PopupAd />
+
+        {/* 🧧 Tết Nguyên Đán 2026 Effect - Hoa mai, đèn lồng, pháo hoa */}
+        <LunarNewYearEffect />
 
         {/* New Year 2026 Flash Sale Popup - temporarily hidden */}
         {/* <NewYearPopup /> */}
