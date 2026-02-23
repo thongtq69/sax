@@ -9,7 +9,7 @@ import { useCartStore } from '@/lib/store/cart'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Separator } from '@/components/ui/separator'
-import { ShieldCheck, Lock, Package, Truck, ArrowLeft, AlertCircle, Loader2, MapPin, Calculator, ChevronDown } from 'lucide-react'
+import { ShieldCheck, Lock, Package, Truck, ArrowLeft, AlertCircle, Loader2, MapPin, Calculator, ChevronDown, Ticket } from 'lucide-react'
 import { PayPalStandardButton } from '@/components/checkout/PayPalStandardButton'
 import { countries, getStatesByCountry, getCountryByName } from '@/lib/location-data'
 // import { PayPalMeButton } from '@/components/checkout/PayPalMeButton' // Temporarily hidden
@@ -26,6 +26,16 @@ interface SavedAddress {
   country: string
   phone: string
   isDefault: boolean
+}
+interface Coupon {
+  id: string
+  amount: string
+  code: string
+  label: string
+  description: string
+  minSpend: number
+  expiryDate: string
+  applicableProducts?: string[]
 }
 
 function CheckoutContent() {
@@ -45,12 +55,84 @@ function CheckoutContent() {
     city: '', state: '', zip: '', country: 'United States', phone: '',
   })
 
+  // Coupon state
+  const [availableCoupons, setAvailableCoupons] = useState<Coupon[]>([])
+  const [couponCode, setCouponCode] = useState('')
+  const [appliedCoupon, setAppliedCoupon] = useState<Coupon | null>(null)
+  const [couponError, setCouponError] = useState<string | null>(null)
+  const [isCouponSectionOpen, setIsCouponSectionOpen] = useState(false)
+
   // Fetch saved addresses when user is logged in
   useEffect(() => {
     if (session?.user) {
       fetchSavedAddresses()
     }
+    fetchCoupons()
   }, [session])
+
+  const fetchCoupons = async () => {
+    try {
+      const response = await fetch('/api/admin/homepage-content/rewards-vouchers')
+      if (response.ok) {
+        const data = await response.json()
+        setAvailableCoupons(data.metadata?.coupons || [])
+      }
+    } catch (error) {
+      console.error('Failed to fetch coupons')
+    }
+  }
+
+  const calculateDiscount = (coupon: Coupon) => {
+    let applicableSubtotal = 0
+    const hasRestriction = coupon.applicableProducts && coupon.applicableProducts.length > 0
+
+    items.forEach(item => {
+      if (!hasRestriction || coupon.applicableProducts?.includes(item.productId)) {
+        applicableSubtotal += item.price * item.quantity
+      }
+    })
+
+    if (applicableSubtotal < coupon.minSpend) return 0
+
+    if (coupon.amount.endsWith('%')) {
+      const percentage = parseFloat(coupon.amount) / 100
+      return applicableSubtotal * percentage
+    } else {
+      const fixedValue = parseFloat(coupon.amount.replace(/[^0-9.]/g, ''))
+      return Math.min(fixedValue, applicableSubtotal)
+    }
+  }
+
+  const handleApplyCoupon = (code: string) => {
+    if (!code.trim()) return
+
+    const coupon = availableCoupons.find(c => c.code.toUpperCase() === code.trim().toUpperCase())
+
+    if (!coupon) {
+      setCouponError('Invalid coupon code')
+      setAppliedCoupon(null)
+      return
+    }
+
+    if (subtotal < coupon.minSpend) {
+      setCouponError(`Minimum spend of $${coupon.minSpend.toLocaleString()} required for this coupon`)
+      setAppliedCoupon(null)
+      return
+    }
+
+    const discount = calculateDiscount(coupon)
+    if (discount <= 0) {
+      setCouponError('This coupon does not apply to the items in your cart')
+      setAppliedCoupon(null)
+      return
+    }
+
+    setAppliedCoupon(coupon)
+    setCouponError(null)
+    setCouponCode(coupon.code)
+  }
+
+  const discountAmount = appliedCoupon ? calculateDiscount(appliedCoupon) : 0
 
   const fetchSavedAddresses = async () => {
     try {
@@ -172,7 +254,7 @@ function CheckoutContent() {
 
   const shipping = shippingCost ?? 0 // No default shipping - will be calculated or shown in PayPal
   const tax = 0 // No tax
-  const total = subtotal + shipping + tax
+  const total = Math.max(0, subtotal + shipping + tax - discountAmount)
 
   // Check if payment was cancelled
   useEffect(() => {
@@ -469,7 +551,106 @@ function CheckoutContent() {
                   </span>
                 </div>
                 <Separator />
-                <div className="flex justify-between text-lg font-bold"><span>Total</span><span className="text-primary">${total.toFixed(2)}</span></div>
+                {appliedCoupon && (
+                  <div className="flex justify-between text-green-600 font-medium">
+                    <div className="flex flex-col">
+                      <span>Discount ({appliedCoupon.code})</span>
+                      <span className="text-[10px] text-gray-500">{appliedCoupon.label}</span>
+                    </div>
+                    <span>-${discountAmount.toLocaleString()}</span>
+                  </div>
+                )}
+                <div className="flex justify-between text-lg font-bold pt-2 border-t">
+                  <span>Total</span>
+                  <span className="text-primary">${total.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
+                </div>
+              </div>
+
+              {/* Coupon Section */}
+              <div className="pt-2">
+                <button
+                  type="button"
+                  onClick={() => setIsCouponSectionOpen(!isCouponSectionOpen)}
+                  className="flex items-center justify-between w-full text-sm font-medium text-gray-600 hover:text-primary transition-colors py-2"
+                >
+                  <div className="flex items-center gap-2">
+                    <Ticket className="h-4 w-4" />
+                    <span>Apply Discount Code</span>
+                  </div>
+                  <ChevronDown className={`h-4 w-4 transition-transform ${isCouponSectionOpen ? 'rotate-180' : ''}`} />
+                </button>
+
+                {isCouponSectionOpen && (
+                  <div className="mt-3 space-y-4 animate-in fade-in slide-in-from-top-2 duration-300">
+                    <div className="flex gap-2">
+                      <Input
+                        placeholder="Enter code"
+                        value={couponCode}
+                        onChange={(e) => setCouponCode(e.target.value)}
+                        className="text-sm h-9"
+                        onKeyDown={(e) => e.key === 'Enter' && handleApplyCoupon(couponCode)}
+                      />
+                      <Button
+                        size="sm"
+                        onClick={() => handleApplyCoupon(couponCode)}
+                        disabled={!couponCode.trim()}
+                        className="h-9"
+                      >
+                        Apply
+                      </Button>
+                    </div>
+
+                    {couponError && (
+                      <p className="text-xs text-red-500 mt-1 flex items-center gap-1">
+                        <AlertCircle className="h-3 w-3" /> {couponError}
+                      </p>
+                    )}
+
+                    {appliedCoupon && !couponError && (
+                      <div className="flex items-center justify-between p-2 bg-green-50 border border-green-200 rounded text-xs text-green-700">
+                        <div className="flex items-center gap-2 font-medium">
+                          <ShieldCheck className="h-3 w-3" />
+                          Applied: {appliedCoupon.code}
+                        </div>
+                        <button
+                          onClick={() => {
+                            setAppliedCoupon(null)
+                            setCouponCode('')
+                          }}
+                          className="hover:text-green-900"
+                        >
+                          Remove
+                        </button>
+                      </div>
+                    )}
+
+                    {availableCoupons.length > 0 && (
+                      <div className="space-y-2 mt-4">
+                        <p className="text-[10px] uppercase font-bold text-gray-400">Available Offers</p>
+                        <div className="grid grid-cols-1 gap-2">
+                          {availableCoupons.map((coupon) => (
+                            <button
+                              key={coupon.id}
+                              type="button"
+                              onClick={() => handleApplyCoupon(coupon.code)}
+                              className={`text-left p-2 rounded border transition-all hover:border-primary group ${appliedCoupon?.id === coupon.id ? 'border-primary bg-primary/5' : 'border-gray-100 bg-gray-50/50'
+                                }`}
+                            >
+                              <div className="flex justify-between items-start">
+                                <span className="text-xs font-bold text-secondary group-hover:text-primary transition-colors">{coupon.label}</span>
+                                <span className="bg-white px-1.5 py-0.5 border rounded text-[10px] font-bold font-mono text-primary group-hover:bg-primary group-hover:text-white transition-all">
+                                  {coupon.code}
+                                </span>
+                              </div>
+                              <p className="text-[10px] text-gray-500 mt-1 line-clamp-1">{coupon.description}</p>
+                              <p className="text-[9px] text-gray-400 mt-1 font-medium">Min spend: ${coupon.minSpend.toLocaleString()}</p>
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                )}
               </div>
               <Separator />
               <div className="p-3 bg-green-50 border border-green-200 rounded-lg flex items-center gap-2">
@@ -485,10 +666,11 @@ function CheckoutContent() {
                 </div>
               )}
 
-              {/* PayPal Standard Button - disabled when form not filled */}
               <PayPalStandardButton
                 shippingInfo={allFieldsFilled ? shippingInfo : null}
                 shippingCost={shippingCost}
+                discountAmount={discountAmount}
+                couponCode={appliedCoupon?.code}
                 onError={(error) => setPaymentError(error.message || 'Payment failed. Please try again.')}
                 disabled={!allFieldsFilled}
               />

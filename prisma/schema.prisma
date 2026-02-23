@@ -196,6 +196,8 @@ model Order {
   user        User?       @relation(fields: [userId], references: [id], onDelete: SetNull)
   status      String      @default("pending") // 'pending' | 'processing' | 'shipped' | 'delivered' | 'cancelled'
   total       Float
+  discount    Float?      @default(0)
+  couponCode  String?
   items       OrderItem[]
   shippingAddress Json?
   billingAddress  Json?

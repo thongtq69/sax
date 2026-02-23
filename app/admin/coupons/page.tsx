@@ -15,6 +15,7 @@ interface Coupon {
     description: string
     minSpend: number
     expiryDate: string
+    applicableProducts?: string[] // IDs of products it applies to
 }
 
 interface CouponsData {
@@ -29,6 +30,8 @@ interface CouponsData {
 export default function CouponsAdminPage() {
     const [isLoading, setIsLoading] = useState(true)
     const [isSaving, setIsSaving] = useState(false)
+    const [products, setProducts] = useState<any[]>([])
+    const [searchQuery, setSearchQuery] = useState('')
     const [formData, setFormData] = useState<CouponsData>({
         title: 'EXCLUSIVE PRIVILEGES FOR PROFESSIONAL MUSICIANS',
         subtitle: 'Unlock premium discounts and seasonal vouchers curated for our most valued collectors and performers.',
@@ -38,7 +41,20 @@ export default function CouponsAdminPage() {
 
     useEffect(() => {
         fetchCouponsData()
+        fetchProducts()
     }, [])
+
+    const fetchProducts = async () => {
+        try {
+            const response = await fetch('/api/products?limit=1000')
+            if (response.ok) {
+                const data = await response.json()
+                setProducts(data.products || [])
+            }
+        } catch (error) {
+            console.error('Error fetching products:', error)
+        }
+    }
 
     const fetchCouponsData = async () => {
         try {
@@ -50,7 +66,10 @@ export default function CouponsAdminPage() {
                     subtitle: data.subtitle || '',
                     isVisible: data.isVisible ?? true,
                     metadata: {
-                        coupons: data.metadata?.coupons || [],
+                        coupons: (data.metadata?.coupons || []).map((c: any) => ({
+                            ...c,
+                            applicableProducts: c.applicableProducts || []
+                        })),
                     },
                 })
             }
@@ -87,7 +106,8 @@ export default function CouponsAdminPage() {
             label: 'New Promotion',
             description: 'Terms and conditions apply.',
             minSpend: 1000,
-            expiryDate: '2026-12-31'
+            expiryDate: '2026-12-31',
+            applicableProducts: []
         }
         setFormData(prev => ({
             ...prev,
@@ -108,6 +128,25 @@ export default function CouponsAdminPage() {
             metadata: {
                 ...prev.metadata,
                 coupons: prev.metadata.coupons.map(c => c.id === id ? { ...c, [field]: value } : c)
+            }
+        }))
+    }
+
+    const toggleProductInCoupon = (couponId: string, productId: string) => {
+        setFormData(prev => ({
+            ...prev,
+            metadata: {
+                ...prev.metadata,
+                coupons: prev.metadata.coupons.map(c => {
+                    if (c.id === couponId) {
+                        const current = c.applicableProducts || []
+                        const next = current.includes(productId)
+                            ? current.filter(id => id !== productId)
+                            : [...current, productId]
+                        return { ...c, applicableProducts: next }
+                    }
+                    return c
+                })
             }
         }))
     }
@@ -198,6 +237,39 @@ export default function CouponsAdminPage() {
                                     <div className="space-y-1.5">
                                         <Label className="text-[10px] uppercase font-bold text-gray-400">Expiry Date</Label>
                                         <Input value={coupon.expiryDate} onChange={e => updateCoupon(coupon.id, 'expiryDate', e.target.value)} />
+                                    </div>
+                                </div>
+
+                                <div className="space-y-1.5 pt-2">
+                                    <div className="flex items-center justify-between mb-1">
+                                        <Label className="text-[10px] uppercase font-bold text-gray-400">Applicable Products (Empty = All)</Label>
+                                        <input
+                                            type="text"
+                                            placeholder="Filter..."
+                                            className="text-[10px] px-2 py-0.5 border rounded bg-white w-24 focus:w-32 transition-all outline-none"
+                                            onChange={(e) => setSearchQuery(e.target.value)}
+                                        />
+                                    </div>
+                                    <div className="max-h-40 overflow-y-auto border rounded-lg p-2 space-y-1 bg-gray-50/50">
+                                        {products.length === 0 && <p className="text-xs text-center py-4 text-gray-400">No products found</p>}
+                                        {products.filter(p => !searchQuery || p.name.toLowerCase().includes(searchQuery.toLowerCase())).map(product => (
+                                            <div key={product.id} className="flex items-center gap-2 group/item">
+                                                <input
+                                                    type="checkbox"
+                                                    id={`product-${coupon.id}-${product.id}`}
+                                                    checked={(coupon.applicableProducts || []).includes(product.id)}
+                                                    onChange={() => toggleProductInCoupon(coupon.id, product.id)}
+                                                    className="rounded border-gray-300 text-primary focus:ring-primary"
+                                                />
+                                                <label
+                                                    htmlFor={`product-${coupon.id}-${product.id}`}
+                                                    className="text-xs text-gray-600 truncate flex-1 cursor-pointer group-hover/item:text-primary transition-colors"
+                                                >
+                                                    {product.name}
+                                                </label>
+                                                <span className="text-[10px] text-gray-400 font-mono">${product.price.toLocaleString()}</span>
+                                            </div>
+                                        ))}
                                     </div>
                                 </div>
                             </CardContent>
