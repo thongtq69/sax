@@ -92,7 +92,7 @@ export default function AboutPage() {
               </div>
               <div className="relative h-64 md:h-72 rounded-2xl overflow-hidden shadow-xl">
                 <Image
-                  src="/homepage3.png"
+                  src="/homepage3.jpg"
                   alt="James Sax Corner - Professional Saxophone"
                   fill
                   className="object-cover"
