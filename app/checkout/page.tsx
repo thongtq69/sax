@@ -520,7 +520,7 @@ function CheckoutContent() {
                 {items.map((item) => (
                   <div key={item.id} className="flex gap-3 p-2 bg-gray-50 rounded-lg">
                     <div className="relative h-14 w-14 overflow-hidden rounded bg-white border">
-                      <Image src={item.image} alt={item.name} fill className="object-cover" />
+                      <Image src={item.image} alt={item.name} fill className="object-cover" onError={(e) => { (e.target as HTMLImageElement).src = '/saxophone-icon.svg' }} />
                     </div>
                     <div className="flex-1 min-w-0">
                       <p className="text-sm font-medium truncate">{item.name}</p>

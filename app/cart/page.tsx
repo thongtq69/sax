@@ -52,6 +52,7 @@ export default function CartPage() {
                     alt={item.name}
                     fill
                     className="object-cover"
+                    onError={(e) => { (e.target as HTMLImageElement).src = '/saxophone-icon.svg' }}
                   />
                 </div>
                 <div className="flex-1">

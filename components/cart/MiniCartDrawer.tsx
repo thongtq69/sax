@@ -98,6 +98,7 @@ export function MiniCartDrawer({ open, onOpenChange }: MiniCartDrawerProps) {
                       alt={item.name}
                       fill
                       className="object-cover transition-transform duration-500 group-hover:scale-110"
+                      onError={(e) => { (e.target as HTMLImageElement).src = '/saxophone-icon.svg' }}
                     />
                     {/* Shine effect */}
                     <div className="absolute inset-0 bg-gradient-to-tr from-transparent via-white/30 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 transform -translate-x-full group-hover:translate-x-full" style={{ transitionDuration: '0.8s' }} />
