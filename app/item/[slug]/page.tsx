@@ -170,6 +170,36 @@ export default async function ProductPage({
       <div className="min-h-screen">
         {/* SEO Structured Data */}
         <StructuredData data={productSchema} />
+        <StructuredData data={{
+          "@context": "https://schema.org",
+          "@type": "BreadcrumbList",
+          "itemListElement": [
+            {
+              "@type": "ListItem",
+              "position": 1,
+              "name": "Home",
+              "item": process.env.NEXT_PUBLIC_BASE_URL || "https://jamessaxcorner.com"
+            },
+            ...(brandName ? [{
+              "@type": "ListItem",
+              "position": 2,
+              "name": brandName,
+              "item": `${process.env.NEXT_PUBLIC_BASE_URL || "https://jamessaxcorner.com"}/shop?brand=${encodeURIComponent(brandName)}`
+            }] : []),
+            ...(product.subBrand ? [{
+              "@type": "ListItem",
+              "position": 3,
+              "name": product.subBrand,
+              "item": `${process.env.NEXT_PUBLIC_BASE_URL || "https://jamessaxcorner.com"}/shop?brand=${encodeURIComponent(brandName)}&search=${encodeURIComponent(product.subBrand)}`
+            }] : []),
+            {
+              "@type": "ListItem",
+              "position": 4,
+              "name": product.name,
+              "item": `${process.env.NEXT_PUBLIC_BASE_URL || "https://jamessaxcorner.com"}/item/${product.sku}-${product.slug}`
+            }
+          ]
+        }} />
 
         {/* Breadcrumbs */}
         <div className="bg-muted/30 border-b">
@@ -182,13 +212,21 @@ export default async function ProductPage({
               {brandName && (
                 <>
                   <ChevronRight className="h-3 w-3 md:h-4 md:w-4 text-muted-foreground/50 flex-shrink-0" />
-                  <Link href={`/shop?brand=${encodeURIComponent(brandName)}`} className="inline-flex items-center text-muted-foreground hover:text-primary transition-colors whitespace-nowrap">
+                  <Link href={`/shop?brand=${encodeURIComponent(brandName)}`} className="text-muted-foreground hover:text-primary transition-colors whitespace-nowrap">
                     {brandName}
                   </Link>
                 </>
               )}
+              {product.subBrand && (
+                <>
+                  <ChevronRight className="h-3 w-3 md:h-4 md:w-4 text-muted-foreground/50 flex-shrink-0" />
+                  <Link href={`/shop?brand=${encodeURIComponent(brandName)}&search=${encodeURIComponent(product.subBrand)}`} className="text-muted-foreground hover:text-primary transition-colors whitespace-nowrap">
+                    {product.subBrand}
+                  </Link>
+                </>
+              )}
               <ChevronRight className="h-3 w-3 md:h-4 md:w-4 text-muted-foreground/50 flex-shrink-0" />
-              <span className="inline-flex items-center text-secondary font-medium line-clamp-1 truncate max-w-[150px] md:max-w-none min-w-0">{product.name}</span>
+              <span className="text-secondary font-medium line-clamp-1 truncate max-w-[150px] md:max-w-none min-w-0">{product.name}</span>
             </nav>
           </div>
         </div>
