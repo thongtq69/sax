@@ -39,8 +39,8 @@ const getProductFinishes = (productId: string) => {
   return finishSets[productId] || ['#D4AF37']
 }
 
-export function ProductCardEnhanced({ 
-  product, 
+export function ProductCardEnhanced({
+  product,
   index = 0,
   enableTilt = true,
   enableShine = true,
@@ -53,21 +53,21 @@ export function ProductCardEnhanced({
   const [isAddingToCart, setIsAddingToCart] = useState(false)
   const [isImageLoading, setIsImageLoading] = useState(true)
   const [isHovered, setIsHovered] = useState(false)
-  
+
   const addItem = useCartStore((state) => state.addItem)
   const router = useRouter()
   const prefersReducedMotion = useReducedMotion()
-  
+
   // Product URL with SEO-friendly slug
   const productUrl = getProductUrl(product.sku, product.slug)
 
   // Tilt effect hook
-  const { 
-    ref: tiltRef, 
-    style: tiltStyle, 
+  const {
+    ref: tiltRef,
+    style: tiltStyle,
     glareStyle,
-    onMouseMove: tiltMouseMove, 
-    onMouseLeave: tiltMouseLeave 
+    onMouseMove: tiltMouseMove,
+    onMouseLeave: tiltMouseLeave
   } = useTiltEffect<HTMLDivElement>({
     maxTilt: 8,
     scale: 1.02,
@@ -133,14 +133,17 @@ export function ProductCardEnhanced({
   // Stagger animation delay based on index
   const staggerDelay = Math.min(index * 0.05, 0.6)
 
+  const isPreOrder = (product as any).stockStatus === 'pre-order'
+  const hasOutOfStock = product.badge === 'out-of-stock' || (!product.inStock && !isPreOrder)
+
   return (
     <>
-      <Card 
+      <Card
         ref={tiltRef}
         className={cn(
           "product-card group relative overflow-hidden transition-all duration-500 bg-card",
-          enableGradientBorder && isHovered && !prefersReducedMotion 
-            ? "gradient-border-hover" 
+          enableGradientBorder && isHovered && !prefersReducedMotion
+            ? "gradient-border-hover"
             : "border-2 border-transparent hover:border-primary/30",
           "hover:shadow-2xl"
         )}
@@ -234,6 +237,11 @@ export function ProductCardEnhanced({
                 {product.badge === 'out-of-stock' && 'Out of Stock'}
               </Badge>
             )}
+            {isPreOrder && product.badge !== 'out-of-stock' && (
+              <Badge variant="outline" className="shadow-lg transform transition-all duration-300 hover:scale-105 bg-amber-100 text-amber-800 border-amber-200">
+                ⏳ Pre-Order
+              </Badge>
+            )}
             {product.stock && product.stock <= 2 && product.inStock && (
               <Badge variant="destructive" className="stock-warning shadow-lg text-xs">
                 Only {product.stock} left!
@@ -250,11 +258,11 @@ export function ProductCardEnhanced({
               isWishlisted ? 'text-red-500' : 'text-gray-400 hover:text-red-400'
             )}
           >
-            <Heart 
+            <Heart
               className={cn(
                 "h-5 w-5 transition-all duration-300",
                 isWishlisted && 'fill-current scale-110 animate-heart-bounce'
-              )} 
+              )}
             />
           </button>
 
@@ -360,7 +368,7 @@ export function ProductCardEnhanced({
             {/* Pricing */}
             <div className="mb-3">
               <div className="flex items-baseline gap-2">
-                {!product.inStock || product.badge === 'out-of-stock' ? (
+                {hasOutOfStock ? (
                   <span className="text-xl font-bold text-red-500">
                     SOLD
                   </span>
@@ -389,15 +397,20 @@ export function ProductCardEnhanced({
                 isAddingToCart && 'scale-95 bg-green-500'
               )}
               onClick={handleAddToCart}
-              disabled={!product.inStock || product.badge === 'out-of-stock' || isAddingToCart}
+              disabled={hasOutOfStock || isAddingToCart}
             >
               {isAddingToCart ? (
                 <span className="flex items-center gap-2">
                   <Loader2 className="h-4 w-4 animate-spin" />
                   Adding...
                 </span>
-              ) : !product.inStock || product.badge === 'out-of-stock' ? (
+              ) : hasOutOfStock ? (
                 'Out of Stock'
+              ) : isPreOrder ? (
+                <span className="flex items-center gap-2">
+                  <ShoppingBag className="h-4 w-4" />
+                  Pre-Order
+                </span>
               ) : (
                 <span className="flex items-center gap-2">
                   <ShoppingBag className="h-4 w-4" />

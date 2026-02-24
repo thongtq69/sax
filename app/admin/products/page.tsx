@@ -604,9 +604,9 @@ export default function ProductsManagement() {
                       </td>
                       <td className="px-6 py-4">
                         <div className="flex items-center gap-2">
-                          <span className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium ${product.inStock ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
+                          <span className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium ${(product as any).stockStatus === 'pre-order' ? 'bg-amber-100 text-amber-800' : product.inStock ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
                             }`}>
-                            {product.inStock ? `${product.stock || 0} in stock` : 'Out of stock'}
+                            {(product as any).stockStatus === 'pre-order' ? 'Pre-Order' : product.inStock ? `${product.stock || 0} in stock` : 'Out of stock'}
                           </span>
                         </div>
                       </td>
@@ -701,8 +701,8 @@ export default function ProductsManagement() {
                         <span className="text-sm text-blue-600 ml-2">Ship: ${product.shippingCost.toLocaleString()}</span>
                       )}
                     </div>
-                    <span className={`text-xs px-2 py-1 rounded-full ${product.inStock ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`}>
-                      {product.inStock ? 'In Stock' : 'Out'}
+                    <span className={`text-xs px-2 py-1 rounded-full ${(product as any).stockStatus === 'pre-order' ? 'bg-amber-100 text-amber-700' : product.inStock ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`}>
+                      {(product as any).stockStatus === 'pre-order' ? 'Pre-Order' : product.inStock ? 'In Stock' : 'Out'}
                     </span>
                   </div>
                 </div>
@@ -976,8 +976,8 @@ export default function ProductsManagement() {
                         <label
                           key={badge.value}
                           className={`flex items-center gap-2 p-2 rounded-lg border cursor-pointer transition-all ${isSelected
-                              ? 'border-primary bg-primary/10 text-primary'
-                              : 'border-gray-200 hover:border-gray-300'
+                            ? 'border-primary bg-primary/10 text-primary'
+                            : 'border-gray-200 hover:border-gray-300'
                             }`}
                         >
                           <input

@@ -54,7 +54,8 @@ export function ProductDetailClient({ product }: ProductDetailClientProps) {
   const clearCart = useCartStore((state) => state.clearCart)
 
   // Check if product is sold out
-  const isSoldOut = !product.inStock || (product as any).stockStatus === 'sold-out' || (product as any).stock === 0
+  const isPreOrder = (product as any).stockStatus === 'pre-order'
+  const isSoldOut = (!product.inStock && !isPreOrder) || (product as any).stockStatus === 'sold-out' || ((product as any).stock === 0 && !isPreOrder)
 
   // Fetch user's default address and auto-calculate shipping
   useEffect(() => {
@@ -934,7 +935,7 @@ export function ProductDetailClient({ product }: ProductDetailClientProps) {
                 }}
                 disabled={isSoldOut || isAddingToCart}
               >
-                {isSoldOut ? 'Sold Out' : 'Buy it now'}
+                {isSoldOut ? 'Sold Out' : isPreOrder ? 'Pre-Order Now' : 'Buy it now'}
               </Button>
 
               {/* Row 2: Add to Cart - Gray */}
@@ -962,6 +963,8 @@ export function ProductDetailClient({ product }: ProductDetailClientProps) {
                     <Check className="h-4 w-4 animate-bounce" />
                     Added to cart
                   </span>
+                ) : isPreOrder ? (
+                  'Pre-Order'
                 ) : (
                   'Add to cart'
                 )}

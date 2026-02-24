@@ -111,7 +111,8 @@ export function ProductCard({ product, index = 0 }: ProductCardProps) {
 
   // Parse badges - support multiple badges separated by comma
   const badges = product.badge ? product.badge.split(',').map(b => b.trim()).filter(Boolean) : []
-  const hasOutOfStock = badges.includes('out-of-stock') || !product.inStock
+  const isPreOrder = (product as any).stockStatus === 'pre-order'
+  const hasOutOfStock = badges.includes('out-of-stock') || (!product.inStock && !isPreOrder)
 
   return (
     <>
@@ -174,6 +175,11 @@ export function ProductCard({ product, index = 0 }: ProductCardProps) {
                 {badge === 'out-of-stock' && 'Sold'}
               </Badge>
             ))}
+            {isPreOrder && !badges.includes('out-of-stock') && (
+              <Badge variant="outline" className="shadow-lg transform transition-all duration-300 hover:scale-105 text-[10px] sm:text-xs px-1.5 sm:px-2.5 py-0.5 bg-amber-100 text-amber-800 border-amber-200">
+                ⏳ Pre-Order
+              </Badge>
+            )}
           </div>
 
           <button
@@ -263,6 +269,12 @@ export function ProductCard({ product, index = 0 }: ProductCardProps) {
                 </span>
               ) : hasOutOfStock ? (
                 'Sold'
+              ) : isPreOrder ? (
+                <span className="flex items-center gap-1 sm:gap-2">
+                  <ShoppingBag className="h-3 w-3 sm:h-4 sm:w-4" />
+                  <span className="hidden sm:inline">Pre-Order</span>
+                  <span className="sm:hidden">Pre-Order</span>
+                </span>
               ) : (
                 <span className="flex items-center gap-1 sm:gap-2">
                   <ShoppingBag className="h-3 w-3 sm:h-4 sm:w-4" />
