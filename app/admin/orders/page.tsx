@@ -115,7 +115,7 @@ export default function OrdersManagement() {
       })
 
       if (response.ok) {
-        setOrders(orders.map(order => 
+        setOrders(orders.map(order =>
           order.id === orderId ? { ...order, status: newStatus } : order
         ))
       }
@@ -130,7 +130,7 @@ export default function OrdersManagement() {
     if (!confirm('Are you sure you want to delete this order? This action cannot be undone.')) {
       return
     }
-    
+
     setUpdating(orderId)
     try {
       const response = await fetch(`/api/orders?id=${orderId}`, {
@@ -260,8 +260,8 @@ export default function OrdersManagement() {
               </thead>
               <tbody className="bg-white divide-y divide-gray-200">
                 {orders.map((order) => (
-                  <tr 
-                    key={order.id} 
+                  <tr
+                    key={order.id}
                     className="hover:bg-gray-50 cursor-pointer"
                     onClick={() => setSelectedOrder(order)}
                   >
@@ -270,11 +270,11 @@ export default function OrdersManagement() {
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
                       <div className="text-sm font-medium text-gray-900">
-                        {order.shippingAddress?.name || 
-                         `${order.shippingAddress?.firstName || ''} ${order.shippingAddress?.lastName || ''}`.trim() ||
-                         (order.billingAddress?.firstName && order.billingAddress?.lastName 
-                           ? `${order.billingAddress?.firstName} ${order.billingAddress?.lastName}`
-                           : 'N/A')}
+                        {order.shippingAddress?.name ||
+                          `${order.shippingAddress?.firstName || ''} ${order.shippingAddress?.lastName || ''}`.trim() ||
+                          (order.billingAddress?.firstName && order.billingAddress?.lastName
+                            ? `${order.billingAddress?.firstName} ${order.billingAddress?.lastName}`
+                            : 'N/A')}
                       </div>
                       <div className="text-sm text-gray-500">
                         {order.shippingAddress?.email || order.billingAddress?.payerEmail || 'No email'}
@@ -308,8 +308,8 @@ export default function OrdersManagement() {
                       </Select>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium" onClick={(e) => e.stopPropagation()}>
-                      <Button 
-                        variant="outline" 
+                      <Button
+                        variant="outline"
                         size="sm"
                         onClick={() => deleteOrder(order.id)}
                         disabled={updating === order.id}
@@ -352,11 +352,10 @@ export default function OrdersManagement() {
                     <Truck className="h-4 w-4" />
                     Shipping Address
                     {selectedOrder.shippingAddress?.addressStatus && (
-                      <span className={`text-xs px-2 py-0.5 rounded ${
-                        selectedOrder.shippingAddress.addressStatus === 'confirmed' 
-                          ? 'bg-green-100 text-green-700' 
+                      <span className={`text-xs px-2 py-0.5 rounded ${selectedOrder.shippingAddress.addressStatus === 'confirmed'
+                          ? 'bg-green-100 text-green-700'
                           : 'bg-yellow-100 text-yellow-700'
-                      }`}>
+                        }`}>
                         {selectedOrder.shippingAddress.addressStatus}
                       </span>
                     )}
@@ -365,9 +364,9 @@ export default function OrdersManagement() {
                     {selectedOrder.shippingAddress ? (
                       <>
                         <p className="font-medium text-gray-900">
-                          {selectedOrder.shippingAddress.name || 
-                           `${selectedOrder.shippingAddress.firstName || ''} ${selectedOrder.shippingAddress.lastName || ''}`.trim() ||
-                           'N/A'}
+                          {selectedOrder.shippingAddress.name ||
+                            `${selectedOrder.shippingAddress.firstName || ''} ${selectedOrder.shippingAddress.lastName || ''}`.trim() ||
+                            'N/A'}
                         </p>
                         {selectedOrder.shippingAddress.address1 && (
                           <p className="text-gray-600">{selectedOrder.shippingAddress.address1}</p>
@@ -412,11 +411,10 @@ export default function OrdersManagement() {
                     <CheckCircle className="h-4 w-4" />
                     Payment Info
                     {selectedOrder.billingAddress?.payerStatus && (
-                      <span className={`text-xs px-2 py-0.5 rounded ${
-                        selectedOrder.billingAddress.payerStatus === 'verified' 
-                          ? 'bg-green-100 text-green-700' 
+                      <span className={`text-xs px-2 py-0.5 rounded ${selectedOrder.billingAddress.payerStatus === 'verified'
+                          ? 'bg-green-100 text-green-700'
                           : 'bg-yellow-100 text-yellow-700'
-                      }`}>
+                        }`}>
                         {selectedOrder.billingAddress.payerStatus}
                       </span>
                     )}
@@ -431,7 +429,7 @@ export default function OrdersManagement() {
                             <span className="font-mono text-xs">{selectedOrder.billingAddress.txnId}</span>
                           </div>
                         )}
-                        
+
                         {/* PayPal Email */}
                         {(selectedOrder.billingAddress.payerEmail || selectedOrder.billingAddress.paypalEmail) && (
                           <div className="flex justify-between">
@@ -441,7 +439,7 @@ export default function OrdersManagement() {
                             </span>
                           </div>
                         )}
-                        
+
                         {/* Payer Name */}
                         {(selectedOrder.billingAddress.firstName || selectedOrder.billingAddress.lastName) && (
                           <div className="flex justify-between">
@@ -451,21 +449,20 @@ export default function OrdersManagement() {
                             </span>
                           </div>
                         )}
-                        
+
                         {/* Payment Status */}
                         {selectedOrder.billingAddress.paymentStatus && (
                           <div className="flex justify-between">
                             <span className="text-gray-600">Payment Status:</span>
-                            <span className={`font-medium ${
-                              selectedOrder.billingAddress.paymentStatus === 'Completed' 
-                                ? 'text-green-600' 
+                            <span className={`font-medium ${selectedOrder.billingAddress.paymentStatus === 'Completed'
+                                ? 'text-green-600'
                                 : 'text-yellow-600'
-                            }`}>
+                              }`}>
                               {selectedOrder.billingAddress.paymentStatus}
                             </span>
                           </div>
                         )}
-                        
+
                         {/* Amount Details */}
                         <div className="pt-2 border-t border-blue-200 mt-2 space-y-1">
                           {selectedOrder.billingAddress.mcGross && (
@@ -493,7 +490,7 @@ export default function OrdersManagement() {
                             </div>
                           )}
                         </div>
-                        
+
                         {/* Payment Date */}
                         {selectedOrder.billingAddress.paymentDate && (
                           <div className="text-xs text-gray-500 pt-2">
@@ -504,7 +501,7 @@ export default function OrdersManagement() {
                     ) : (
                       <div className="flex items-center gap-2 text-blue-600">
                         <svg className="h-5 w-5" viewBox="0 0 24 24" fill="currentColor">
-                          <path d="M7.076 21.337H2.47a.641.641 0 0 1-.633-.74L4.944 3.72a.77.77 0 0 1 .757-.629h6.724c2.231 0 3.957.459 5.03 1.339 1.137.934 1.553 2.392 1.268 4.453-.026.188-.06.384-.102.587-.5 2.393-1.596 4.243-3.26 5.502-1.594 1.207-3.65 1.82-6.11 1.82H7.787a.77.77 0 0 0-.757.629l-.954 4.916z"/>
+                          <path d="M7.076 21.337H2.47a.641.641 0 0 1-.633-.74L4.944 3.72a.77.77 0 0 1 .757-.629h6.724c2.231 0 3.957.459 5.03 1.339 1.137.934 1.553 2.392 1.268 4.453-.026.188-.06.384-.102.587-.5 2.393-1.596 4.243-3.26 5.502-1.594 1.207-3.65 1.82-6.11 1.82H7.787a.77.77 0 0 0-.757.629l-.954 4.916z" />
                         </svg>
                         <span className="font-medium">PayPal</span>
                       </div>
@@ -524,7 +521,7 @@ export default function OrdersManagement() {
                     <div key={item.id} className="p-3 flex justify-between items-center">
                       <div>
                         <p className="text-sm font-medium text-gray-900">{item.productName || 'Unknown Product'}</p>
-                        <p className="text-sm font-mono text-gray-500">SKU: {item.productSku || 'N/A'}</p>
+                        <p className="text-sm font-mono text-gray-500">Serial: {item.productSku || 'N/A'}</p>
                         <p className="text-sm text-gray-500">Qty: {item.quantity}</p>
                       </div>
                       <p className="font-semibold">${(item.price * item.quantity).toLocaleString()}</p>
@@ -540,7 +537,7 @@ export default function OrdersManagement() {
                   <span className="text-sm font-medium text-gray-600">Customer Paid</span>
                   <span className="text-lg font-semibold text-gray-900">${selectedOrder.total.toLocaleString()}</span>
                 </div>
-                
+
                 {/* Net Amount (After deducting shipping) */}
                 <div className="bg-green-50 p-3 rounded-lg">
                   <div className="flex justify-between items-center">
@@ -548,7 +545,7 @@ export default function OrdersManagement() {
                     <span className="text-2xl font-bold text-green-600">
                       ${(() => {
                         // Calculate product subtotal
-                        const subtotal = selectedOrder.items.reduce((sum: number, item: any) => 
+                        const subtotal = selectedOrder.items.reduce((sum: number, item: any) =>
                           sum + (item.price * item.quantity), 0
                         )
                         return subtotal.toLocaleString()
@@ -559,7 +556,7 @@ export default function OrdersManagement() {
                     Product value only (shipping excluded)
                   </p>
                 </div>
-                
+
                 {/* PayPal Net Amount (if available) */}
                 {selectedOrder.billingAddress?.mcGross && (
                   <div className="bg-blue-50 p-3 rounded-lg mt-2">
@@ -577,7 +574,7 @@ export default function OrdersManagement() {
                       </span>
                     </div>
                     <p className="text-xs text-blue-600 mt-1">
-                      = ${Math.abs(parseFloat(selectedOrder.billingAddress.mcGross || '0')).toFixed(2)} (Gross) 
+                      = ${Math.abs(parseFloat(selectedOrder.billingAddress.mcGross || '0')).toFixed(2)} (Gross)
                       - ${Math.abs(parseFloat(selectedOrder.billingAddress.mcFee || '0')).toFixed(2)} (PayPal Fee)
                       - ${Math.abs(parseFloat(selectedOrder.billingAddress.mcShipping || '0')).toFixed(2)} (Shipping)
                     </p>

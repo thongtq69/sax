@@ -156,7 +156,7 @@ export default function ProductsManagement() {
     setFilteredProducts(filtered)
   }, [searchTerm, selectedCategory, selectedBadge, selectedProductType, selectedCondition, productList])
 
-  // Auto-sync Brand, SKU, Condition, Model to specs when they change
+  // Auto-sync Brand, Serial, Condition, Model to specs when they change
   useEffect(() => {
     if (!isDialogOpen) return
 
@@ -173,9 +173,9 @@ export default function ProductsManagement() {
       newSpecs['Model'] = formData.subBrand
     }
 
-    // Auto-fill SKU
+    // Auto-fill Serial
     if (formData.sku && formData.sku.trim() !== '') {
-      newSpecs['SKU'] = formData.sku
+      newSpecs['Serial'] = formData.sku
     }
 
     // Auto-fill Condition (only for used products)
@@ -279,7 +279,7 @@ export default function ProductsManagement() {
         description: '',
         specs: {
           'Brand': '',
-          'SKU': '',
+          'Serial': '',
           'Condition': '',
         },
         included: [],
@@ -300,7 +300,7 @@ export default function ProductsManagement() {
       return
     }
     if (!formData.sku?.trim()) {
-      alert('SKU is required. Please enter a SKU code.')
+      alert('Serial is required. Please enter a Serial number.')
       return
     }
     if (!formData.brand?.trim()) {
@@ -434,7 +434,7 @@ export default function ProductsManagement() {
           <div className="relative flex-1">
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
             <Input
-              placeholder="Search by name, brand, or SKU..."
+              placeholder="Search by name, brand, or Serial..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               className="pl-10"
@@ -758,42 +758,20 @@ export default function ProductsManagement() {
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
-                    SKU <span className="text-red-500">*</span>
+                    Serial <span className="text-red-500">*</span>
                   </label>
                   <div className="space-y-2">
-                    <div className="flex items-center gap-2">
-                      <label className="flex items-center gap-2 cursor-pointer">
-                        <input
-                          type="checkbox"
-                          checked={formData.sku?.startsWith('JSC-') || false}
-                          onChange={(e) => {
-                            const currentSku = formData.sku || ''
-                            if (e.target.checked) {
-                              // Add JSC- prefix
-                              const skuWithoutPrefix = currentSku.startsWith('JSC-') ? currentSku.slice(4) : currentSku
-                              setFormData({ ...formData, sku: `JSC-${skuWithoutPrefix}` })
-                            } else {
-                              // Remove JSC- prefix
-                              const skuWithoutPrefix = currentSku.startsWith('JSC-') ? currentSku.slice(4) : currentSku
-                              setFormData({ ...formData, sku: skuWithoutPrefix })
-                            }
-                          }}
-                          className="rounded border-gray-300 text-primary focus:ring-primary"
-                        />
-                        <span className="text-sm text-gray-600">Use JSC- prefix</span>
-                      </label>
-                    </div>
                     <Input
                       value={formData.sku || ''}
                       onChange={(e) => {
                         const value = e.target.value.toUpperCase()
                         setFormData({ ...formData, sku: value })
                       }}
-                      placeholder="e.g., JSC-A3WIIU or A-9910042"
+                      placeholder="e.g., C143LF or A-9910042"
                       className="font-mono"
                     />
                   </div>
-                  <p className="text-xs text-gray-500 mt-1">Enter SKU with or without JSC- prefix</p>
+                  <p className="text-xs text-gray-500 mt-1">Enter Serial number of the instrument</p>
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -953,7 +931,7 @@ export default function ProductsManagement() {
                   </p>
                   {(formData.slug || formData.sku) && (
                     <p className="text-xs text-blue-600 mt-1">
-                      URL: /product/{formData.sku || 'SKU'}{formData.slug ? `-${formData.slug}` : ''}
+                      URL: /item/{formData.sku || 'Serial'}{formData.slug ? `-${formData.slug}` : ''}
                     </p>
                   )}
                 </div>

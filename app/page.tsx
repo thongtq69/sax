@@ -119,7 +119,7 @@ export default async function HomePage() {
         <ul>
           {data.allProducts.slice(0, 20).map((product) => (
             <li key={product.id}>
-              <a href={`/product/${product.sku}${product.slug ? '-' + product.slug : ''}`}>
+              <a href={`/item/${product.sku}${product.slug ? '-' + product.slug : ''}`}>
                 {product.name} - {product.brand} - ${product.price.toLocaleString()}
               </a>
             </li>

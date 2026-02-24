@@ -45,18 +45,18 @@ export async function GET(request: NextRequest) {
       prisma.order.count({ where }),
     ])
 
-    // Fetch product SKUs for all order items
+    // Fetch product Serials for all order items
     const productIds = orders.flatMap(order => order.items.map(item => item.productId))
     const uniqueProductIds = [...new Set(productIds)]
-    
+
     const products = await prisma.product.findMany({
       where: { id: { in: uniqueProductIds } },
       select: { id: true, sku: true, name: true },
     })
-    
+
     const productMap = new Map(products.map(p => [p.id, { sku: p.sku, name: p.name }]))
-    
-    // Add SKU info to order items
+
+    // Add Serial info to order items
     const ordersWithSku = orders.map(order => ({
       ...order,
       items: order.items.map(item => ({
@@ -140,23 +140,23 @@ export async function PATCH(request: NextRequest) {
             where: { id: { in: productIds } },
             select: { id: true, name: true, sku: true },
           })
-          
+
           const productMap = new Map(products.map(p => [p.id, p]))
 
           // Prepare email data
           const { sendOrderConfirmationEmail } = await import('@/lib/email')
-          
+
           // For email: show full payment amount (including shipping)
           // Customer paid $30 total, so show $30 in email
           const subtotal = existingOrder.items.reduce((sum, item) => sum + (item.price * item.quantity), 0)
           const shipping = existingOrder.total - subtotal // Calculate actual shipping cost
           const tax = 0
           const totalForEmail = existingOrder.total // Full amount customer paid
-          
+
           await sendOrderConfirmationEmail({
             orderNumber: existingOrder.orderNumber || existingOrder.id,
             customerEmail,
-            customerName: shippingAddress?.firstName 
+            customerName: shippingAddress?.firstName
               ? `${shippingAddress.firstName} ${shippingAddress.lastName || ''}`.trim()
               : existingOrder.user?.name || 'Valued Customer',
             items: existingOrder.items.map(item => {

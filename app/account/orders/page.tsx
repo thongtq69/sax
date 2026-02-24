@@ -52,7 +52,7 @@ export default async function OrdersPage() {
               <h1 className="text-2xl font-bold text-gray-900">My Orders</h1>
               <span className="ml-2 text-sm text-gray-500">({orders.length} orders)</span>
             </div>
-            
+
             {orders.length === 0 ? (
               /* Empty State */
               <div className="text-center py-12">
@@ -61,8 +61,8 @@ export default async function OrdersPage() {
                 <p className="text-gray-600 mb-6">
                   When you place your first order, it will appear here.
                 </p>
-                <Link 
-                  href="/shop" 
+                <Link
+                  href="/shop"
                   className="inline-flex items-center px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors"
                 >
                   Start Shopping
@@ -105,8 +105,8 @@ export default async function OrdersPage() {
                           return (
                             <div key={item.id} className="flex items-center gap-3 p-2 bg-gray-50 rounded">
                               {product?.images?.[0] ? (
-                                <img 
-                                  src={product.images[0]} 
+                                <img
+                                  src={product.images[0]}
                                   alt={product.name}
                                   className="w-12 h-12 object-cover rounded"
                                 />
@@ -117,8 +117,8 @@ export default async function OrdersPage() {
                               )}
                               <div className="flex-1 min-w-0">
                                 {product ? (
-                                  <Link 
-                                    href={`/product/${product.sku}-${product.slug}`}
+                                  <Link
+                                    href={`/item/${product.sku}-${product.slug}`}
                                     className="font-medium text-gray-900 hover:text-blue-600 truncate block"
                                   >
                                     {product.name}

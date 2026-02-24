@@ -748,7 +748,7 @@ export function ProductDetailClient({ product }: ProductDetailClientProps) {
                   {product.brand}
                 </span>
                 <span className="text-gray-300 hidden sm:inline">|</span>
-                <span className="text-xs md:text-sm text-muted-foreground">SKU: {product.sku}</span>
+                <span className="text-xs md:text-sm text-muted-foreground">Serial: {product.sku}</span>
               </div>
 
               <h1 className="text-2xl md:text-3xl lg:text-4xl font-bold text-secondary leading-tight mb-3 md:mb-4">

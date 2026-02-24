@@ -176,7 +176,7 @@ export async function POST(request: NextRequest) {
     if (!price && price !== 0) missingFields.push('Price')
     if (!categoryId) missingFields.push('Category')
     if (!description) missingFields.push('Description')
-    if (!sku) missingFields.push('SKU')
+    if (!sku) missingFields.push('Serial')
 
     if (missingFields.length > 0) {
       return NextResponse.json(
@@ -267,7 +267,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json(
         {
           error: 'Duplicate entry',
-          message: `A product with this ${field === 'sku' ? 'SKU' : field === 'slug' ? 'Slug' : field} already exists. Please use a different value.`
+          message: `A product with this ${field === 'sku' ? 'Serial' : field === 'slug' ? 'Slug' : field} already exists. Please use a different value.`
         },
         { status: 409 }
       )

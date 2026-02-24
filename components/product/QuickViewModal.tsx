@@ -36,29 +36,29 @@ export function QuickViewModal({
   const [isAddingToCart, setIsAddingToCart] = useState(false)
   const addItem = useCartStore((state) => state.addItem)
   const router = useRouter()
-  
+
   // Product URL with SEO-friendly slug
   const productUrl = getProductUrl(product.sku, product.slug)
-  
+
   // Prefetch product page when modal opens
   useEffect(() => {
     if (open) {
       router.prefetch(productUrl)
     }
   }, [open, productUrl, router])
-  
+
   // Get rating from hardcoded reviews
   const reviewStats = getProductRatingStats(product.name)
   const displayRating = reviewStats.rating > 0 ? reviewStats.rating : product.rating || 0
   const displayReviewCount = reviewStats.reviewCount > 0 ? reviewStats.reviewCount : product.reviewCount || 0
-  
+
   // Extract YouTube video ID from URL
   const getYouTubeVideoId = (url: string) => {
     if (!url) return null
     const match = url.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/|youtube\.com\/shorts\/)([^&\n?#]+)/)
     return match ? match[1] : null
   }
-  
+
   const videoId = product.videoUrl ? getYouTubeVideoId(product.videoUrl) : null
 
   const handleAddToCart = async () => {
@@ -94,8 +94,8 @@ export function QuickViewModal({
             {/* Badge */}
             {product.badge && (
               <div className="absolute top-4 left-4 z-10 animate-fade-in-up">
-                <Badge 
-                  variant={product.badge} 
+                <Badge
+                  variant={product.badge}
                   className={`shadow-lg transition-transform hover:scale-105 ${product.badge === 'sale' ? 'animate-pulse-soft' : ''}`}
                 >
                   {product.badge === 'new' && '✨ New'}
@@ -108,9 +108,8 @@ export function QuickViewModal({
             {/* Wishlist */}
             <button
               onClick={() => setIsWishlisted(!isWishlisted)}
-              className={`absolute top-4 right-4 z-10 p-2 rounded-full bg-white/90 shadow-lg transition-all duration-300 hover:scale-110 ${
-                isWishlisted ? 'text-red-500 animate-heart-bounce' : 'text-gray-400 hover:text-red-400'
-              }`}
+              className={`absolute top-4 right-4 z-10 p-2 rounded-full bg-white/90 shadow-lg transition-all duration-300 hover:scale-110 ${isWishlisted ? 'text-red-500 animate-heart-bounce' : 'text-gray-400 hover:text-red-400'
+                }`}
             >
               <Heart className={`h-5 w-5 transition-all ${isWishlisted ? 'fill-current scale-110' : ''}`} />
             </button>
@@ -133,7 +132,7 @@ export function QuickViewModal({
                   >
                     <X className="h-3.5 w-3.5 text-gray-700" />
                   </button>
-                  
+
                   {/* Navigation to first image */}
                   {product.images.length > 0 && (
                     <button
@@ -156,7 +155,7 @@ export function QuickViewModal({
                     fill
                     className="object-contain sm:object-cover transition-transform duration-500 group-hover:scale-105"
                   />
-                  
+
                   {/* Navigation Arrows */}
                   {(product.images.length > 1 || videoId) && (
                     <>
@@ -220,11 +219,10 @@ export function QuickViewModal({
                     setShowVideo(true)
                     setSelectedImageIndex(-1)
                   }}
-                  className={`thumb-button relative h-12 w-12 sm:h-16 sm:w-16 flex-shrink-0 overflow-hidden rounded-lg border-2 transition-all duration-300 ${
-                    showVideo
+                  className={`thumb-button relative h-12 w-12 sm:h-16 sm:w-16 flex-shrink-0 overflow-hidden rounded-lg border-2 transition-all duration-300 ${showVideo
                       ? 'border-primary shadow-lg scale-105'
                       : 'border-gray-200 hover:border-primary/50'
-                  }`}
+                    }`}
                 >
                   <div className="relative w-full h-full bg-black">
                     <img
@@ -242,7 +240,7 @@ export function QuickViewModal({
                   </div>
                 </button>
               )}
-              
+
               {/* Image Thumbnails */}
               {product.images.map((image, index) => (
                 <button
@@ -251,11 +249,10 @@ export function QuickViewModal({
                     setSelectedImageIndex(index)
                     setShowVideo(false)
                   }}
-                  className={`thumb-button relative h-12 w-12 sm:h-16 sm:w-16 flex-shrink-0 overflow-hidden rounded-lg border-2 transition-all duration-300 ${
-                    selectedImageIndex === index && !showVideo
+                  className={`thumb-button relative h-12 w-12 sm:h-16 sm:w-16 flex-shrink-0 overflow-hidden rounded-lg border-2 transition-all duration-300 ${selectedImageIndex === index && !showVideo
                       ? 'border-primary shadow-lg scale-105'
                       : 'border-gray-200 hover:border-primary/50'
-                  }`}
+                    }`}
                 >
                   <SmartImage
                     src={image}
@@ -276,7 +273,7 @@ export function QuickViewModal({
                   {product.brand}
                 </span>
                 <span className="text-gray-300">•</span>
-                <span className="text-muted-foreground">SKU: {product.sku}</span>
+                <span className="text-muted-foreground">Serial: {product.sku}</span>
               </div>
               <DialogTitle className="text-xl sm:text-2xl font-bold text-secondary leading-tight line-clamp-2">
                 {product.name}
@@ -290,11 +287,10 @@ export function QuickViewModal({
                   {Array.from({ length: 5 }).map((_, i) => (
                     <Star
                       key={i}
-                      className={`h-4 w-4 transition-all duration-300 hover:scale-125 ${
-                        i < Math.floor(displayRating)
+                      className={`h-4 w-4 transition-all duration-300 hover:scale-125 ${i < Math.floor(displayRating)
                           ? 'fill-amber-400 text-amber-400'
                           : 'fill-gray-200 text-gray-200'
-                      }`}
+                        }`}
                       style={{ animationDelay: `${i * 0.05}s` }}
                     />
                   ))}
@@ -329,9 +325,8 @@ export function QuickViewModal({
             </div>
 
             {/* Stock Status */}
-            <div className={`flex items-center gap-2 text-xs sm:text-sm font-medium animate-fade-in-up ${
-              product.inStock ? 'text-green-600' : 'text-red-600'
-            }`} style={{ animationDelay: '0.2s' }}>
+            <div className={`flex items-center gap-2 text-xs sm:text-sm font-medium animate-fade-in-up ${product.inStock ? 'text-green-600' : 'text-red-600'
+              }`} style={{ animationDelay: '0.2s' }}>
               {product.inStock ? (
                 <>
                   <Check className="h-4 w-4 animate-bounce" />
@@ -355,11 +350,10 @@ export function QuickViewModal({
               </div>
 
               <Button
-                className={`quickview-action w-full font-semibold transition-all duration-300 ${
-                  isAddedToCart 
-                    ? 'bg-green-500 hover:bg-green-600 scale-105' 
+                className={`quickview-action w-full font-semibold transition-all duration-300 ${isAddedToCart
+                    ? 'bg-green-500 hover:bg-green-600 scale-105'
                     : 'hover:shadow-lg hover:scale-[1.02]'
-                }`}
+                  }`}
                 size="lg"
                 onClick={handleAddToCart}
                 disabled={!product.inStock || isAddingToCart}
@@ -379,9 +373,9 @@ export function QuickViewModal({
                 )}
               </Button>
 
-              <Button 
-                variant="outline" 
-                className="quickview-action w-full group relative overflow-hidden hover:border-primary" 
+              <Button
+                variant="outline"
+                className="quickview-action w-full group relative overflow-hidden hover:border-primary"
                 size="lg"
                 onClick={() => {
                   // Close modal immediately for better UX

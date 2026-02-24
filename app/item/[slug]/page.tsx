@@ -73,7 +73,7 @@ export async function generateMetadata({
     const title = `${product.name} - ${product.brand} | James Sax Corner`
     const description = product.description
       ? product.description.substring(0, 160).replace(/\n/g, ' ').replace(/<[^>]*>/g, '') + '...'
-      : `Buy ${product.name} by ${product.brand} at James Sax Corner. Premium ${product.category} with professional quality. SKU: ${product.sku}. Price: $${product.price.toLocaleString()}.`
+      : `Buy ${product.name} by ${product.brand} at James Sax Corner. Premium ${product.category} with professional quality. Serial: ${product.sku}. Price: $${product.price.toLocaleString()}.`
 
     const keywords = [
       product.name,
@@ -82,7 +82,7 @@ export async function generateMetadata({
       'saxophone',
       'professional saxophone',
       'musical instrument',
-      product.sku,
+      product.sku, // Keep internal property name as sku if database hasn't changed, but label as Serial in UI
       ...(product.specs ? Object.values(product.specs).filter(Boolean) : [])
     ].filter(Boolean).join(', ')
 
@@ -109,7 +109,7 @@ export async function generateMetadata({
         images: product.images.length > 0 ? [product.images[0]] : [],
       },
       alternates: {
-        canonical: `${process.env.NEXT_PUBLIC_BASE_URL || 'https://jamessaxcorner.com'}/product/${product.sku}${product.slug ? '-' + product.slug : ''}`,
+        canonical: `${process.env.NEXT_PUBLIC_BASE_URL || 'https://jamessaxcorner.com'}/item/${product.sku}${product.slug ? '-' + product.slug : ''}`,
       },
     }
   } catch (error) {
@@ -126,11 +126,11 @@ export default async function ProductPage({
   params: { slug: string }
 }) {
   try {
-    // New URL format: /product/SKU-slug (e.g., /product/JSC-C143LF-yamaha-yts-62-tenor-saxophone)
-    // Extract SKU from the param and look up product by SKU
+    // New URL format: /item/Serial-slug (e.g., /item/C143LF-yamaha-yts-62-tenor-saxophone)
+    // Extract Serial from the param and look up product by Serial
     const sku = extractSkuFromParam(params.slug)
 
-    // First try to find by SKU (new format)
+    // First try to find by Serial (new format)
     let apiProduct = await prisma.product.findUnique({
       where: { sku },
       include: {

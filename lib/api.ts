@@ -12,66 +12,42 @@ export function generateProductSlug(name: string): string {
     .trim()
 }
 
-// Helper function to generate product URL with SKU and slug
-// Format: /product/SKU-slug (e.g., /product/JSC-C143LF-yamaha-yts-62-tenor-saxophone)
-// If no slug: /product/SKU (e.g., /product/A-9910042)
+// Helper function to generate product URL with Serial and slug
+// Format: /item/Serial-slug (e.g., /item/C143LF-yamaha-yts-62-tenor-saxophone)
+// If no slug: /item/Serial (e.g., /item/A-9910042)
 export function getProductUrl(sku: string, slug: string): string {
   if (!slug || slug.trim() === '') {
-    return `/product/${sku}`
+    return `/item/${sku}`
   }
-  return `/product/${sku}-${slug}`
+  return `/item/${sku}-${slug}`
 }
 
-// Helper function to extract SKU from URL parameter (handles both old and new format)
+// Helper function to extract Serial from URL parameter
 export function extractSkuFromParam(param: string): string {
   // Decode URL-encoded characters first
   const decoded = decodeURIComponent(param)
-  
-  // If param contains JSC- prefix, extract just the SKU part
-  // SKU format: JSC-XXXXXX (JSC- followed by alphanumeric, may contain multiple dashes)
-  // Examples: JSC-C143LF, JSC-YCS-S62III0069, JSC-ABC-DEF-123
-  // The SKU ends when we hit a lowercase letter after a dash (which indicates the slug part)
-  if (decoded.startsWith('JSC-')) {
-    // Find where the slug part starts (lowercase word after dash)
-    // SKU parts are uppercase/numbers, slug parts are lowercase
-    const parts = decoded.split('-')
-    const skuParts: string[] = ['JSC']
-    
-    for (let i = 1; i < parts.length; i++) {
-      const part = parts[i]
-      // If part starts with lowercase letter, it's the start of the slug
-      if (part && /^[a-z]/.test(part)) {
-        break
-      }
-      // Otherwise it's part of the SKU (uppercase letters, numbers, or mixed)
-      skuParts.push(part)
-    }
-    
-    return skuParts.join('-')
-  }
-  
-  // For non-JSC SKUs, extract SKU before the slug part
-  // SKU is typically uppercase/numbers, slug is lowercase
-  // Examples: A-9910042-yanagisawa-alto, TEST-123-product-name
+
+  // Serial is typically uppercase/numbers, slug is lowercase
+  // Examples: A-9910042-yanagisawa-alto, TEST-123-product-name, C143LF-yamaha-yts-62
   const parts = decoded.split('-')
-  const skuParts: string[] = []
-  
+  const serialParts: string[] = []
+
   for (let i = 0; i < parts.length; i++) {
     const part = parts[i]
-    // If part starts with lowercase letter and we already have some SKU parts, it's the start of the slug
-    if (part && /^[a-z]/.test(part) && skuParts.length > 0) {
+    // If part starts with lowercase letter and we already have some serial parts, it's the start of the slug
+    if (part && /^[a-z]/.test(part) && serialParts.length > 0) {
       break
     }
-    // Add part to SKU (could be uppercase, numbers, or mixed case for first part)
-    skuParts.push(part)
+    // Add part to Serial
+    serialParts.push(part)
   }
-  
-  // If we found SKU parts, return them joined
-  if (skuParts.length > 0) {
-    return skuParts.join('-')
+
+  // If we found serial parts, return them joined
+  if (serialParts.length > 0) {
+    return serialParts.join('-')
   }
-  
-  // Fallback: return the whole param (for old URLs or simple SKUs)
+
+  // Fallback: return the whole param
   return decoded
 }
 

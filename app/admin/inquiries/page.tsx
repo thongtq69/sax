@@ -10,9 +10,9 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
-import { 
-  Search, MessageSquare, Loader2, Eye, RefreshCw, Trash2, 
-  Mail, User, Package, Clock, CheckCircle, MessageCircle, XCircle 
+import {
+  Search, MessageSquare, Loader2, Eye, RefreshCw, Trash2,
+  Mail, User, Package, Clock, CheckCircle, MessageCircle, XCircle
 } from 'lucide-react'
 import {
   Dialog,
@@ -78,7 +78,7 @@ export default function InquiriesManagement() {
       })
 
       if (response.ok) {
-        setInquiries(inquiries.map(inq => 
+        setInquiries(inquiries.map(inq =>
           inq.id === id ? { ...inq, status: newStatus } : inq
         ))
         if (selectedInquiry?.id === id) {
@@ -103,7 +103,7 @@ export default function InquiriesManagement() {
       })
 
       if (response.ok) {
-        setInquiries(inquiries.map(inq => 
+        setInquiries(inquiries.map(inq =>
           inq.id === selectedInquiry.id ? { ...inq, notes: adminNotes } : inq
         ))
         setSelectedInquiry({ ...selectedInquiry, notes: adminNotes })
@@ -117,7 +117,7 @@ export default function InquiriesManagement() {
 
   const deleteInquiry = async (id: string) => {
     if (!confirm('Are you sure you want to delete this inquiry?')) return
-    
+
     setUpdating(id)
     try {
       const response = await fetch(`/api/inquiries?id=${id}`, { method: 'DELETE' })
@@ -252,8 +252,8 @@ export default function InquiriesManagement() {
               </thead>
               <tbody className="bg-white divide-y divide-gray-200">
                 {inquiries.map((inquiry) => (
-                  <tr 
-                    key={inquiry.id} 
+                  <tr
+                    key={inquiry.id}
                     className={`hover:bg-gray-50 cursor-pointer ${inquiry.status === 'new' ? 'bg-blue-50/50' : ''}`}
                     onClick={() => openInquiry(inquiry)}
                   >
@@ -275,7 +275,7 @@ export default function InquiriesManagement() {
                         <div>
                           <div className="text-sm text-gray-900 truncate max-w-[200px]">{inquiry.productName}</div>
                           {inquiry.productSku && (
-                            <div className="text-xs text-gray-500">SKU: {inquiry.productSku}</div>
+                            <div className="text-xs text-gray-500">Serial: {inquiry.productSku}</div>
                           )}
                         </div>
                       ) : (
@@ -287,8 +287,8 @@ export default function InquiriesManagement() {
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                       <div className="flex items-center justify-end gap-2" onClick={(e) => e.stopPropagation()}>
-                        <Button 
-                          variant="outline" 
+                        <Button
+                          variant="outline"
                           size="sm"
                           onClick={() => openInquiry(inquiry)}
                           className="gap-1"
@@ -296,8 +296,8 @@ export default function InquiriesManagement() {
                           <Eye className="h-4 w-4" />
                           View
                         </Button>
-                        <Button 
-                          variant="outline" 
+                        <Button
+                          variant="outline"
                           size="sm"
                           onClick={() => deleteInquiry(inquiry.id)}
                           disabled={updating === inquiry.id}
@@ -383,7 +383,7 @@ export default function InquiriesManagement() {
                     </div>
                     <p className="font-medium text-blue-900">{selectedInquiry.productName}</p>
                     {selectedInquiry.productSku && (
-                      <p className="text-xs text-blue-600">SKU: {selectedInquiry.productSku}</p>
+                      <p className="text-xs text-blue-600">Serial: {selectedInquiry.productSku}</p>
                     )}
                   </div>
                 )}
@@ -407,9 +407,9 @@ export default function InquiriesManagement() {
                   rows={3}
                   className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
                 />
-                <Button 
-                  onClick={saveNotes} 
-                  size="sm" 
+                <Button
+                  onClick={saveNotes}
+                  size="sm"
                   className="mt-2"
                   disabled={updating === selectedInquiry.id}
                 >
@@ -428,8 +428,8 @@ export default function InquiriesManagement() {
                     Reply via Email
                   </a>
                 </Button>
-                <Button 
-                  variant="outline" 
+                <Button
+                  variant="outline"
                   className="text-green-600 hover:bg-green-50"
                   onClick={() => updateInquiryStatus(selectedInquiry.id, 'replied')}
                 >

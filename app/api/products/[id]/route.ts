@@ -71,9 +71,9 @@ export async function PUT(
 
     // Build update data - always include images if provided (even empty array)
     const updateData: any = {}
-    
+
     if (name) updateData.name = name
-    
+
     // Auto-generate slug from name if slug is empty or placeholder
     if (slug && slug.trim() !== '' && slug !== 'Auto-generated from name') {
       // Check if slug is different from current and already exists
@@ -85,9 +85,9 @@ export async function PUT(
       })
       if (existingWithSlug) {
         return NextResponse.json(
-          { 
-            error: 'Duplicate entry', 
-            message: 'A product with this Slug already exists. Please use a different value.' 
+          {
+            error: 'Duplicate entry',
+            message: 'A product with this Slug already exists. Please use a different value.'
           },
           { status: 409 }
         )
@@ -98,7 +98,7 @@ export async function PUT(
       const baseSlug = generateSlug(name)
       let slugToCheck = baseSlug
       let counter = 1
-      
+
       // Check if slug exists (excluding current product)
       while (await prisma.product.findFirst({
         where: {
@@ -115,7 +115,7 @@ export async function PUT(
       }
       updateData.slug = slugToCheck
     }
-    
+
     if (brand) updateData.brand = brand
     if (subBrand !== undefined) updateData.subBrand = subBrand || null
     if (price !== undefined) updateData.price = parseFloat(price)
@@ -139,11 +139,11 @@ export async function PUT(
     if (productType !== undefined) {
       const validProductType = productType === 'used' ? 'used' : 'new'
       updateData.productType = validProductType
-      
+
       if (validProductType === 'used') {
         // Auto-set stock to 1 for used products
         updateData.stock = 1
-        
+
         // Validate and set condition
         const validConditions = ['mint', 'excellent', 'very-good', 'good', 'fair']
         if (condition && validConditions.includes(condition)) {
@@ -151,7 +151,7 @@ export async function PUT(
         } else if (!condition) {
           updateData.condition = 'excellent' // Default
         }
-        
+
         // Set condition notes
         if (conditionNotes !== undefined) {
           updateData.conditionNotes = conditionNotes || null
@@ -160,7 +160,7 @@ export async function PUT(
         // Clear condition fields for new products
         updateData.condition = null
         updateData.conditionNotes = null
-        
+
         // Allow custom stock for new products
         if (stock !== undefined) {
           updateData.stock = parseInt(stock)
@@ -187,9 +187,9 @@ export async function PUT(
     console.error('Error updating product:', error)
     if (error.code === 'P2025') {
       return NextResponse.json(
-        { 
-          error: 'Product not found', 
-          message: 'The product you are trying to update does not exist or has been deleted.' 
+        {
+          error: 'Product not found',
+          message: 'The product you are trying to update does not exist or has been deleted.'
         },
         { status: 404 }
       )
@@ -197,17 +197,17 @@ export async function PUT(
     if (error.code === 'P2002') {
       const field = error.meta?.target?.[0] || 'field'
       return NextResponse.json(
-        { 
-          error: 'Duplicate entry', 
-          message: `A product with this ${field === 'sku' ? 'SKU' : field === 'slug' ? 'Slug' : field} already exists. Please use a different value.` 
+        {
+          error: 'Duplicate entry',
+          message: `A product with this ${field === 'sku' ? 'Serial' : field === 'slug' ? 'Slug' : field} already exists. Please use a different value.`
         },
         { status: 409 }
       )
     }
     return NextResponse.json(
-      { 
-        error: 'Failed to update product', 
-        message: error?.message || 'An unexpected error occurred. Please try again.' 
+      {
+        error: 'Failed to update product',
+        message: error?.message || 'An unexpected error occurred. Please try again.'
       },
       { status: 500 }
     )
@@ -229,17 +229,17 @@ export async function DELETE(
     console.error('Error deleting product:', error)
     if (error.code === 'P2025') {
       return NextResponse.json(
-        { 
-          error: 'Product not found', 
-          message: 'The product you are trying to delete does not exist or has already been deleted.' 
+        {
+          error: 'Product not found',
+          message: 'The product you are trying to delete does not exist or has already been deleted.'
         },
         { status: 404 }
       )
     }
     return NextResponse.json(
-      { 
-        error: 'Failed to delete product', 
-        message: error?.message || 'An unexpected error occurred. Please try again.' 
+      {
+        error: 'Failed to delete product',
+        message: error?.message || 'An unexpected error occurred. Please try again.'
       },
       { status: 500 }
     )

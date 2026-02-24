@@ -60,17 +60,18 @@ export async function GET(request: NextRequest) {
     const search = searchParams.get('search')
 
     const where: any = {}
-    
+
     if (status && status !== 'all') {
       where.status = status
     }
-    
+
     if (search) {
       where.OR = [
         { name: { contains: search, mode: 'insensitive' } },
         { email: { contains: search, mode: 'insensitive' } },
         { message: { contains: search, mode: 'insensitive' } },
         { productName: { contains: search, mode: 'insensitive' } },
+        { productSku: { contains: search, mode: 'insensitive' } },
       ]
     }
 

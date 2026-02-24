@@ -64,7 +64,7 @@ export default function CartPage() {
                       >
                         {item.name}
                       </Link>
-                      <p className="text-sm text-gray-500">SKU: {item.sku}</p>
+                      <p className="text-sm text-gray-500">Serial: {item.sku}</p>
                     </div>
                     <Button
                       variant="ghost"

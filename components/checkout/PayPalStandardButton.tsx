@@ -174,7 +174,7 @@ export function PayPalStandardButton({ shippingInfo, shippingCost, discountAmoun
         params[`quantity_${itemNum}`] = item.quantity.toString()
 
         // Don't send item_number to hide "Item#" line in PayPal invoice
-        // If you want to show SKU instead, uncomment below:
+        // If you want to show Serial instead, uncomment below:
         // if (item.sku) {
         //   params[`item_number_${itemNum}`] = item.sku
         // }

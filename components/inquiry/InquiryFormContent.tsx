@@ -56,7 +56,7 @@ export function InquiryFormContent({
           fetch('/api/admin/inquiry-titles'),
           fetch('/api/admin/site-settings'),
         ])
-        
+
         if (titlesRes.ok) {
           const data = await titlesRes.json()
           const activeTitles = data.filter((t: InquiryTitle) => t.isActive).sort((a: InquiryTitle, b: InquiryTitle) => a.order - b.order)
@@ -65,7 +65,7 @@ export function InquiryFormContent({
             setSelectedTitle(activeTitles[0].title)
           }
         }
-        
+
         if (settingsRes.ok) {
           const settings = await settingsRes.json()
           setSiteSettings({
@@ -84,14 +84,14 @@ export function InquiryFormContent({
   const subject = useMemo(() => {
     const titlePart = selectedTitle ? `[${selectedTitle}] ` : ''
     const base = prefillProduct ? `${titlePart}Product Inquiry: ${prefillProduct}` : `${titlePart}Product Inquiry`
-    return prefillSku ? `${base} (${prefillSku})` : base
+    return prefillSku ? `${base} (Serial: ${prefillSku})` : base
   }, [prefillProduct, prefillSku, selectedTitle])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setIsSubmitting(true)
     setSubmitError('')
-    
+
     try {
       // Save to database
       const response = await fetch('/api/inquiries', {
@@ -112,7 +112,7 @@ export function InquiryFormContent({
       }
 
       setIsSubmitted(true)
-      
+
     } catch (error: any) {
       console.error('Error submitting inquiry:', error)
       setSubmitError('Failed to submit inquiry. Please try again.')
@@ -162,7 +162,7 @@ export function InquiryFormContent({
           <div className="absolute top-2 right-10 text-2xl animate-float">♪</div>
           <div className="absolute bottom-2 right-20 text-xl animate-float" style={{ animationDelay: '0.5s' }}>♫</div>
         </div>
-        
+
         <div className="w-12 h-12 rounded-full bg-white/30 flex items-center justify-center animate-pulse-soft">
           <MessageCircle className="h-6 w-6" />
         </div>
@@ -178,7 +178,7 @@ export function InquiryFormContent({
             {submitError}
           </div>
         )}
-        
+
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           {/* Name field */}
           <div className="space-y-1 animate-fade-in-up" style={{ animationDelay: '0.1s' }}>
@@ -195,18 +195,17 @@ export function InquiryFormContent({
                 onChange={(e) => setName(e.target.value)}
                 onFocus={() => setFocusedField('name')}
                 onBlur={() => setFocusedField(null)}
-                className={`w-full rounded-xl border-2 px-4 py-3 text-sm transition-all duration-300 focus:outline-none ${
-                  focusedField === 'name' 
-                    ? 'border-primary shadow-lg shadow-primary/20' 
+                className={`w-full rounded-xl border-2 px-4 py-3 text-sm transition-all duration-300 focus:outline-none ${focusedField === 'name'
+                    ? 'border-primary shadow-lg shadow-primary/20'
                     : 'border-gray-200 hover:border-primary/50'
-                }`}
+                  }`}
               />
               {name && (
                 <CheckCircle className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-green-500 animate-scale-in" />
               )}
             </div>
           </div>
-          
+
           {/* Email field */}
           <div className="space-y-1 animate-fade-in-up" style={{ animationDelay: '0.15s' }}>
             <label className="text-sm font-medium text-secondary flex items-center gap-1">
@@ -222,11 +221,10 @@ export function InquiryFormContent({
                 onChange={(e) => setEmail(e.target.value)}
                 onFocus={() => setFocusedField('email')}
                 onBlur={() => setFocusedField(null)}
-                className={`w-full rounded-xl border-2 px-4 py-3 text-sm transition-all duration-300 focus:outline-none ${
-                  focusedField === 'email' 
-                    ? 'border-primary shadow-lg shadow-primary/20' 
+                className={`w-full rounded-xl border-2 px-4 py-3 text-sm transition-all duration-300 focus:outline-none ${focusedField === 'email'
+                    ? 'border-primary shadow-lg shadow-primary/20'
                     : 'border-gray-200 hover:border-primary/50'
-                }`}
+                  }`}
               />
               {email && email.includes('@') && (
                 <CheckCircle className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-green-500 animate-scale-in" />
@@ -249,11 +247,10 @@ export function InquiryFormContent({
                 onChange={(e) => setSelectedTitle(e.target.value)}
                 onFocus={() => setFocusedField('title')}
                 onBlur={() => setFocusedField(null)}
-                className={`w-full rounded-xl border-2 px-4 py-3 text-sm transition-all duration-300 focus:outline-none appearance-none bg-white cursor-pointer ${
-                  focusedField === 'title' 
-                    ? 'border-primary shadow-lg shadow-primary/20' 
+                className={`w-full rounded-xl border-2 px-4 py-3 text-sm transition-all duration-300 focus:outline-none appearance-none bg-white cursor-pointer ${focusedField === 'title'
+                    ? 'border-primary shadow-lg shadow-primary/20'
                     : 'border-gray-200 hover:border-primary/50'
-                }`}
+                  }`}
               >
                 {inquiryTitles.map((title) => (
                   <option key={title.id} value={title.title}>
@@ -276,11 +273,10 @@ export function InquiryFormContent({
               onFocus={() => setFocusedField('message')}
               onBlur={() => setFocusedField(null)}
               rows={4}
-              className={`w-full rounded-xl border-2 px-4 py-3 text-sm transition-all duration-300 focus:outline-none resize-none ${
-                focusedField === 'message' 
-                  ? 'border-primary shadow-lg shadow-primary/20' 
+              className={`w-full rounded-xl border-2 px-4 py-3 text-sm transition-all duration-300 focus:outline-none resize-none ${focusedField === 'message'
+                  ? 'border-primary shadow-lg shadow-primary/20'
                   : 'border-gray-200 hover:border-primary/50'
-              }`}
+                }`}
             />
           </div>
         </div>
@@ -288,8 +284,8 @@ export function InquiryFormContent({
         {/* Contact info & buttons */}
         <div className="flex flex-col md:flex-row md:items-center gap-4 justify-end pt-2 animate-fade-in-up" style={{ animationDelay: '0.25s' }}>
           <div className="flex gap-2">
-            <Button 
-              type="submit" 
+            <Button
+              type="submit"
               disabled={isSubmitting}
               className="bg-gradient-to-r from-primary to-accent text-white hover:from-primary/90 hover:to-accent/90 shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105 group"
             >
@@ -306,9 +302,9 @@ export function InquiryFormContent({
               )}
             </Button>
             {onClose ? (
-              <Button 
-                type="button" 
-                variant="outline" 
+              <Button
+                type="button"
+                variant="outline"
                 onClick={onClose}
                 className="hover:bg-gray-100 transition-all duration-300"
               >
@@ -316,8 +312,8 @@ export function InquiryFormContent({
               </Button>
             ) : (
               showBackToShop && (
-                <Button 
-                  variant="outline" 
+                <Button
+                  variant="outline"
                   asChild
                   className="hover:bg-gray-100 transition-all duration-300"
                 >

@@ -330,10 +330,10 @@ export async function sendOrderConfirmationEmail(data: OrderEmailData) {
   } = data
 
   // Get instrument name (first item or list all)
-  const instrumentName = items.length === 1 
-    ? items[0].name 
+  const instrumentName = items.length === 1
+    ? items[0].name
     : items.map(item => item.name).join(', ')
-  
+
   // Calculate price (subtotal without shipping)
   const price = subtotal
 
@@ -541,7 +541,7 @@ export async function sendInquiryConfirmationEmail(data: InquiryEmailData) {
           </p>
           ${productName ? `
           <p style="margin: 0 0 10px 0; font-size: 15px;">
-            <strong>Product:</strong> ${productName}${productSku ? ` (${productSku})` : ''}
+            <strong>Product:</strong> ${productName}${productSku ? ` (Serial: ${productSku})` : ''}
           </p>
           ` : ''}
           <p style="margin: 0 0 10px 0; font-size: 15px;">
