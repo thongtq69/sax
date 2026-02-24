@@ -9,22 +9,14 @@ import { useNavigationLoading } from '@/hooks/use-navigation-loading'
 import { SiteSettingsProvider } from '@/contexts/SiteSettingsContext'
 import { WishlistProvider } from '@/contexts/WishlistContext'
 
-// Lazy load popup - not needed on initial paint
-const NewYearPopup = dynamic(
-  () => import('./NewYearPopup').then(m => m.NewYearPopup),
-  { ssr: false }
-)
+
 
 const PopupAd = dynamic(
   () => import('@/components/PopupAd'),
   { ssr: false }
 )
 
-// Lazy load Lunar New Year effect
-const LunarNewYearEffect = dynamic(
-  () => import('./LunarNewYearEffect').then(m => m.LunarNewYearEffect),
-  { ssr: false }
-)
+
 
 export function SiteLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname()
@@ -46,11 +38,7 @@ export function SiteLayout({ children }: { children: React.ReactNode }) {
         {/* Global Popup Ad from Admin */}
         <PopupAd />
 
-        {/* 🧧 Tết Nguyên Đán 2026 Effect - Hoa mai, đèn lồng, pháo hoa */}
-        <LunarNewYearEffect />
 
-        {/* New Year 2026 Flash Sale Popup - temporarily hidden */}
-        {/* <NewYearPopup /> */}
 
         {/* Global Navigation Loading Indicator - Lightweight progress bar */}
         {isNavigating && (
