@@ -152,7 +152,7 @@ export async function POST(request: NextRequest) {
       subcategoryId,
       images,
       videoUrls,
-      videoUrl, // Support legacy singular field name
+      videoUrl,
       badge,
       inStock,
       stock,
@@ -169,30 +169,36 @@ export async function POST(request: NextRequest) {
       reviewCount,
     } = body
 
-    // Validate required fields with specific messages
-    const missingFields: string[] = []
-    if (!name) missingFields.push('Product Name')
-    if (!brand) missingFields.push('Brand')
-    if (!price && price !== 0) missingFields.push('Price')
-    if (!categoryId) missingFields.push('Category')
-    if (!description) missingFields.push('Description')
-    if (!sku) missingFields.push('Serial')
+    // Fallbacks for missing fields to allow partial creation
+    const finalName = name || 'New Product'
+    const finalBrand = brand || 'Unknown Brand'
+    const finalPrice = (price !== undefined && price !== null && price !== '') ? parseFloat(price) : 0
+    const finalDescription = description || ''
+    const finalSku = sku || `SN-${Date.now()}`
 
-    if (missingFields.length > 0) {
-      return NextResponse.json(
-        {
-          error: 'Missing required fields',
-          message: `Please fill in the following required fields: ${missingFields.join(', ')}`,
-          missingFields
-        },
-        { status: 400 }
-      )
+    let finalCategoryId = categoryId
+    if (!finalCategoryId) {
+      // Find the first available category as fallback
+      const defaultCategory = await prisma.category.findFirst()
+      if (defaultCategory) {
+        finalCategoryId = defaultCategory.id
+      } else {
+        // Create a default category if none exists
+        const newCat = await prisma.category.create({
+          data: {
+            name: 'Uncategorized',
+            slug: 'uncategorized',
+            path: '/shop/uncategorized'
+          }
+        })
+        finalCategoryId = newCat.id
+      }
     }
 
     // Auto-generate slug from name if not provided
     let finalSlug = slug
     if (!finalSlug || finalSlug.trim() === '' || finalSlug === 'Auto-generated from name') {
-      const baseSlug = generateSlug(name)
+      const baseSlug = generateSlug(finalName)
 
       // Check if slug exists and make it unique
       let slugToCheck = baseSlug
@@ -208,32 +214,18 @@ export async function POST(request: NextRequest) {
       finalSlug = slugToCheck
     }
 
-    // Validate product type
     const validProductType = productType === 'used' ? 'used' : 'new'
-
-    // Validate condition for used products
-    const validConditions = ['mint', 'excellent', 'very-good', 'good', 'fair']
-    let validCondition = null
-    if (validProductType === 'used') {
-      if (!condition || !validConditions.includes(condition)) {
-        validCondition = 'excellent' // Default condition for used products
-      } else {
-        validCondition = condition
-      }
-    }
-
-    // Auto-set stock to 1 for used products
     const finalStock = validProductType === 'used' ? 1 : (stock ? parseInt(stock) : 0)
 
     const product = await prisma.product.create({
       data: {
-        name,
+        name: finalName,
         slug: finalSlug,
-        brand,
+        brand: finalBrand,
         subBrand: subBrand || null,
-        price: parseFloat(price),
+        price: finalPrice,
         shippingCost: shippingCost ? parseFloat(shippingCost) : null,
-        categoryId,
+        categoryId: finalCategoryId,
         subcategoryId: subcategoryId || null,
         images: images || [],
         videoUrls: videoUrls || (videoUrl ? [videoUrl] : []),
@@ -242,13 +234,13 @@ export async function POST(request: NextRequest) {
         stock: finalStock,
         stockStatus: stockStatus || 'in-stock',
         productType: validProductType,
-        condition: validCondition,
+        condition: validProductType === 'used' ? (condition || 'excellent') : null,
         conditionNotes: validProductType === 'used' ? (conditionNotes || null) : null,
-        description,
+        description: finalDescription,
         specs: specs || null,
         included: included || [],
         warranty: warranty || null,
-        sku,
+        sku: finalSku,
         rating: rating ? parseFloat(rating) : 0,
         reviewCount: reviewCount ? parseInt(reviewCount) : 0,
       },
@@ -262,12 +254,11 @@ export async function POST(request: NextRequest) {
   } catch (error: any) {
     console.error('Error creating product:', error)
     if (error.code === 'P2002') {
-      // Unique constraint violation
       const field = error.meta?.target?.[0] || 'field'
       return NextResponse.json(
         {
           error: 'Duplicate entry',
-          message: `A product with this ${field === 'sku' ? 'Serial' : field === 'slug' ? 'Slug' : field} already exists. Please use a different value.`
+          message: `A product with this ${field === 'sku' ? 'Serial' : field === 'slug' ? 'Slug' : field} already exists.`
         },
         { status: 409 }
       )
@@ -281,4 +272,3 @@ export async function POST(request: NextRequest) {
     )
   }
 }
-

@@ -100,7 +100,34 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       return pages
     })
 
-    return [...staticPages, ...productPages, ...blogPages, ...categoryPages]
+    // Model pages (unique brand + subBrand combinations)
+    const modelsRaw = await prisma.product.findMany({
+      where: {
+        subBrand: { not: null },
+        stockStatus: { not: 'archived' },
+      },
+      select: { brand: true, subBrand: true, updatedAt: true },
+    })
+    const modelSet = new Map<string, Date>()
+    modelsRaw.forEach((p) => {
+      if (!p.subBrand) return
+      const key = `${p.brand.toLowerCase().replace(/\s+/g, '-')}/${p.subBrand.toLowerCase().replace(/\s+/g, '-')}`
+      const existing = modelSet.get(key)
+      if (!existing || p.updatedAt > existing) {
+        modelSet.set(key, p.updatedAt)
+      }
+    })
+    const modelPages = Array.from(modelSet.entries()).map(([key, updatedAt]) => {
+      const modelSlug = key.split('/')[1] // Extract model slug from the combined key
+      return {
+        url: `${baseUrl}/p/${modelSlug}`,
+        lastModified: updatedAt,
+        changeFrequency: 'weekly' as const,
+        priority: 0.75,
+      }
+    })
+
+    return [...staticPages, ...productPages, ...blogPages, ...categoryPages, ...modelPages]
   } catch (error) {
     console.error('Error generating sitemap:', error)
     return staticPages

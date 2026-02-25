@@ -294,24 +294,6 @@ export default function ProductsManagement() {
   }
 
   const handleSave = async () => {
-    // Validation
-    if (!formData.name?.trim()) {
-      alert('Product name is required')
-      return
-    }
-    if (!formData.sku?.trim()) {
-      alert('Serial is required. Please enter a Serial number.')
-      return
-    }
-    if (!formData.brand?.trim()) {
-      alert('Brand is required')
-      return
-    }
-    if (!formData.category) {
-      alert('Category is required')
-      return
-    }
-
     try {
       setIsSaving(true)
 
@@ -735,7 +717,7 @@ export default function ProductsManagement() {
               <div className="grid grid-cols-2 gap-4">
                 <div className="col-span-2">
                   <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Product Name <span className="text-red-500">*</span>
+                    Product Name
                   </label>
                   <Input
                     value={formData.name}
@@ -758,7 +740,7 @@ export default function ProductsManagement() {
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Serial <span className="text-red-500">*</span>
+                    Serial
                   </label>
                   <div className="space-y-2">
                     <Input
@@ -775,7 +757,7 @@ export default function ProductsManagement() {
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Brand <span className="text-red-500">*</span>
+                    Brand
                   </label>
                   <Select
                     value={brands.some(b => b.name === formData.brand) ? formData.brand : '__custom__'}
@@ -868,7 +850,7 @@ export default function ProductsManagement() {
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Category <span className="text-red-500">*</span>
+                    Category
                   </label>
                   <Select
                     value={formData.category}
@@ -982,7 +964,7 @@ export default function ProductsManagement() {
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Product Type <span className="text-red-500">*</span>
+                    Product Type
                   </label>
                   <Select
                     value={formData.productType || 'new'}
@@ -1009,7 +991,7 @@ export default function ProductsManagement() {
                 {formData.productType === 'used' && (
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Condition <span className="text-red-500">*</span>
+                      Condition
                     </label>
                     <Select
                       value={formData.condition || 'excellent'}
@@ -1066,7 +1048,7 @@ export default function ProductsManagement() {
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Price ($) <span className="text-red-500">*</span>
+                    Price ($)
                   </label>
                   <Input
                     type="text"
@@ -1125,7 +1107,7 @@ export default function ProductsManagement() {
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Stock Status <span className="text-red-500">*</span>
+                    Stock Status
                   </label>
                   <Select
                     value={formData.stockStatus || 'in-stock'}
@@ -1322,7 +1304,7 @@ export default function ProductsManagement() {
               {/* Description with Header/Footer Templates */}
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Description <span className="text-red-500">*</span>
+                  Description
                 </label>
 
                 {/* Header Template Selection */}
