@@ -4,6 +4,7 @@ import { useState, useMemo, useEffect, useRef, Suspense } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { getProducts, getCategories, transformProduct, transformCategory } from '@/lib/api'
 import type { Product } from '@/lib/data'
+import { matchesSmartSearch } from '@/lib/search'
 import { ProductCard } from '@/components/product/ProductCard'
 import { Filters } from '@/components/product/Filters'
 import {
@@ -36,6 +37,7 @@ function ShopPageContent() {
   const [selectedConditions, setSelectedConditions] = useState<string[]>([])
   const [inStockOnly, setInStockOnly] = useState(false)
   const [priceRange, setPriceRange] = useState<[number, number]>([0, 50000000])
+  const [searchQuery, setSearchQuery] = useState('')
   const [sortBy, setSortBy] = useState<SortOption>('featured')
   const [currentPage, setCurrentPage] = useState(1)
   const [gridCols, setGridCols] = useState<3 | 4>(3)
@@ -126,7 +128,7 @@ function ShopPageContent() {
   }, [products, categories])
 
   useEffect(() => {
-    if (!isLoaded || hasInitializedRef.current) return
+    if (!isLoaded) return
 
     const parseListParam = (key: string) => {
       const rawValues = searchParams.getAll(key)
@@ -137,60 +139,44 @@ function ShopPageContent() {
       )
     }
 
-    const parsedSubcategories = parseListParam('subcategory')
-    const parsedBrands = parseListParam('brand')
-    const parsedBadges = parseListParam('badge')
-    const parsedConditions = parseListParam('condition')
-    const parsedInStock = ['1', 'true', 'yes'].includes(
-      (searchParams.get('inStock') || '').toLowerCase()
-    )
-    const parsedSort = searchParams.get('sort')
-    const parsedPage = parseInt(searchParams.get('page') || '1', 10)
+    const pSubcategories = parseListParam('subcategory')
+    const pBrands = parseListParam('brand')
+    const pBadges = parseListParam('badge')
+    const pConditions = parseListParam('condition')
+    const pInStock = ['1', 'true', 'yes'].includes((searchParams.get('inStock') || '').toLowerCase())
+    const pSort = (searchParams.get('sort') || 'featured') as SortOption
+    const pPage = parseInt(searchParams.get('page') || '1', 10)
+    const pSearch = searchParams.get('search') || searchParams.get('q') || ''
+
     const rawMin = searchParams.get('minPrice')
     const rawMax = searchParams.get('maxPrice')
-    const parsedMin = rawMin !== null ? Number(rawMin) : Number.NaN
-    const parsedMax = rawMax !== null ? Number(rawMax) : Number.NaN
+    const parsedMin = rawMin !== null ? Number(rawMin) : 0
+    const parsedMax = rawMax !== null ? Number(rawMax) : maxPrice
 
-    const hasAnyFilters =
-      parsedSubcategories.length > 0 ||
-      parsedBrands.length > 0 ||
-      parsedBadges.length > 0 ||
-      parsedConditions.length > 0 ||
-      parsedInStock ||
-      Number.isFinite(parsedMin) ||
-      Number.isFinite(parsedMax) ||
-      (parsedSort && parsedSort !== 'featured') ||
-      parsedPage > 1
+    const clampedMin = Math.max(0, Math.min(parsedMin, maxPrice))
+    const clampedMax = Math.max(clampedMin, Math.min(parsedMax, maxPrice))
 
-    if (hasAnyFilters) {
-      skipResetRef.current = true
-      setSelectedSubcategories(parsedSubcategories)
-      setSelectedBrands(parsedBrands)
-      setSelectedBadges(parsedBadges)
-      setSelectedConditions(parsedConditions)
-      setInStockOnly(parsedInStock)
-      if (
-        parsedSort &&
-        ['featured', 'price-low', 'price-high', 'newest', 'name', 'rating'].includes(parsedSort)
-      ) {
-        setSortBy(parsedSort as SortOption)
-      }
-      if (parsedPage > 1) {
-        setCurrentPage(parsedPage)
-      }
+    // Compare arrays
+    const arraysEqual = (a: string[], b: string[]) => {
+      if (a.length !== b.length) return false
+      return a.every((v, i) => v === b[i])
+    }
 
-      const nextMin = Number.isFinite(parsedMin) ? parsedMin : 0
-      const nextMax = Number.isFinite(parsedMax) ? parsedMax : maxPrice
-      const resolvedMax = maxPrice || nextMax || 0
-      const clampedMin = Math.max(0, Math.min(nextMin, resolvedMax))
-      const clampedMax = Math.max(clampedMin, Math.min(nextMax, resolvedMax))
+    // Update states only if they changed to prevent extra cycles
+    if (!arraysEqual(pSubcategories, selectedSubcategories)) setSelectedSubcategories(pSubcategories)
+    if (!arraysEqual(pBrands, selectedBrands)) setSelectedBrands(pBrands)
+    if (!arraysEqual(pBadges, selectedBadges)) setSelectedBadges(pBadges)
+    if (!arraysEqual(pConditions, selectedConditions)) setSelectedConditions(pConditions)
+    if (pInStock !== inStockOnly) setInStockOnly(pInStock)
+    if (pSort !== sortBy) setSortBy(pSort)
+    if (pPage !== currentPage) setCurrentPage(pPage)
+    if (pSearch !== searchQuery) setSearchQuery(pSearch)
+    if (clampedMin !== priceRange[0] || clampedMax !== priceRange[1]) {
       setPriceRange([clampedMin, clampedMax])
-    } else {
-      setPriceRange([0, maxPrice])
     }
 
     hasInitializedRef.current = true
-  }, [isLoaded, maxPrice, searchParams])
+  }, [isLoaded, maxPrice, searchParams]) // Only depend on external factors
 
   // Reset page when filters change
   useEffect(() => {
@@ -202,7 +188,7 @@ function ShopPageContent() {
     setIsFiltering(true)
     const timer = setTimeout(() => setIsFiltering(false), 300)
     return () => clearTimeout(timer)
-  }, [selectedBrands, selectedSubcategories, selectedBadges, selectedConditions, inStockOnly, priceRange, sortBy])
+  }, [selectedBrands, selectedSubcategories, selectedBadges, selectedConditions, inStockOnly, priceRange, sortBy, searchQuery])
 
   useEffect(() => {
     if (!hasInitializedRef.current) return
@@ -235,6 +221,9 @@ function ShopPageContent() {
     if (currentPage > 1) {
       params.set('page', String(currentPage))
     }
+    if (searchQuery) {
+      params.set('search', searchQuery)
+    }
 
     const query = params.toString()
     router.replace(query ? `/shop?${query}` : '/shop', { scroll: false })
@@ -247,12 +236,18 @@ function ShopPageContent() {
     priceRange,
     sortBy,
     currentPage,
+    searchQuery,
     maxPrice,
     router,
   ])
 
   const filteredProducts = useMemo(() => {
     let filtered = [...products]
+
+    // Search filter
+    if (searchQuery) {
+      filtered = filtered.filter((p) => matchesSmartSearch(p, searchQuery))
+    }
 
     // Category filter
     if (selectedSubcategories.length > 0) {
@@ -323,7 +318,7 @@ function ShopPageContent() {
     }
 
     return filtered
-  }, [products, selectedBrands, selectedSubcategories, selectedBadges, selectedConditions, inStockOnly, priceRange, sortBy])
+  }, [products, selectedBrands, selectedSubcategories, selectedBadges, selectedConditions, inStockOnly, priceRange, sortBy, searchQuery])
 
   const totalPages = Math.ceil(filteredProducts.length / itemsPerPage)
   const paginatedProducts = filteredProducts.slice(

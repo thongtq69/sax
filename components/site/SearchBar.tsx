@@ -4,10 +4,12 @@ import { useState, useEffect } from 'react'
 import { Search, X, Sparkles, TrendingUp, Clock } from 'lucide-react'
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
-import { products } from '@/lib/data'
 import Link from 'next/link'
+import { useRouter } from 'next/navigation'
 import { Dialog, DialogContent } from '@/components/ui/dialog'
-import { getProductUrl } from '@/lib/api'
+import { getProductUrl, getProducts, transformProduct } from '@/lib/api'
+import type { Product } from '@/lib/data'
+import { rankProductsBySearch } from '@/lib/search'
 
 interface SearchBarProps {
   open: boolean
@@ -18,16 +20,71 @@ const popularSearches = ['Saxophone', 'Alto', 'Tenor', 'Yamaha', 'Selmer']
 const recentSearches = ['Professional Saxophone', 'Student Alto']
 
 export function SearchBar({ open, onOpenChange }: SearchBarProps) {
+  const router = useRouter()
   const [query, setQuery] = useState('')
+  const [allProducts, setAllProducts] = useState<Product[]>([])
+  const [results, setResults] = useState<Product[]>([])
+  const [isLoading, setIsLoading] = useState(false)
   const [isTyping, setIsTyping] = useState(false)
+  const [hasFetchedCatalog, setHasFetchedCatalog] = useState(false)
 
-  const filteredProducts = query
-    ? products.filter(
-        (p) =>
-          p.name.toLowerCase().includes(query.toLowerCase()) ||
-          p.brand.toLowerCase().includes(query.toLowerCase())
-      )
-    : []
+  useEffect(() => {
+    if (!open || hasFetchedCatalog) return
+
+    let cancelled = false
+
+    const fetchCatalog = async () => {
+      setIsLoading(true)
+      try {
+        const response = await getProducts({ limit: 300 })
+        if (cancelled) return
+        setAllProducts(response.products.map(transformProduct))
+        setHasFetchedCatalog(true)
+      } catch (error) {
+        console.error('Search catalog error:', error)
+      } finally {
+        if (!cancelled) {
+          setIsLoading(false)
+        }
+      }
+    }
+
+    void fetchCatalog()
+
+    return () => {
+      cancelled = true
+    }
+  }, [open, hasFetchedCatalog])
+
+  // Rank results on client for smarter matching
+  useEffect(() => {
+    if (!query.trim()) {
+      setResults([])
+      return
+    }
+
+    if (!hasFetchedCatalog || allProducts.length === 0) {
+      setResults([])
+      return
+    }
+
+    const timer = setTimeout(() => {
+      setIsLoading(true)
+      const ranked = rankProductsBySearch(allProducts, query, 10)
+      setResults(ranked)
+      setIsLoading(false)
+    }, 150)
+
+    return () => clearTimeout(timer)
+  }, [query, allProducts, hasFetchedCatalog])
+
+  // Handle keyboard events (Enter to search on shop page)
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter' && query.trim()) {
+      onOpenChange(false)
+      router.push(`/shop?search=${encodeURIComponent(query)}`)
+    }
+  }
 
   // Typing indicator effect
   useEffect(() => {
@@ -52,6 +109,7 @@ export function SearchBar({ open, onOpenChange }: SearchBarProps) {
                 placeholder="Search..."
                 value={query}
                 onChange={(e) => setQuery(e.target.value)}
+                onKeyDown={handleKeyDown}
                 className="pl-12 pr-12 h-14 text-lg border-2 border-primary/20 focus:border-primary rounded-xl bg-white/80 backdrop-blur-sm shadow-lg transition-all duration-300 focus:shadow-xl focus:scale-[1.01]"
                 autoFocus
               />
@@ -83,7 +141,11 @@ export function SearchBar({ open, onOpenChange }: SearchBarProps) {
                   {popularSearches.map((term, i) => (
                     <button
                       key={term}
-                      onClick={() => setQuery(term)}
+                      onClick={() => {
+                        setQuery(term)
+                        onOpenChange(false)
+                        router.push(`/shop?search=${encodeURIComponent(term)}`)
+                      }}
                       className="px-4 py-2 rounded-full bg-gradient-to-r from-primary/10 to-accent/10 text-sm font-medium text-secondary hover:from-primary hover:to-accent hover:text-white transition-all duration-300 hover:scale-105 hover:shadow-lg animate-fade-in-up"
                       style={{ animationDelay: `${i * 0.05}s` }}
                     >
@@ -103,7 +165,11 @@ export function SearchBar({ open, onOpenChange }: SearchBarProps) {
                   {recentSearches.map((term, i) => (
                     <button
                       key={term}
-                      onClick={() => setQuery(term)}
+                      onClick={() => {
+                        setQuery(term)
+                        onOpenChange(false)
+                        router.push(`/shop?search=${encodeURIComponent(term)}`)
+                      }}
                       className="w-full text-left px-4 py-2 rounded-lg text-sm text-muted-foreground hover:bg-primary/5 hover:text-secondary transition-all duration-200 flex items-center gap-2 group animate-fade-in-up"
                       style={{ animationDelay: `${i * 0.05}s` }}
                     >
@@ -122,13 +188,22 @@ export function SearchBar({ open, onOpenChange }: SearchBarProps) {
               {/* Results count */}
               <div className="flex items-center justify-between text-sm text-muted-foreground mb-4">
                 <span className="flex items-center gap-2">
-                  <Sparkles className="h-4 w-4 text-primary animate-pulse" />
-                  {filteredProducts.length} results for "{query}"
+                  <Sparkles className={`h-4 w-4 text-primary ${isLoading ? 'animate-spin' : 'animate-pulse'}`} />
+                  {isLoading ? 'Searching...' : `${results.length} results for "${query}"`}
                 </span>
+                {results.length > 0 && (
+                  <Link
+                    href={`/shop?search=${encodeURIComponent(query)}`}
+                    onClick={() => onOpenChange(false)}
+                    className="text-primary hover:underline font-medium"
+                  >
+                    View all
+                  </Link>
+                )}
               </div>
 
-              {filteredProducts.length > 0 ? (
-                filteredProducts.slice(0, 10).map((product, index) => (
+              {!isLoading && results.length > 0 ? (
+                results.map((product, index) => (
                   <Link
                     key={product.id}
                     href={getProductUrl(product.sku, product.slug)}
@@ -149,8 +224,8 @@ export function SearchBar({ open, onOpenChange }: SearchBarProps) {
                       <div className="font-semibold text-secondary group-hover:text-primary transition-colors line-clamp-1">
                         {product.name}
                       </div>
-                      <div className="text-sm text-muted-foreground">
-                        {product.brand}
+                      <div className="text-sm text-muted-foreground flex items-center gap-2">
+                        {product.brand} • {product.categoryName || product.category}
                       </div>
                       <div className="text-sm font-bold text-primary mt-1 flex items-center gap-2">
                         ${product.price.toLocaleString()}
@@ -168,7 +243,7 @@ export function SearchBar({ open, onOpenChange }: SearchBarProps) {
                     </div>
                   </Link>
                 ))
-              ) : (
+              ) : !isLoading && (
                 <div className="py-12 text-center animate-fade-in-up">
                   <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-gray-100 flex items-center justify-center">
                     <Search className="h-8 w-8 text-gray-300" />
@@ -184,4 +259,3 @@ export function SearchBar({ open, onOpenChange }: SearchBarProps) {
     </Dialog>
   )
 }
-

@@ -6,7 +6,9 @@ export interface Product {
   price: number
   shippingCost?: number
   category: string
+  categoryName?: string
   subcategory?: string
+  subcategoryName?: string
   images: string[]
   videoUrl?: string
   badge?: 'new' | 'sale' | 'rare' | 'coming-soon' | 'out-of-stock' | 'premium' | 'top-tier'
