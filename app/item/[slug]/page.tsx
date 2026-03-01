@@ -193,13 +193,7 @@ export default async function ProductPage({
               "position": 3,
               "name": product.subBrand,
               "item": `${process.env.NEXT_PUBLIC_BASE_URL || "https://jamessaxcorner.com"}/p/${encodeURIComponent(product.subBrand.toLowerCase().replace(/\s+/g, '-'))}`
-            }] : []),
-            {
-              "@type": "ListItem",
-              "position": 4,
-              "name": product.name,
-              "item": `${process.env.NEXT_PUBLIC_BASE_URL || "https://jamessaxcorner.com"}/item/${product.sku}-${product.slug}`
-            }
+            }] : [])
           ]
         }} />
 
@@ -227,8 +221,6 @@ export default async function ProductPage({
                   </Link>
                 </>
               )}
-              <ChevronRight className="h-3 w-3 md:h-4 md:w-4 text-muted-foreground/50 flex-shrink-0" />
-              <span className="text-secondary font-medium line-clamp-1 truncate max-w-[150px] md:max-w-none min-w-0">{product.name}</span>
             </nav>
           </div>
         </div>
