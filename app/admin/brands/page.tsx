@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
+import { Textarea } from '@/components/ui/textarea'
 import {
   Dialog,
   DialogContent,
@@ -13,12 +14,14 @@ import {
 import { Plus, Edit, Trash2, Loader2, Tag, Search, GripVertical } from 'lucide-react'
 import Image from 'next/image'
 import { SingleImageUpload } from '@/components/admin/ImageUpload'
+import { getBrandDescriptionTemplate } from '@/lib/brand-description'
 
 interface Brand {
   id: string
   name: string
   slug: string
   logo: string | null
+  description: string | null
   models: string[]
   isActive: boolean
   order: number
@@ -36,6 +39,7 @@ export default function BrandsManagement() {
   const [formData, setFormData] = useState({
     name: '',
     logo: null as string | null,
+    description: '',
     models: [] as string[],
     isActive: true,
     order: 0
@@ -81,6 +85,7 @@ export default function BrandsManagement() {
       setFormData({
         name: brand.name,
         logo: brand.logo,
+        description: brand.description || '',
         models: brand.models || [],
         isActive: brand.isActive,
         order: brand.order
@@ -90,6 +95,7 @@ export default function BrandsManagement() {
       setFormData({
         name: '',
         logo: null,
+        description: '',
         models: [],
         isActive: true,
         order: brands.length
@@ -225,6 +231,9 @@ export default function BrandsManagement() {
                 <div className="flex-1 min-w-0">
                   <h3 className="font-medium text-gray-900 truncate">{brand.name}</h3>
                   <p className="text-sm text-gray-500">{brand.slug}</p>
+                  {brand.description && (
+                    <p className="text-xs text-gray-500 mt-1 line-clamp-2">{brand.description}</p>
+                  )}
                   {brand.models && brand.models.length > 0 && (
                     <p className="text-xs text-gray-400 mt-0.5 truncate">
                       {brand.models.length} model{brand.models.length > 1 ? 's' : ''}
@@ -283,6 +292,41 @@ export default function BrandsManagement() {
                 onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                 placeholder="e.g., Yamaha, Selmer, Yanagisawa"
               />
+            </div>
+
+            <div>
+              <div className="flex items-center justify-between gap-2 mb-2">
+                <label className="block text-sm font-medium text-gray-700">
+                  Brand Description (Optional)
+                </label>
+                {getBrandDescriptionTemplate(formData.name) && !formData.description.trim() && (
+                  <button
+                    type="button"
+                    className="text-xs text-primary hover:underline"
+                    onClick={() => {
+                      const template = getBrandDescriptionTemplate(formData.name)
+                      if (template) {
+                        setFormData({ ...formData, description: template })
+                      }
+                    }}
+                  >
+                    Use suggested text
+                  </button>
+                )}
+              </div>
+
+              <Textarea
+                value={formData.description}
+                onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                placeholder="Short brand overview for brand page and SEO"
+                rows={4}
+              />
+
+              {!formData.description.trim() && getBrandDescriptionTemplate(formData.name) && (
+                <p className="text-xs text-gray-500 mt-2 line-clamp-2">
+                  Suggested: {getBrandDescriptionTemplate(formData.name)}
+                </p>
+              )}
             </div>
 
             <div>

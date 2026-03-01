@@ -340,6 +340,7 @@ model Brand {
   name      String   @unique
   slug      String   @unique
   logo      String?  // Brand logo URL
+  description String? // Brand overview for brand page and SEO
   models    String[] @default([]) // Sub-brands/models (e.g., "Mark VI", "Serie III", "YAS-62")
   isActive  Boolean  @default(true)
   order     Int      @default(0)

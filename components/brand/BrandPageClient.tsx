@@ -28,6 +28,7 @@ interface BrandPageClientProps {
   brandName: string
   brandSlug: string
   brandLogo: string | null
+  brandDescription: string | null
   products: Product[]
   models: BrandModelSummary[]
 }
@@ -38,6 +39,7 @@ export function BrandPageClient({
   brandName,
   brandSlug,
   brandLogo,
+  brandDescription,
   products,
   models,
 }: BrandPageClientProps) {
@@ -283,6 +285,11 @@ export function BrandPageClient({
                 <p className="text-sm text-muted-foreground mt-1">
                   {products.length} listing{products.length !== 1 ? 's' : ''} available
                 </p>
+                {brandDescription && (
+                  <p className="text-sm text-muted-foreground mt-2 max-w-2xl leading-relaxed">
+                    {brandDescription}
+                  </p>
+                )}
               </div>
             </div>
 

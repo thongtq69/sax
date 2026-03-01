@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { auth } from '@/lib/auth'
+import { getBrandDescriptionTemplate } from '@/lib/brand-description'
 
 // GET single brand
 export async function GET(
@@ -37,7 +38,7 @@ export async function PUT(
 
     const { id } = await params
     const body = await request.json()
-    const { name, logo, models, isActive, order } = body
+    const { name, logo, description, models, isActive, order } = body
 
     if (!name?.trim()) {
       return NextResponse.json({ error: 'Brand name is required' }, { status: 400 })
@@ -65,12 +66,19 @@ export async function PUT(
       return NextResponse.json({ error: 'Another brand with this name already exists' }, { status: 400 })
     }
 
+    const finalName = name.trim()
+    const finalDescription =
+      (typeof description === 'string' && description.trim()) ||
+      getBrandDescriptionTemplate(finalName) ||
+      null
+
     const brand = await prisma.brand.update({
       where: { id },
       data: {
-        name: name.trim(),
+        name: finalName,
         slug,
         logo: logo || null,
+        description: finalDescription,
         models: models || [],
         isActive: isActive ?? true,
         order: order ?? 0

@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { auth } from '@/lib/auth'
+import { getBrandDescriptionTemplate } from '@/lib/brand-description'
 
 // GET all brands
 export async function GET() {
@@ -27,7 +28,7 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json()
-    const { name, logo, models = [], isActive = true, order = 0 } = body
+    const { name, logo, description, models = [], isActive = true, order = 0 } = body
 
     if (!name?.trim()) {
       return NextResponse.json({ error: 'Brand name is required' }, { status: 400 })
@@ -50,11 +51,18 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Brand already exists' }, { status: 400 })
     }
 
+    const finalName = name.trim()
+    const finalDescription =
+      (typeof description === 'string' && description.trim()) ||
+      getBrandDescriptionTemplate(finalName) ||
+      null
+
     const brand = await prisma.brand.create({
       data: {
-        name: name.trim(),
+        name: finalName,
         slug,
         logo: logo || null,
+        description: finalDescription,
         models: models || [],
         isActive,
         order

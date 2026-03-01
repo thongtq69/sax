@@ -2,6 +2,7 @@ import { notFound } from 'next/navigation'
 import type { Metadata } from 'next'
 import { prisma } from '@/lib/prisma'
 import { transformProduct } from '@/lib/api'
+import { getBrandDescriptionTemplate } from '@/lib/brand-description'
 import { StructuredData } from '@/components/seo/StructuredData'
 import { BrandPageClient } from '@/components/brand/BrandPageClient'
 
@@ -44,7 +45,10 @@ export async function generateMetadata({ params }: { params: { slug: string } })
 
   const { brand, apiProducts } = data
   const title = `${brand.name} | James Sax Corner`
-  const description = `Browse ${apiProducts.length} ${brand.name} listing${apiProducts.length !== 1 ? 's' : ''} at James Sax Corner.`
+  const description =
+    brand.description ||
+    getBrandDescriptionTemplate(brand.name) ||
+    `Browse ${apiProducts.length} ${brand.name} listing${apiProducts.length !== 1 ? 's' : ''} at James Sax Corner.`
 
   return {
     title,
@@ -68,6 +72,7 @@ export default async function BrandPage({ params }: { params: { slug: string } }
   }
 
   const { brand, apiProducts } = data
+  const brandDescription = brand.description || getBrandDescriptionTemplate(brand.name) || null
   const products = apiProducts.map(transformProduct)
 
   const modelCountMap = new Map<string, number>()
@@ -128,6 +133,7 @@ export default async function BrandPage({ params }: { params: { slug: string } }
         brandName={brand.name}
         brandSlug={brand.slug}
         brandLogo={brand.logo}
+        brandDescription={brandDescription}
         products={products}
         models={models}
       />
