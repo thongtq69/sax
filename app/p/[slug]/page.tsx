@@ -2,6 +2,7 @@ import { notFound } from 'next/navigation'
 import type { Metadata } from 'next'
 import { prisma } from '@/lib/prisma'
 import { transformProduct } from '@/lib/api'
+import { generateSlug } from '@/lib/slug-utils'
 import { ModelPageClient } from '@/components/model/ModelPageClient'
 import { StructuredData } from '@/components/seo/StructuredData'
 
@@ -106,6 +107,7 @@ export default async function ModelPage({
 
     const products = apiProducts.map(transformProduct)
     const displayBrand = apiProducts[0].brand
+    const brandSlug = generateSlug(displayBrand)
     const modelName = decodeURIComponent(params.slug).replace(/-/g, ' ')
     const displayModel = apiProducts[0].subBrand || modelName
 
@@ -181,7 +183,7 @@ export default async function ModelPage({
                 "@type": "ListItem",
                 "position": 2,
                 "name": displayBrand,
-                "item": `${process.env.NEXT_PUBLIC_BASE_URL || "https://jamessaxcorner.com"}/shop?brand=${encodeURIComponent(displayBrand)}`
+                "item": `${process.env.NEXT_PUBLIC_BASE_URL || "https://jamessaxcorner.com"}/brand/${brandSlug}`
             },
             {
                 "@type": "ListItem",
@@ -218,7 +220,7 @@ export default async function ModelPage({
         <div className="min-h-screen">
             <StructuredData data={breadcrumbSchema} />
             <StructuredData data={productGroupSchema} />
-            <ModelPageClient data={modelData} brandSlug={displayBrand.toLowerCase().replace(/\s+/g, '-')} modelSlug={params.slug} />
+            <ModelPageClient data={modelData} brandSlug={brandSlug} modelSlug={params.slug} />
         </div>
     )
 }

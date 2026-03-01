@@ -1,12 +1,11 @@
 'use client'
 
-import { useState, useMemo } from 'react'
+import { type FormEvent, useEffect, useMemo, useState } from 'react'
 import Image from 'next/image'
 import Link from 'next/link'
-import { ChevronRight, Home, Star, Eye, Heart, ShoppingCart, Tag, Package, TrendingUp, Grid, List } from 'lucide-react'
+import { ChevronRight, Home, Star, ShoppingCart, Package, TrendingUp, Grid, List, Check, X } from 'lucide-react'
 import { Button } from '@/components/ui/button'
-import { Badge } from '@/components/ui/badge'
-import { getProductUrl } from '@/lib/api'
+import { getProductUrl, getProducts, transformProduct } from '@/lib/api'
 import type { Product } from '@/lib/data'
 import { useCartStore } from '@/lib/store/cart'
 
@@ -30,8 +29,8 @@ interface ModelPageClientProps {
     modelSlug: string
 }
 
-type TabType = 'listings' | 'details' | 'reviews'
 type SortOption = 'newest' | 'price-low' | 'price-high' | 'condition'
+type PriceConditionFilter = 'all' | 'new' | 'mint' | 'excellent' | 'very-good' | 'good' | 'fair'
 
 const conditionOrder: Record<string, number> = {
     'mint': 1,
@@ -50,10 +49,52 @@ const conditionLabels: Record<string, string> = {
 }
 
 export function ModelPageClient({ data, brandSlug, modelSlug }: ModelPageClientProps) {
-    const [activeTab, setActiveTab] = useState<TabType>('listings')
     const [sortBy, setSortBy] = useState<SortOption>('newest')
     const [viewMode, setViewMode] = useState<'list' | 'grid'>('list')
+    const [compareIds, setCompareIds] = useState<string[]>([])
+    const [similarProducts, setSimilarProducts] = useState<Product[]>([])
+    const [isLoadingSimilar, setIsLoadingSimilar] = useState(true)
+    const [priceConditionFilter, setPriceConditionFilter] = useState<PriceConditionFilter>('all')
     const addItem = useCartStore((state) => state.addItem)
+
+    useEffect(() => {
+        let active = true
+
+        const fetchSimilarProducts = async () => {
+            setIsLoadingSimilar(true)
+            try {
+                const result = await getProducts({ brand: data.brand, limit: 24 })
+                if (!active) return
+
+                const currentIds = new Set(data.products.map((p) => p.id))
+                const normalizedModel = data.model.toLowerCase().trim()
+
+                const candidates = result.products
+                    .map(transformProduct)
+                    .filter((p) => !currentIds.has(p.id))
+                    .filter((p) => {
+                        const pModel = ((p as any).subBrand || '').toLowerCase().trim()
+                        return pModel !== normalizedModel
+                    })
+
+                setSimilarProducts(candidates.slice(0, 4))
+            } catch {
+                if (active) {
+                    setSimilarProducts([])
+                }
+            } finally {
+                if (active) {
+                    setIsLoadingSimilar(false)
+                }
+            }
+        }
+
+        fetchSimilarProducts()
+
+        return () => {
+            active = false
+        }
+    }, [data.brand, data.model, data.products])
 
     const sortedProducts = useMemo(() => {
         const sorted = [...data.products]
@@ -87,14 +128,69 @@ export function ModelPageClient({ data, brandSlug, modelSlug }: ModelPageClientP
         })
     }
 
-    const tabs: { key: TabType; label: string; count?: number }[] = [
-        { key: 'listings', label: 'Listings', count: data.totalListings },
-        { key: 'details', label: 'Product Details' },
-        ...(data.totalReviews > 0 ? [{ key: 'reviews' as TabType, label: 'Reviews', count: data.totalReviews }] : []),
+    const featuredProduct = useMemo(() => {
+        const inStockListing = sortedProducts.find((p) => ((p as any).stockStatus || 'in-stock') !== 'sold-out' && p.inStock)
+        return inStockListing || sortedProducts[0] || null
+    }, [sortedProducts])
+
+    const listingsExcludingFeatured = useMemo(() => {
+        if (!featuredProduct) return sortedProducts
+        return sortedProducts.filter((p) => p.id !== featuredProduct.id)
+    }, [featuredProduct, sortedProducts])
+
+    const compareProducts = useMemo(() => {
+        const lookup = new Map(sortedProducts.map((p) => [p.id, p]))
+        return compareIds.map((id) => lookup.get(id)).filter(Boolean) as Product[]
+    }, [compareIds, sortedProducts])
+
+    const priceGuideProducts = useMemo(() => {
+        if (priceConditionFilter === 'all') return data.products
+        if (priceConditionFilter === 'new') {
+            return data.products.filter((p) => (p as any).productType !== 'used')
+        }
+        return data.products.filter((p) => (p as any).condition === priceConditionFilter)
+    }, [data.products, priceConditionFilter])
+
+    const priceGuideStats = useMemo(() => {
+        const prices = priceGuideProducts.map((p) => p.price).filter((price) => price > 0).sort((a, b) => a - b)
+        if (prices.length === 0) {
+            return { min: 0, median: 0, max: 0, sample: 0 }
+        }
+
+        const mid = Math.floor(prices.length / 2)
+        const median = prices.length % 2 === 0 ? (prices[mid - 1] + prices[mid]) / 2 : prices[mid]
+
+        return {
+            min: prices[0],
+            median,
+            max: prices[prices.length - 1],
+            sample: prices.length,
+        }
+    }, [priceGuideProducts])
+
+    const toggleCompareProduct = (productId: string) => {
+        setCompareIds((prev) => {
+            if (prev.includes(productId)) {
+                return prev.filter((id) => id !== productId)
+            }
+            if (prev.length >= 4) {
+                return prev
+            }
+            return [...prev, productId]
+        })
+    }
+
+    const clearCompare = () => setCompareIds([])
+
+    const jumpLinks = [
+        { href: '#listings', label: 'Listings' },
+        { href: '#product-details', label: 'Product Details' },
+        { href: '#price-guide', label: 'Price Guide' },
+        { href: '#reviews-section', label: 'Reviews' },
     ]
 
     return (
-        <div className="animate-fade-in">
+        <div className="animate-fade-in scroll-smooth">
             {/* Breadcrumbs */}
             <div className="bg-muted/30 border-b">
                 <div className="container mx-auto px-4 py-2 md:py-3">
@@ -104,14 +200,14 @@ export function ModelPageClient({ data, brandSlug, modelSlug }: ModelPageClientP
                             Home
                         </Link>
                         <ChevronRight className="h-3 w-3 md:h-4 md:w-4 text-muted-foreground/50 flex-shrink-0" />
-                        <Link href={`/shop?brand=${encodeURIComponent(data.brand)}`} className="text-muted-foreground hover:text-primary transition-colors whitespace-nowrap">
+                        <Link href={`/brand/${brandSlug}`} className="text-muted-foreground hover:text-primary transition-colors whitespace-nowrap">
                             {data.brand}
                         </Link>
-                        <ChevronRight className="h-3 w-3 md:h-4 md:w-4 text-muted-foreground/50 flex-shrink-0" />
-                        <span className="text-secondary font-medium whitespace-nowrap">
-                            {data.brand} {data.model}
-                        </span>
-                    </nav>
+                            <ChevronRight className="h-3 w-3 md:h-4 md:w-4 text-muted-foreground/50 flex-shrink-0" />
+                            <span className="text-secondary font-medium whitespace-nowrap" id="main-content">
+                                {data.brand} {data.model}
+                            </span>
+                        </nav>
                 </div>
             </div>
 
@@ -180,36 +276,39 @@ export function ModelPageClient({ data, brandSlug, modelSlug }: ModelPageClientP
                 </div>
             </div>
 
-            {/* Tabs Navigation */}
+            {/* Jump Navigation */}
             <div className="border-b bg-white sticky top-0 z-20">
                 <div className="container mx-auto px-4">
                     <div className="flex items-center gap-0 overflow-x-auto">
-                        {tabs.map((tab) => (
-                            <button
-                                key={tab.key}
-                                onClick={() => setActiveTab(tab.key)}
-                                className={`relative px-5 py-3.5 text-sm font-medium whitespace-nowrap transition-colors border-b-2 ${activeTab === tab.key
-                                    ? 'text-secondary border-secondary'
-                                    : 'text-muted-foreground hover:text-secondary border-transparent hover:border-muted-foreground/30'
-                                    }`}
+                        {jumpLinks.map((link) => (
+                            <a
+                                key={link.href}
+                                href={link.href}
+                                className="relative px-5 py-3.5 text-sm font-medium whitespace-nowrap transition-colors border-b-2 text-muted-foreground hover:text-secondary border-transparent hover:border-muted-foreground/30"
                             >
-                                {tab.label}
-                                {tab.count !== undefined && (
-                                    <span className={`ml-1.5 text-xs ${activeTab === tab.key ? 'text-secondary' : 'text-muted-foreground'}`}>
-                                        ({tab.count})
-                                    </span>
-                                )}
-                            </button>
+                                {link.label}
+                            </a>
                         ))}
                     </div>
                 </div>
             </div>
 
-            {/* Tab Content */}
+            {/* Content Sections */}
             <div className="container mx-auto px-4 py-6 md:py-8">
-                {activeTab === 'listings' && (
+                <section id="listings" className="scroll-mt-24">
+                    <h2 className="text-2xl font-bold text-secondary mb-4">Listings</h2>
+
+                    {featuredProduct && (
+                        <FeaturedListing
+                            product={featuredProduct}
+                            onAddToCart={handleAddToCart}
+                            isCompared={compareIds.includes(featuredProduct.id)}
+                            onToggleCompare={toggleCompareProduct}
+                        />
+                    )}
+
                     <ListingsTab
-                        products={sortedProducts}
+                        products={listingsExcludingFeatured}
                         sortBy={sortBy}
                         onSortChange={setSortBy}
                         viewMode={viewMode}
@@ -217,27 +316,75 @@ export function ModelPageClient({ data, brandSlug, modelSlug }: ModelPageClientP
                         onAddToCart={handleAddToCart}
                         inStockCount={data.inStockCount}
                         totalListings={data.totalListings}
+                        compareIds={compareIds}
+                        onToggleCompare={toggleCompareProduct}
                     />
-                )}
 
-                {activeTab === 'details' && (
-                    <DetailsTab
+                    <CompareSection products={compareProducts} onClear={clearCompare} />
+                </section>
+
+                <section id="product-details" className="scroll-mt-24 mt-12 pt-6 border-t">
+                    <DetailsSection
                         brand={data.brand}
                         model={data.model}
                         specs={data.modelSpecs}
                         categories={data.categories}
-                        priceRange={data.priceRange}
+                        products={data.products}
                         totalListings={data.totalListings}
                     />
-                )}
+                </section>
 
-                {activeTab === 'reviews' && (
+                <section id="price-guide" className="scroll-mt-24 mt-12 pt-6 border-t">
+                    <PriceGuideSection
+                        brand={data.brand}
+                        model={data.model}
+                        stats={priceGuideStats}
+                        selectedFilter={priceConditionFilter}
+                        onSelectFilter={setPriceConditionFilter}
+                    />
+                </section>
+
+                <section id="reviews-section" className="scroll-mt-24 mt-12 pt-6 border-t">
                     <ReviewsTab
                         avgRating={data.avgRating}
                         totalReviews={data.totalReviews}
+                        reviewTargetProductId={data.products[0]?.id || null}
                     />
-                )}
+                </section>
+
+                <section className="mt-12 pt-6 border-t">
+                    <SimilarProductsSection
+                        brand={data.brand}
+                        products={similarProducts}
+                        isLoading={isLoadingSimilar}
+                    />
+                </section>
             </div>
+
+            {compareIds.length > 0 && (
+                <div className="fixed bottom-4 left-1/2 -translate-x-1/2 z-30 w-[calc(100%-2rem)] max-w-xl">
+                    <div className="bg-secondary text-white shadow-xl border border-secondary/80 px-4 py-3 flex items-center justify-between gap-3">
+                        <p className="text-sm">
+                            Compare <span className="font-bold">{compareIds.length}</span>/4 listings
+                        </p>
+                        <div className="flex items-center gap-2">
+                            <Button
+                                type="button"
+                                variant="outline"
+                                className="h-8 px-3 text-xs border-white/30 text-white hover:bg-white/10"
+                                onClick={clearCompare}
+                            >
+                                Clear
+                            </Button>
+                            <a href="#compare-listings">
+                                <Button type="button" className="h-8 px-3 text-xs bg-white text-secondary hover:bg-gray-100">
+                                    Compare Now
+                                </Button>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>
     )
 }
@@ -253,6 +400,8 @@ function ListingsTab({
     onAddToCart,
     inStockCount,
     totalListings,
+    compareIds,
+    onToggleCompare,
 }: {
     products: Product[]
     sortBy: SortOption
@@ -262,6 +411,8 @@ function ListingsTab({
     onAddToCart: (product: Product) => void
     inStockCount: number
     totalListings: number
+    compareIds: string[]
+    onToggleCompare: (id: string) => void
 }) {
     return (
         <div>
@@ -305,13 +456,27 @@ function ListingsTab({
             {viewMode === 'list' ? (
                 <div className="space-y-4">
                     {products.map((product, index) => (
-                        <ListingCard key={product.id} product={product} onAddToCart={onAddToCart} index={index} />
+                        <ListingCard
+                            key={product.id}
+                            product={product}
+                            onAddToCart={onAddToCart}
+                            index={index}
+                            isCompared={compareIds.includes(product.id)}
+                            onToggleCompare={onToggleCompare}
+                        />
                     ))}
                 </div>
             ) : (
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
                     {products.map((product, index) => (
-                        <GridCard key={product.id} product={product} onAddToCart={onAddToCart} index={index} />
+                        <GridCard
+                            key={product.id}
+                            product={product}
+                            onAddToCart={onAddToCart}
+                            index={index}
+                            isCompared={compareIds.includes(product.id)}
+                            onToggleCompare={onToggleCompare}
+                        />
                     ))}
                 </div>
             )}
@@ -329,7 +494,19 @@ function ListingsTab({
 
 /* ===================== Listing Card (List View) ===================== */
 
-function ListingCard({ product, onAddToCart, index }: { product: Product; onAddToCart: (p: Product) => void; index: number }) {
+function ListingCard({
+    product,
+    onAddToCart,
+    index,
+    isCompared,
+    onToggleCompare,
+}: {
+    product: Product
+    onAddToCart: (p: Product) => void
+    index: number
+    isCompared: boolean
+    onToggleCompare: (id: string) => void
+}) {
     const productUrl = getProductUrl(product.sku, product.slug)
     const condition = (product as any).condition
     const conditionLabel = conditionLabels[condition] || null
@@ -441,6 +618,15 @@ function ListingCard({ product, onAddToCart, index }: { product: Product; onAddT
                                             Make an Offer
                                         </Button>
                                     </Link>
+                                    <Button
+                                        type="button"
+                                        variant="outline"
+                                        className={`w-full text-xs ${isCompared ? 'border-secondary bg-secondary/5 text-secondary' : 'border-border text-muted-foreground'}`}
+                                        onClick={() => onToggleCompare(product.id)}
+                                    >
+                                        {isCompared ? <Check className="h-3.5 w-3.5 mr-1" /> : null}
+                                        {isCompared ? 'Compared' : 'Compare'}
+                                    </Button>
                                 </>
                             ) : (
                                 <span className="text-sm font-medium text-red-600 bg-red-50 px-4 py-2 text-center border border-red-200">
@@ -457,7 +643,19 @@ function ListingCard({ product, onAddToCart, index }: { product: Product; onAddT
 
 /* ===================== Grid Card ===================== */
 
-function GridCard({ product, onAddToCart, index }: { product: Product; onAddToCart: (p: Product) => void; index: number }) {
+function GridCard({
+    product,
+    onAddToCart,
+    index,
+    isCompared,
+    onToggleCompare,
+}: {
+    product: Product
+    onAddToCart: (p: Product) => void
+    index: number
+    isCompared: boolean
+    onToggleCompare: (id: string) => void
+}) {
     const productUrl = getProductUrl(product.sku, product.slug)
     const condition = (product as any).condition
     const conditionLabel = conditionLabels[condition] || null
@@ -532,13 +730,25 @@ function GridCard({ product, onAddToCart, index }: { product: Product; onAddToCa
                     )}
 
                     {!isSoldOut && (
-                        <Button
-                            onClick={() => onAddToCart(product)}
-                            size="sm"
-                            className="w-full mt-2 bg-secondary hover:bg-secondary/90 text-white text-xs"
-                        >
-                            Add to Cart
-                        </Button>
+                        <>
+                            <Button
+                                onClick={() => onAddToCart(product)}
+                                size="sm"
+                                className="w-full mt-2 bg-secondary hover:bg-secondary/90 text-white text-xs"
+                            >
+                                Add to Cart
+                            </Button>
+                            <Button
+                                type="button"
+                                variant="outline"
+                                size="sm"
+                                onClick={() => onToggleCompare(product.id)}
+                                className={`w-full mt-2 text-xs ${isCompared ? 'border-secondary bg-secondary/5 text-secondary' : ''}`}
+                            >
+                                {isCompared ? <Check className="h-3.5 w-3.5 mr-1" /> : null}
+                                {isCompared ? 'Compared' : 'Compare'}
+                            </Button>
+                        </>
                     )}
                 </div>
             </div>
@@ -546,62 +756,313 @@ function GridCard({ product, onAddToCart, index }: { product: Product; onAddToCa
     )
 }
 
-/* ===================== Details Tab ===================== */
-
-function DetailsTab({ brand, model, specs, categories, priceRange, totalListings }: {
-    brand: string; model: string; specs: Record<string, string>; categories: string[]; priceRange: { min: number; max: number }; totalListings: number
+function FeaturedListing({
+    product,
+    onAddToCart,
+    isCompared,
+    onToggleCompare,
+}: {
+    product: Product
+    onAddToCart: (p: Product) => void
+    isCompared: boolean
+    onToggleCompare: (id: string) => void
 }) {
-    const specEntries = Object.entries(specs).filter(([_, value]) => value)
+    const productUrl = getProductUrl(product.sku, product.slug)
+    const stockStatus = (product as any).stockStatus || 'in-stock'
+    const isSoldOut = stockStatus === 'sold-out'
 
     return (
-        <div className="max-w-3xl">
-            <h2 className="text-xl font-bold text-secondary mb-6">
-                About the {brand} {model}
-            </h2>
-
-            {/* Overview */}
-            <div className="bg-white border border-border p-6 mb-6">
-                <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider mb-4">Overview</h3>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm">
-                    <div className="flex justify-between py-2 border-b border-border/50">
-                        <span className="text-muted-foreground">Brand</span>
-                        <span className="font-medium text-secondary">{brand}</span>
-                    </div>
-                    <div className="flex justify-between py-2 border-b border-border/50">
-                        <span className="text-muted-foreground">Model</span>
-                        <span className="font-medium text-secondary">{model}</span>
-                    </div>
-                    {categories.length > 0 && (
-                        <div className="flex justify-between py-2 border-b border-border/50">
-                            <span className="text-muted-foreground">Category</span>
-                            <span className="font-medium text-secondary">{categories.join(', ')}</span>
+        <div className="border border-border bg-white p-4 md:p-5 mb-6">
+            <p className="text-sm font-semibold text-muted-foreground mb-3">Featured Listing</p>
+            <div className="grid grid-cols-1 md:grid-cols-[220px_1fr] gap-4 md:gap-6">
+                <Link href={productUrl} className="aspect-square bg-muted/30 overflow-hidden border border-border">
+                    {product.images?.[0] ? (
+                        <Image src={product.images[0]} alt={product.name} width={500} height={500} className="w-full h-full object-cover" />
+                    ) : (
+                        <div className="w-full h-full flex items-center justify-center">
+                            <Package className="h-10 w-10 text-muted-foreground/30" />
                         </div>
                     )}
-                    <div className="flex justify-between py-2 border-b border-border/50">
-                        <span className="text-muted-foreground">Listings</span>
-                        <span className="font-medium text-secondary">{totalListings}</span>
+                </Link>
+
+                <div className="flex flex-col">
+                    <Link href={productUrl} className="text-lg font-semibold text-secondary hover:text-primary transition-colors">
+                        {product.name}
+                    </Link>
+                    <p className="text-sm text-muted-foreground mt-2 line-clamp-3">{product.description}</p>
+
+                    <div className="mt-4 flex items-center gap-4 flex-wrap">
+                        <p className="text-2xl font-bold text-secondary">${product.price.toLocaleString()}</p>
+                        {product.shippingCost && product.shippingCost > 0 ? (
+                            <p className="text-sm text-muted-foreground">+ ${product.shippingCost.toLocaleString()} shipping</p>
+                        ) : (
+                            <p className="text-sm text-green-700 font-medium">Free Shipping</p>
+                        )}
                     </div>
-                    <div className="flex justify-between py-2 border-b border-border/50 sm:col-span-2">
-                        <span className="text-muted-foreground">Price Range</span>
-                        <span className="font-medium text-secondary">
-                            ${priceRange.min.toLocaleString()} – ${priceRange.max.toLocaleString()}
-                        </span>
+
+                    <div className="mt-4 flex flex-wrap gap-2">
+                        {!isSoldOut && (
+                            <Button className="bg-secondary hover:bg-secondary/90 text-white" onClick={() => onAddToCart(product)}>
+                                <ShoppingCart className="h-4 w-4 mr-2" />
+                                Add to Cart
+                            </Button>
+                        )}
+                        <Button variant="outline" onClick={() => onToggleCompare(product.id)}>
+                            {isCompared ? <Check className="h-4 w-4 mr-2" /> : null}
+                            {isCompared ? 'Compared' : 'Compare'}
+                        </Button>
                     </div>
                 </div>
             </div>
+        </div>
+    )
+}
 
-            {/* Specifications */}
-            {specEntries.length > 0 && (
-                <div className="bg-white border border-border p-6">
-                    <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider mb-4">Specifications</h3>
-                    <div className="space-y-0">
-                        {specEntries.map(([key, value]) => (
-                            <div key={key} className="flex justify-between py-2.5 border-b border-border/50 last:border-0 text-sm">
-                                <span className="text-muted-foreground">{key}</span>
-                                <span className="font-medium text-secondary text-right max-w-[60%]">{value}</span>
+function CompareSection({ products, onClear }: { products: Product[]; onClear: () => void }) {
+    if (products.length < 2) {
+        return null
+    }
+
+    return (
+        <div id="compare-listings" className="mt-8 border border-border bg-white p-4 md:p-5 scroll-mt-24">
+            <div className="flex items-center justify-between gap-2 mb-4">
+                <h3 className="text-lg font-bold text-secondary">Compare Listings</h3>
+                <Button variant="ghost" size="sm" onClick={onClear}>
+                    <X className="h-4 w-4 mr-1" /> Clear
+                </Button>
+            </div>
+
+            <div className="overflow-x-auto">
+                <table className="w-full min-w-[720px] border-collapse">
+                    <thead>
+                        <tr className="border-b">
+                            <th className="text-left p-3 text-xs uppercase text-muted-foreground font-semibold">Field</th>
+                            {products.map((product) => (
+                                <th key={product.id} className="text-left p-3 text-sm font-semibold text-secondary">
+                                    <Link href={getProductUrl(product.sku, product.slug)} className="hover:text-primary transition-colors">
+                                        {product.sku}
+                                    </Link>
+                                </th>
+                            ))}
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <CompareRow
+                            label="Price"
+                            values={products.map((p) => `$${p.price.toLocaleString()}`)}
+                        />
+                        <CompareRow
+                            label="Condition"
+                            values={products.map((p) => (p as any).productType === 'used' ? (conditionLabels[(p as any).condition || ''] || 'Used') : 'New')}
+                        />
+                        <CompareRow
+                            label="Shipping"
+                            values={products.map((p) => p.shippingCost && p.shippingCost > 0 ? `$${p.shippingCost.toLocaleString()}` : 'Free')}
+                        />
+                        <CompareRow
+                            label="Availability"
+                            values={products.map((p) => ((p as any).stockStatus || 'in-stock') === 'sold-out' ? 'Sold Out' : 'Available')}
+                        />
+                        <CompareRow
+                            label="Serial"
+                            values={products.map((p) => p.sku)}
+                        />
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    )
+}
+
+function CompareRow({ label, values }: { label: string; values: string[] }) {
+    return (
+        <tr className="border-b last:border-0">
+            <td className="p-3 text-sm text-muted-foreground font-medium">{label}</td>
+            {values.map((value, index) => (
+                <td key={`${label}-${index}`} className="p-3 text-sm text-secondary">{value}</td>
+            ))}
+        </tr>
+    )
+}
+
+function DetailsSection({ brand, model, specs, categories, products, totalListings }: {
+    brand: string
+    model: string
+    specs: Record<string, string>
+    categories: string[]
+    products: Product[]
+    totalListings: number
+}) {
+    const specEntries = Object.entries(specs).filter(([_, value]) => value)
+    const galleryImages = Array.from(new Set(products.flatMap((p) => p.images || []))).slice(0, 6)
+
+    return (
+        <div>
+            <h2 className="text-2xl font-bold text-secondary mb-4">Product Details</h2>
+
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <div className="border border-border bg-white p-4">
+                    <h3 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground mb-3">Gallery</h3>
+                    {galleryImages.length > 0 ? (
+                        <>
+                            <div className="aspect-square border border-border overflow-hidden bg-muted/20 mb-3">
+                                <Image src={galleryImages[0]} alt={`${brand} ${model}`} width={800} height={800} className="w-full h-full object-cover" />
                             </div>
+                            <div className="grid grid-cols-4 gap-2">
+                                {galleryImages.slice(1, 5).map((img, idx) => (
+                                    <div key={img} className="aspect-square border border-border overflow-hidden bg-muted/20">
+                                        <Image src={img} alt={`${brand} ${model} image ${idx + 2}`} width={200} height={200} className="w-full h-full object-cover" />
+                                    </div>
+                                ))}
+                            </div>
+                        </>
+                    ) : (
+                        <div className="aspect-square border border-border bg-muted/20 flex items-center justify-center">
+                            <Package className="h-10 w-10 text-muted-foreground/40" />
+                        </div>
+                    )}
+                </div>
+
+                <div className="border border-border bg-white p-4">
+                    <h3 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground mb-3">Product Specs</h3>
+                    <div className="space-y-0">
+                        <SpecRow label="Brand" value={brand} />
+                        <SpecRow label="Model" value={model} />
+                        <SpecRow label="Categories" value={categories.join(', ')} />
+                        <SpecRow label="Listings" value={String(totalListings)} />
+
+                        {specEntries.map(([key, value]) => (
+                            <SpecRow key={key} label={key} value={value} />
                         ))}
                     </div>
+                </div>
+            </div>
+        </div>
+    )
+}
+
+function SpecRow({ label, value }: { label: string; value: string }) {
+    return (
+        <div className="flex items-start justify-between gap-4 py-2.5 border-b border-border/50 last:border-0 text-sm">
+            <span className="text-muted-foreground">{label}</span>
+            <span className="font-medium text-secondary text-right max-w-[65%]">{value || '-'}</span>
+        </div>
+    )
+}
+
+function PriceGuideSection({
+    brand,
+    model,
+    stats,
+    selectedFilter,
+    onSelectFilter,
+}: {
+    brand: string
+    model: string
+    stats: { min: number; median: number; max: number; sample: number }
+    selectedFilter: PriceConditionFilter
+    onSelectFilter: (value: PriceConditionFilter) => void
+}) {
+    const filters: { key: PriceConditionFilter; label: string }[] = [
+        { key: 'all', label: 'All' },
+        { key: 'new', label: 'New' },
+        { key: 'mint', label: 'Mint' },
+        { key: 'excellent', label: 'Excellent' },
+        { key: 'very-good', label: 'Very Good' },
+        { key: 'good', label: 'Good' },
+        { key: 'fair', label: 'Fair' },
+    ]
+
+    return (
+        <div>
+            <h2 className="text-2xl font-bold text-secondary mb-4">Price Guide</h2>
+            <div className="border border-border bg-white p-4 md:p-5">
+                <p className="text-sm text-muted-foreground mb-4">
+                    Estimated value for {brand} {model} based on available listings.
+                </p>
+
+                <div className="flex flex-wrap gap-2 mb-5">
+                    {filters.map((filter) => (
+                        <button
+                            key={filter.key}
+                            type="button"
+                            onClick={() => onSelectFilter(filter.key)}
+                            className={`px-3 py-1.5 text-xs border transition-colors ${selectedFilter === filter.key
+                                ? 'bg-secondary text-white border-secondary'
+                                : 'bg-white text-secondary border-border hover:border-secondary/50'
+                                }`}
+                        >
+                            {filter.label}
+                        </button>
+                    ))}
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                    <StatCard label="Low" value={stats.min > 0 ? `$${stats.min.toLocaleString()}` : '-'} />
+                    <StatCard label="Typical" value={stats.median > 0 ? `$${Math.round(stats.median).toLocaleString()}` : '-'} />
+                    <StatCard label="High" value={stats.max > 0 ? `$${stats.max.toLocaleString()}` : '-'} />
+                </div>
+
+                <p className="text-xs text-muted-foreground mt-4">
+                    Sample size: {stats.sample} listing{stats.sample !== 1 ? 's' : ''}. Excludes shipping and tax.
+                </p>
+            </div>
+        </div>
+    )
+}
+
+function StatCard({ label, value }: { label: string; value: string }) {
+    return (
+        <div className="border border-border bg-muted/10 px-4 py-3">
+            <p className="text-[11px] uppercase tracking-wider text-muted-foreground font-semibold">{label}</p>
+            <p className="text-xl font-bold text-secondary mt-1">{value}</p>
+        </div>
+    )
+}
+
+function SimilarProductsSection({ brand, products, isLoading }: { brand: string; products: Product[]; isLoading: boolean }) {
+    return (
+        <div>
+            <h2 className="text-2xl font-bold text-secondary mb-4">Similar Products</h2>
+
+            {isLoading ? (
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                    {[1, 2, 3, 4].map((i) => (
+                        <div key={i} className="border border-border bg-white p-3 animate-pulse">
+                            <div className="aspect-square bg-muted/30 mb-3" />
+                            <div className="h-3 bg-muted/30 mb-2" />
+                            <div className="h-3 w-2/3 bg-muted/30 mb-3" />
+                            <div className="h-4 w-1/2 bg-muted/30" />
+                        </div>
+                    ))}
+                </div>
+            ) : products.length > 0 ? (
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                    {products.map((product) => {
+                        const url = getProductUrl(product.sku, product.slug)
+                        return (
+                            <Link key={product.id} href={url} className="border border-border bg-white hover:border-primary/40 transition-colors">
+                                <div className="aspect-square bg-muted/20 overflow-hidden">
+                                    {product.images?.[0] ? (
+                                        <Image src={product.images[0]} alt={product.name} width={500} height={500} className="w-full h-full object-cover" />
+                                    ) : (
+                                        <div className="w-full h-full flex items-center justify-center">
+                                            <Package className="h-8 w-8 text-muted-foreground/30" />
+                                        </div>
+                                    )}
+                                </div>
+                                <div className="p-3">
+                                    <p className="text-[11px] uppercase tracking-wider text-muted-foreground">{brand}</p>
+                                    <h3 className="text-sm font-semibold text-secondary line-clamp-2 mt-1">{product.name}</h3>
+                                    <p className="text-base font-bold text-secondary mt-2">${product.price.toLocaleString()}</p>
+                                </div>
+                            </Link>
+                        )
+                    })}
+                </div>
+            ) : (
+                <div className="border border-border bg-white p-4 text-sm text-muted-foreground">
+                    No similar products available right now.
                 </div>
             )}
         </div>
@@ -610,24 +1071,176 @@ function DetailsTab({ brand, model, specs, categories, priceRange, totalListings
 
 /* ===================== Reviews Tab ===================== */
 
-function ReviewsTab({ avgRating, totalReviews }: { avgRating: number; totalReviews: number }) {
-    return (
-        <div className="max-w-3xl">
-            <h2 className="text-xl font-bold text-secondary mb-6">Reviews</h2>
+function ReviewsTab({
+    avgRating,
+    totalReviews,
+    reviewTargetProductId,
+}: {
+    avgRating: number
+    totalReviews: number
+    reviewTargetProductId: string | null
+}) {
+    const [rating, setRating] = useState(5)
+    const [hoverRating, setHoverRating] = useState(0)
+    const [reviewTitle, setReviewTitle] = useState('')
+    const [reviewBody, setReviewBody] = useState('')
+    const [isSubmitting, setIsSubmitting] = useState(false)
+    const [submitMessage, setSubmitMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null)
+    const [localReviewCount, setLocalReviewCount] = useState(totalReviews)
+    const [localAvgRating, setLocalAvgRating] = useState(avgRating)
 
-            <div className="bg-white border border-border p-6 text-center">
-                <div className="flex items-center justify-center gap-1 mb-2">
-                    {[1, 2, 3, 4, 5].map((star) => (
-                        <Star
-                            key={star}
-                            className={`h-6 w-6 ${star <= Math.round(avgRating) ? 'text-amber-500 fill-amber-500' : 'text-gray-300'}`}
-                        />
-                    ))}
+    const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
+        e.preventDefault()
+
+        if (!reviewTargetProductId) {
+            setSubmitMessage({ type: 'error', text: 'Cannot submit review right now. Please try again later.' })
+            return
+        }
+
+        if (!reviewBody.trim()) {
+            setSubmitMessage({ type: 'error', text: 'Please write your review before posting.' })
+            return
+        }
+
+        setIsSubmitting(true)
+        setSubmitMessage(null)
+
+        try {
+            const message = reviewTitle.trim()
+                ? `${reviewTitle.trim()}\n\n${reviewBody.trim()}`
+                : reviewBody.trim()
+
+            const response = await fetch(`/api/products/${reviewTargetProductId}/reviews`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    buyerName: 'Guest Reviewer',
+                    rating,
+                    message,
+                    date: new Date().toISOString(),
+                }),
+            })
+
+            if (!response.ok) {
+                throw new Error('Failed to submit review')
+            }
+
+            const nextCount = localReviewCount + 1
+            const nextAvg = nextCount > 0
+                ? ((localAvgRating * localReviewCount) + rating) / nextCount
+                : rating
+
+            setLocalReviewCount(nextCount)
+            setLocalAvgRating(Math.round(nextAvg * 10) / 10)
+            setReviewTitle('')
+            setReviewBody('')
+            setRating(5)
+            setHoverRating(0)
+            setSubmitMessage({ type: 'success', text: 'Review submitted successfully.' })
+        } catch {
+            setSubmitMessage({ type: 'error', text: 'Failed to submit review. Please try again.' })
+        } finally {
+            setIsSubmitting(false)
+        }
+    }
+
+    return (
+        <div>
+            <h2 className="text-3xl md:text-4xl font-bold text-secondary mb-8">Product reviews</h2>
+
+            {localReviewCount === 0 ? (
+                <p className="text-lg md:text-2xl text-secondary/85 mb-10">There are currently no reviews for this product.</p>
+            ) : (
+                <div className="mb-10 border border-border bg-white p-6">
+                    <div className="flex items-center gap-1 mb-2">
+                        {[1, 2, 3, 4, 5].map((star) => (
+                            <Star
+                                key={star}
+                                className={`h-6 w-6 ${star <= Math.round(localAvgRating) ? 'text-amber-500 fill-amber-500' : 'text-gray-300'}`}
+                            />
+                        ))}
+                    </div>
+                    <p className="text-2xl font-bold text-secondary">{localAvgRating || 0}</p>
+                    <p className="text-base text-muted-foreground mt-1">
+                        Based on {localReviewCount} review{localReviewCount !== 1 ? 's' : ''}
+                    </p>
                 </div>
-                <div className="text-3xl font-bold text-secondary">{avgRating}</div>
-                <p className="text-sm text-muted-foreground mt-1">
-                    Based on {totalReviews} review{totalReviews !== 1 ? 's' : ''}
-                </p>
+            )}
+
+            <div className="max-w-none">
+                <h3 className="text-2xl md:text-3xl font-bold text-secondary mb-5">Write a Product Review</h3>
+                <form onSubmit={handleSubmit} className="space-y-5">
+                    <div>
+                        <p className="text-xl md:text-2xl font-semibold text-secondary mb-2">Your Rating</p>
+                        <div className="flex items-center gap-1.5">
+                            {[1, 2, 3, 4, 5].map((star) => {
+                                const isActive = star <= (hoverRating || rating)
+                                return (
+                                    <button
+                                        key={star}
+                                        type="button"
+                                        onClick={() => setRating(star)}
+                                        onMouseEnter={() => setHoverRating(star)}
+                                        onMouseLeave={() => setHoverRating(0)}
+                                        className="transition-transform hover:scale-110"
+                                        aria-label={`Rate ${star} stars`}
+                                    >
+                                        <Star className={`h-7 w-7 md:h-8 md:w-8 ${isActive ? 'text-black fill-black' : 'text-gray-400'}`} />
+                                    </button>
+                                )
+                            })}
+                        </div>
+                    </div>
+
+                    <div>
+                        <label htmlFor="review-title" className="block text-xl md:text-2xl font-semibold text-secondary mb-2">
+                            Review Title
+                        </label>
+                        <input
+                            id="review-title"
+                            type="text"
+                            value={reviewTitle}
+                            onChange={(e) => setReviewTitle(e.target.value)}
+                            className="w-full h-12 md:h-14 border border-secondary/40 px-4 text-base md:text-lg outline-none focus:border-secondary"
+                        />
+                    </div>
+
+                    <div>
+                        <label htmlFor="review-body" className="block text-xl md:text-2xl font-semibold text-secondary mb-2">
+                            Your Product Review <span className="text-red-600">*</span>
+                        </label>
+                        <textarea
+                            id="review-body"
+                            value={reviewBody}
+                            onChange={(e) => setReviewBody(e.target.value)}
+                            required
+                            rows={5}
+                            className="w-full border border-secondary/40 px-4 py-3 text-base md:text-lg outline-none focus:border-secondary resize-y"
+                        />
+                    </div>
+
+                    <div>
+                        <Button type="submit" disabled={isSubmitting} className="h-12 md:h-14 px-8 md:px-10 rounded-full text-lg md:text-xl font-bold bg-secondary hover:bg-secondary/90 disabled:opacity-60">
+                            {isSubmitting ? 'Posting...' : 'Post Review'}
+                        </Button>
+                    </div>
+
+                    {submitMessage && (
+                        <p className={`text-sm md:text-base ${submitMessage.type === 'success' ? 'text-green-700' : 'text-red-600'}`}>
+                            {submitMessage.text}
+                        </p>
+                    )}
+                </form>
+
+                <div className="mt-8">
+                    <p className="text-xl md:text-2xl font-bold text-secondary">
+                        Review Tips <span className="text-blue-700 text-lg md:text-xl font-semibold">(see all)</span>
+                    </p>
+                    <ul className="mt-3 space-y-1 text-base md:text-xl text-secondary/90">
+                        <li>✓ Do: talk about how it sounds, mention pros and cons, and compare it to other products.</li>
+                        <li>✕ Don&apos;t: review a seller, your shipping experience, or include offensive content.</li>
+                    </ul>
+                </div>
             </div>
         </div>
     )

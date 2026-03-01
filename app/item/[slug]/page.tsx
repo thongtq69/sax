@@ -3,6 +3,7 @@ import type { Metadata } from 'next'
 import Link from 'next/link'
 import { prisma } from '@/lib/prisma'
 import { transformProduct, extractSkuFromParam } from '@/lib/api'
+import { generateSlug } from '@/lib/slug-utils'
 import { ProductDetailClient } from '@/components/product/ProductDetailClient'
 import { StructuredData } from '@/components/seo/StructuredData'
 import { ChevronRight, Home } from 'lucide-react'
@@ -164,6 +165,7 @@ export default async function ProductPage({
 
     const product = transformProduct(apiProduct)
     const brandName = product.brand || ''
+    const brandSlug = brandName ? generateSlug(brandName) : ''
     const productSchema = generateProductSchema(product)
 
     return (
@@ -184,7 +186,7 @@ export default async function ProductPage({
               "@type": "ListItem",
               "position": 2,
               "name": brandName,
-              "item": `${process.env.NEXT_PUBLIC_BASE_URL || "https://jamessaxcorner.com"}/shop?brand=${encodeURIComponent(brandName)}`
+              "item": `${process.env.NEXT_PUBLIC_BASE_URL || "https://jamessaxcorner.com"}/brand/${brandSlug}`
             }] : []),
             ...(product.subBrand ? [{
               "@type": "ListItem",
@@ -212,7 +214,7 @@ export default async function ProductPage({
               {brandName && (
                 <>
                   <ChevronRight className="h-3 w-3 md:h-4 md:w-4 text-muted-foreground/50 flex-shrink-0" />
-                  <Link href={`/shop?brand=${encodeURIComponent(brandName)}`} className="text-muted-foreground hover:text-primary transition-colors whitespace-nowrap">
+                  <Link href={`/brand/${brandSlug}`} className="text-muted-foreground hover:text-primary transition-colors whitespace-nowrap">
                     {brandName}
                   </Link>
                 </>

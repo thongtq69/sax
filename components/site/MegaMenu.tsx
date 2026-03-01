@@ -214,19 +214,19 @@ export function MegaMenu({ mobile = false }: MegaMenuProps) {
                 Shop by Brand
               </div>
               <Link
-                href="/shop?brand=Yamaha"
+                href="/brand/yamaha"
                 className="block rounded-md px-4 py-2 hover:bg-gray-50"
               >
                 Yamaha (15)
               </Link>
               <Link
-                href="/shop?brand=Yanagisawa"
+                href="/brand/yanagisawa"
                 className="block rounded-md px-4 py-2 hover:bg-gray-50"
               >
                 Yanagisawa (10)
               </Link>
               <Link
-                href="/shop?brand=Selmer"
+                href="/brand/selmer"
                 className="block rounded-md px-4 py-2 hover:bg-gray-50"
               >
                 Selmer (3)
@@ -254,4 +254,3 @@ export function MegaMenu({ mobile = false }: MegaMenuProps) {
     </nav>
   )
 }
-

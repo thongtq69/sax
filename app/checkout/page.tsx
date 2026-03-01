@@ -575,7 +575,7 @@ function CheckoutContent() {
                 >
                   <div className="flex items-center gap-2">
                     <Ticket className="h-4 w-4" />
-                    <span>Apply Discount Code</span>
+                    <span>Apply prmo code</span>
                   </div>
                   <ChevronDown className={`h-4 w-4 transition-transform ${isCouponSectionOpen ? 'rotate-180' : ''}`} />
                 </button>
@@ -624,31 +624,7 @@ function CheckoutContent() {
                       </div>
                     )}
 
-                    {availableCoupons.length > 0 && (
-                      <div className="space-y-2 mt-4">
-                        <p className="text-[10px] uppercase font-bold text-gray-400">Available Offers</p>
-                        <div className="grid grid-cols-1 gap-2">
-                          {availableCoupons.map((coupon) => (
-                            <button
-                              key={coupon.id}
-                              type="button"
-                              onClick={() => handleApplyCoupon(coupon.code)}
-                              className={`text-left p-2 rounded border transition-all hover:border-primary group ${appliedCoupon?.id === coupon.id ? 'border-primary bg-primary/5' : 'border-gray-100 bg-gray-50/50'
-                                }`}
-                            >
-                              <div className="flex justify-between items-start">
-                                <span className="text-xs font-bold text-secondary group-hover:text-primary transition-colors">{coupon.label}</span>
-                                <span className="bg-white px-1.5 py-0.5 border rounded text-[10px] font-bold font-mono text-primary group-hover:bg-primary group-hover:text-white transition-all">
-                                  {coupon.code}
-                                </span>
-                              </div>
-                              <p className="text-[10px] text-gray-500 mt-1 line-clamp-1">{coupon.description}</p>
-                              <p className="text-[9px] text-gray-400 mt-1 font-medium">Min spend: ${coupon.minSpend.toLocaleString()}</p>
-                            </button>
-                          ))}
-                        </div>
-                      </div>
-                    )}
+
                   </div>
                 )}
               </div>
