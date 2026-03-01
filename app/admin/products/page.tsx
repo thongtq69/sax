@@ -156,7 +156,7 @@ export default function ProductsManagement() {
     setFilteredProducts(filtered)
   }, [searchTerm, selectedCategory, selectedBadge, selectedProductType, selectedCondition, productList])
 
-  // Auto-sync Brand, Serial, Condition, Model to specs when they change
+  // Auto-sync Brand, SKU, Condition, Model to specs when they change
   useEffect(() => {
     if (!isDialogOpen) return
 
@@ -173,9 +173,9 @@ export default function ProductsManagement() {
       newSpecs['Model'] = formData.subBrand
     }
 
-    // Auto-fill Serial
+    // Auto-fill SKU
     if (formData.sku && formData.sku.trim() !== '') {
-      newSpecs['Serial'] = formData.sku
+      newSpecs['SKU'] = formData.sku
     }
 
     // Auto-fill Condition (only for used products)
@@ -239,6 +239,11 @@ export default function ProductsManagement() {
       setSelectedFooter(foundFooter)
       setDescBody(parsedBody)
 
+      const normalizedSpecs = { ...((product as any).specs || {}) } as Record<string, any>
+      if (!normalizedSpecs['SKU'] && normalizedSpecs['Serial']) {
+        normalizedSpecs['SKU'] = normalizedSpecs['Serial']
+      }
+
       setFormData({
         ...product,
         images: product.images || [],
@@ -248,6 +253,7 @@ export default function ProductsManagement() {
         conditionNotes: (product as any).conditionNotes || '',
         shippingCost: (product as any).shippingCost || undefined,
         subBrand: (product as any).subBrand || '',
+        specs: normalizedSpecs,
         videoUrls: (product as any).videoUrls?.length > 0
           ? [...(product as any).videoUrls, '', '', '', ''].slice(0, 4)
           : (product as any).videoUrl
@@ -279,7 +285,8 @@ export default function ProductsManagement() {
         description: '',
         specs: {
           'Brand': '',
-          'Serial': '',
+          'SKU': '',
+          'SN': '',
           'Condition': '',
         },
         included: [],
@@ -416,7 +423,7 @@ export default function ProductsManagement() {
           <div className="relative flex-1">
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
             <Input
-              placeholder="Search by name, brand, or Serial..."
+              placeholder="Search by name, brand, or SKU..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               className="pl-10"
@@ -740,7 +747,7 @@ export default function ProductsManagement() {
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Serial
+                    SKU
                   </label>
                   <div className="space-y-2">
                     <Input
@@ -753,7 +760,25 @@ export default function ProductsManagement() {
                       className="font-mono"
                     />
                   </div>
-                  <p className="text-xs text-gray-500 mt-1">Enter Serial number of the instrument</p>
+                  <p className="text-xs text-gray-500 mt-1">Product SKU used in URL and internal lookup</p>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    SN
+                  </label>
+                  <div className="space-y-2">
+                    <Input
+                      value={(formData.specs?.['SN'] as string) || ''}
+                      onChange={(e) => {
+                        const value = e.target.value.toUpperCase()
+                        const newSpecs = { ...(formData.specs || {}), SN: value }
+                        setFormData({ ...formData, specs: newSpecs })
+                      }}
+                      placeholder="e.g., 9910042"
+                      className="font-mono"
+                    />
+                  </div>
+                  <p className="text-xs text-gray-500 mt-1">Auto-synced to Specs → SN</p>
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -913,7 +938,7 @@ export default function ProductsManagement() {
                   </p>
                   {(formData.slug || formData.sku) && (
                     <p className="text-xs text-blue-600 mt-1">
-                      URL: /item/{formData.sku || 'Serial'}{formData.slug ? `-${formData.slug}` : ''}
+                      URL: /item/{formData.sku || 'SKU'}{formData.slug ? `-${formData.slug}` : ''}
                     </p>
                   )}
                 </div>
