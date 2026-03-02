@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { sendOrderConfirmationEmail } from '@/lib/email'
+import { deductOrderStock } from '@/lib/order-stock'
 
 export const dynamic = 'force-dynamic'
 
@@ -252,6 +253,17 @@ export async function POST(request: NextRequest) {
         where: { id: existingOrder.id },
         data: updateData,
       })
+
+      if (paymentStatus === 'Completed') {
+        try {
+          const stockResult = await deductOrderStock(existingOrder.id, 'paypal-ipn-completed')
+          if (!stockResult.success) {
+            console.warn(`Stock deduction issues for order ${orderId}:`, stockResult.failures)
+          }
+        } catch (stockError) {
+          console.error(`Failed to deduct stock for order ${orderId}:`, stockError)
+        }
+      }
       
       console.log(`Order ${orderId} updated:`, {
         status: newStatus,

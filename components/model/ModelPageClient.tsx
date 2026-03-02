@@ -8,6 +8,7 @@ import { Button } from '@/components/ui/button'
 import { getProductUrl, getProducts, transformProduct } from '@/lib/api'
 import type { Product } from '@/lib/data'
 import { useCartStore } from '@/lib/store/cart'
+import { isProductSoldOut } from '@/lib/inventory'
 
 interface ModelPageData {
     brand: string
@@ -129,7 +130,7 @@ export function ModelPageClient({ data, brandSlug, modelSlug }: ModelPageClientP
     }
 
     const featuredProduct = useMemo(() => {
-        const inStockListing = sortedProducts.find((p) => ((p as any).stockStatus || 'in-stock') !== 'sold-out' && p.inStock)
+        const inStockListing = sortedProducts.find((p) => !isProductSoldOut(p))
         return inStockListing || sortedProducts[0] || null
     }, [sortedProducts])
 
@@ -511,8 +512,7 @@ function ListingCard({
     const condition = (product as any).condition
     const conditionLabel = conditionLabels[condition] || null
     const productType = (product as any).productType || 'new'
-    const stockStatus = (product as any).stockStatus || 'in-stock'
-    const isSoldOut = stockStatus === 'sold-out'
+    const isSoldOut = isProductSoldOut(product)
 
     return (
         <div
@@ -660,8 +660,7 @@ function GridCard({
     const condition = (product as any).condition
     const conditionLabel = conditionLabels[condition] || null
     const productType = (product as any).productType || 'new'
-    const stockStatus = (product as any).stockStatus || 'in-stock'
-    const isSoldOut = stockStatus === 'sold-out'
+    const isSoldOut = isProductSoldOut(product)
 
     return (
         <div
@@ -768,8 +767,7 @@ function FeaturedListing({
     onToggleCompare: (id: string) => void
 }) {
     const productUrl = getProductUrl(product.sku, product.slug)
-    const stockStatus = (product as any).stockStatus || 'in-stock'
-    const isSoldOut = stockStatus === 'sold-out'
+    const isSoldOut = isProductSoldOut(product)
 
     return (
         <div className="border border-border bg-white p-4 md:p-5 mb-6">
@@ -1122,7 +1120,14 @@ function ReviewsTab({
             })
 
             if (!response.ok) {
-                throw new Error('Failed to submit review')
+                let message = 'Failed to submit review'
+                try {
+                    const errorData = await response.json()
+                    message = errorData.message || errorData.error || message
+                } catch {
+                    // noop
+                }
+                throw new Error(message)
             }
 
             const nextCount = localReviewCount + 1
@@ -1137,8 +1142,8 @@ function ReviewsTab({
             setRating(5)
             setHoverRating(0)
             setSubmitMessage({ type: 'success', text: 'Review submitted successfully.' })
-        } catch {
-            setSubmitMessage({ type: 'error', text: 'Failed to submit review. Please try again.' })
+        } catch (error: any) {
+            setSubmitMessage({ type: 'error', text: error?.message || 'Failed to submit review. Please try again.' })
         } finally {
             setIsSubmitting(false)
         }

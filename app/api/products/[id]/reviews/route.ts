@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
+import { auth } from '@/lib/auth'
 
 // GET /api/products/[id]/reviews - Get reviews for a product
 export async function GET(
@@ -28,23 +29,85 @@ export async function POST(
   { params }: { params: { id: string } }
 ) {
   try {
+    const session = await auth()
+    if (!session?.user?.id) {
+      return NextResponse.json(
+        { error: 'Unauthorized', message: 'Please sign in to write a review.' },
+        { status: 401 }
+      )
+    }
+
     const body = await request.json()
     const { buyerName, rating, message, date } = body
+    const ratingValue = parseInt(rating)
 
-    if (!buyerName || !rating || !message) {
+    if (!message || Number.isNaN(ratingValue) || ratingValue < 1 || ratingValue > 5) {
       return NextResponse.json(
-        { error: 'Missing required fields' },
+        { error: 'Invalid input', message: 'Rating must be from 1 to 5 and message is required.' },
         { status: 400 }
+      )
+    }
+
+    const product = await prisma.product.findUnique({
+      where: { id: params.id },
+      select: { id: true },
+    })
+
+    if (!product) {
+      return NextResponse.json(
+        { error: 'Product not found' },
+        { status: 404 }
+      )
+    }
+
+    const deliveredOrderItem = await prisma.orderItem.findFirst({
+      where: {
+        productId: params.id,
+        order: {
+          userId: session.user.id,
+          status: 'delivered',
+        },
+      },
+      select: { id: true },
+    })
+
+    if (!deliveredOrderItem) {
+      return NextResponse.json(
+        {
+          error: 'Review not eligible',
+          message: 'You can review this product after your order is delivered.',
+        },
+        { status: 403 }
+      )
+    }
+
+    const reviewerToken = `verified:${session.user.id}`
+    const existingReview = await prisma.review.findFirst({
+      where: {
+        productId: params.id,
+        sourceApi: reviewerToken,
+      },
+      select: { id: true },
+    })
+
+    if (existingReview) {
+      return NextResponse.json(
+        {
+          error: 'Duplicate review',
+          message: 'You have already reviewed this product.',
+        },
+        { status: 409 }
       )
     }
 
     const review = await prisma.review.create({
       data: {
         productId: params.id,
-        buyerName,
-        rating: parseInt(rating),
+        buyerName: session.user.name || buyerName || 'Verified Buyer',
+        rating: ratingValue,
         message,
         date: date ? new Date(date) : new Date(),
+        sourceApi: reviewerToken,
       },
     })
 
@@ -74,4 +137,3 @@ export async function POST(
     )
   }
 }
-

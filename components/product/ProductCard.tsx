@@ -17,6 +17,7 @@ import { getProductUrl } from '@/lib/api'
 import { ConditionTooltip } from './ConditionTooltip'
 import { ConditionRating } from '@/lib/product-conditions'
 import { useWishlist } from '@/contexts/WishlistContext'
+import { isProductSoldOut } from '@/lib/inventory'
 
 // Lazy load QuickViewModal - only when user clicks Quick View
 const QuickViewModal = dynamic(
@@ -112,7 +113,7 @@ export function ProductCard({ product, index = 0 }: ProductCardProps) {
   // Parse badges - support multiple badges separated by comma
   const badges = product.badge ? product.badge.split(',').map(b => b.trim()).filter(Boolean) : []
   const isPreOrder = (product as any).stockStatus === 'pre-order'
-  const hasOutOfStock = badges.includes('out-of-stock') || (!product.inStock && !isPreOrder)
+  const hasOutOfStock = isProductSoldOut(product) || badges.includes('out-of-stock')
 
   return (
     <>

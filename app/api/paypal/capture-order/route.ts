@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { generateUniqueOrderNumber } from '@/lib/order-utils'
 import { sendOrderConfirmationEmail } from '@/lib/email'
+import { deductOrderStock } from '@/lib/order-stock'
 
 const PAYPAL_API_URL = process.env.PAYPAL_MODE === 'sandbox' 
   ? 'https://api-m.sandbox.paypal.com'
@@ -136,6 +137,15 @@ export async function POST(request: NextRequest) {
 
     console.log('Order saved to database:', order.orderNumber)
     console.log('Shipping address source:', finalShippingAddress ? (shippingInfo?.firstName ? 'user-provided' : 'paypal') : 'none')
+
+    try {
+      const stockResult = await deductOrderStock(order.id, 'paypal-capture-order')
+      if (!stockResult.success) {
+        console.warn('Stock deduction completed with issues:', stockResult.failures)
+      }
+    } catch (stockError) {
+      console.error('Failed to deduct stock after capture:', stockError)
+    }
 
     // Send order confirmation email
     try {
