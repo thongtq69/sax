@@ -1,8 +1,27 @@
+# Các thư mục môi trường và cài đặt
 .venv/
 .vscode/
+.git/
+node_modules/
+.next/
+out/
+build/
+
+# Các tệp cấu hình cho nền tảng khác
+render.yaml
+server.js
 scripts/
 *.md
-render.yaml
-# Ignore large original images if they are just for reference, 
-# but here they seem to be used in the site, so we can't ignore them.
-# We should probably suggest compressing them.
+CHANGELOG.md
+README.md
+
+# Các tệp rác hệ thống
+.DS_Store
+Thumbs.db
+*.log
+tsconfig.tsbuildinfo
+
+# Tệp máy ảo/môi trường khác
+.env
+.env.local
+.env.production
