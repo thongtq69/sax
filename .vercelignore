@@ -1,0 +1,8 @@
+.venv/
+.vscode/
+scripts/
+*.md
+render.yaml
+# Ignore large original images if they are just for reference, 
+# but here they seem to be used in the site, so we can't ignore them.
+# We should probably suggest compressing them.
