@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
+import { deductOrderStock } from '@/lib/order-stock'
 
 export const dynamic = 'force-dynamic'
 
@@ -125,6 +126,18 @@ export async function PATCH(request: NextRequest) {
       where: { id },
       data: { status },
     })
+
+    const shouldDeductStock = ['paid', 'processing', 'shipped', 'delivered'].includes(status)
+    if (shouldDeductStock) {
+      try {
+        const stockResult = await deductOrderStock(id, `admin-order-status-${status}`)
+        if (!stockResult.success) {
+          console.warn(`Stock deduction issues for order ${id}:`, stockResult.failures)
+        }
+      } catch (stockError) {
+        console.error(`Failed to deduct stock for order ${id}:`, stockError)
+      }
+    }
 
     // Send order confirmation email when status changes to "paid"
     if (status === 'paid' && existingOrder.status !== 'paid') {

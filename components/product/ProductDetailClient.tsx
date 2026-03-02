@@ -20,6 +20,7 @@ import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/
 import { Star, ChevronRight, ChevronLeft, Heart, Share2, Check, X, ZoomIn, Loader2, MessageCircle, Truck, Calculator, MapPin } from 'lucide-react'
 import { ConditionTooltip } from './ConditionTooltip'
 import { ConditionRating } from '@/lib/product-conditions'
+import { isProductSoldOut } from '@/lib/inventory'
 
 interface ProductDetailClientProps {
   product: Product
@@ -55,7 +56,7 @@ export function ProductDetailClient({ product }: ProductDetailClientProps) {
 
   // Check if product is sold out
   const isPreOrder = (product as any).stockStatus === 'pre-order'
-  const isSoldOut = (!product.inStock && !isPreOrder) || (product as any).stockStatus === 'sold-out' || ((product as any).stock === 0 && !isPreOrder)
+  const isSoldOut = isProductSoldOut(product)
 
   // Fetch user's default address and auto-calculate shipping
   useEffect(() => {
@@ -1253,7 +1254,20 @@ export function ProductDetailClient({ product }: ProductDetailClientProps) {
               ) : (
                 <div className="text-center py-6 md:py-8 text-gray-500">
                   <p className="mb-3 md:mb-4 text-sm md:text-base">Be the first to share your experience!</p>
-                  <Button variant="outline" size="sm" className="md:size-default">Write a Review</Button>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="md:size-default"
+                    onClick={() => {
+                      if (session?.user?.id) {
+                        router.push('/account/orders')
+                        return
+                      }
+                      router.push('/auth/login?callbackUrl=' + encodeURIComponent('/account/orders'))
+                    }}
+                  >
+                    Write a Review
+                  </Button>
                 </div>
               )}
             </div>
