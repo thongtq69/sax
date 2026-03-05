@@ -32,6 +32,8 @@ interface Order {
   orderNumber?: string // Custom order number (Vietnam timezone format)
   status: string
   total: number
+  discount?: number
+  couponCode?: string
   shippingAddress: {
     name?: string
     email?: string
@@ -353,8 +355,8 @@ export default function OrdersManagement() {
                     Shipping Address
                     {selectedOrder.shippingAddress?.addressStatus && (
                       <span className={`text-xs px-2 py-0.5 rounded ${selectedOrder.shippingAddress.addressStatus === 'confirmed'
-                          ? 'bg-green-100 text-green-700'
-                          : 'bg-yellow-100 text-yellow-700'
+                        ? 'bg-green-100 text-green-700'
+                        : 'bg-yellow-100 text-yellow-700'
                         }`}>
                         {selectedOrder.shippingAddress.addressStatus}
                       </span>
@@ -412,8 +414,8 @@ export default function OrdersManagement() {
                     Payment Info
                     {selectedOrder.billingAddress?.payerStatus && (
                       <span className={`text-xs px-2 py-0.5 rounded ${selectedOrder.billingAddress.payerStatus === 'verified'
-                          ? 'bg-green-100 text-green-700'
-                          : 'bg-yellow-100 text-yellow-700'
+                        ? 'bg-green-100 text-green-700'
+                        : 'bg-yellow-100 text-yellow-700'
                         }`}>
                         {selectedOrder.billingAddress.payerStatus}
                       </span>
@@ -455,8 +457,8 @@ export default function OrdersManagement() {
                           <div className="flex justify-between">
                             <span className="text-gray-600">Payment Status:</span>
                             <span className={`font-medium ${selectedOrder.billingAddress.paymentStatus === 'Completed'
-                                ? 'text-green-600'
-                                : 'text-yellow-600'
+                              ? 'text-green-600'
+                              : 'text-yellow-600'
                               }`}>
                               {selectedOrder.billingAddress.paymentStatus}
                             </span>
@@ -521,7 +523,7 @@ export default function OrdersManagement() {
                     <div key={item.id} className="p-3 flex justify-between items-center">
                       <div>
                         <p className="text-sm font-medium text-gray-900">{item.productName || 'Unknown Product'}</p>
-                        <p className="text-sm font-mono text-gray-500">Serial: {item.productSku || 'N/A'}</p>
+                        <p className="text-sm font-mono text-gray-500">SKU: {item.productSku || 'N/A'}</p>
                         <p className="text-sm text-gray-500">Qty: {item.quantity}</p>
                       </div>
                       <p className="font-semibold">${(item.price * item.quantity).toLocaleString()}</p>
@@ -529,6 +531,18 @@ export default function OrdersManagement() {
                   ))}
                 </div>
               </div>
+
+              {/* Discount Info */}
+              {selectedOrder.couponCode && (
+                <div className="bg-red-50 p-3 rounded-lg border border-red-100">
+                  <div className="flex justify-between items-center text-red-800">
+                    <span className="text-sm font-medium flex items-center gap-2">
+                      🏷️ Coupon Code: <span className="font-bold">{selectedOrder.couponCode}</span>
+                    </span>
+                    <span className="font-bold">-${(selectedOrder.discount || 0).toLocaleString()}</span>
+                  </div>
+                </div>
+              )}
 
               {/* Total */}
               <div className="pt-4 border-t space-y-2">

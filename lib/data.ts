@@ -26,6 +26,7 @@ export interface Product {
   productType?: 'new' | 'used'
   condition?: 'mint' | 'excellent' | 'very-good' | 'good' | 'fair'
   conditionNotes?: string
+  isVisible?: boolean
 }
 
 export interface Category {

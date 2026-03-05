@@ -60,6 +60,7 @@ export default function ProductsManagement() {
     conditionNotes?: string
     videoUrls?: string[]
     subBrand?: string
+    isVisible?: boolean
   }>({
     name: '',
     slug: '',
@@ -253,6 +254,7 @@ export default function ProductsManagement() {
         conditionNotes: (product as any).conditionNotes || '',
         shippingCost: (product as any).shippingCost || undefined,
         subBrand: (product as any).subBrand || '',
+        isVisible: product.isVisible !== false,
         specs: normalizedSpecs,
         videoUrls: (product as any).videoUrls?.length > 0
           ? [...(product as any).videoUrls, '', '', '', ''].slice(0, 4)
@@ -281,6 +283,7 @@ export default function ProductsManagement() {
         productType: 'new',
         condition: undefined,
         conditionNotes: '',
+        isVisible: true,
         videoUrls: ['', '', '', ''],
         description: '',
         specs: {
@@ -333,6 +336,7 @@ export default function ProductsManagement() {
         sku: formData.sku,
         rating: formData.rating || 0,
         reviewCount: formData.reviewCount || 0,
+        isVisible: formData.isVisible !== false,
       }
 
       console.log('Saving product with images:', productData.images)
@@ -606,6 +610,13 @@ export default function ProductsManagement() {
                           </span>
                         ) : (
                           <span className="text-gray-400 text-sm">—</span>
+                        )}
+                      </td>
+                      <td className="px-6 py-4">
+                        {product.isVisible === false && (
+                          <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-gray-200 text-gray-600 border border-gray-300">
+                            Hidden
+                          </span>
                         )}
                       </td>
                       <td className="px-6 py-4">
@@ -1049,6 +1060,25 @@ export default function ProductsManagement() {
                   />
                 </div>
               )}
+
+              <div className="col-span-2 pt-4 border-t">
+                <label className="flex items-center gap-3 cursor-pointer group">
+                  <div className="relative">
+                    <input
+                      type="checkbox"
+                      className="sr-only"
+                      checked={formData.isVisible !== false}
+                      onChange={(e) => setFormData({ ...formData, isVisible: e.target.checked })}
+                    />
+                    <div className={`block w-14 h-8 rounded-full transition-colors ${formData.isVisible !== false ? 'bg-primary' : 'bg-gray-300'}`}></div>
+                    <div className={`absolute left-1 top-1 bg-white w-6 h-6 rounded-full transition-transform ${formData.isVisible !== false ? 'translate-x-6' : 'translate-x-0'}`}></div>
+                  </div>
+                  <div>
+                    <span className="text-sm font-semibold text-gray-900 group-hover:text-primary transition-colors">Visible on Website</span>
+                    <p className="text-xs text-gray-500">Uncheck to hide this product from the storefront without deleting it</p>
+                  </div>
+                </label>
+              </div>
             </TabsContent>
 
             {/* Images Tab */}

@@ -53,6 +53,7 @@ model Product {
   inStock     Boolean      @default(true)
   stock       Int?         @default(0)
   stockStatus String?      @default("in-stock") // 'in-stock' | 'sold-out' | 'pre-order'
+  isVisible   Boolean      @default(true)
   productType String       @default("new")      // 'new' | 'used'
   condition   String?                           // 'mint' | 'excellent' | 'very-good' | 'good' | 'fair' (for used products)
   conditionNotes String?                        // Additional notes for used items

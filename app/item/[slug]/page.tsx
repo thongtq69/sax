@@ -54,8 +54,8 @@ async function findProductByItemParam(param: string, includeCategoryOnly = false
     }
 
   // 1. Try exact slug as given (should now match name-SN format)
-  const byExactSlug = await prisma.product.findUnique({
-    where: { slug: decodedParam },
+  const byExactSlug = await prisma.product.findFirst({
+    where: { slug: decodedParam, isVisible: true },
     include,
   })
   if (byExactSlug) return byExactSlug
@@ -67,16 +67,16 @@ async function findProductByItemParam(param: string, includeCategoryOnly = false
     const snCandidate = snMatch[2]
 
     // Try base slug
-    const byBaseSlug = await prisma.product.findUnique({
-      where: { slug: slugCandidate },
+    const byBaseSlug = await prisma.product.findFirst({
+      where: { slug: slugCandidate, isVisible: true },
       include,
     })
     if (byBaseSlug) return byBaseSlug
 
     // Try combined slug (new format name-SN)
     const combinedSlug = `${slugCandidate}-${snCandidate}`.toLowerCase()
-    const byCombinedSlug = await prisma.product.findUnique({
-      where: { slug: combinedSlug },
+    const byCombinedSlug = await prisma.product.findFirst({
+      where: { slug: combinedSlug, isVisible: true },
       include,
     })
     if (byCombinedSlug) return byCombinedSlug
@@ -87,15 +87,15 @@ async function findProductByItemParam(param: string, includeCategoryOnly = false
     if (!sku) continue
 
     // Try match by SKU/SN field directly
-    const bySku = await prisma.product.findUnique({
-      where: { sku },
+    const bySku = await prisma.product.findFirst({
+      where: { sku, isVisible: true },
       include,
     })
     if (bySku) return bySku
 
     // Case-insensitive SKU search if needed
     const bySkuInsensitive = await prisma.product.findFirst({
-      where: { sku: { equals: sku, mode: 'insensitive' } },
+      where: { sku: { equals: sku, mode: 'insensitive' }, isVisible: true },
       include,
     })
     if (bySkuInsensitive) return bySkuInsensitive
@@ -104,7 +104,10 @@ async function findProductByItemParam(param: string, includeCategoryOnly = false
     if (decodedParam.toLowerCase().endsWith(`-${sku.toLowerCase()}`)) {
       const guessedSlug = decodedParam.slice(0, -(sku.length + 1))
       if (guessedSlug) {
-        const byGuessedSlug = await prisma.product.findUnique({ where: { slug: guessedSlug }, include })
+        const byGuessedSlug = await prisma.product.findFirst({
+          where: { slug: guessedSlug, isVisible: true },
+          include
+        })
         if (byGuessedSlug) return byGuessedSlug
       }
     }

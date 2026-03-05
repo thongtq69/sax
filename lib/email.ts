@@ -314,6 +314,8 @@ interface OrderEmailData {
   shipping: number
   tax: number
   total: number
+  discount?: number
+  couponCode?: string
   shippingAddress?: ShippingAddress
   paymentMethod?: string
 }
@@ -327,6 +329,8 @@ export async function sendOrderConfirmationEmail(data: OrderEmailData) {
     subtotal,
     shipping,
     total,
+    discount,
+    couponCode,
   } = data
 
   // Get instrument name (first item or list all)
@@ -374,6 +378,11 @@ export async function sendOrderConfirmationEmail(data: OrderEmailData) {
           <p style="margin: 0 0 10px 0;">
             <strong>Shipping:</strong> $${shipping.toLocaleString()}
           </p>
+          ${discount && discount > 0 ? `
+          <p style="margin: 0 0 10px 0; color: #dc2626;">
+            <strong>Discount${couponCode ? ` (${couponCode})` : ''}:</strong> -$${discount.toLocaleString()}
+          </p>
+          ` : ''}
           <p style="margin: 0 0 10px 0;">
             <strong>Total:</strong> $${total.toLocaleString()}
           </p>

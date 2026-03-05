@@ -237,6 +237,7 @@ export function transformProduct(apiProduct: any) {
     productType: apiProduct.productType || 'new',
     condition: apiProduct.condition,
     conditionNotes: apiProduct.conditionNotes,
+    isVisible: apiProduct.isVisible !== false,
   }
 }
 

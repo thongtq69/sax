@@ -67,6 +67,7 @@ export async function PUT(
       rating,
       reviewCount,
       videoUrls,
+      isVisible,
     } = body
 
     // Build update data - always include images if provided (even empty array)
@@ -142,6 +143,7 @@ export async function PUT(
     if (sku) updateData.sku = sku
     if (rating !== undefined) updateData.rating = parseFloat(rating)
     if (reviewCount !== undefined) updateData.reviewCount = parseInt(reviewCount)
+    if (isVisible !== undefined) updateData.isVisible = isVisible
 
     // Handle product type and condition
     if (productType !== undefined) {

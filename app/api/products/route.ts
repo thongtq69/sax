@@ -28,6 +28,11 @@ export async function GET(request: NextRequest) {
       where.stockStatus = { not: 'archived' }
     }
 
+    const showHidden = searchParams.get('showHidden') === 'true'
+    if (!showHidden) {
+      where.isVisible = true
+    }
+
     if (category) {
       // Check if category is a slug or ID
       const categoryRecord = await prisma.category.findFirst({
@@ -167,6 +172,7 @@ export async function POST(request: NextRequest) {
       sku,
       rating,
       reviewCount,
+      isVisible,
     } = body
 
     // Fallbacks for missing fields to allow partial creation
@@ -250,6 +256,7 @@ export async function POST(request: NextRequest) {
         sku: finalSku,
         rating: rating ? parseFloat(rating) : 0,
         reviewCount: reviewCount ? parseInt(reviewCount) : 0,
+        isVisible: isVisible !== undefined ? isVisible : true,
       },
       include: {
         category: true,
