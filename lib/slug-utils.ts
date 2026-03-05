@@ -34,20 +34,51 @@ export function generateSlug(text: string): string {
   }
 
   let slug = text.toLowerCase()
-  
+
+  // Remove common SN markers including variants like s n, sn:, s/n etc.
+  // We use word boundaries and common patterns
+  slug = slug.replace(/\b(sn|s\/n|serial|ref|s\s+n)\b[:\-]?\s*/g, ' ')
+
+  // Also handle cases like SN0001 (no space)
+  slug = slug.replace(/\b(sn|s\/n|serial|ref)(\d+)/g, '$2')
+
   // Replace Vietnamese characters
   for (const [vietnamese, ascii] of Object.entries(vietnameseMap)) {
     slug = slug.replace(new RegExp(vietnamese, 'g'), ascii)
   }
-  
+
   // Replace special characters with hyphens
   slug = slug
     .replace(/[^a-z0-9\s-]/g, '') // Remove non-alphanumeric except spaces and hyphens
     .replace(/\s+/g, '-')          // Replace spaces with hyphens
     .replace(/-+/g, '-')           // Replace multiple hyphens with single
     .replace(/^-|-$/g, '')         // Remove leading/trailing hyphens
-  
+
   return slug
+}
+
+export function normalizeSerialNumber(serial?: string | null): string {
+  const raw = (serial || '').trim()
+  if (!raw || raw.length > 20) return ''
+
+  // Remove "SN", "S/N", "Serial", etc.
+  return raw.replace(/^\s*(SN|S\/N|Serial|Serial Number|Ref|S\s+N)\b\s*[:\-]?\s*/i, '')
+    .replace(/\s+/g, '-')
+    .replace(/[^A-Za-z0-9.-]/g, '')
+    .trim()
+}
+
+export function getProductSerialFromSpecs(specs?: any | null): string {
+  if (!specs) return ''
+  const candidates = [
+    specs['SN'], specs['sn'], specs['Serial'], specs['serial'],
+    specs['Serial Number'], specs['serial number']
+  ]
+  for (const value of candidates) {
+    const normalized = normalizeSerialNumber(typeof value === 'string' ? value : String(value || ''))
+    if (normalized) return normalized
+  }
+  return ''
 }
 
 /**
@@ -61,17 +92,17 @@ export async function generateUniqueSlug(
   const baseSlug = generateSlug(name)
   let slug = baseSlug
   let counter = 1
-  
+
   while (await checkExists(slug)) {
     slug = `${baseSlug}-${counter}`
     counter++
-    
+
     // Safety limit
     if (counter > 100) {
       slug = `${baseSlug}-${Date.now()}`
       break
     }
   }
-  
+
   return slug
 }

@@ -1,7 +1,7 @@
 import { notFound } from 'next/navigation'
 import type { Metadata } from 'next'
 import { prisma } from '@/lib/prisma'
-import { transformProduct } from '@/lib/api'
+import { getProductUrl, transformProduct } from '@/lib/api'
 import { getBrandDescriptionTemplate } from '@/lib/brand-description'
 import { StructuredData } from '@/components/seo/StructuredData'
 import { BrandPageClient } from '@/components/brand/BrandPageClient'
@@ -119,7 +119,7 @@ export default async function BrandPage({ params }: { params: { slug: string } }
     itemListElement: products.slice(0, 20).map((product, index) => ({
       '@type': 'ListItem',
       position: index + 1,
-      url: `${process.env.NEXT_PUBLIC_BASE_URL || 'https://jamessaxcorner.com'}/item/${product.sku}-${product.slug}`,
+      url: `${process.env.NEXT_PUBLIC_BASE_URL || 'https://jamessaxcorner.com'}${getProductUrl(product.sku, product.slug || '', (product as any).serialNumber)}`,
       name: product.name,
     })),
   }

@@ -12,43 +12,84 @@ export function generateProductSlug(name: string): string {
     .trim()
 }
 
-// Helper function to generate product URL with Serial and slug
-// Format: /item/Serial-slug (e.g., /item/C143LF-yamaha-yts-62-tenor-saxophone)
-// If no slug: /item/Serial (e.g., /item/A-9910042)
-export function getProductUrl(sku: string, slug: string): string {
-  if (!slug || slug.trim() === '') {
-    return `/item/${sku}`
-  }
-  return `/item/${sku}-${slug}`
+export function normalizeSerialNumber(serial?: string | null): string {
+  const raw = (serial || '').trim()
+  if (!raw) return ''
+
+  const withoutPrefix = raw.replace(/^\s*SN\s*[:\-]?\s*/i, '')
+  return withoutPrefix
+    .replace(/\s+/g, '-')
+    .replace(/[^A-Za-z0-9.-]/g, '')
+    .trim()
 }
 
-// Helper function to extract Serial from URL parameter
-export function extractSkuFromParam(param: string): string {
-  // Decode URL-encoded characters first
-  const decoded = decodeURIComponent(param)
+export function getProductSerialFromSpecs(specs?: Record<string, any> | null): string {
+  if (!specs) return ''
+  const candidates = [
+    specs['SN'],
+    specs['sn'],
+    specs['Serial'],
+    specs['serial'],
+    specs['Serial Number'],
+    specs['serial number'],
+  ]
 
-  // Serial is typically uppercase/numbers, slug is lowercase
-  // Examples: A-9910042-yanagisawa-alto, TEST-123-product-name, C143LF-yamaha-yts-62
-  const parts = decoded.split('-')
-  const serialParts: string[] = []
+  for (const value of candidates) {
+    const normalized = normalizeSerialNumber(typeof value === 'string' ? value : String(value || ''))
+    if (normalized) return normalized
+  }
 
-  for (let i = 0; i < parts.length; i++) {
-    const part = parts[i]
-    // If part starts with lowercase letter and we already have some serial parts, it's the start of the slug
-    if (part && /^[a-z]/.test(part) && serialParts.length > 0) {
-      break
+  return ''
+}
+
+// Helper function to generate product URL with slug
+// Format: /item/slug (where slug now includes name and SN)
+export function getProductUrl(sku: string, slug: string, serialNumber?: string): string {
+  const cleanSlug = (slug || '').trim()
+
+  if (cleanSlug) {
+    return `/item/${cleanSlug}`
+  }
+
+  const cleanSku = (sku || '').trim()
+  const cleanSerial = normalizeSerialNumber(serialNumber) || ''
+  return `/item/${encodeURIComponent(cleanSerial || cleanSku)}`
+}
+
+// Extract Serial candidates from URL param (supports both old and new URL formats)
+export function extractSkuCandidatesFromParam(param: string): string[] {
+  const decoded = decodeURIComponent((param || '').trim())
+  if (!decoded) return []
+
+  const candidates: string[] = []
+
+  // Legacy format: slug-SN-Serial
+  const snMarkerMatch = decoded.match(/-SN-(.+)$/i)
+  if (snMarkerMatch?.[1]) {
+    const normalizedSn = normalizeSerialNumber(snMarkerMatch[1])
+    if (normalizedSn) candidates.push(normalizedSn)
+  }
+
+  const parts = decoded.split('-').filter(Boolean)
+
+  // format: slug (which might end with SN)
+  if (parts.length > 0) {
+    const lastPart = parts[parts.length - 1]
+    if (/[0-9]/.test(lastPart)) {
+      candidates.push(lastPart)
+      candidates.push(lastPart.toUpperCase())
     }
-    // Add part to Serial
-    serialParts.push(part)
   }
 
-  // If we found serial parts, return them joined
-  if (serialParts.length > 0) {
-    return serialParts.join('-')
-  }
+  // Fallback candidates
+  candidates.push(decoded)
 
-  // Fallback: return the whole param
-  return decoded
+  return Array.from(new Set(candidates.filter(Boolean)))
+}
+
+// Backward-compatible single-value extractor
+export function extractSkuFromParam(param: string): string {
+  return extractSkuCandidatesFromParam(param)[0] || decodeURIComponent((param || '').trim())
 }
 
 // Helper function to fetch from API
@@ -171,6 +212,7 @@ export function transformProduct(apiProduct: any) {
     id: apiProduct.id,
     name: apiProduct.name,
     slug: apiProduct.slug,
+    serialNumber: getProductSerialFromSpecs(apiProduct.specs),
     brand: apiProduct.brand,
     subBrand: apiProduct.subBrand || apiProduct.specs?.['Model'] || apiProduct.specs?.['model'],
     price: apiProduct.price,
@@ -300,4 +342,3 @@ export async function deletePromo(id: string) {
     method: 'DELETE',
   })
 }
-

@@ -17,6 +17,7 @@ export interface Product {
   stockStatus?: 'in-stock' | 'sold-out' | 'pre-order'
   description: string
   specs?: Record<string, string>
+  serialNumber?: string
   included?: string[]
   warranty?: string
   sku: string

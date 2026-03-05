@@ -484,9 +484,9 @@ export function ProductDetailClient({ product }: ProductDetailClientProps) {
   const savings = 0 // Removed retailPrice, now using shippingCost
   const savingsPercent = 0
 
-  const handleNavigation = (sku: string, slug: string) => {
+  const handleNavigation = (sku: string, slug: string, serialNumber?: string) => {
     // Use router.push for instant navigation with Next.js prefetching
-    router.push(getProductUrl(sku, slug))
+    router.push(getProductUrl(sku, slug, serialNumber))
   }
 
   return (
@@ -500,7 +500,7 @@ export function ProductDetailClient({ product }: ProductDetailClientProps) {
             <Button
               variant="outline"
               size="sm"
-              onClick={() => handleNavigation(navigationProducts.prev!.sku, navigationProducts.prev!.slug)}
+              onClick={() => handleNavigation(navigationProducts.prev!.sku, navigationProducts.prev!.slug, navigationProducts.prev!.serialNumber || navigationProducts.prev!.specs?.SN)}
               className="group flex items-center gap-1 md:gap-2 transition-all hover:scale-105 text-xs md:text-sm h-8 md:h-9 px-2 md:px-3"
             >
               <ChevronLeft className="h-3.5 w-3.5 md:h-4 md:w-4 transition-transform group-hover:-translate-x-1" />
@@ -515,7 +515,7 @@ export function ProductDetailClient({ product }: ProductDetailClientProps) {
             <Button
               variant="outline"
               size="sm"
-              onClick={() => handleNavigation(navigationProducts.next!.sku, navigationProducts.next!.slug)}
+              onClick={() => handleNavigation(navigationProducts.next!.sku, navigationProducts.next!.slug, navigationProducts.next!.serialNumber || navigationProducts.next!.specs?.SN)}
               className="group flex items-center gap-1 md:gap-2 transition-all hover:scale-105 text-xs md:text-sm h-8 md:h-9 px-2 md:px-3"
             >
               <span className="hidden sm:inline">Next Product</span>
@@ -1315,7 +1315,7 @@ export function ProductDetailClient({ product }: ProductDetailClientProps) {
               {relatedProducts.map((item, index) => (
                 <Link
                   key={`${item.id}-${index}`}
-                  href={getProductUrl(item.sku, item.slug)}
+                  href={getProductUrl(item.sku, item.slug, item.serialNumber || item.specs?.SN)}
                   className="group snap-start bg-white rounded-xl md:rounded-2xl border border-gray-100 shadow-sm hover:shadow-lg transition-all duration-300 overflow-hidden min-w-[160px] w-[160px] sm:min-w-[240px] sm:w-[240px] md:min-w-0 md:w-auto"
                 >
                   <div className="relative aspect-[4/5] overflow-hidden">

@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
-import { generateSlug } from '@/lib/slug-utils'
+import { generateSlug, getProductSerialFromSpecs, normalizeSerialNumber } from '@/lib/slug-utils'
 
 export const dynamic = 'force-dynamic'
 
@@ -95,7 +95,15 @@ export async function PUT(
       updateData.slug = slug
     } else if (name) {
       // Auto-generate slug from name
-      const baseSlug = generateSlug(name)
+      const baseNameSlug = generateSlug(name)
+      const sn = getProductSerialFromSpecs(specs) || sku || ''
+      const cleanSN = normalizeSerialNumber(sn).toLowerCase()
+
+      let baseSlug = baseNameSlug
+      if (cleanSN && !baseNameSlug.toLowerCase().includes(cleanSN)) {
+        baseSlug = `${baseNameSlug}-${cleanSN}`
+      }
+
       let slugToCheck = baseSlug
       let counter = 1
 

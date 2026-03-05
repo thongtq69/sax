@@ -55,7 +55,7 @@ export function ProductCard({ product, index = 0 }: ProductCardProps) {
   const router = useRouter()
   const { data: session } = useSession()
 
-  const productUrl = getProductUrl(product.sku, product.slug)
+  const productUrl = getProductUrl(product.sku, product.slug, product.serialNumber || product.specs?.SN)
 
   const handleToggleWishlist = async (e: React.MouseEvent) => {
     e.preventDefault()

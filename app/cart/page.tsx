@@ -59,7 +59,7 @@ export default function CartPage() {
                   <div className="flex items-start justify-between">
                     <div>
                       <Link
-                        href={getProductUrl(item.sku, item.slug)}
+                        href={getProductUrl(item.sku, item.slug, (item as any).serialNumber || (item as any).specs?.SN)}
                         className="font-medium hover:text-primary"
                       >
                         {item.name}
@@ -177,4 +177,3 @@ export default function CartPage() {
     </div>
   )
 }
-

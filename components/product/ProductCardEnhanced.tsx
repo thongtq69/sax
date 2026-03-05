@@ -59,7 +59,7 @@ export function ProductCardEnhanced({
   const prefersReducedMotion = useReducedMotion()
 
   // Product URL with SEO-friendly slug
-  const productUrl = getProductUrl(product.sku, product.slug)
+  const productUrl = getProductUrl(product.sku, product.slug, product.serialNumber || product.specs?.SN)
 
   // Tilt effect hook
   const {

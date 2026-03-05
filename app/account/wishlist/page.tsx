@@ -23,6 +23,7 @@ interface WishlistProduct {
   inStock: boolean
   productType: string
   condition?: string
+  serialNumber?: string
 }
 
 export default function WishlistPage() {
@@ -135,7 +136,7 @@ export default function WishlistPage() {
                 className="bg-white rounded-xl shadow-sm p-4 flex gap-4 items-center hover:shadow-md transition-shadow"
               >
                 {/* Product Image */}
-                <Link href={getProductUrl(product.sku, product.slug)} className="shrink-0">
+                <Link href={getProductUrl(product.sku, product.slug, product.serialNumber)} className="shrink-0">
                   <div className="relative w-24 h-24 rounded-lg overflow-hidden bg-gray-100">
                     <SmartImage
                       src={product.images[0] || ''}
@@ -152,7 +153,7 @@ export default function WishlistPage() {
                     {product.brand}
                   </p>
                   <Link 
-                    href={getProductUrl(product.sku, product.slug)}
+                    href={getProductUrl(product.sku, product.slug, product.serialNumber)}
                     className="block font-semibold text-secondary hover:text-primary transition-colors line-clamp-2"
                   >
                     {product.name}

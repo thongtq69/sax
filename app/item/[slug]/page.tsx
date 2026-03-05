@@ -1,8 +1,8 @@
-import { notFound } from 'next/navigation'
+import { notFound, redirect } from 'next/navigation'
 import type { Metadata } from 'next'
 import Link from 'next/link'
 import { prisma } from '@/lib/prisma'
-import { transformProduct, extractSkuFromParam } from '@/lib/api'
+import { transformProduct, extractSkuCandidatesFromParam, getProductUrl } from '@/lib/api'
 import { generateSlug } from '@/lib/slug-utils'
 import { ProductDetailClient } from '@/components/product/ProductDetailClient'
 import { StructuredData } from '@/components/seo/StructuredData'
@@ -39,29 +39,87 @@ function generateProductSchema(product: any) {
   }
 }
 
+async function findProductByItemParam(param: string, includeCategoryOnly = false) {
+  const decodedParam = decodeURIComponent((param || '').trim())
+  const skuCandidates = extractSkuCandidatesFromParam(param)
+  const include = includeCategoryOnly
+    ? { category: true }
+    : {
+      category: {
+        include: {
+          subcategories: true,
+        },
+      },
+      subcategory: true,
+    }
+
+  // 1. Try exact slug as given (should now match name-SN format)
+  const byExactSlug = await prisma.product.findUnique({
+    where: { slug: decodedParam },
+    include,
+  })
+  if (byExactSlug) return byExactSlug
+
+  // 2. Handle legacy -SN- format
+  const snMatch = decodedParam.match(/^(.*)-SN-(.+)$/i)
+  if (snMatch?.[1]) {
+    const slugCandidate = snMatch[1]
+    const snCandidate = snMatch[2]
+
+    // Try base slug
+    const byBaseSlug = await prisma.product.findUnique({
+      where: { slug: slugCandidate },
+      include,
+    })
+    if (byBaseSlug) return byBaseSlug
+
+    // Try combined slug (new format name-SN)
+    const combinedSlug = `${slugCandidate}-${snCandidate}`.toLowerCase()
+    const byCombinedSlug = await prisma.product.findUnique({
+      where: { slug: combinedSlug },
+      include,
+    })
+    if (byCombinedSlug) return byCombinedSlug
+  }
+
+  // 3. Try candidates from URL
+  for (const sku of skuCandidates) {
+    if (!sku) continue
+
+    // Try match by SKU/SN field directly
+    const bySku = await prisma.product.findUnique({
+      where: { sku },
+      include,
+    })
+    if (bySku) return bySku
+
+    // Case-insensitive SKU search if needed
+    const bySkuInsensitive = await prisma.product.findFirst({
+      where: { sku: { equals: sku, mode: 'insensitive' } },
+      include,
+    })
+    if (bySkuInsensitive) return bySkuInsensitive
+
+    // If param ends with sku, try the prefix as slug
+    if (decodedParam.toLowerCase().endsWith(`-${sku.toLowerCase()}`)) {
+      const guessedSlug = decodedParam.slice(0, -(sku.length + 1))
+      if (guessedSlug) {
+        const byGuessedSlug = await prisma.product.findUnique({ where: { slug: guessedSlug }, include })
+        if (byGuessedSlug) return byGuessedSlug
+      }
+    }
+  }
+
+  return null
+}
+
 export async function generateMetadata({
   params,
 }: {
   params: { slug: string }
 }): Promise<Metadata> {
   try {
-    const sku = extractSkuFromParam(params.slug)
-
-    let apiProduct = await prisma.product.findUnique({
-      where: { sku },
-      include: {
-        category: true,
-      },
-    })
-
-    if (!apiProduct) {
-      apiProduct = await prisma.product.findUnique({
-        where: { slug: params.slug },
-        include: {
-          category: true,
-        },
-      })
-    }
+    const apiProduct = await findProductByItemParam(params.slug, true)
 
     if (!apiProduct) {
       return {
@@ -110,7 +168,7 @@ export async function generateMetadata({
         images: product.images.length > 0 ? [product.images[0]] : [],
       },
       alternates: {
-        canonical: `${process.env.NEXT_PUBLIC_BASE_URL || 'https://jamessaxcorner.com'}/item/${product.sku}${product.slug ? '-' + product.slug : ''}`,
+        canonical: `${process.env.NEXT_PUBLIC_BASE_URL || 'https://jamessaxcorner.com'}${getProductUrl(product.sku, product.slug, product.serialNumber)}`,
       },
     }
   } catch (error) {
@@ -127,43 +185,21 @@ export default async function ProductPage({
   params: { slug: string }
 }) {
   try {
-    // New URL format: /item/Serial-slug (e.g., /item/C143LF-yamaha-yts-62-tenor-saxophone)
-    // Extract Serial from the param and look up product by Serial
-    const sku = extractSkuFromParam(params.slug)
-
-    // First try to find by Serial (new format)
-    let apiProduct = await prisma.product.findUnique({
-      where: { sku },
-      include: {
-        category: {
-          include: {
-            subcategories: true,
-          },
-        },
-        subcategory: true,
-      },
-    })
-
-    // Fallback: try to find by slug (old format for backwards compatibility)
-    if (!apiProduct) {
-      apiProduct = await prisma.product.findUnique({
-        where: { slug: params.slug },
-        include: {
-          category: {
-            include: {
-              subcategories: true,
-            },
-          },
-          subcategory: true,
-        },
-      })
-    }
+    const apiProduct = await findProductByItemParam(params.slug)
 
     if (!apiProduct) {
       notFound()
     }
 
     const product = transformProduct(apiProduct)
+    const canonicalPath = getProductUrl(product.sku, product.slug, product.serialNumber)
+    const canonicalParam = decodeURIComponent(canonicalPath.replace('/item/', ''))
+    const currentParam = decodeURIComponent(params.slug)
+
+    if (currentParam !== canonicalParam) {
+      redirect(canonicalPath)
+    }
+
     const brandName = product.brand || ''
     const brandSlug = brandName ? generateSlug(brandName) : ''
     const productSchema = generateProductSchema(product)

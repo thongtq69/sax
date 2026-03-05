@@ -508,7 +508,7 @@ function ListingCard({
     isCompared: boolean
     onToggleCompare: (id: string) => void
 }) {
-    const productUrl = getProductUrl(product.sku, product.slug)
+    const productUrl = getProductUrl(product.sku, product.slug, product.serialNumber || product.specs?.SN)
     const condition = (product as any).condition
     const conditionLabel = conditionLabels[condition] || null
     const productType = (product as any).productType || 'new'
@@ -656,7 +656,7 @@ function GridCard({
     isCompared: boolean
     onToggleCompare: (id: string) => void
 }) {
-    const productUrl = getProductUrl(product.sku, product.slug)
+    const productUrl = getProductUrl(product.sku, product.slug, product.serialNumber || product.specs?.SN)
     const condition = (product as any).condition
     const conditionLabel = conditionLabels[condition] || null
     const productType = (product as any).productType || 'new'
@@ -766,7 +766,7 @@ function FeaturedListing({
     isCompared: boolean
     onToggleCompare: (id: string) => void
 }) {
-    const productUrl = getProductUrl(product.sku, product.slug)
+    const productUrl = getProductUrl(product.sku, product.slug, product.serialNumber || product.specs?.SN)
     const isSoldOut = isProductSoldOut(product)
 
     return (
@@ -837,7 +837,7 @@ function CompareSection({ products, onClear }: { products: Product[]; onClear: (
                             <th className="text-left p-3 text-xs uppercase text-muted-foreground font-semibold">Field</th>
                             {products.map((product) => (
                                 <th key={product.id} className="text-left p-3 text-sm font-semibold text-secondary">
-                                    <Link href={getProductUrl(product.sku, product.slug)} className="hover:text-primary transition-colors">
+                                    <Link href={getProductUrl(product.sku, product.slug, product.serialNumber || product.specs?.SN)} className="hover:text-primary transition-colors">
                                         {product.sku}
                                     </Link>
                                 </th>
@@ -1037,7 +1037,7 @@ function SimilarProductsSection({ brand, products, isLoading }: { brand: string;
             ) : products.length > 0 ? (
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
                     {products.map((product) => {
-                        const url = getProductUrl(product.sku, product.slug)
+                        const url = getProductUrl(product.sku, product.slug, product.serialNumber || product.specs?.SN)
                         return (
                             <Link key={product.id} href={url} className="border border-border bg-white hover:border-primary/40 transition-colors">
                                 <div className="aspect-square bg-muted/20 overflow-hidden">

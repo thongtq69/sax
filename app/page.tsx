@@ -1,5 +1,5 @@
 import { prisma } from '@/lib/prisma'
-import { transformProduct } from '@/lib/api'
+import { getProductUrl, transformProduct } from '@/lib/api'
 import { StructuredData, organizationSchema, websiteSchema, localBusinessSchema } from '@/components/seo/StructuredData'
 import { HomePageClient, type HomePageData } from '@/components/home/HomePageClient'
 import type { Review } from '@/lib/reviews'
@@ -119,7 +119,7 @@ export default async function HomePage() {
         <ul>
           {data.allProducts.slice(0, 20).map((product) => (
             <li key={product.id}>
-              <a href={`/item/${product.sku}${product.slug ? '-' + product.slug : ''}`}>
+              <a href={getProductUrl(product.sku, product.slug || '', (product as any).serialNumber || (product as any).specs?.SN)}>
                 {product.name} - {product.brand} - ${product.price.toLocaleString()}
               </a>
             </li>

@@ -1,6 +1,7 @@
 import { auth } from '@/lib/auth'
 import { redirect } from 'next/navigation'
 import { prisma } from '@/lib/prisma'
+import { getProductUrl } from '@/lib/api'
 import { ShoppingBag, Package, Clock, Truck, CheckCircle, XCircle, CreditCard } from 'lucide-react'
 import Link from 'next/link'
 
@@ -38,7 +39,7 @@ export default async function OrdersPage() {
   const productIds = orders.flatMap(order => order.items.map(item => item.productId))
   const products = await prisma.product.findMany({
     where: { id: { in: productIds } },
-    select: { id: true, name: true, images: true, slug: true, sku: true }
+    select: { id: true, name: true, images: true, slug: true, sku: true, specs: true }
   })
   const productMap = new Map(products.map(p => [p.id, p]))
 
@@ -118,7 +119,7 @@ export default async function OrdersPage() {
                               <div className="flex-1 min-w-0">
                                 {product ? (
                                   <Link
-                                    href={`/item/${product.sku}-${product.slug}`}
+                                    href={getProductUrl(product.sku, product.slug || '', typeof product.specs === 'object' && product.specs ? (product.specs as any).SN : '')}
                                     className="font-medium text-gray-900 hover:text-blue-600 truncate block"
                                   >
                                     {product.name}

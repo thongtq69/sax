@@ -1,10 +1,9 @@
 import { redirect, notFound } from 'next/navigation'
 import { prisma } from '@/lib/prisma'
-import { extractSkuFromParam } from '@/lib/api'
+import { extractSkuFromParam, getProductUrl } from '@/lib/api'
 
-// This page redirects old Serial-based URLs to new slug-based URLs
-// Old: /item/serial/XXXXX-product-name
-// New: /item/serial-slug
+// This page redirects Serial-based URLs to canonical product URLs
+// Canonical format: /item/product-name-Serial
 
 export default async function ProductBySerialPage({
   params,
@@ -17,7 +16,7 @@ export default async function ProductBySerialPage({
 
     const product = await prisma.product.findUnique({
       where: { sku: serial },
-      select: { slug: true, sku: true },
+      select: { slug: true, sku: true, specs: true },
     })
 
     if (!product) {
@@ -25,7 +24,10 @@ export default async function ProductBySerialPage({
     }
 
     // Redirect to new item URL
-    redirect(`/item/${product.sku}-${product.slug}`)
+    const sn = typeof product.specs === 'object' && product.specs && 'SN' in (product.specs as Record<string, unknown>)
+      ? String((product.specs as Record<string, unknown>).SN || '')
+      : ''
+    redirect(getProductUrl(product.sku, product.slug, sn))
   } catch (error) {
     console.error('Error fetching product:', error)
     notFound()

@@ -559,7 +559,7 @@ export default function ProductsManagement() {
                     <tr key={product.id} className="hover:bg-gray-50 transition-colors">
                       <td className="px-6 py-4">
                         <div className="flex items-center gap-4">
-                          <Link href={getProductUrl(product.sku, product.slug)} target="_blank" className="h-14 w-14 rounded-lg overflow-hidden bg-gray-100 flex-shrink-0 hover:opacity-80 transition-opacity cursor-pointer">
+                          <Link href={getProductUrl(product.sku, product.slug, product.serialNumber || product.specs?.SN)} target="_blank" className="h-14 w-14 rounded-lg overflow-hidden bg-gray-100 flex-shrink-0 hover:opacity-80 transition-opacity cursor-pointer">
                             {product.images?.[0] ? (
                               <Image
                                 src={product.images[0]}
@@ -575,7 +575,7 @@ export default function ProductsManagement() {
                             )}
                           </Link>
                           <div className="min-w-0">
-                            <Link href={getProductUrl(product.sku, product.slug)} target="_blank" className="font-medium text-gray-900 truncate max-w-[300px] hover:text-primary hover:underline cursor-pointer block">{product.name}</Link>
+                            <Link href={getProductUrl(product.sku, product.slug, product.serialNumber || product.specs?.SN)} target="_blank" className="font-medium text-gray-900 truncate max-w-[300px] hover:text-primary hover:underline cursor-pointer block">{product.name}</Link>
                             <div className="text-sm text-gray-500">{product.brand} • {product.sku}</div>
                           </div>
                         </div>
@@ -610,7 +610,7 @@ export default function ProductsManagement() {
                       </td>
                       <td className="px-6 py-4">
                         <div className="flex items-center justify-end gap-1">
-                          <Link href={getProductUrl(product.sku, product.slug)} target="_blank">
+                          <Link href={getProductUrl(product.sku, product.slug, product.serialNumber || product.specs?.SN)} target="_blank">
                             <Button variant="ghost" size="sm" title="View">
                               <Eye className="h-4 w-4" />
                             </Button>
@@ -667,7 +667,7 @@ export default function ProductsManagement() {
                     </span>
                   )}
                   <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
-                    <Link href={getProductUrl(product.sku, product.slug)} target="_blank">
+                    <Link href={getProductUrl(product.sku, product.slug, product.serialNumber || product.specs?.SN)} target="_blank">
                       <Button size="sm" variant="secondary">
                         <Eye className="h-4 w-4" />
                       </Button>
@@ -760,7 +760,7 @@ export default function ProductsManagement() {
                       className="font-mono"
                     />
                   </div>
-                  <p className="text-xs text-gray-500 mt-1">Product SKU used in URL and internal lookup</p>
+                  <p className="text-xs text-gray-500 mt-1">Product SKU used for internal lookup</p>
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -938,7 +938,7 @@ export default function ProductsManagement() {
                   </p>
                   {(formData.slug || formData.sku) && (
                     <p className="text-xs text-blue-600 mt-1">
-                      URL: /item/{formData.sku || 'SKU'}{formData.slug ? `-${formData.slug}` : ''}
+                      URL: {getProductUrl(String(formData.sku || ''), String(formData.slug || ''), String((formData.specs?.['SN'] as string) || ''))}
                     </p>
                   )}
                 </div>

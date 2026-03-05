@@ -1,5 +1,6 @@
 import { MetadataRoute } from 'next'
 import { prisma } from '@/lib/prisma'
+import { getProductUrl } from '@/lib/api'
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'https://jamessaxcorner.com'
@@ -59,10 +60,10 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   try {
     // Dynamic product pages - fetch directly from DB for reliability
     const products = await prisma.product.findMany({
-      select: { sku: true, slug: true, updatedAt: true },
+      select: { sku: true, slug: true, specs: true, updatedAt: true },
     })
     const productPages = products.map((product) => ({
-      url: `${baseUrl}/item/${product.sku}${product.slug ? '-' + product.slug : ''}`,
+      url: `${baseUrl}${getProductUrl(product.sku, product.slug || '', typeof product.specs === 'object' && product.specs ? (product.specs as any).SN : '')}`,
       lastModified: new Date(product.updatedAt || new Date()),
       changeFrequency: 'weekly' as const,
       priority: 0.8,
