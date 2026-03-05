@@ -3,7 +3,7 @@ import type { Metadata } from 'next'
 import Link from 'next/link'
 import { prisma } from '@/lib/prisma'
 import { transformProduct, extractSkuCandidatesFromParam, getProductUrl } from '@/lib/api'
-import { generateSlug } from '@/lib/slug-utils'
+import { generateSlug, getModelSlug } from '@/lib/slug-utils'
 import { ProductDetailClient } from '@/components/product/ProductDetailClient'
 import { StructuredData } from '@/components/seo/StructuredData'
 import { ChevronRight, Home } from 'lucide-react'
@@ -53,18 +53,14 @@ async function findProductByItemParam(param: string, includeCategoryOnly = false
       subcategory: true,
     }
 
-  // 1. Try exact slug as given (case-insensitive)
+  // 1. Try exact slug as given (case-insensitive) 
   const byExactSlug = await prisma.product.findFirst({
     where: {
-      slug: { equals: decodedParam, mode: 'insensitive' },
-      OR: [
-        { isVisible: true },
-        { isVisible: { isSet: false } } // Handle documents where isVisible isn't defined
-      ]
+      slug: { equals: decodedParam, mode: 'insensitive' }
     },
     include,
   })
-  if (byExactSlug) return byExactSlug
+  if (byExactSlug && (byExactSlug.isVisible !== false)) return byExactSlug
 
   // 2. Handle legacy -SN- format
   const snMatch = decodedParam.match(/^(.*)-SN-(.+)$/i)
@@ -74,49 +70,34 @@ async function findProductByItemParam(param: string, includeCategoryOnly = false
 
     // Try base slug
     const byBaseSlug = await prisma.product.findFirst({
-      where: { slug: slugCandidate, isVisible: true },
+      where: { slug: { equals: slugCandidate, mode: 'insensitive' } },
       include,
     })
-    if (byBaseSlug) return byBaseSlug
+    if (byBaseSlug && (byBaseSlug.isVisible !== false)) return byBaseSlug
 
     // Try combined slug (new format name-SN)
-    const combinedSlug = `${slugCandidate}-${snCandidate}`.toLowerCase()
+    const combinedSlug = `${slugCandidate}-${snCandidate}`
     const byCombinedSlug = await prisma.product.findFirst({
-      where: { slug: combinedSlug, isVisible: true },
+      where: { slug: { equals: combinedSlug, mode: 'insensitive' } },
       include,
     })
-    if (byCombinedSlug) return byCombinedSlug
+    if (byCombinedSlug && (byCombinedSlug.isVisible !== false)) return byCombinedSlug
   }
 
-  // 3. Try candidates from URL
+  // 3. Try candidates from URL (SKU/SN)
   for (const sku of skuCandidates) {
     if (!sku) continue
 
-    // Try match by SKU/SN field directly
     const bySku = await prisma.product.findFirst({
-      where: { sku, isVisible: true },
+      where: {
+        OR: [
+          { sku: { equals: sku, mode: 'insensitive' } },
+          { slug: { contains: sku, mode: 'insensitive' } }
+        ]
+      },
       include,
     })
-    if (bySku) return bySku
-
-    // Case-insensitive SKU search if needed
-    const bySkuInsensitive = await prisma.product.findFirst({
-      where: { sku: { equals: sku, mode: 'insensitive' }, isVisible: true },
-      include,
-    })
-    if (bySkuInsensitive) return bySkuInsensitive
-
-    // If param ends with sku, try the prefix as slug
-    if (decodedParam.toLowerCase().endsWith(`-${sku.toLowerCase()}`)) {
-      const guessedSlug = decodedParam.slice(0, -(sku.length + 1))
-      if (guessedSlug) {
-        const byGuessedSlug = await prisma.product.findFirst({
-          where: { slug: guessedSlug, isVisible: true },
-          include
-        })
-        if (byGuessedSlug) return byGuessedSlug
-      }
-    }
+    if (bySku && (bySku.isVisible !== false)) return bySku
   }
 
   return null
@@ -236,8 +217,8 @@ export default async function ProductPage({
             ...(product.subBrand ? [{
               "@type": "ListItem",
               "position": 3,
-              "name": product.subBrand,
-              "item": `${process.env.NEXT_PUBLIC_BASE_URL || "https://jamessaxcorner.com"}/p/${encodeURIComponent(product.subBrand.toLowerCase().replace(/\s+/g, '-'))}`
+              "name": `${product.brand} ${product.subBrand} ${product.subcategoryName || ''} saxophone`.replace(/\s+/g, ' ').trim(),
+              "item": `${process.env.NEXT_PUBLIC_BASE_URL || "https://jamessaxcorner.com"}/p/${getModelSlug(product.brand, product.subBrand, product.subcategoryName)}`
             }] : [])
           ]
         }} />
@@ -261,8 +242,8 @@ export default async function ProductPage({
               {product.subBrand && (
                 <>
                   <ChevronRight className="h-3 w-3 md:h-4 md:w-4 text-muted-foreground/50 flex-shrink-0" />
-                  <Link href={`/p/${encodeURIComponent(product.subBrand.toLowerCase().replace(/\s+/g, '-'))}`} className="text-muted-foreground hover:text-primary transition-colors whitespace-nowrap">
-                    {product.subBrand}
+                  <Link href={`/p/${getModelSlug(product.brand, product.subBrand, product.subcategoryName)}`} className="text-muted-foreground hover:text-primary transition-colors whitespace-nowrap">
+                    {product.brand} {product.subBrand} {product.subcategoryName || ''} saxophone
                   </Link>
                 </>
               )}

@@ -204,11 +204,11 @@ export function ModelPageClient({ data, brandSlug, modelSlug }: ModelPageClientP
                         <Link href={`/brand/${brandSlug}`} className="text-muted-foreground hover:text-primary transition-colors whitespace-nowrap">
                             {data.brand}
                         </Link>
-                            <ChevronRight className="h-3 w-3 md:h-4 md:w-4 text-muted-foreground/50 flex-shrink-0" />
-                            <span className="text-secondary font-medium whitespace-nowrap" id="main-content">
-                                {data.brand} {data.model}
-                            </span>
-                        </nav>
+                        <ChevronRight className="h-3 w-3 md:h-4 md:w-4 text-muted-foreground/50 flex-shrink-0" />
+                        <span className="text-secondary font-medium whitespace-nowrap" id="main-content">
+                            {data.model}
+                        </span>
+                    </nav>
                 </div>
             </div>
 
@@ -221,7 +221,7 @@ export function ModelPageClient({ data, brandSlug, modelSlug }: ModelPageClientP
                             <div className="w-16 h-16 md:w-20 md:h-20 flex-shrink-0 border border-border overflow-hidden bg-muted/30">
                                 <Image
                                     src={data.representativeImage}
-                                    alt={`${data.brand} ${data.model}`}
+                                    alt={data.model}
                                     width={80}
                                     height={80}
                                     className="object-cover w-full h-full"
@@ -232,7 +232,7 @@ export function ModelPageClient({ data, brandSlug, modelSlug }: ModelPageClientP
                         <div className="flex-1 min-w-0">
                             {/* Model Name */}
                             <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold text-secondary tracking-tight">
-                                {data.brand} {data.model}
+                                {data.model}
                             </h1>
 
                             {/* Categories */}
@@ -362,31 +362,33 @@ export function ModelPageClient({ data, brandSlug, modelSlug }: ModelPageClientP
                 </section>
             </div>
 
-            {compareIds.length > 0 && (
-                <div className="fixed bottom-4 left-1/2 -translate-x-1/2 z-30 w-[calc(100%-2rem)] max-w-xl">
-                    <div className="bg-secondary text-white shadow-xl border border-secondary/80 px-4 py-3 flex items-center justify-between gap-3">
-                        <p className="text-sm">
-                            Compare <span className="font-bold">{compareIds.length}</span>/4 listings
-                        </p>
-                        <div className="flex items-center gap-2">
-                            <Button
-                                type="button"
-                                variant="outline"
-                                className="h-8 px-3 text-xs border-white/30 text-white hover:bg-white/10"
-                                onClick={clearCompare}
-                            >
-                                Clear
-                            </Button>
-                            <a href="#compare-listings">
-                                <Button type="button" className="h-8 px-3 text-xs bg-white text-secondary hover:bg-gray-100">
-                                    Compare Now
+            {
+                compareIds.length > 0 && (
+                    <div className="fixed bottom-4 left-1/2 -translate-x-1/2 z-30 w-[calc(100%-2rem)] max-w-xl">
+                        <div className="bg-secondary text-white shadow-xl border border-secondary/80 px-4 py-3 flex items-center justify-between gap-3">
+                            <p className="text-sm">
+                                Compare <span className="font-bold">{compareIds.length}</span>/4 listings
+                            </p>
+                            <div className="flex items-center gap-2">
+                                <Button
+                                    type="button"
+                                    variant="outline"
+                                    className="h-8 px-3 text-xs border-white/30 text-white hover:bg-white/10"
+                                    onClick={clearCompare}
+                                >
+                                    Clear
                                 </Button>
-                            </a>
+                                <a href="#compare-listings">
+                                    <Button type="button" className="h-8 px-3 text-xs bg-white text-secondary hover:bg-gray-100">
+                                        Compare Now
+                                    </Button>
+                                </a>
+                            </div>
                         </div>
                     </div>
-                </div>
-            )}
-        </div>
+                )
+            }
+        </div >
     )
 }
 

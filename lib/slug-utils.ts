@@ -106,3 +106,16 @@ export async function generateUniqueSlug(
 
   return slug
 }
+export function getModelSlug(brand: string, model: string, subcategory?: string | null): string {
+  const parts = [brand, model]
+  if (subcategory) {
+    parts.push(subcategory)
+  }
+  // User specifically wants "saxophone" at the end if not already there or to match their pattern
+  // Usually subcategory already includes "Saxophone" or similar, but let's be safe
+  const base = parts.join(' ').toLowerCase()
+  if (!base.includes('saxophone')) {
+    parts.push('saxophone')
+  }
+  return generateSlug(parts.join(' '))
+}

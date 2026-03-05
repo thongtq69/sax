@@ -16,6 +16,7 @@ import {
 import { Input } from '@/components/ui/input'
 import type { Product } from '@/lib/data'
 import { ChevronLeft, ChevronRight, Search, Tag } from 'lucide-react'
+import { getModelSlug } from '@/lib/slug-utils'
 
 type SortOption = 'featured' | 'price-low' | 'price-high' | 'rating' | 'name'
 
@@ -312,7 +313,8 @@ export function BrandPageClient({
               <div className="flex flex-wrap gap-2">
                 {models.slice(0, 16).map((model) => {
                   const active = selectedModels.includes(model.name)
-                  const modelSlug = encodeURIComponent(model.name.toLowerCase().replace(/\s+/g, '-'))
+                  const subcategory = products.find(p => (p as any).subBrand === model.name)?.subcategoryName || ''
+                  const modelSlug = getModelSlug(brandName, model.name, subcategory)
                   return (
                     <button
                       key={model.name}
@@ -324,7 +326,7 @@ export function BrandPageClient({
                         }`}
                       title={`Browse model page: /p/${modelSlug}`}
                     >
-                      {model.name} ({model.count})
+                      {brandName} {model.name} {subcategory} saxophone
                     </button>
                   )
                 })}

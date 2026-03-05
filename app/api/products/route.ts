@@ -30,7 +30,7 @@ export async function GET(request: NextRequest) {
 
     const showHidden = searchParams.get('showHidden') === 'true'
     if (!showHidden) {
-      where.isVisible = true
+      where.isVisible = { not: false }
     }
 
     if (category) {

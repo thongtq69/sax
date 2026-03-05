@@ -7,12 +7,44 @@ import { ModelPageClient } from '@/components/model/ModelPageClient'
 import { StructuredData } from '@/components/seo/StructuredData'
 
 // Helper: find products matching a model slug (formerly brand + model)
-// Tries multiple matching strategies since hyphens can be part of actual model names (e.g., YAS-62)
 async function findModelProductsBySlug(slug: string) {
-    const modelDecoded = decodeURIComponent(slug)
+    const modelDecoded = decodeURIComponent(slug).toLowerCase()
 
-    // Strategy 1: Try with raw decoded slug (hyphens preserved) - handles "YAS-62"
-    let products = await prisma.product.findMany({
+    // 1. Try strategy for new format: brand-model-subcategory-saxophone
+    // Fetch relevant products to filter in memory
+    const allProducts = await prisma.product.findMany({
+        where: {
+            stockStatus: { not: 'archived' },
+        },
+        include: {
+            category: { select: { id: true, name: true, slug: true } },
+            subcategory: { select: { id: true, name: true, slug: true } },
+            reviews: { select: { rating: true } },
+        },
+    })
+
+    const matches = allProducts.filter(p => {
+        const brandMatch = modelDecoded.includes(p.brand.toLowerCase())
+        const modelMatch = p.subBrand && modelDecoded.includes(p.subBrand.toLowerCase().replace(/\s+/g, '-'))
+
+        // Cách 1: Khớp chính xác slug đầy đủ
+        const pSlug = generateSlug(`${p.brand} ${p.subBrand} ${p.subcategory?.name || ''} saxophone`)
+        if (pSlug === modelDecoded) return true
+
+        // Cách 2: Khớp tên model gốc (vd: a-900)
+        const simpleModelSlug = (p.subBrand || '').toLowerCase().replace(/\s+/g, '-')
+        if (simpleModelSlug === modelDecoded) return true
+
+        // Cách 3: Nếu slug chứa cả thương hiệu và model (vd: yanagisawa-a-900...)
+        if (brandMatch && modelMatch) return true
+
+        return false
+    })
+
+    if (matches.length > 0) return matches
+
+    // 2. Legacy fallback: Direct match subBrand
+    const legacyMatches = await prisma.product.findMany({
         where: {
             subBrand: { mode: 'insensitive', equals: modelDecoded },
             stockStatus: { not: 'archived' },
@@ -22,43 +54,9 @@ async function findModelProductsBySlug(slug: string) {
             subcategory: { select: { id: true, name: true, slug: true } },
             reviews: { select: { rating: true } },
         },
-        orderBy: { createdAt: 'desc' },
     })
 
-    if (products.length > 0) return products
-
-    // Strategy 2: Replace hyphens with spaces - handles "reference 54" -> "Reference 54"
-    const modelWithSpaces = modelDecoded.replace(/-/g, ' ')
-    products = await prisma.product.findMany({
-        where: {
-            subBrand: { mode: 'insensitive', equals: modelWithSpaces },
-            stockStatus: { not: 'archived' },
-        },
-        include: {
-            category: { select: { id: true, name: true, slug: true } },
-            subcategory: { select: { id: true, name: true, slug: true } },
-            reviews: { select: { rating: true } },
-        },
-        orderBy: { createdAt: 'desc' },
-    })
-
-    if (products.length > 0) return products
-
-    // Strategy 3: Contains match with raw slug - partial match
-    products = await prisma.product.findMany({
-        where: {
-            subBrand: { mode: 'insensitive', contains: modelDecoded },
-            stockStatus: { not: 'archived' },
-        },
-        include: {
-            category: { select: { id: true, name: true, slug: true } },
-            subcategory: { select: { id: true, name: true, slug: true } },
-            reviews: { select: { rating: true } },
-        },
-        orderBy: { createdAt: 'desc' },
-    })
-
-    return products
+    return legacyMatches
 }
 
 export async function generateMetadata({
@@ -66,17 +64,16 @@ export async function generateMetadata({
 }: {
     params: { slug: string }
 }): Promise<Metadata> {
-    // Find one product matching to get real brand/model names
     const sampleProducts = await findModelProductsBySlug(params.slug)
     const sampleProduct = sampleProducts.length > 0 ? sampleProducts[0] : null
 
     const modelName = decodeURIComponent(params.slug).replace(/-/g, ' ')
-
     const displayBrand = sampleProduct?.brand || ''
     const displayModel = sampleProduct?.subBrand || modelName
-    const category = sampleProduct?.category?.name || 'Instrument'
-    const title = displayBrand ? `${displayBrand} ${displayModel}` : displayModel
-    const description = `Browse all ${title} listings at James Sax Corner. Find the best deals on new and used ${title} ${category.toLowerCase()}s.`
+    const subcategory = sampleProduct?.subcategory?.name || ''
+
+    const title = `${displayBrand} ${displayModel} ${subcategory} Saxophone`.replace(/\s+/g, ' ').trim()
+    const description = `Browse all ${title} listings at James Sax Corner. Find the best deals on new and used ${title}.`
 
     return {
         title,
@@ -98,7 +95,6 @@ export default async function ModelPage({
 }: {
     params: { slug: string }
 }) {
-    // Find all products for this model slug
     const apiProducts = await findModelProductsBySlug(params.slug)
 
     if (apiProducts.length === 0) {
@@ -110,6 +106,7 @@ export default async function ModelPage({
     const brandSlug = generateSlug(displayBrand)
     const modelName = decodeURIComponent(params.slug).replace(/-/g, ' ')
     const displayModel = apiProducts[0].subBrand || modelName
+    const subcategoryName = apiProducts[0]?.subcategory?.name || ''
 
     // Calculate stats
     const prices = products.map(p => p.price).filter(p => p > 0)
@@ -125,13 +122,9 @@ export default async function ModelPage({
         : 0
     const totalReviews = allReviews.length
 
-    // Get a representative image (first product with an image)
     const representativeImage = products.find(p => p.images?.length > 0)?.images[0] || null
+    const subcategories = [...new Set(apiProducts.map(p => p.subcategory?.name).filter((n): n is string => !!n))]
 
-    // Get categories
-    const categories = [...new Set(apiProducts.map(p => p.category?.name).filter(Boolean))]
-
-    // Collect common specs across products
     const allSpecs: Record<string, Set<string>> = {}
     products.forEach(p => {
         if (p.specs && typeof p.specs === 'object') {
@@ -144,19 +137,25 @@ export default async function ModelPage({
         }
     })
 
-    // Create a merged specs object (only specs that are common across all products or have a single value)
     const modelSpecs: Record<string, string> = {}
     Object.entries(allSpecs).forEach(([key, values]) => {
-        if (values.size === 1) {
-            modelSpecs[key] = Array.from(values)[0]
-        } else {
-            modelSpecs[key] = Array.from(values).join(', ')
-        }
+        modelSpecs[key] = values.size === 1 ? Array.from(values)[0] : Array.from(values).join(', ')
     })
+
+    const getFullModelName = () => {
+        let name = displayModel
+        // Remove brand if it's already at the start of displayModel
+        if (name.toLowerCase().startsWith(displayBrand.toLowerCase())) {
+            name = name.substring(displayBrand.length).trim()
+        }
+        return `${displayBrand} ${name} ${subcategoryName} Saxophone`.replace(/\s+/g, ' ').trim()
+    }
+
+    const fullModelName = getFullModelName()
 
     const modelData = {
         brand: displayBrand,
-        model: displayModel,
+        model: fullModelName,
         products,
         priceRange,
         inStockCount,
@@ -164,11 +163,10 @@ export default async function ModelPage({
         avgRating: Math.round(avgRating * 10) / 10,
         totalReviews,
         representativeImage,
-        categories,
+        categories: subcategories,
         modelSpecs,
     }
 
-    // Structured data
     const breadcrumbSchema = {
         "@context": "https://schema.org",
         "@type": "BreadcrumbList",
@@ -188,7 +186,7 @@ export default async function ModelPage({
             {
                 "@type": "ListItem",
                 "position": 3,
-                "name": displayModel,
+                "name": modelData.model,
                 "item": `${process.env.NEXT_PUBLIC_BASE_URL || "https://jamessaxcorner.com"}/p/${params.slug}`
             }
         ]
@@ -197,7 +195,7 @@ export default async function ModelPage({
     const productGroupSchema = {
         "@context": "https://schema.org",
         "@type": "ProductGroup",
-        "name": `${displayBrand} ${displayModel}`,
+        "name": modelData.model,
         "brand": {
             "@type": "Brand",
             "name": displayBrand
