@@ -53,9 +53,15 @@ async function findProductByItemParam(param: string, includeCategoryOnly = false
       subcategory: true,
     }
 
-  // 1. Try exact slug as given (should now match name-SN format)
+  // 1. Try exact slug as given (case-insensitive)
   const byExactSlug = await prisma.product.findFirst({
-    where: { slug: decodedParam, isVisible: true },
+    where: {
+      slug: { equals: decodedParam, mode: 'insensitive' },
+      OR: [
+        { isVisible: true },
+        { isVisible: { isSet: false } } // Handle documents where isVisible isn't defined
+      ]
+    },
     include,
   })
   if (byExactSlug) return byExactSlug
