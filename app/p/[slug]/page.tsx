@@ -24,18 +24,20 @@ async function findModelProductsBySlug(slug: string) {
     })
 
     const matches = allProducts.filter(p => {
-        const brandMatch = modelDecoded.includes(p.brand.toLowerCase())
-        const modelMatch = p.subBrand && modelDecoded.includes(p.subBrand.toLowerCase().replace(/\s+/g, '-'))
+        const normalizedBrand = p.brand.toLowerCase().replace(/\s+/g, '-')
+        const normalizedModel = (p.subBrand || '').toLowerCase().replace(/\s+/g, '-')
 
-        // Cách 1: Khớp chính xác slug đầy đủ
+        const brandMatch = modelDecoded.includes(normalizedBrand)
+        const modelMatch = normalizedModel && modelDecoded.includes(normalizedModel)
+
+        // Strategy 1: Exact match with the full generated slug
         const pSlug = generateSlug(`${p.brand} ${p.subBrand} ${p.subcategory?.name || ''} saxophone`)
         if (pSlug === modelDecoded) return true
 
-        // Cách 2: Khớp tên model gốc (vd: a-900)
-        const simpleModelSlug = (p.subBrand || '').toLowerCase().replace(/\s+/g, '-')
-        if (simpleModelSlug === modelDecoded) return true
+        // Strategy 2: Direct model match
+        if (normalizedModel === modelDecoded) return true
 
-        // Cách 3: Nếu slug chứa cả thương hiệu và model (vd: yanagisawa-a-900...)
+        // Strategy 3: URL contains both brand and model (handles missing subcategory or variants)
         if (brandMatch && modelMatch) return true
 
         return false
