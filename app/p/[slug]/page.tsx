@@ -40,6 +40,11 @@ async function findModelProductsBySlug(slug: string) {
         // Strategy 3: URL contains both brand and model (handles missing subcategory or variants)
         if (brandMatch && modelMatch) return true
 
+        // Strategy 4: Fallback for when subBrand is null - check if name contains the model part
+        // If we slugify the name, does it contain the requested model slug?
+        const nameSlug = generateSlug(p.name)
+        if (nameSlug.includes(modelDecoded)) return true
+
         return false
     })
 
@@ -146,10 +151,22 @@ export default async function ModelPage({
 
     const getFullModelName = () => {
         let name = displayModel
-        // Remove brand if it's already at the start of displayModel
+
+        // Remove brand from the start if it exists
         if (name.toLowerCase().startsWith(displayBrand.toLowerCase())) {
             name = name.substring(displayBrand.length).trim()
         }
+
+        // Remove "saxophone" from the end if it's already there
+        if (name.toLowerCase().endsWith('saxophone')) {
+            name = name.substring(0, name.length - 9).trim()
+        }
+
+        // Remove subcategory if it's already at the end of the name
+        if (subcategoryName && name.toLowerCase().endsWith(subcategoryName.toLowerCase())) {
+            name = name.substring(0, name.length - subcategoryName.length).trim()
+        }
+
         return `${displayBrand} ${name} ${subcategoryName} Saxophone`.replace(/\s+/g, ' ').trim()
     }
 
