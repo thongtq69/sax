@@ -20,6 +20,7 @@
   },
   "dependencies": {
     "@auth/prisma-adapter": "^2.11.1",
+    "@google-analytics/data": "^5.2.1",
     "@next/third-parties": "^16.1.4",
     "@paypal/react-paypal-js": "^8.9.2",
     "@prisma/client": "^6.19.1",
@@ -54,6 +55,7 @@
     "class-variance-authority": "^0.7.1",
     "cloudinary": "^2.8.0",
     "clsx": "^2.1.1",
+    "googleapis": "^171.4.0",
     "lucide-react": "^0.427.0",
     "mongodb": "^7.0.0",
     "next": "14.2.5",

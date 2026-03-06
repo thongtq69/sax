@@ -22,6 +22,7 @@ interface DashboardStats {
   reviews: number
   pendingOrders: number
   totalRevenue: number
+  activeUsers: number
 }
 
 interface RecentOrder {
@@ -53,6 +54,10 @@ export default function AdminDashboard() {
       }
     }
     fetchStats()
+
+    // Refresh active users every 30 seconds
+    const interval = setInterval(fetchStats, 30000)
+    return () => clearInterval(interval)
   }, [])
 
   const statCards = [
@@ -145,10 +150,27 @@ export default function AdminDashboard() {
     <div className="space-y-6">
       {/* Welcome Section */}
       <div className="bg-gradient-to-r from-primary to-primary/80 rounded-2xl p-6 md:p-8 text-white">
-        <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-          <div>
-            <h1 className="text-2xl md:text-3xl font-bold">Welcome back, Admin! 👋</h1>
-            <p className="text-white/80 mt-2">Manage your website content from here.</p>
+        <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-6">
+          <div className="flex flex-col md:flex-row md:items-center gap-4 md:gap-8">
+            <div>
+              <h1 className="text-2xl md:text-3xl font-bold">Welcome back, Admin! 👋</h1>
+              <p className="text-white/80 mt-2">Manage your website content from here.</p>
+            </div>
+
+            {/* Real-time visitors pill */}
+            <div className="flex items-center gap-3 bg-white/10 backdrop-blur-md px-4 py-3 rounded-2xl border border-white/20">
+              <div className="relative">
+                <Users className="h-5 w-5 text-emerald-400" />
+                <span className="absolute -top-1 -right-1 flex h-2.5 w-2.5">
+                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                  <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-emerald-500"></span>
+                </span>
+              </div>
+              <div>
+                <p className="text-xl font-bold leading-none">{stats?.activeUsers || 0}</p>
+                <p className="text-[10px] uppercase tracking-wider text-white/60 font-medium">Live Visitors</p>
+              </div>
+            </div>
           </div>
           <div className="flex gap-3">
             <Link href="/admin/products">

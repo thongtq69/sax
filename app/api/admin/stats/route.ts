@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
+import { getRealtimeActiveUsers } from '@/lib/ga4-realtime'
 
 export const dynamic = 'force-dynamic'
 
@@ -16,6 +17,7 @@ export async function GET() {
       reviewsCount,
       recentOrders,
       pendingOrdersCount,
+      activeUsers,
     ] = await Promise.all([
       prisma.banner.count(),
       prisma.fAQ.count(),
@@ -35,6 +37,7 @@ export async function GET() {
         },
       }),
       prisma.order.count({ where: { status: 'pending' } }),
+      getRealtimeActiveUsers().catch(() => 0),
     ])
 
     // Calculate total revenue
@@ -55,6 +58,7 @@ export async function GET() {
         reviews: reviewsCount,
         pendingOrders: pendingOrdersCount,
         totalRevenue: totalRevenue._sum.total || 0,
+        activeUsers: activeUsers || 0,
       },
       recentOrders,
     })
