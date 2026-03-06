@@ -132,6 +132,8 @@ export async function getProducts(params?: {
   page?: number
   limit?: number
   badge?: string
+  showHidden?: boolean
+  showArchived?: boolean
 }) {
   const searchParams = new URLSearchParams()
   if (params) {

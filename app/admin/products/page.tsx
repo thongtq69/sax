@@ -46,6 +46,7 @@ export default function ProductsManagement() {
   const [selectedBadge, setSelectedBadge] = useState<string>('all')
   const [selectedProductType, setSelectedProductType] = useState<string>('all')
   const [selectedCondition, setSelectedCondition] = useState<string>('all')
+  const [selectedVisibility, setSelectedVisibility] = useState<string>('all')
   const [isDialogOpen, setIsDialogOpen] = useState(false)
   const [isLoading, setIsLoading] = useState(true)
   const [isSaving, setIsSaving] = useState(false)
@@ -94,7 +95,7 @@ export default function ProductsManagement() {
       try {
         setIsLoading(true)
         const [productsResponse, categoriesData, brandsData, specKeysData, templatesData, accessoriesData] = await Promise.all([
-          getProducts({ limit: 1000 }),
+          getProducts({ limit: 1000, showHidden: true, showArchived: true }),
           getCategories(),
           fetch('/api/admin/brands').then(res => res.json()),
           fetch('/api/admin/spec-keys').then(res => res.json()),
@@ -154,8 +155,16 @@ export default function ProductsManagement() {
       filtered = filtered.filter((p) => (p as any).condition === selectedCondition)
     }
 
+    if (selectedVisibility !== 'all') {
+      if (selectedVisibility === 'hidden') {
+        filtered = filtered.filter((p) => p.isVisible === false)
+      } else if (selectedVisibility === 'visible') {
+        filtered = filtered.filter((p) => p.isVisible !== false)
+      }
+    }
+
     setFilteredProducts(filtered)
-  }, [searchTerm, selectedCategory, selectedBadge, selectedProductType, selectedCondition, productList])
+  }, [searchTerm, selectedCategory, selectedBadge, selectedProductType, selectedCondition, selectedVisibility, productList])
 
   // Auto-sync Brand, SKU, Condition, Model to specs when they change
   useEffect(() => {
@@ -348,7 +357,7 @@ export default function ProductsManagement() {
       }
 
       // Refresh data
-      const productsResponse = await getProducts({ limit: 1000 })
+      const productsResponse = await getProducts({ limit: 1000, showHidden: true, showArchived: true })
       const transformedProducts = productsResponse.products.map(transformProduct)
       setProductList(transformedProducts)
 
@@ -373,7 +382,7 @@ export default function ProductsManagement() {
       await deleteProduct(id)
 
       // Refresh data
-      const productsResponse = await getProducts({ limit: 1000 })
+      const productsResponse = await getProducts({ limit: 1000, showHidden: true, showArchived: true })
       const transformedProducts = productsResponse.products.map(transformProduct)
       setProductList(transformedProducts)
     } catch (error: any) {
@@ -495,6 +504,18 @@ export default function ProductsManagement() {
             </Select>
           )}
 
+          {/* Visibility Filter */}
+          <Select value={selectedVisibility} onValueChange={setSelectedVisibility}>
+            <SelectTrigger className="w-full lg:w-[150px]">
+              <SelectValue placeholder="All Visibility" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All Visibility</SelectItem>
+              <SelectItem value="visible">Visible Only</SelectItem>
+              <SelectItem value="hidden">Hidden Only</SelectItem>
+            </SelectContent>
+          </Select>
+
           {/* View Mode Toggle */}
           <div className="flex border rounded-lg overflow-hidden">
             <Button
@@ -544,6 +565,9 @@ export default function ProductsManagement() {
                   <th className="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
                     Badge
                   </th>
+                  <th className="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
+                    Visibility
+                  </th>
                   <th className="px-6 py-4 text-right text-xs font-semibold text-gray-600 uppercase tracking-wider">
                     Actions
                   </th>
@@ -552,7 +576,7 @@ export default function ProductsManagement() {
               <tbody className="divide-y divide-gray-200">
                 {filteredProducts.length === 0 ? (
                   <tr>
-                    <td colSpan={6} className="px-6 py-16 text-center">
+                    <td colSpan={7} className="px-6 py-16 text-center">
                       <Package className="h-16 w-16 text-gray-300 mx-auto mb-4" />
                       <p className="text-gray-500 text-lg">No products found</p>
                       <p className="text-gray-400 text-sm mt-1">Try adjusting your search or filters</p>
@@ -613,9 +637,13 @@ export default function ProductsManagement() {
                         )}
                       </td>
                       <td className="px-6 py-4">
-                        {product.isVisible === false && (
-                          <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-gray-200 text-gray-600 border border-gray-300">
+                        {product.isVisible === false ? (
+                          <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-red-100 text-red-700 border border-red-200">
                             Hidden
+                          </span>
+                        ) : (
+                          <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-green-100 text-green-700 border border-green-200">
+                            Visible
                           </span>
                         )}
                       </td>
@@ -676,6 +704,11 @@ export default function ProductsManagement() {
                     <span className={`absolute top-3 left-3 px-2.5 py-1 rounded-full text-xs font-medium ${badgeColors[product.badge] || 'bg-gray-100 text-gray-800'}`}>
                       {product.badge}
                     </span>
+                  )}
+                  {product.isVisible === false && (
+                    <div className="absolute top-3 right-3 px-2.5 py-1 rounded-full text-xs font-medium bg-gray-800 text-white z-10">
+                      Hidden
+                    </div>
                   )}
                   <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
                     <Link href={getProductUrl(product.sku, product.slug, product.serialNumber || product.specs?.SN)} target="_blank">
