@@ -574,20 +574,7 @@ function ListingCard({
                             )}
                         </div>
 
-                        {/* Seller info */}
-                        <div className="flex items-center gap-2 mt-3 text-sm">
-                            <div className="w-7 h-7 bg-secondary/10 flex items-center justify-center flex-shrink-0">
-                                <span className="text-xs font-bold text-secondary">JSC</span>
-                            </div>
-                            <div>
-                                <span className="font-medium text-secondary text-xs">James Sax Corner</span>
-                                <div className="flex items-center gap-0.5">
-                                    {[1, 2, 3, 4, 5].map((star) => (
-                                        <Star key={star} className="h-2.5 w-2.5 text-amber-500 fill-amber-500" />
-                                    ))}
-                                </div>
-                            </div>
-                        </div>
+
                     </div>
 
                     {/* Price & Actions */}
@@ -1239,15 +1226,7 @@ function ReviewsTab({
                     )}
                 </form>
 
-                <div className="mt-8">
-                    <p className="text-xl md:text-2xl font-bold text-secondary">
-                        Review Tips <span className="text-blue-700 text-lg md:text-xl font-semibold">(see all)</span>
-                    </p>
-                    <ul className="mt-3 space-y-1 text-base md:text-xl text-secondary/90">
-                        <li>✓ Do: talk about how it sounds, mention pros and cons, and compare it to other products.</li>
-                        <li>✕ Don&apos;t: review a seller, your shipping experience, or include offensive content.</li>
-                    </ul>
-                </div>
+
             </div>
         </div>
     )
