@@ -264,9 +264,9 @@ export function BrandPageClient({
         <div className="container mx-auto px-4 py-3 text-sm text-muted-foreground">
           <Link href="/" className="hover:text-primary transition-colors">Home</Link>
           <span className="mx-2">/</span>
-          <span>Brands</span>
+          <Link href="/shop" className="hover:text-primary transition-colors">Brands</Link>
           <span className="mx-2">/</span>
-          <span className="text-secondary font-medium">{brandName}</span>
+          <span className="text-secondary font-medium">{brandName} Saxophones</span>
         </div>
       </div>
 
@@ -282,7 +282,7 @@ export function BrandPageClient({
                 )}
               </div>
               <div>
-                <h1 className="text-3xl md:text-4xl font-bold text-secondary">{brandName}</h1>
+                <h1 className="text-3xl md:text-4xl font-bold text-secondary">{brandName} Saxophones</h1>
                 <p className="text-sm text-muted-foreground mt-1">
                   {products.length} listing{products.length !== 1 ? 's' : ''} available
                 </p>
