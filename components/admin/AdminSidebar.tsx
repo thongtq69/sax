@@ -4,6 +4,7 @@ import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { Button } from '@/components/ui/button'
 import {
+  BarChart3,
   Package,
   FileText,
   FolderTree,
@@ -35,6 +36,7 @@ interface AdminSidebarProps {
 }
 
 export const menuItems: { href: string; label: string; icon: any; exact?: boolean }[] = [
+  { href: '/admin/analytics', label: 'Analytics', icon: BarChart3 },
   { href: '/admin/products', label: 'Products', icon: Package },
   { href: '/admin/brands', label: 'Brands', icon: Tag },
   { href: '/admin/featured-collections', label: 'Featured Collections', icon: Star },

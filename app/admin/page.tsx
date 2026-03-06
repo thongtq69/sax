@@ -5,7 +5,7 @@ import {
   Package, FileText, ShoppingCart, TrendingUp, Users, Plus,
   ArrowUpRight, ArrowDownRight, Eye, Star, Image as ImageIcon,
   HelpCircle, MessageSquare, Settings, Home, Layers, ListOrdered,
-  ClipboardList, Tag
+  ClipboardList, Tag, BarChart3
 } from 'lucide-react'
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
@@ -244,6 +244,12 @@ export default function AdminDashboard() {
       <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-4 sm:p-6">
         <h2 className="text-base sm:text-lg font-semibold text-gray-900 mb-3 sm:mb-4">Quick Actions</h2>
         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-2 sm:gap-3">
+          <Link href="/admin/analytics">
+            <Button className="w-full justify-start text-xs sm:text-sm h-9 sm:h-10 px-2 sm:px-4 bg-primary/5 text-primary hover:bg-primary/10 border-primary/20" variant="outline">
+              <BarChart3 className="h-3 w-3 sm:h-4 sm:w-4 mr-2 sm:mr-3 flex-shrink-0" />
+              <span className="truncate">Detailed Analytics</span>
+            </Button>
+          </Link>
           <Link href="/admin/products">
             <Button className="w-full justify-start text-xs sm:text-sm h-9 sm:h-10 px-2 sm:px-4" variant="outline">
               <Package className="h-3 w-3 sm:h-4 sm:w-4 mr-2 sm:mr-3 flex-shrink-0" />
