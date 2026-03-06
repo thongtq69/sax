@@ -67,13 +67,13 @@ export async function getRealtimeDevices() {
     }
 }
 
-export async function getHistoricalStats() {
+export async function getHistoricalStats(days = 7) {
     if (!propertyId) return [];
 
     try {
         const [response] = await client.runReport({
             property: `properties/${propertyId}`,
-            dateRanges: [{ startDate: '7daysAgo', endDate: 'today' }],
+            dateRanges: [{ startDate: `${days}daysAgo`, endDate: 'today' }],
             dimensions: [{ name: 'date' }],
             metrics: [
                 { name: 'screenPageViews' },
@@ -95,13 +95,13 @@ export async function getHistoricalStats() {
     }
 }
 
-export async function getTopPages() {
+export async function getTopPages(days = 7) {
     if (!propertyId) return [];
 
     try {
         const [response] = await client.runReport({
             property: `properties/${propertyId}`,
-            dateRanges: [{ startDate: '7daysAgo', endDate: 'today' }],
+            dateRanges: [{ startDate: `${days}daysAgo`, endDate: 'today' }],
             dimensions: [{ name: 'pageTitle' }, { name: 'pagePath' }],
             metrics: [{ name: 'screenPageViews' }],
             limit: 10,
@@ -118,5 +118,94 @@ export async function getTopPages() {
         return [];
     }
 }
+
+export async function getTrafficSources(days = 7) {
+    if (!propertyId) return [];
+    try {
+        const [response] = await client.runReport({
+            property: `properties/${propertyId}`,
+            dateRanges: [{ startDate: `${days}daysAgo`, endDate: 'today' }],
+            dimensions: [{ name: 'sessionDefaultChannelGroup' }],
+            metrics: [{ name: 'totalUsers' }],
+            orderBys: [{ metric: { metricName: 'totalUsers' }, desc: true }]
+        });
+        return (response.rows || []).map((row: any) => ({
+            source: row.dimensionValues?.[0]?.value || 'Direct',
+            users: parseInt(row.metricValues?.[0]?.value || '0', 10),
+        }));
+    } catch (error) {
+        console.error('Error fetching GA4 source data:', error);
+        return [];
+    }
+}
+
+export async function getGeoStats(days = 7) {
+    if (!propertyId) return [];
+    try {
+        const [response] = await client.runReport({
+            property: `properties/${propertyId}`,
+            dateRanges: [{ startDate: `${days}daysAgo`, endDate: 'today' }],
+            dimensions: [{ name: 'country' }],
+            metrics: [{ name: 'totalUsers' }],
+            limit: 10,
+            orderBys: [{ metric: { metricName: 'totalUsers' }, desc: true }]
+        });
+        return (response.rows || []).map((row: any) => ({
+            country: row.dimensionValues?.[0]?.value || 'Unknown',
+            users: parseInt(row.metricValues?.[0]?.value || '0', 10),
+        }));
+    } catch (error) {
+        console.error('Error fetching GA4 geo data:', error);
+        return [];
+    }
+}
+
+export async function getEngagementMetrics(days = 7) {
+    if (!propertyId) return null;
+    try {
+        const [response] = await client.runReport({
+            property: `properties/${propertyId}`,
+            dateRanges: [{ startDate: `${days}daysAgo`, endDate: 'today' }],
+            metrics: [
+                { name: 'averageSessionDuration' },
+                { name: 'bounceRate' },
+                { name: 'sessionsPerUser' },
+                { name: 'engagementRate' }
+            ]
+        });
+        const values = response.rows?.[0]?.metricValues || [];
+        return {
+            avgSessionDuration: parseFloat(values[0]?.value || '0'),
+            bounceRate: parseFloat(values[1]?.value || '0') * 100,
+            sessionsPerUser: parseFloat(values[2]?.value || '0'),
+            engagementRate: parseFloat(values[3]?.value || '0') * 100,
+        };
+    } catch (error) {
+        console.error('Error fetching GA4 engagement data:', error);
+        return null;
+    }
+}
+
+export async function getBrowserStats(days = 7) {
+    if (!propertyId) return [];
+    try {
+        const [response] = await client.runReport({
+            property: `properties/${propertyId}`,
+            dateRanges: [{ startDate: `${days}daysAgo`, endDate: 'today' }],
+            dimensions: [{ name: 'browser' }],
+            metrics: [{ name: 'totalUsers' }],
+            limit: 5,
+            orderBys: [{ metric: { metricName: 'totalUsers' }, desc: true }]
+        });
+        return (response.rows || []).map((row: any) => ({
+            browser: row.dimensionValues?.[0]?.value || 'Other',
+            users: parseInt(row.metricValues?.[0]?.value || '0', 10),
+        }));
+    } catch (error) {
+        console.error('Error fetching GA4 browser data:', error);
+        return [];
+    }
+}
+
 
 

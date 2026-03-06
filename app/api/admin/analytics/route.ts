@@ -3,18 +3,38 @@ import {
     getRealtimeActiveUsers,
     getRealtimeDevices,
     getHistoricalStats,
-    getTopPages
+    getTopPages,
+    getTrafficSources,
+    getGeoStats,
+    getEngagementMetrics,
+    getBrowserStats
 } from '@/lib/ga4-realtime'
 
 export const dynamic = 'force-dynamic'
 
-export async function GET() {
+export async function GET(request: Request) {
+    const { searchParams } = new URL(request.url)
+    const days = parseInt(searchParams.get('days') || '7')
+
     try {
-        const [activeUsers, devices, historicalStats, topPages] = await Promise.all([
+        const [
+            activeUsers,
+            devices,
+            historicalStats,
+            topPages,
+            sources,
+            geo,
+            engagement,
+            browsers
+        ] = await Promise.all([
             getRealtimeActiveUsers().catch(() => 0),
             getRealtimeDevices().catch(() => []),
-            getHistoricalStats().catch(() => []),
-            getTopPages().catch(() => []),
+            getHistoricalStats(days).catch(() => []),
+            getTopPages(days).catch(() => []),
+            getTrafficSources(days).catch(() => []),
+            getGeoStats(days).catch(() => []),
+            getEngagementMetrics(days).catch(() => null),
+            getBrowserStats(days).catch(() => []),
         ])
 
         return NextResponse.json({
@@ -22,6 +42,10 @@ export async function GET() {
             devices,
             historicalStats,
             topPages,
+            sources,
+            geo,
+            engagement,
+            browsers,
         })
     } catch (error: any) {
         console.error('Error fetching analytics data:', error)
@@ -31,3 +55,4 @@ export async function GET() {
         )
     }
 }
+
