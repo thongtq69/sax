@@ -53,6 +53,7 @@ export interface HomePageData {
   }
   allProducts: Product[]
   reviews: Review[]
+  brands: any[]
 }
 
 export function HomePageClient({ data }: { data: HomePageData }) {
@@ -68,6 +69,7 @@ export function HomePageClient({ data }: { data: HomePageData }) {
     heroContent,
     allProducts,
     reviews,
+    brands,
   } = data
 
   const [showTestimonials, setShowTestimonials] = useState(false)
@@ -152,6 +154,48 @@ export function HomePageClient({ data }: { data: HomePageData }) {
             {collectionBackgrounds['new-arrivals'] && <div className="absolute inset-0 bg-white/5" />}
             <div className="relative container mx-auto px-4 py-4 sm:py-6">
               <StaticProductGrid products={saleProducts} id="new-arrivals" />
+            </div>
+          </div>
+        </section>
+      )}
+      {brands && brands.length > 0 && (
+        <section className="relative overflow-hidden bg-white/50 py-8 sm:py-10 border-y border-border/50">
+          <div className="container mx-auto px-4">
+            <div className="flex items-center justify-center gap-3 mb-8">
+              <div className="flex-1 h-px bg-primary/30" />
+              <span className="text-2xl sm:text-3xl text-primary">♫</span>
+              <h2 className="text-lg sm:text-xl md:text-2xl font-bold text-secondary tracking-wide uppercase">SHOP BY BRAND</h2>
+              <span className="text-2xl sm:text-3xl text-primary">♫</span>
+              <div className="flex-1 h-px bg-primary/30" />
+            </div>
+
+            <div className="flex flex-wrap justify-center gap-4 sm:gap-6 md:gap-8 lg:gap-12">
+              {brands.map((brand) => (
+                <Link
+                  key={brand.slug}
+                  href={`/b/${brand.slug}-saxophones`}
+                  className="group flex flex-col items-center flex-shrink-0"
+                >
+                  <div className="w-20 h-20 sm:w-28 sm:h-28 md:w-32 md:h-32 rounded-full border border-border bg-white shadow-sm flex items-center justify-center p-4 group-hover:border-primary group-hover:shadow-md transition-all duration-300">
+                    {brand.logo ? (
+                      <Image
+                        src={brand.logo}
+                        alt={brand.name}
+                        width={100}
+                        height={100}
+                        className="w-full h-full object-contain filter group-hover:brightness-110 transition-all"
+                      />
+                    ) : (
+                      <span className="text-lg sm:text-xl font-semibold text-secondary">
+                        {brand.name.substring(0, 1)}
+                      </span>
+                    )}
+                  </div>
+                  <span className="mt-3 text-sm sm:text-base font-medium text-secondary group-hover:text-primary transition-colors text-center w-full">
+                    {brand.name}
+                  </span>
+                </Link>
+              ))}
             </div>
           </div>
         </section>

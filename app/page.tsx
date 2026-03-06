@@ -8,8 +8,8 @@ import type { Review } from '@/lib/reviews'
 export const revalidate = 60
 
 async function getHomepageData(): Promise<HomePageData> {
-  // Fetch collections, products, hero content, and reviews in parallel
-  const [collections, productsResult, heroContent, reviewsResult] = await Promise.all([
+  // Fetch collections, products, hero content, reviews, and brands in parallel
+  const [collections, productsResult, heroContent, reviewsResult, brands] = await Promise.all([
     prisma.featuredCollection.findMany().catch(() => []),
     prisma.product.findMany({
       take: 28,
@@ -23,6 +23,10 @@ async function getHomepageData(): Promise<HomePageData> {
       take: 100,
       orderBy: { date: 'desc' },
       include: { product: { select: { name: true } } },
+    }).catch(() => []),
+    prisma.brand.findMany({
+      where: { isActive: true },
+      orderBy: { order: 'asc' },
     }).catch(() => []),
   ])
 
@@ -89,6 +93,7 @@ async function getHomepageData(): Promise<HomePageData> {
     heroContent: hero,
     allProducts,
     reviews,
+    brands,
   }
 }
 
