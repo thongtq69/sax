@@ -84,8 +84,25 @@ export default function RootLayout({
         <SessionProvider>
           <SiteLayout>{children}</SiteLayout>
         </SessionProvider>
-        {process.env.NODE_ENV === 'production' && process.env.NEXT_PUBLIC_GA_ID && (
-          <GoogleAnalytics gaId={process.env.NEXT_PUBLIC_GA_ID} />
+        {(process.env.NEXT_PUBLIC_GA_ID || 'G-MRHKG8MELS') && (
+          <>
+            <script
+              async
+              src={`https://www.googletagmanager.com/gtag/js?id=${process.env.NEXT_PUBLIC_GA_ID || 'G-MRHKG8MELS'}`}
+            />
+            <script
+              dangerouslySetInnerHTML={{
+                __html: `
+                  window.dataLayer = window.dataLayer || [];
+                  function gtag(){dataLayer.push(arguments);}
+                  gtag('js', new Date());
+                  gtag('config', '${process.env.NEXT_PUBLIC_GA_ID || 'G-MRHKG8MELS'}', {
+                    page_path: window.location.pathname,
+                  });
+                `,
+              }}
+            />
+          </>
         )}
       </body>
     </html>
