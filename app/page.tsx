@@ -118,8 +118,16 @@ export default async function HomePage() {
 
   const aggregateRatingSchema = {
     "@context": "https://schema.org",
-    "@type": "Product",
-    "name": "James Sax Corner Professional Services",
+    "@type": "LocalBusiness",
+    "name": "James Sax Corner",
+    "image": `${baseUrl}/logo.png`,
+    "url": baseUrl,
+    "priceRange": "$$$",
+    "address": {
+      "@type": "PostalAddress",
+      "addressLocality": "Worldwide Shipping",
+      "addressCountry": "US"
+    },
     "aggregateRating": {
       "@type": "AggregateRating",
       "ratingValue": "4.9",
@@ -146,7 +154,6 @@ export default async function HomePage() {
       {/* SEO Structured Data — rendered server-side for Google */}
       <StructuredData data={organizationSchema} />
       <StructuredData data={websiteSchema} />
-      <StructuredData data={localBusinessSchema} />
       <StructuredData data={brandListSchema} />
       <StructuredData data={aggregateRatingSchema} />
 

@@ -120,7 +120,13 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       }
     })
     const modelPages = Array.from(modelSet.entries()).map(([key, updatedAt]) => {
-      const modelSlug = key.split('/')[1] // Extract model slug from the combined key
+      // key is "brand/subBrand"
+      const [brand, model] = key.split('/')
+      const modelSlug = `${brand}-${model}-saxophone`
+        .toLowerCase()
+        .replace(/\s+/g, '-')
+        .replace(/-+/g, '-')
+
       return {
         url: `${baseUrl}/p/${modelSlug}`,
         lastModified: updatedAt,
