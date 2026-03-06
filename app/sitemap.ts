@@ -3,7 +3,7 @@ import { prisma } from '@/lib/prisma'
 import { getProductUrl } from '@/lib/api'
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
-  const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'https://jamessaxcorner.com'
+  const baseUrl = (process.env.NEXT_PUBLIC_BASE_URL || 'https://jamessaxcorner.com').replace(/\/+$/, '')
 
   // Static pages
   const staticPages = [
@@ -60,6 +60,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   try {
     // Dynamic product pages - fetch directly from DB for reliability
     const products = await prisma.product.findMany({
+      where: { stockStatus: { not: 'archived' } },
       select: { sku: true, slug: true, specs: true, updatedAt: true },
     })
     const productPages = products.map((product) => ({
@@ -128,7 +129,19 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       }
     })
 
-    return [...staticPages, ...productPages, ...blogPages, ...categoryPages, ...modelPages]
+    // Brand pages
+    const brands = await prisma.brand.findMany({
+      where: { isActive: true },
+      select: { slug: true, updatedAt: true },
+    })
+    const brandPages = brands.map((brand) => ({
+      url: `${baseUrl}/b/${brand.slug}-saxophones`,
+      lastModified: new Date(brand.updatedAt || new Date()),
+      changeFrequency: 'weekly' as const,
+      priority: 0.8,
+    }))
+
+    return [...staticPages, ...productPages, ...blogPages, ...categoryPages, ...modelPages, ...brandPages]
   } catch (error) {
     console.error('Error generating sitemap:', error)
     return staticPages

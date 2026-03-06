@@ -264,7 +264,7 @@ export function BrandPageClient({
         <div className="container mx-auto px-4 py-3 text-sm text-muted-foreground">
           <Link href="/" className="hover:text-primary transition-colors">Home</Link>
           <span className="mx-2">/</span>
-          <Link href="/shop" className="hover:text-primary transition-colors">Brands</Link>
+          <Link href="/#brands" className="hover:text-primary transition-colors">Brands</Link>
           <span className="mx-2">/</span>
           <span className="text-secondary font-medium">{brandName} Saxophones</span>
         </div>

@@ -1,7 +1,7 @@
 'use client'
 
 import dynamic from 'next/dynamic'
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
 import { Button } from '@/components/ui/button'
@@ -75,6 +75,19 @@ export function HomePageClient({ data }: { data: HomePageData }) {
   const [showTestimonials, setShowTestimonials] = useState(false)
   const [showNewsletter, setShowNewsletter] = useState(false)
 
+  // Handle hash-based anchor navigation (e.g. /#brands, /#testimonials)
+  useEffect(() => {
+    const hash = window.location.hash
+    if (hash === '#testimonials') {
+      setShowTestimonials(true)
+    } else if (hash === '#brands') {
+      const el = document.getElementById('brands')
+      if (el) {
+        setTimeout(() => el.scrollIntoView({ behavior: 'smooth', block: 'center' }), 300)
+      }
+    }
+  }, [])
+
   return (
     <div className="space-y-0 page-content">
       <ScrollAnimations />
@@ -115,7 +128,7 @@ export function HomePageClient({ data }: { data: HomePageData }) {
             </div>
           </div>
         </div>
-        <div className="relative py-8 sm:py-10 md:py-12">
+        <div id="testimonials" className="relative py-8 sm:py-10 md:py-12">
           <div className="container mx-auto px-4">
             <div className="mb-4 sm:mb-6 text-center animate-fade-in-up">
               <div className="inline-flex items-center gap-1.5 px-3 py-1.5 sm:px-4 sm:py-2 bg-white/90 text-amber-700 text-[10px] sm:text-xs font-medium mb-3 rounded-full shadow-md backdrop-blur-sm">
@@ -159,7 +172,7 @@ export function HomePageClient({ data }: { data: HomePageData }) {
         </section>
       )}
       {brands && brands.length > 0 && (
-        <section className="relative overflow-hidden bg-white/50 py-8 sm:py-10 border-y border-border/50">
+        <section id="brands" className="relative overflow-hidden bg-white/50 py-8 sm:py-10 border-y border-border/50">
           <div className="container mx-auto px-4">
             <div className="flex items-center justify-center gap-3 mb-8">
               <div className="flex-1 h-px bg-primary/30" />

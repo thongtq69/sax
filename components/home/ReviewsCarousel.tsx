@@ -45,9 +45,11 @@ export function ReviewsCarousel({ reviews, productImages = [], onViewAll }: Revi
 
     return (
         <div className="relative" onMouseEnter={() => setIsPaused(true)} onMouseLeave={() => setIsPaused(false)}>
-            <div 
+            <div
                 className={`bg-white/85 backdrop-blur-md px-8 sm:px-10 md:px-12 py-6 sm:py-8 shadow-xl border border-white/50 rounded-xl w-full transition-all duration-300 ease-out relative ${isAnimating ? 'opacity-0 scale-95' : 'opacity-100 scale-100'} ${onViewAll ? 'cursor-pointer hover:shadow-2xl hover:scale-[1.02]' : ''}`}
-                onClick={onViewAll}
+                onClick={() => {
+                    if (onViewAll) onViewAll()
+                }}
             >
                 <div className="flex flex-col sm:flex-row sm:items-center gap-4 sm:gap-8">
                     <div className="flex-1">

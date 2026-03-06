@@ -49,26 +49,11 @@ export async function generateMetadata({ params }: { params: { slug: string } })
   }
 
   const { brand } = data
-  const title = `${brand.name} Saxophones for Sale | Professional Models | James Sax Corner`
+  const title = `Premium Saxophones | ${brand.name}`
 
-  // Get some popular models dynamically for the description if possible, or use defaults
-  const modelsMap = new Map<string, number>()
-  data.apiProducts.forEach(p => {
-    const model = p.subBrand?.trim()
-    if (model) modelsMap.set(model, (modelsMap.get(model) || 0) + 1)
-  })
 
-  // Get top 4 most common models
-  const topModels = Array.from(modelsMap.entries())
-    .sort((a, b) => b[1] - a[1])
-    .slice(0, 4)
-    .map(entry => entry[0])
 
-  const modelsString = topModels.length > 0
-    ? ` including ${topModels.join(', ')}`
-    : ''
-
-  const description = `Professional ${brand.name} soprano, alto, tenor saxophones${modelsString}. Carefully inspected instruments with worldwide shipping from James Sax Corner.`
+  const description = `Professional ${brand.name} saxophones carefully inspected and prepared. Premium instruments with worldwide shipping from James Sax Corner.`
 
 
 
@@ -127,7 +112,7 @@ export default async function BrandPage({ params }: { params: { slug: string } }
         '@type': 'ListItem',
         position: 2,
         name: 'Brands',
-        item: `${process.env.NEXT_PUBLIC_BASE_URL || 'https://jamessaxcorner.com'}/shop`,
+        item: `${process.env.NEXT_PUBLIC_BASE_URL || 'https://jamessaxcorner.com'}/#brands`,
       },
       {
         '@type': 'ListItem',

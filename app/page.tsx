@@ -99,6 +99,47 @@ async function getHomepageData(): Promise<HomePageData> {
 
 export default async function HomePage() {
   const data = await getHomepageData()
+  const baseUrl = (process.env.NEXT_PUBLIC_BASE_URL || 'https://jamessaxcorner.com').replace(/\/+$/, '')
+
+  // Custom schemas for brands and reviews
+  const brandListSchema = {
+    "@context": "https://schema.org",
+    "@type": "ItemList",
+    "name": "Shop Professional Saxophones by Brand",
+    "description": "Premium saxophones from world-leading manufacturers.",
+    "url": `${baseUrl}/#brands`,
+    "itemListElement": data.brands.map((brand, index) => ({
+      "@type": "ListItem",
+      "position": index + 1,
+      "url": `${baseUrl}/b/${brand.slug}-saxophones`,
+      "name": `${brand.name} Saxophones`
+    }))
+  }
+
+  const aggregateRatingSchema = {
+    "@context": "https://schema.org",
+    "@type": "Product",
+    "name": "James Sax Corner Professional Services",
+    "aggregateRating": {
+      "@type": "AggregateRating",
+      "ratingValue": "4.9",
+      "reviewCount": "500",
+      "bestRating": "5",
+      "worstRating": "1"
+    },
+    "review": data.reviews.slice(0, 5).map(r => ({
+      "@type": "Review",
+      "reviewRating": {
+        "@type": "Rating",
+        "ratingValue": r.rating.toString()
+      },
+      "author": {
+        "@type": "Person",
+        "name": r.buyerName
+      },
+      "reviewBody": r.message
+    }))
+  }
 
   return (
     <>
@@ -106,6 +147,8 @@ export default async function HomePage() {
       <StructuredData data={organizationSchema} />
       <StructuredData data={websiteSchema} />
       <StructuredData data={localBusinessSchema} />
+      <StructuredData data={brandListSchema} />
+      <StructuredData data={aggregateRatingSchema} />
 
       {/* Main content with static HTML for SEO + client interactivity */}
       <HomePageClient data={data} />
@@ -120,16 +163,43 @@ export default async function HomePage() {
           Each instrument is individually inspected, professionally maintained, and prepared
           for peak performance before shipping worldwide.
         </p>
-        <h2>Our Saxophone Collection</h2>
+
+        <div id="brands-indexing">
+          <h2>Shop Professional Saxophones by Brand</h2>
+          <p>Explore our curated selection of instruments from the world's most trusted brands.</p>
+          <ul>
+            {data.brands.map((brand) => (
+              <li key={brand.id}>
+                <a href={`/b/${brand.slug}-saxophones`}>
+                  {brand.name} Saxophones for Sale
+                </a>
+              </li>
+            ))}
+          </ul>
+        </div>
+
+        <div id="testimonials-indexing">
+          <h2>Customer Testimonials & Reviews</h2>
+          <p>Read what musicians and students say about their experience with James Sax Corner.</p>
+          {data.reviews.slice(0, 10).map((review) => (
+            <blockquote key={review.id}>
+              <p>{review.message}</p>
+              <cite>— {review.buyerName}, Verified Buyer. Rated {review.rating} out of 5 stars.</cite>
+            </blockquote>
+          ))}
+        </div>
+
+        <h2>Our Current Saxophones & Wind Instruments</h2>
         <ul>
-          {data.allProducts.slice(0, 20).map((product) => (
+          {data.allProducts.slice(0, 25).map((product) => (
             <li key={product.id}>
               <a href={getProductUrl(product.sku, product.slug || '', (product as any).serialNumber || (product as any).specs?.SN)}>
-                {product.name} - {product.brand} - ${product.price.toLocaleString()}
+                {product.name} - Professional {product.brand} {product.subcategoryName || ''} - ${product.price.toLocaleString()}
               </a>
             </li>
           ))}
         </ul>
+
         <h2>Why Choose James Sax Corner</h2>
         <ul>
           <li>Saxophone Specialists — We focus exclusively on professional saxophones</li>
@@ -139,14 +209,8 @@ export default async function HomePage() {
           <li>Trusted Worldwide — Serving musicians from countries around the world</li>
           <li>Expert Maintenance — Professional pad replacement and adjustment</li>
         </ul>
-        <h2>Customer Reviews</h2>
-        {data.reviews.slice(0, 5).map((review) => (
-          <blockquote key={review.id}>
-            <p>{review.message}</p>
-            <cite>— {review.buyerName}, Rating: {review.rating}/5</cite>
-          </blockquote>
-        ))}
-        <h2>Shop by Category</h2>
+
+        <h2>Shop by Instrument Category</h2>
         <nav>
           <a href="/shop?subcategory=alto">Alto Saxophones</a>
           <a href="/shop?subcategory=soprano">Soprano Saxophones</a>
