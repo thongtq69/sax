@@ -25,14 +25,14 @@ export function MegaMenu({ mobile = false }: MegaMenuProps) {
       try {
         const categoriesData = await getCategories()
         const transformed = categoriesData.map(transformCategory)
-        
+
         // Filter categories and subcategories that have products
         const filtered = transformed.map(cat => {
           const filteredSubs = cat.subcategories?.filter((sub: any) => {
             // We'll show all subcategories for now, filtering will be done by product count on server
             return true
           }) || []
-          
+
           return {
             ...cat,
             subcategories: filteredSubs
@@ -41,7 +41,7 @@ export function MegaMenu({ mobile = false }: MegaMenuProps) {
           // Only show categories that have subcategories with products or are Accessories
           return cat.subcategories && cat.subcategories.length > 0 || cat.slug === 'accessories'
         })
-        
+
         setCategories(filtered)
       } catch (error) {
         console.error('Error fetching categories:', error)
@@ -167,7 +167,7 @@ export function MegaMenu({ mobile = false }: MegaMenuProps) {
                     </div>
                   </Link>
                 ))}
-                
+
                 {/* View All */}
                 <div className="mt-2 pt-2 border-t">
                   <Link
@@ -214,19 +214,19 @@ export function MegaMenu({ mobile = false }: MegaMenuProps) {
                 Shop by Brand
               </div>
               <Link
-                href="/brand/yamaha"
+                href="/b/yamaha-saxophones"
                 className="block rounded-md px-4 py-2 hover:bg-gray-50"
               >
                 Yamaha (15)
               </Link>
               <Link
-                href="/brand/yanagisawa"
+                href="/b/yanagisawa-saxophones"
                 className="block rounded-md px-4 py-2 hover:bg-gray-50"
               >
                 Yanagisawa (10)
               </Link>
               <Link
-                href="/brand/selmer"
+                href="/b/selmer-saxophones"
                 className="block rounded-md px-4 py-2 hover:bg-gray-50"
               >
                 Selmer (3)

@@ -134,10 +134,26 @@ export async function generateMetadata({
     }
 
     const product = transformProduct(apiProduct)
-    const title = `${product.name} - ${product.brand} | James Sax Corner`
-    const description = product.description
-      ? product.description.substring(0, 160).replace(/\n/g, ' ').replace(/<[^>]*>/g, '') + '...'
-      : `Buy ${product.name} by ${product.brand} at James Sax Corner. Premium ${product.category} with professional quality. Serial: ${product.sku}. Price: $${product.price.toLocaleString()}.`
+
+    // Smart identify Origin
+    const lowerBrand = (product.brand || '').toLowerCase()
+    let origin = 'Premium'
+    if (lowerBrand.includes('yamaha') || lowerBrand.includes('yanagisawa')) origin = 'Japanese'
+    else if (lowerBrand.includes('selmer') || lowerBrand.includes('buffet')) origin = 'French'
+    else if (lowerBrand.includes('keilwerth') || lowerBrand.includes('b&s')) origin = 'German'
+    else if (lowerBrand.includes('conn') || lowerBrand.includes('king') || lowerBrand.includes('martin') || lowerBrand.includes('buescher')) origin = 'American'
+    else if (lowerBrand.includes('mauriat') || lowerBrand.includes('eastman') || lowerBrand.includes('cannonball')) origin = 'Taiwanese'
+
+    // Smart identify Level
+    let modelLevel = 'Professional Model'
+    if (product.category === 'student-instruments') {
+      modelLevel = 'Student Model'
+    }
+
+    const title = `${product.name} | ${modelLevel} | James Sax Corner`
+    // Convert e.g., "Yamaha YTS-62 Tenor Saxophone SN 12345" to use the template
+    const baseName = product.name.replace(/\s+SN\s+.*$/i, '')
+    const description = `${baseName} carefully inspected and professionally prepared. Premium ${origin} instrument with worldwide shipping available at James Sax Corner.`
 
     const keywords = [
       product.name,
@@ -226,7 +242,7 @@ export default async function ProductPage({
             "@type": "ListItem",
             "position": 2,
             "name": brandName,
-            "item": `${process.env.NEXT_PUBLIC_BASE_URL || "https://jamessaxcorner.com"}/brand/${brandSlug}`
+            "item": `${process.env.NEXT_PUBLIC_BASE_URL || "https://jamessaxcorner.com"}/b/${brandSlug}-saxophones`
           }] : []),
           ...(product.subBrand ? [{
             "@type": "ListItem",
@@ -248,7 +264,7 @@ export default async function ProductPage({
             {brandName && (
               <>
                 <ChevronRight className="h-3 w-3 md:h-4 md:w-4 text-muted-foreground/50 flex-shrink-0" />
-                <Link href={`/brand/${brandSlug}`} className="text-muted-foreground hover:text-primary transition-colors whitespace-nowrap">
+                <Link href={`/b/${brandSlug}-saxophones`} className="text-muted-foreground hover:text-primary transition-colors whitespace-nowrap">
                   {brandName}
                 </Link>
               </>

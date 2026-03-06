@@ -79,8 +79,36 @@ export async function generateMetadata({
     const displayModel = sampleProduct?.subBrand || modelName
     const subcategory = sampleProduct?.subcategory?.name || ''
 
-    const title = `${displayBrand} ${displayModel} ${subcategory} Saxophone`.replace(/\s+/g, ' ').trim()
-    const description = `Browse all ${title} listings at James Sax Corner. Find the best deals on new and used ${title}.`
+    // Clean up model name
+    let name = displayModel
+    if (name.toLowerCase().startsWith(displayBrand.toLowerCase())) {
+        name = name.substring(displayBrand.length).trim()
+    }
+    if (name.toLowerCase().endsWith('saxophone')) {
+        name = name.substring(0, name.length - 9).trim()
+    }
+    if (subcategory && name.toLowerCase().endsWith(subcategory.toLowerCase())) {
+        name = name.substring(0, name.length - subcategory.length).trim()
+    }
+    const cleanModelName = `${displayBrand} ${name} ${subcategory} Saxophone`.replace(/\s+/g, ' ').trim()
+
+    // Smart identify Origin
+    const lowerBrand = displayBrand.toLowerCase()
+    let origin = 'Premium'
+    if (lowerBrand.includes('yamaha') || lowerBrand.includes('yanagisawa')) origin = 'Japanese'
+    else if (lowerBrand.includes('selmer') || lowerBrand.includes('buffet')) origin = 'French'
+    else if (lowerBrand.includes('keilwerth') || lowerBrand.includes('b&s')) origin = 'German'
+    else if (lowerBrand.includes('conn') || lowerBrand.includes('king') || lowerBrand.includes('martin') || lowerBrand.includes('buescher')) origin = 'American'
+    else if (lowerBrand.includes('mauriat') || lowerBrand.includes('eastman') || lowerBrand.includes('cannonball')) origin = 'Taiwanese'
+
+    // Smart identify Level
+    let modelLevel = 'Professional Model'
+    if (sampleProduct?.category?.slug === 'student-instruments') {
+        modelLevel = 'Student Model'
+    }
+
+    const title = `${cleanModelName} | ${modelLevel} | James Sax Corner`
+    const description = `${cleanModelName}s carefully inspected and professionally prepared. Premium ${origin} instruments with worldwide shipping available at James Sax Corner.`
 
     return {
         title,
@@ -200,7 +228,7 @@ export default async function ModelPage({
                 "@type": "ListItem",
                 "position": 2,
                 "name": displayBrand,
-                "item": `${process.env.NEXT_PUBLIC_BASE_URL || "https://jamessaxcorner.com"}/brand/${brandSlug}`
+                "item": `${process.env.NEXT_PUBLIC_BASE_URL || "https://jamessaxcorner.com"}/b/${brandSlug}-saxophones`
             },
             {
                 "@type": "ListItem",

@@ -148,7 +148,7 @@ export function BrandPageClient({
     if (currentPage > 1) params.set('page', String(currentPage))
 
     const query = params.toString()
-    router.replace(query ? `/brand/${brandSlug}?${query}` : `/brand/${brandSlug}`, { scroll: false })
+    router.replace(query ? `/b/${brandSlug}-saxophones?${query}` : `/b/${brandSlug}-saxophones`, { scroll: false })
   }, [
     selectedModels,
     selectedSubcategories,

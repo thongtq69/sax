@@ -1,4 +1,4 @@
-import { notFound } from 'next/navigation'
+import { notFound, redirect } from 'next/navigation'
 import type { Metadata } from 'next'
 import { prisma } from '@/lib/prisma'
 import { getProductUrl, transformProduct } from '@/lib/api'
@@ -9,9 +9,14 @@ import { BrandPageClient } from '@/components/brand/BrandPageClient'
 export const revalidate = 120
 
 async function getBrandData(slug: string) {
+  // Strip '-saxophones' suffix if it exists
+  const cleanSlug = slug.endsWith('-saxophones')
+    ? slug.substring(0, slug.length - 11)
+    : slug;
+
   const brand = await prisma.brand.findFirst({
     where: {
-      slug,
+      slug: cleanSlug,
       isActive: true,
     },
   })
@@ -43,18 +48,35 @@ export async function generateMetadata({ params }: { params: { slug: string } })
     }
   }
 
-  const { brand, apiProducts } = data
-  const title = `${brand.name} | James Sax Corner`
-  const description =
-    brand.description ||
-    getBrandDescriptionTemplate(brand.name) ||
-    `Browse ${apiProducts.length} ${brand.name} listing${apiProducts.length !== 1 ? 's' : ''} at James Sax Corner.`
+  const { brand } = data
+  const title = `${brand.name} Saxophones for Sale | Professional Models | James Sax Corner`
+
+  // Get some popular models dynamically for the description if possible, or use defaults
+  const modelsMap = new Map<string, number>()
+  data.apiProducts.forEach(p => {
+    const model = p.subBrand?.trim()
+    if (model) modelsMap.set(model, (modelsMap.get(model) || 0) + 1)
+  })
+
+  // Get top 4 most common models
+  const topModels = Array.from(modelsMap.entries())
+    .sort((a, b) => b[1] - a[1])
+    .slice(0, 4)
+    .map(entry => entry[0])
+
+  const modelsString = topModels.length > 0
+    ? ` including ${topModels.join(', ')}`
+    : ''
+
+  const description = `Professional ${brand.name} soprano, alto, tenor saxophones${modelsString}. Carefully inspected instruments with worldwide shipping from James Sax Corner.`
+
+
 
   return {
     title,
     description,
     alternates: {
-      canonical: `${process.env.NEXT_PUBLIC_BASE_URL || 'https://jamessaxcorner.com'}/brand/${brand.slug}`,
+      canonical: `${process.env.NEXT_PUBLIC_BASE_URL || 'https://jamessaxcorner.com'}/b/${brand.slug}-saxophones`,
     },
     openGraph: {
       title,
@@ -66,6 +88,11 @@ export async function generateMetadata({ params }: { params: { slug: string } })
 }
 
 export default async function BrandPage({ params }: { params: { slug: string } }) {
+  // Enforce the -saxophones suffix URL rule via redirect
+  if (!params.slug.endsWith('-saxophones')) {
+    redirect(`/b/${params.slug}-saxophones`)
+  }
+
   const data = await getBrandData(params.slug)
   if (!data) {
     notFound()
@@ -105,8 +132,8 @@ export default async function BrandPage({ params }: { params: { slug: string } }
       {
         '@type': 'ListItem',
         position: 3,
-        name: brand.name,
-        item: `${process.env.NEXT_PUBLIC_BASE_URL || 'https://jamessaxcorner.com'}/brand/${brand.slug}`,
+        name: `${brand.name} Saxophones`,
+        item: `${process.env.NEXT_PUBLIC_BASE_URL || 'https://jamessaxcorner.com'}/b/${brand.slug}-saxophones`,
       },
     ],
   }

@@ -201,7 +201,7 @@ export function ModelPageClient({ data, brandSlug, modelSlug }: ModelPageClientP
                             Home
                         </Link>
                         <ChevronRight className="h-3 w-3 md:h-4 md:w-4 text-muted-foreground/50 flex-shrink-0" />
-                        <Link href={`/brand/${brandSlug}`} className="text-muted-foreground hover:text-primary transition-colors whitespace-nowrap">
+                        <Link href={`/b/${brandSlug}-saxophones`} className="text-muted-foreground hover:text-primary transition-colors whitespace-nowrap">
                             {data.brand}
                         </Link>
                         <ChevronRight className="h-3 w-3 md:h-4 md:w-4 text-muted-foreground/50 flex-shrink-0" />
