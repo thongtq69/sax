@@ -602,11 +602,7 @@ function ListingCard({
                                         <ShoppingCart className="h-4 w-4 mr-2" />
                                         Add to Cart
                                     </Button>
-                                    <Link href={`/inquiry?product=${encodeURIComponent(product.name)}&sku=${encodeURIComponent(product.sku)}`}>
-                                        <Button variant="outline" className="w-full text-sm border-secondary/30 text-secondary hover:bg-secondary/5">
-                                            Make an Offer
-                                        </Button>
-                                    </Link>
+
                                     <Button
                                         type="button"
                                         variant="outline"
