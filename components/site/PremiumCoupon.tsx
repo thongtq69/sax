@@ -89,7 +89,7 @@ export function PremiumCoupon({
                             <div className="flex flex-col">
                                 <span className="text-[9px] font-bold text-zinc-500 uppercase tracking-widest">Promotion Code</span>
                                 <span className={`text-xl font-black font-mono tracking-[0.1em] transition-colors ${copied ? 'text-green-400' : 'text-white'}`}>
-                                    {code}
+                                    {code.toUpperCase()}
                                 </span>
                             </div>
 

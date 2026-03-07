@@ -215,7 +215,7 @@ export default function CouponsAdminPage() {
                                     </div>
                                     <div className="space-y-1.5">
                                         <Label className="text-[10px] uppercase font-bold text-gray-400">Promo Code</Label>
-                                        <Input value={coupon.code} onChange={e => updateCoupon(coupon.id, 'code', e.target.value)} />
+                                        <Input value={coupon.code} onChange={e => updateCoupon(coupon.id, 'code', e.target.value.toUpperCase())} />
                                     </div>
                                 </div>
 

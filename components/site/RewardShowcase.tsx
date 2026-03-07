@@ -70,7 +70,7 @@ export function RewardShowcase() {
                         <PremiumCoupon
                             key={coupon.id}
                             amount={coupon.amount}
-                            code={coupon.code}
+                            code={coupon.code.toUpperCase()}
                             label={coupon.label}
                             description={coupon.description}
                             minSpend={coupon.minSpend}

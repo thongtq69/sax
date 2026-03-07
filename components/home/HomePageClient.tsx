@@ -349,11 +349,6 @@ export function HomePageClient({ data }: { data: HomePageData }) {
             <span className="text-2xl sm:text-3xl text-primary">♬</span>
             <div className="flex-1 h-px bg-primary/30" />
           </div>
-          <div className="text-center mt-2">
-            <Link href="/shop" className="text-xs sm:text-sm text-primary hover:text-secondary transition-colors inline-flex items-center gap-1">
-              View All <ChevronRight className="h-3 w-3 sm:h-4 sm:w-4" />
-            </Link>
-          </div>
         </div>
         <div className="container mx-auto px-4 py-4 sm:py-6">
           <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-4 lg:grid-cols-4 gap-3 sm:gap-4 md:gap-5 lg:gap-6 w-full">

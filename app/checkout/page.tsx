@@ -575,7 +575,7 @@ function CheckoutContent() {
                 >
                   <div className="flex items-center gap-2">
                     <Ticket className="h-4 w-4" />
-                    <span>Apply prmo code</span>
+                    <span>Apply Promo Code</span>
                   </div>
                   <ChevronDown className={`h-4 w-4 transition-transform ${isCouponSectionOpen ? 'rotate-180' : ''}`} />
                 </button>
@@ -586,7 +586,7 @@ function CheckoutContent() {
                       <Input
                         placeholder="Enter code"
                         value={couponCode}
-                        onChange={(e) => setCouponCode(e.target.value)}
+                        onChange={(e) => setCouponCode(e.target.value.toUpperCase())}
                         className="text-sm h-9"
                         onKeyDown={(e) => e.key === 'Enter' && handleApplyCoupon(couponCode)}
                       />
