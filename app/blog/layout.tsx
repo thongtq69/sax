@@ -1,7 +1,8 @@
 import type { Metadata } from 'next'
+import { buildCanonicalUrl } from '@/lib/seo'
 
 export const metadata: Metadata = {
-  title: 'Saxophone Blog - Tips, Reviews & Guides | James Sax Corner',
+  title: 'Saxophone Blog - Tips, Reviews & Guides',
   description: 'Expert saxophone advice, instrument reviews, maintenance tips, and buying guides. Learn from professional saxophonists and instrument specialists at James Sax Corner.',
   keywords: [
     'saxophone blog',
@@ -16,18 +17,18 @@ export const metadata: Metadata = {
     'saxophone history'
   ],
   openGraph: {
-    title: 'Saxophone Blog - Tips, Reviews & Guides | James Sax Corner',
+    title: 'Saxophone Blog - Tips, Reviews & Guides',
     description: 'Expert saxophone advice, instrument reviews, maintenance tips, and buying guides from professional specialists.',
     type: 'website',
     siteName: 'James Sax Corner',
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'Saxophone Blog - Tips, Reviews & Guides | James Sax Corner',
+    title: 'Saxophone Blog - Tips, Reviews & Guides',
     description: 'Expert saxophone advice, instrument reviews, maintenance tips, and buying guides.',
   },
   alternates: {
-    canonical: `${process.env.NEXT_PUBLIC_BASE_URL || 'https://jamessaxcorner.com'}/blog`,
+    canonical: buildCanonicalUrl('/blog'),
   },
 }
 

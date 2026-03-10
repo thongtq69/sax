@@ -2,9 +2,10 @@ import type { Metadata } from 'next'
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
 import { Mail, MessageSquare, Clock, Globe } from 'lucide-react'
+import { buildCanonicalUrl } from '@/lib/seo'
 
 export const metadata: Metadata = {
-  title: 'Contact Us - James Sax Corner',
+  title: 'Contact Us',
   description: 'Get in touch with James Sax Corner for professional saxophone inquiries, expert advice, and customer support. We\'re here to help you find the perfect instrument.',
   keywords: [
     'contact james sax corner',
@@ -15,13 +16,13 @@ export const metadata: Metadata = {
     'musical instrument support'
   ],
   openGraph: {
-    title: 'Contact Us - James Sax Corner',
+    title: 'Contact Us',
     description: 'Get in touch with James Sax Corner for professional saxophone inquiries and expert advice.',
     type: 'website',
     siteName: 'James Sax Corner',
   },
   alternates: {
-    canonical: `${process.env.NEXT_PUBLIC_BASE_URL || 'https://jamessaxcorner.com'}/contact`,
+    canonical: buildCanonicalUrl('/contact'),
   },
 }
 

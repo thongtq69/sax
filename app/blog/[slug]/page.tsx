@@ -5,6 +5,7 @@ import { ChevronRight, Clock, User, Calendar, ArrowLeft, ArrowRight } from 'luci
 import { prisma } from '@/lib/prisma';
 import { BlogSidebar } from '@/components/blog/BlogSidebar';
 import { StructuredData } from '@/components/seo/StructuredData';
+import { getBaseUrl } from '@/lib/seo';
 
 export const revalidate = 300 // Revalidate every 5 minutes
 
@@ -39,7 +40,7 @@ export default async function BlogPostPage({
         }),
     }
 
-    const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'https://jamessaxcorner.com'
+    const baseUrl = getBaseUrl()
 
     // Article structured data for SEO
     const articleSchema = {

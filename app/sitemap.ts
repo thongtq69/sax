@@ -1,9 +1,10 @@
 import { MetadataRoute } from 'next'
 import { prisma } from '@/lib/prisma'
 import { getProductUrl } from '@/lib/api'
+import { getBaseUrl } from '@/lib/seo'
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
-  const baseUrl = (process.env.NEXT_PUBLIC_BASE_URL || 'https://jamessaxcorner.com').replace(/\/+$/, '')
+  const baseUrl = getBaseUrl()
 
   // Static pages
   const staticPages = [
@@ -81,27 +82,6 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       priority: 0.7,
     }))
 
-    // Category/Subcategory pages
-    const categories = await prisma.category.findMany({
-      include: { subcategories: true },
-    })
-    const categoryPages = categories.flatMap((category) => {
-      const pages: MetadataRoute.Sitemap = []
-
-      if (category.subcategories && category.subcategories.length > 0) {
-        category.subcategories.forEach((sub) => {
-          pages.push({
-            url: `${baseUrl}/shop?subcategory=${sub.slug}`,
-            lastModified: new Date(),
-            changeFrequency: 'weekly' as const,
-            priority: 0.7,
-          })
-        })
-      }
-
-      return pages
-    })
-
     // Model pages (unique brand + subBrand combinations)
     const modelsRaw = await prisma.product.findMany({
       where: {
@@ -147,7 +127,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       priority: 0.8,
     }))
 
-    return [...staticPages, ...productPages, ...blogPages, ...categoryPages, ...modelPages, ...brandPages]
+    return [...staticPages, ...productPages, ...blogPages, ...modelPages, ...brandPages]
   } catch (error) {
     console.error('Error generating sitemap:', error)
     return staticPages

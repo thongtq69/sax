@@ -5,6 +5,7 @@ import { SiteLayout } from '@/components/site/SiteLayout'
 import { SessionProvider } from '@/components/providers/SessionProvider'
 import { GoogleAnalytics } from '@next/third-parties/google'
 import { OptimizedCSS } from '@/components/optimization/OptimizedCSS'
+import { buildCanonicalUrl, getBaseUrl } from '@/lib/seo'
 
 const lora = Lora({
   subsets: ['latin'],
@@ -15,7 +16,7 @@ const lora = Lora({
 })
 
 export const metadata: Metadata = {
-  metadataBase: new URL(process.env.NEXT_PUBLIC_BASE_URL || 'https://jamessaxcorner.com'),
+  metadataBase: new URL(getBaseUrl()),
   title: {
     default: 'James Sax Corner - Premium Saxophones & Professional Wind Instruments',
     template: '%s | James Sax Corner'
@@ -49,7 +50,7 @@ export const metadata: Metadata = {
   openGraph: {
     type: 'website',
     locale: 'en_US',
-    url: process.env.NEXT_PUBLIC_BASE_URL || 'https://jamessaxcorner.com',
+    url: getBaseUrl(),
     title: 'James Sax Corner - Premium Saxophones & Professional Wind Instruments',
     description: 'Premium saxophones, expertly maintained for peak performance. Trusted by musicians worldwide, backed by outstanding reviews.',
     siteName: 'James Sax Corner',
@@ -63,7 +64,7 @@ export const metadata: Metadata = {
     google: '_P7lYBUK9Gz8XYecWbXTg_pX3uoY4ZBU_jF6jgcqcC4',
   },
   alternates: {
-    canonical: process.env.NEXT_PUBLIC_BASE_URL || 'https://jamessaxcorner.com',
+    canonical: buildCanonicalUrl(),
   },
 }
 

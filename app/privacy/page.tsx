@@ -1,10 +1,11 @@
 import type { Metadata } from 'next'
+import { buildCanonicalUrl } from '@/lib/seo'
 
 export const metadata: Metadata = {
-  title: 'Privacy Policy - James Sax Corner',
+  title: 'Privacy Policy',
   description: 'Privacy Policy for James Sax Corner. Learn how we collect, use, and protect your personal information when you shop for professional saxophones.',
   alternates: {
-    canonical: `${process.env.NEXT_PUBLIC_BASE_URL || 'https://jamessaxcorner.com'}/privacy`,
+    canonical: buildCanonicalUrl('/privacy'),
   },
 }
 

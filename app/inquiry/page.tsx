@@ -1,9 +1,10 @@
 import { Suspense } from 'react'
 import type { Metadata } from 'next'
 import InquiryForm from './InquiryForm'
+import { buildCanonicalUrl } from '@/lib/seo'
 
 export const metadata: Metadata = {
-  title: 'Product Inquiry - Contact Us | James Sax Corner',
+  title: 'Product Inquiry',
   description: 'Have questions about our professional saxophones? Contact James Sax Corner for expert advice, product information, and personalized recommendations. We\'re here to help you find the perfect instrument.',
   keywords: [
     'saxophone inquiry',
@@ -16,18 +17,18 @@ export const metadata: Metadata = {
     'saxophone help'
   ],
   openGraph: {
-    title: 'Product Inquiry - Contact Us | James Sax Corner',
+    title: 'Product Inquiry',
     description: 'Have questions about our professional saxophones? Contact us for expert advice and personalized recommendations.',
     type: 'website',
     siteName: 'James Sax Corner',
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'Product Inquiry - Contact Us | James Sax Corner',
+    title: 'Product Inquiry',
     description: 'Have questions about our professional saxophones? Contact us for expert advice.',
   },
   alternates: {
-    canonical: `${process.env.NEXT_PUBLIC_BASE_URL || 'https://jamessaxcorner.com'}/inquiry`,
+    canonical: buildCanonicalUrl('/inquiry'),
   },
 }
 
@@ -38,9 +39,22 @@ function InquiryFallback() {
         <div className="bg-white shadow-xl rounded-2xl border border-gray-100 overflow-hidden">
           <div className="bg-secondary text-white px-5 py-4">
             <h1 className="text-xl md:text-2xl font-bold">Product Inquiry</h1>
-            <p className="text-sm text-white/80">Loading inquiry form...</p>
+            <p className="text-sm text-white/80">Get expert advice on saxophones, availability, and model recommendations.</p>
           </div>
-          <div className="p-6 md:p-8 text-sm text-muted-foreground">Please wait a moment.</div>
+          <div className="p-6 md:p-8 space-y-4">
+            <p className="text-sm text-muted-foreground">
+              Contact James Sax Corner for help choosing the right alto, tenor, soprano, or baritone saxophone.
+            </p>
+            <div className="text-sm text-muted-foreground space-y-2">
+              <p>We can help with:</p>
+              <ul className="list-disc pl-5 space-y-1">
+                <li>Product availability and pricing</li>
+                <li>Model comparisons and recommendations</li>
+                <li>Shipping and payment questions</li>
+                <li>Condition, setup, and playability details</li>
+              </ul>
+            </div>
+          </div>
         </div>
       </div>
     </div>

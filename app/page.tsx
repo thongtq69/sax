@@ -3,6 +3,7 @@ import { getProductUrl, transformProduct } from '@/lib/api'
 import { StructuredData, organizationSchema, websiteSchema, localBusinessSchema } from '@/components/seo/StructuredData'
 import { HomePageClient, type HomePageData } from '@/components/home/HomePageClient'
 import type { Review } from '@/lib/reviews'
+import { getBaseUrl } from '@/lib/seo'
 
 // Revalidate homepage every 60 seconds for fresh data
 export const revalidate = 60
@@ -99,7 +100,7 @@ async function getHomepageData(): Promise<HomePageData> {
 
 export default async function HomePage() {
   const data = await getHomepageData()
-  const baseUrl = (process.env.NEXT_PUBLIC_BASE_URL || 'https://jamessaxcorner.com').replace(/\/+$/, '')
+  const baseUrl = getBaseUrl()
 
   // Custom schemas for brands and reviews
   const brandListSchema = {
@@ -219,10 +220,10 @@ export default async function HomePage() {
 
         <h2>Shop by Instrument Category</h2>
         <nav>
-          <a href="/shop?subcategory=alto">Alto Saxophones</a>
-          <a href="/shop?subcategory=soprano">Soprano Saxophones</a>
-          <a href="/shop?subcategory=tenor">Tenor Saxophones</a>
-          <a href="/shop?subcategory=baritone">Baritone Saxophones</a>
+          <span>Alto Saxophones</span>
+          <span>Soprano Saxophones</span>
+          <span>Tenor Saxophones</span>
+          <span>Baritone Saxophones</span>
           <a href="/shop">All Instruments</a>
           <a href="/about">About Us</a>
           <a href="/blog">Saxophone Blog</a>

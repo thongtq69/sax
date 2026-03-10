@@ -672,8 +672,41 @@ function ShopPageContent() {
 export default function ShopPage() {
   return (
     <Suspense fallback={
-      <div className="flex items-center justify-center min-h-screen">
-        <LoadingSpinner size="xl" text="Loading products..." />
+      <div className="min-h-screen bg-background">
+        <section className="border-b bg-secondary text-white">
+          <div className="container mx-auto px-4 py-10 text-center">
+            <h1 className="text-3xl font-bold">Shop Professional Saxophones</h1>
+            <p className="mt-3 text-sm text-white/80 max-w-2xl mx-auto">
+              Browse premium alto, tenor, soprano, and baritone saxophones from trusted brands including Yamaha, Selmer, and Yanagisawa.
+            </p>
+          </div>
+        </section>
+
+        <section className="container mx-auto px-4 py-10 max-w-5xl space-y-8">
+          <div>
+            <h2 className="text-xl font-semibold text-secondary">Shop by Category</h2>
+            <div className="mt-4 flex flex-wrap gap-3">
+              <a className="rounded-full border px-4 py-2 text-sm hover:border-primary hover:text-primary transition-colors" href="/shop">All Saxophones</a>
+              <span className="rounded-full border px-4 py-2 text-sm text-muted-foreground">Alto Saxophones</span>
+              <span className="rounded-full border px-4 py-2 text-sm text-muted-foreground">Tenor Saxophones</span>
+              <span className="rounded-full border px-4 py-2 text-sm text-muted-foreground">Soprano Saxophones</span>
+              <span className="rounded-full border px-4 py-2 text-sm text-muted-foreground">Baritone Saxophones</span>
+            </div>
+          </div>
+
+          <div>
+            <h2 className="text-xl font-semibold text-secondary">Shop by Brand</h2>
+            <div className="mt-4 flex flex-wrap gap-3">
+              <a className="rounded-full border px-4 py-2 text-sm hover:border-primary hover:text-primary transition-colors" href="/b/yamaha-saxophones">Yamaha</a>
+              <a className="rounded-full border px-4 py-2 text-sm hover:border-primary hover:text-primary transition-colors" href="/b/selmer-saxophones">Selmer</a>
+              <a className="rounded-full border px-4 py-2 text-sm hover:border-primary hover:text-primary transition-colors" href="/b/yanagisawa-saxophones">Yanagisawa</a>
+            </div>
+          </div>
+
+          <div className="rounded-2xl border bg-white p-6 text-sm text-muted-foreground shadow-sm">
+            Loading the full product catalog with filters, pricing, and availability.
+          </div>
+        </section>
       </div>
     }>
       <ShopPageContent />

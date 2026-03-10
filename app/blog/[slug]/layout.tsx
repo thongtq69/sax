@@ -1,5 +1,6 @@
 import { Metadata } from 'next'
 import { getBlogPostBySlug, transformBlogPost } from '@/lib/api'
+import { buildCanonicalUrl } from '@/lib/seo'
 
 export async function generateMetadata({
     params,
@@ -15,13 +16,11 @@ export async function generateMetadata({
         }
 
         const post = transformBlogPost(postData)
-        const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'https://jamessaxcorner.com'
-
         return {
-            title: `${post.title} | James Sax Corner Blog`,
+            title: post.title,
             description: post.excerpt || 'Expert saxophone advice and guides.',
             alternates: {
-                canonical: `${baseUrl}/blog/${params.slug}`,
+                canonical: buildCanonicalUrl(`/blog/${params.slug}`),
             },
             openGraph: {
                 title: post.title,

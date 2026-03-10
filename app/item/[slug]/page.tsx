@@ -7,6 +7,7 @@ import { generateSlug, getModelSlug } from '@/lib/slug-utils'
 import { ProductDetailClient } from '@/components/product/ProductDetailClient'
 import { StructuredData } from '@/components/seo/StructuredData'
 import { ChevronRight, Home } from 'lucide-react'
+import { buildCanonicalUrl, getBaseUrl } from '@/lib/seo'
 
 // Server-side product schema generator
 function generateProductSchema(product: any) {
@@ -150,7 +151,7 @@ export async function generateMetadata({
       modelLevel = 'Student Model'
     }
 
-    const title = `${product.name} | ${modelLevel} | James Sax Corner`
+    const title = `${product.name} | ${modelLevel}`
     // Convert e.g., "Yamaha YTS-62 Tenor Saxophone SN 12345" to use the template
     const baseName = product.name.replace(/\s+SN\s+.*$/i, '')
     const description = `${baseName} carefully inspected and professionally prepared. Premium ${origin} instrument with worldwide shipping available at James Sax Corner.`
@@ -189,7 +190,7 @@ export async function generateMetadata({
         images: product.images.length > 0 ? [product.images[0]] : [],
       },
       alternates: {
-        canonical: `${process.env.NEXT_PUBLIC_BASE_URL || 'https://jamessaxcorner.com'}${getProductUrl(product.sku, product.slug, product.serialNumber)}`,
+        canonical: buildCanonicalUrl(getProductUrl(product.sku, product.slug, product.serialNumber)),
       },
     }
   } catch (error) {
@@ -236,19 +237,19 @@ export default async function ProductPage({
             "@type": "ListItem",
             "position": 1,
             "name": "Home",
-            "item": process.env.NEXT_PUBLIC_BASE_URL || "https://jamessaxcorner.com"
+            "item": getBaseUrl()
           },
           ...(brandName ? [{
             "@type": "ListItem",
             "position": 2,
             "name": brandName,
-            "item": `${process.env.NEXT_PUBLIC_BASE_URL || "https://jamessaxcorner.com"}/b/${brandSlug}-saxophones`
+            "item": buildCanonicalUrl(`/b/${brandSlug}-saxophones`)
           }] : []),
           ...(product.subBrand ? [{
             "@type": "ListItem",
             "position": 3,
             "name": `${product.brand} ${product.subBrand} ${product.subcategoryName || ''} saxophone`.replace(/\s+/g, ' ').trim(),
-            "item": `${process.env.NEXT_PUBLIC_BASE_URL || "https://jamessaxcorner.com"}/p/${getModelSlug(product.brand, product.subBrand, product.subcategoryName)}`
+            "item": buildCanonicalUrl(`/p/${getModelSlug(product.brand, product.subBrand, product.subcategoryName)}`)
           }] : [])
         ]
       }} />

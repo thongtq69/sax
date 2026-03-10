@@ -1,4 +1,5 @@
 import type { Metadata } from 'next'
+import { buildCanonicalUrl } from '@/lib/seo'
 
 export const metadata: Metadata = {
   title: 'About James Sax Corner - Professional Saxophone Specialists',
@@ -25,7 +26,7 @@ export const metadata: Metadata = {
     description: 'Learn about James Sax Corner, your trusted source for professional saxophones.',
   },
   alternates: {
-    canonical: `${process.env.NEXT_PUBLIC_BASE_URL || 'https://jamessaxcorner.com'}/about`,
+    canonical: buildCanonicalUrl('/about'),
   },
 }
 

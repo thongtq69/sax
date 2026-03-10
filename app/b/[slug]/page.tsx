@@ -5,6 +5,7 @@ import { getProductUrl, transformProduct } from '@/lib/api'
 import { getBrandDescriptionTemplate } from '@/lib/brand-description'
 import { StructuredData } from '@/components/seo/StructuredData'
 import { BrandPageClient } from '@/components/brand/BrandPageClient'
+import { buildCanonicalUrl, getBaseUrl } from '@/lib/seo'
 
 export const revalidate = 120
 
@@ -61,7 +62,7 @@ export async function generateMetadata({ params }: { params: { slug: string } })
     title,
     description,
     alternates: {
-      canonical: `${process.env.NEXT_PUBLIC_BASE_URL || 'https://jamessaxcorner.com'}/b/${brand.slug}-saxophones`,
+      canonical: buildCanonicalUrl(`/b/${brand.slug}-saxophones`),
     },
     openGraph: {
       title,
@@ -106,19 +107,19 @@ export default async function BrandPage({ params }: { params: { slug: string } }
         '@type': 'ListItem',
         position: 1,
         name: 'Home',
-        item: process.env.NEXT_PUBLIC_BASE_URL || 'https://jamessaxcorner.com',
+        item: getBaseUrl(),
       },
       {
         '@type': 'ListItem',
         position: 2,
         name: 'Brands',
-        item: `${process.env.NEXT_PUBLIC_BASE_URL || 'https://jamessaxcorner.com'}/#brands`,
+        item: `${getBaseUrl()}/#brands`,
       },
       {
         '@type': 'ListItem',
         position: 3,
         name: `${brand.name} Saxophones`,
-        item: `${process.env.NEXT_PUBLIC_BASE_URL || 'https://jamessaxcorner.com'}/b/${brand.slug}-saxophones`,
+        item: buildCanonicalUrl(`/b/${brand.slug}-saxophones`),
       },
     ],
   }
@@ -131,7 +132,7 @@ export default async function BrandPage({ params }: { params: { slug: string } }
     itemListElement: products.slice(0, 20).map((product, index) => ({
       '@type': 'ListItem',
       position: index + 1,
-      url: `${process.env.NEXT_PUBLIC_BASE_URL || 'https://jamessaxcorner.com'}${getProductUrl(product.sku, product.slug || '', (product as any).serialNumber)}`,
+      url: `${getBaseUrl()}${getProductUrl(product.sku, product.slug || '', (product as any).serialNumber)}`,
       name: product.name,
     })),
   }

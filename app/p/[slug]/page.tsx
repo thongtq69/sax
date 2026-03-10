@@ -5,6 +5,7 @@ import { transformProduct } from '@/lib/api'
 import { generateSlug } from '@/lib/slug-utils'
 import { ModelPageClient } from '@/components/model/ModelPageClient'
 import { StructuredData } from '@/components/seo/StructuredData'
+import { buildCanonicalUrl, getBaseUrl } from '@/lib/seo'
 
 // Helper: find products matching a model slug (formerly brand + model)
 async function findModelProductsBySlug(slug: string) {
@@ -107,7 +108,7 @@ export async function generateMetadata({
         modelLevel = 'Student Model'
     }
 
-    const title = `${cleanModelName} | ${modelLevel} | James Sax Corner`
+    const title = `${cleanModelName} | ${modelLevel}`
     const description = `${cleanModelName}s carefully inspected and professionally prepared. Premium ${origin} instruments with worldwide shipping available at James Sax Corner.`
 
     return {
@@ -120,7 +121,7 @@ export async function generateMetadata({
             siteName: 'James Sax Corner',
         },
         alternates: {
-            canonical: `${process.env.NEXT_PUBLIC_BASE_URL || 'https://jamessaxcorner.com'}/p/${params.slug}`,
+            canonical: buildCanonicalUrl(`/p/${params.slug}`),
         },
     }
 }
@@ -222,19 +223,19 @@ export default async function ModelPage({
                 "@type": "ListItem",
                 "position": 1,
                 "name": "Home",
-                "item": process.env.NEXT_PUBLIC_BASE_URL || "https://jamessaxcorner.com"
+                "item": getBaseUrl()
             },
             {
                 "@type": "ListItem",
                 "position": 2,
                 "name": displayBrand,
-                "item": `${process.env.NEXT_PUBLIC_BASE_URL || "https://jamessaxcorner.com"}/b/${brandSlug}-saxophones`
+                "item": buildCanonicalUrl(`/b/${brandSlug}-saxophones`)
             },
             {
                 "@type": "ListItem",
                 "position": 3,
                 "name": modelData.model,
-                "item": `${process.env.NEXT_PUBLIC_BASE_URL || "https://jamessaxcorner.com"}/p/${params.slug}`
+                "item": buildCanonicalUrl(`/p/${params.slug}`)
             }
         ]
     }
