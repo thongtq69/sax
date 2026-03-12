@@ -54,11 +54,20 @@ export const metadata: Metadata = {
     title: 'James Sax Corner - Premium Saxophones & Professional Wind Instruments',
     description: 'Premium saxophones, expertly maintained for peak performance. Trusted by musicians worldwide, backed by outstanding reviews.',
     siteName: 'James Sax Corner',
+    images: [
+      {
+        url: '/1000007654.svg',
+        width: 1200,
+        height: 630,
+        alt: 'James Sax Corner Banner',
+      },
+    ],
   },
   twitter: {
     card: 'summary_large_image',
     title: 'James Sax Corner - Premium Saxophones',
     description: 'Premium saxophones, expertly maintained for peak performance. Trusted by musicians worldwide.',
+    images: ['/1000007654.svg'],
   },
   verification: {
     google: '_P7lYBUK9Gz8XYecWbXTg_pX3uoY4ZBU_jF6jgcqcC4',

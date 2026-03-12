@@ -16,6 +16,8 @@ export async function generateMetadata({
         }
 
         const post = transformBlogPost(postData)
+        const ogImage = post.image || '/1000007654.svg'
+
         return {
             title: post.title,
             description: post.excerpt || 'Expert saxophone advice and guides.',
@@ -25,8 +27,14 @@ export async function generateMetadata({
             openGraph: {
                 title: post.title,
                 description: post.excerpt,
-                images: post.image ? [post.image] : [],
+                images: [ogImage],
                 type: 'article',
+            },
+            twitter: {
+                card: 'summary_large_image',
+                title: post.title,
+                description: post.excerpt,
+                images: [ogImage],
             },
         }
     } catch (error) {

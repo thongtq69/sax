@@ -110,6 +110,7 @@ export async function generateMetadata({
 
     const title = `${cleanModelName} | ${modelLevel}`
     const description = `${cleanModelName}s carefully inspected and professionally prepared. Premium ${origin} instruments with worldwide shipping available at James Sax Corner.`
+    const ogImage = sampleProduct?.images?.[0] || '/1000007654.svg'
 
     return {
         title,
@@ -119,6 +120,13 @@ export async function generateMetadata({
             description,
             type: 'website',
             siteName: 'James Sax Corner',
+            images: [ogImage],
+        },
+        twitter: {
+            card: 'summary_large_image',
+            title,
+            description,
+            images: [ogImage],
         },
         alternates: {
             canonical: buildCanonicalUrl(`/p/${params.slug}`),

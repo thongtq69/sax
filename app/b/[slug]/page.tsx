@@ -51,12 +51,8 @@ export async function generateMetadata({ params }: { params: { slug: string } })
 
   const { brand } = data
   const title = `Premium Saxophones | ${brand.name}`
-
-
-
   const description = `Professional ${brand.name} saxophones carefully inspected and prepared. Premium instruments with worldwide shipping from James Sax Corner.`
-
-
+  const ogImage = brand.logo || '/1000007654.svg'
 
   return {
     title,
@@ -69,6 +65,13 @@ export async function generateMetadata({ params }: { params: { slug: string } })
       description,
       type: 'website',
       siteName: 'James Sax Corner',
+      images: [ogImage],
+    },
+    twitter: {
+      card: 'summary_large_image',
+      title,
+      description,
+      images: [ogImage],
     },
   }
 }
