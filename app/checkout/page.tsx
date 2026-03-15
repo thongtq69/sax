@@ -489,11 +489,6 @@ function CheckoutContent() {
                         {shippingInfo.country ? `${shippingInfo.country}${shippingInfo.zip ? ` - ${shippingInfo.zip}` : ''}` : 'Select country above'}
                       </span>
                     </div>
-                    {shippingMessage && (
-                      <p className={`text-sm mt-1 font-medium ${shippingCost === 25 ? 'text-green-600' : 'text-amber-600'}`}>
-                        {shippingMessage}
-                      </p>
-                    )}
                   </div>
                   <Button
                     variant="outline"

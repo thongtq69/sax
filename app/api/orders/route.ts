@@ -4,13 +4,54 @@ import { deductOrderStock } from '@/lib/order-stock'
 
 export const dynamic = 'force-dynamic'
 
+async function enrichOrdersWithProducts(orders: any[]) {
+  const productIds = orders.flatMap(order => order.items.map((item: any) => item.productId))
+  const uniqueProductIds = [...new Set(productIds)]
+
+  const products = await prisma.product.findMany({
+    where: { id: { in: uniqueProductIds } },
+    select: { id: true, sku: true, name: true },
+  })
+
+  const productMap = new Map(products.map(p => [p.id, { sku: p.sku, name: p.name }]))
+
+  return orders.map(order => ({
+    ...order,
+    items: order.items.map((item: any) => ({
+      ...item,
+      productSku: productMap.get(item.productId)?.sku || 'N/A',
+      productName: productMap.get(item.productId)?.name || 'Unknown Product',
+    })),
+  }))
+}
+
 export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url)
+    const id = searchParams.get('id')
     const status = searchParams.get('status')
     const search = searchParams.get('search')
     const page = parseInt(searchParams.get('page') || '1')
     const limit = parseInt(searchParams.get('limit') || '20')
+
+    if (id) {
+      const order = await prisma.order.findUnique({
+        where: { id },
+        include: {
+          items: true,
+          user: {
+            select: { id: true, name: true, email: true },
+          },
+        },
+      })
+
+      if (!order) {
+        return NextResponse.json({ error: 'Không tìm thấy đơn hàng' }, { status: 404 })
+      }
+
+      const [enrichedOrder] = await enrichOrdersWithProducts([order])
+      return NextResponse.json({ order: enrichedOrder })
+    }
 
     const where: any = {}
 
@@ -46,26 +87,7 @@ export async function GET(request: NextRequest) {
       prisma.order.count({ where }),
     ])
 
-    // Fetch product Serials for all order items
-    const productIds = orders.flatMap(order => order.items.map(item => item.productId))
-    const uniqueProductIds = [...new Set(productIds)]
-
-    const products = await prisma.product.findMany({
-      where: { id: { in: uniqueProductIds } },
-      select: { id: true, sku: true, name: true },
-    })
-
-    const productMap = new Map(products.map(p => [p.id, { sku: p.sku, name: p.name }]))
-
-    // Add Serial info to order items
-    const ordersWithSku = orders.map(order => ({
-      ...order,
-      items: order.items.map(item => ({
-        ...item,
-        productSku: productMap.get(item.productId)?.sku || 'N/A',
-        productName: productMap.get(item.productId)?.name || 'Unknown Product',
-      })),
-    }))
+    const ordersWithSku = await enrichOrdersWithProducts(orders)
 
     return NextResponse.json({
       orders: ordersWithSku,
@@ -81,7 +103,7 @@ export async function GET(request: NextRequest) {
 
 export async function PATCH(request: NextRequest) {
   try {
-    const { id, status } = await request.json()
+    const { id, status, carrier, trackingNumber } = await request.json()
 
     if (!id) {
       return NextResponse.json(
@@ -90,15 +112,15 @@ export async function PATCH(request: NextRequest) {
       )
     }
 
-    if (!status) {
+    if (!status && carrier === undefined && trackingNumber === undefined) {
       return NextResponse.json(
-        { error: 'Thiếu thông tin', message: 'Vui lòng chọn trạng thái đơn hàng' },
+        { error: 'Thiếu thông tin', message: 'Vui lòng cập nhật ít nhất một trường đơn hàng' },
         { status: 400 }
       )
     }
 
     const validStatuses = ['pending', 'paid', 'processing', 'shipped', 'delivered', 'cancelled']
-    if (!validStatuses.includes(status)) {
+    if (status && !validStatuses.includes(status)) {
       return NextResponse.json(
         { error: 'Trạng thái không hợp lệ', message: `Trạng thái phải là một trong: ${validStatuses.join(', ')}` },
         { status: 400 }
@@ -121,13 +143,21 @@ export async function PATCH(request: NextRequest) {
       )
     }
 
-    // Update order status
+    const nextShippingAddress = {
+      ...((existingOrder.shippingAddress as any) || {}),
+      ...(carrier !== undefined ? { carrier: carrier || null } : {}),
+      ...(trackingNumber !== undefined ? { trackingNumber: trackingNumber || null } : {}),
+    }
+
     const order = await prisma.order.update({
       where: { id },
-      data: { status },
+      data: {
+        ...(status ? { status } : {}),
+        ...(carrier !== undefined || trackingNumber !== undefined ? { shippingAddress: nextShippingAddress } : {}),
+      },
     })
 
-    const shouldDeductStock = ['paid', 'processing', 'shipped', 'delivered'].includes(status)
+    const shouldDeductStock = status ? ['paid', 'processing', 'shipped', 'delivered'].includes(status) : false
     if (shouldDeductStock) {
       try {
         const stockResult = await deductOrderStock(id, `admin-order-status-${status}`)
@@ -162,7 +192,7 @@ export async function PATCH(request: NextRequest) {
           // For email: show full payment amount (including shipping)
           // Customer paid $30 total, so show $30 in email
           const subtotal = existingOrder.items.reduce((sum, item) => sum + (item.price * item.quantity), 0)
-          const shipping = existingOrder.total - subtotal // Calculate actual shipping cost
+          const shipping = Math.max(0, existingOrder.total + (existingOrder.discount || 0) - subtotal)
           const tax = 0
           const totalForEmail = existingOrder.total // Full amount customer paid
 
@@ -185,6 +215,8 @@ export async function PATCH(request: NextRequest) {
             shipping,
             tax,
             total: totalForEmail, // Show full payment amount in email
+            discount: existingOrder.discount || 0,
+            couponCode: existingOrder.couponCode || undefined,
             shippingAddress: shippingAddress ? {
               firstName: shippingAddress.firstName || '',
               lastName: shippingAddress.lastName || '',

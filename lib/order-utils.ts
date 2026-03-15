@@ -42,3 +42,33 @@ export function generateUniqueOrderNumber(): string {
   
   return orderNumber
 }
+
+export function getTrackingUrl(carrier?: string | null, trackingNumber?: string | null): string | null {
+  const normalizedCarrier = carrier?.trim().toLowerCase()
+  const normalizedTracking = trackingNumber?.trim()
+
+  if (!normalizedCarrier || !normalizedTracking) {
+    return null
+  }
+
+  const encodedTracking = encodeURIComponent(normalizedTracking)
+
+  switch (normalizedCarrier) {
+    case 'fedex':
+      return `https://www.fedex.com/fedextrack/?trknbr=${encodedTracking}`
+    case 'ups':
+      return `https://www.ups.com/track?tracknum=${encodedTracking}`
+    case 'dhl':
+      return `https://www.dhl.com/us-en/home/tracking.html?tracking-id=${encodedTracking}`
+    default:
+      return null
+  }
+}
+
+export function getOrderTrackingMeta(shippingAddress: any) {
+  return {
+    carrier: shippingAddress?.carrier || null,
+    trackingNumber: shippingAddress?.trackingNumber || null,
+    trackingUrl: getTrackingUrl(shippingAddress?.carrier, shippingAddress?.trackingNumber),
+  }
+}

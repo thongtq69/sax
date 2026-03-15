@@ -61,7 +61,7 @@ export default function AdminLayout({
   }
 
   return (
-    <div className="min-h-screen bg-gray-100">
+    <div className="min-h-screen bg-[radial-gradient(circle_at_top,_rgba(175,166,95,0.18),_transparent_30%),linear-gradient(180deg,#f8f5ea_0%,#eef2f7_45%,#f7fafc_100%)]">
       {/* Mobile Header */}
       <div className="lg:hidden bg-white border-b sticky top-0 z-40 shadow-sm">
         <div className="flex items-center justify-between p-4">
@@ -140,7 +140,7 @@ export default function AdminLayout({
           </header>
 
           {/* Page Content */}
-          <div className="p-4 lg:p-6">
+          <div className="mx-auto w-full max-w-7xl p-4 lg:p-6">
             {children}
           </div>
         </main>

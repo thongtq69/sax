@@ -2,6 +2,7 @@ import { auth } from '@/lib/auth'
 import { redirect } from 'next/navigation'
 import { prisma } from '@/lib/prisma'
 import { getProductUrl } from '@/lib/api'
+import { getOrderTrackingMeta } from '@/lib/order-utils'
 import { ShoppingBag, Package, Clock, Truck, CheckCircle, XCircle, CreditCard } from 'lucide-react'
 import Link from 'next/link'
 
@@ -76,6 +77,7 @@ export default async function OrdersPage() {
                   const status = statusConfig[order.status] || statusConfig.pending
                   const StatusIcon = status.icon
                   const shippingAddr = order.shippingAddress as any
+                  const trackingMeta = getOrderTrackingMeta(shippingAddr)
 
                   return (
                     <div key={order.id} className="border rounded-lg p-4 hover:border-blue-200 transition-colors">
@@ -141,13 +143,33 @@ export default async function OrdersPage() {
 
                       {/* Order Footer */}
                       <div className="flex flex-wrap items-center justify-between gap-2 pt-3 border-t">
-                        <div className="text-sm text-gray-500">
+                        <div className="text-sm text-gray-500 space-y-1">
                           {shippingAddr?.city && (
-                            <span>Ship to: {shippingAddr.city}, {shippingAddr.country}</span>
+                            <div>Ship to: {shippingAddr.city}, {shippingAddr.country}</div>
+                          )}
+                          {trackingMeta.trackingNumber && (
+                            <div className="flex flex-wrap items-center gap-2 text-blue-600">
+                              <span>
+                                Tracking: {trackingMeta.carrier?.toUpperCase()} {trackingMeta.trackingNumber}
+                              </span>
+                              {trackingMeta.trackingUrl && (
+                                <Link href={trackingMeta.trackingUrl} target="_blank" className="hover:underline">
+                                  Track package
+                                </Link>
+                              )}
+                            </div>
                           )}
                         </div>
-                        <div className="text-lg font-bold text-primary">
-                          Total: ${order.total.toLocaleString()}
+                        <div className="flex items-center gap-4">
+                          <div className="text-lg font-bold text-primary">
+                            Total: ${order.total.toLocaleString()}
+                          </div>
+                          <Link
+                            href={`/account/orders/${order.id}`}
+                            className="inline-flex items-center rounded-md border px-3 py-2 text-sm font-medium text-blue-600 hover:bg-blue-50"
+                          >
+                            View details
+                          </Link>
                         </div>
                       </div>
                     </div>

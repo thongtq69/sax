@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import Link from 'next/link'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import {
@@ -10,7 +11,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
-import { Search, ShoppingCart, Package, Truck, CheckCircle, Loader2, RefreshCw, Trash2 } from 'lucide-react'
+import { Search, ShoppingCart, Package, Truck, CheckCircle, Loader2, RefreshCw, Trash2, Eye } from 'lucide-react'
 import {
   Dialog,
   DialogContent,
@@ -264,8 +265,7 @@ export default function OrdersManagement() {
                 {orders.map((order) => (
                   <tr
                     key={order.id}
-                    className="hover:bg-gray-50 cursor-pointer"
-                    onClick={() => setSelectedOrder(order)}
+                    className="hover:bg-gray-50"
                   >
                     <td className="px-6 py-4 whitespace-nowrap text-sm font-mono text-gray-900">
                       #{order.orderNumber || order.id.slice(-8)}
@@ -310,6 +310,15 @@ export default function OrdersManagement() {
                       </Select>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium" onClick={(e) => e.stopPropagation()}>
+                      <Button
+                        asChild
+                        variant="ghost"
+                        size="sm"
+                      >
+                        <Link href={`/admin/orders/${order.id}`} title="View details">
+                          <Eye className="h-4 w-4" />
+                        </Link>
+                      </Button>
                       <Button
                         variant="outline"
                         size="sm"

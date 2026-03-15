@@ -587,9 +587,7 @@ function ListingCard({
                                 <p className="text-xs text-muted-foreground mt-0.5">
                                     + ${product.shippingCost.toLocaleString()} Shipping
                                 </p>
-                            ) : (
-                                <p className="text-xs text-green-700 mt-0.5 font-medium">Free Shipping</p>
-                            )}
+                            ) : null}
                         </div>
 
                         <div className="flex flex-col gap-2 w-full sm:w-auto">
@@ -709,9 +707,7 @@ function GridCard({
                     <div className="text-lg font-bold text-secondary">${product.price.toLocaleString()}</div>
                     {product.shippingCost && product.shippingCost > 0 ? (
                         <p className="text-[10px] text-muted-foreground">+ ${product.shippingCost.toLocaleString()} ship</p>
-                    ) : (
-                        <p className="text-[10px] text-green-700 font-medium">Free Shipping</p>
-                    )}
+                    ) : null}
 
                     {!isSoldOut && (
                         <>
@@ -778,9 +774,7 @@ function FeaturedListing({
                         <p className="text-2xl font-bold text-secondary">${product.price.toLocaleString()}</p>
                         {product.shippingCost && product.shippingCost > 0 ? (
                             <p className="text-sm text-muted-foreground">+ ${product.shippingCost.toLocaleString()} shipping</p>
-                        ) : (
-                            <p className="text-sm text-green-700 font-medium">Free Shipping</p>
-                        )}
+                        ) : null}
                     </div>
 
                     <div className="mt-4 flex flex-wrap gap-2">

@@ -60,22 +60,24 @@ export async function POST(
       )
     }
 
-    const deliveredOrderItem = await prisma.orderItem.findFirst({
+    const purchasedOrderItem = await prisma.orderItem.findFirst({
       where: {
         productId: params.id,
         order: {
           userId: session.user.id,
-          status: 'delivered',
+          status: {
+            in: ['paid', 'processing', 'shipped', 'delivered'],
+          },
         },
       },
       select: { id: true },
     })
 
-    if (!deliveredOrderItem) {
+    if (!purchasedOrderItem) {
       return NextResponse.json(
         {
           error: 'Review not eligible',
-          message: 'You can review this product after your order is delivered.',
+          message: 'You can review this product after purchase.',
         },
         { status: 403 }
       )

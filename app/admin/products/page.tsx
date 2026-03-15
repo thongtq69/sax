@@ -45,8 +45,10 @@ export default function ProductsManagement() {
   const [selectedCategory, setSelectedCategory] = useState<string>('all')
   const [selectedBadge, setSelectedBadge] = useState<string>('all')
   const [selectedProductType, setSelectedProductType] = useState<string>('all')
+  const [selectedStock, setSelectedStock] = useState<string>('all')
   const [selectedCondition, setSelectedCondition] = useState<string>('all')
   const [selectedVisibility, setSelectedVisibility] = useState<string>('all')
+  const [sortBy, setSortBy] = useState<string>('name-asc')
   const [isDialogOpen, setIsDialogOpen] = useState(false)
   const [isLoading, setIsLoading] = useState(true)
   const [isSaving, setIsSaving] = useState(false)
@@ -151,6 +153,23 @@ export default function ProductsManagement() {
       filtered = filtered.filter((p) => (p as any).productType === selectedProductType)
     }
 
+    if (selectedStock !== 'all') {
+      filtered = filtered.filter((p) => {
+        const stockStatus = (p as any).stockStatus || (p.inStock ? 'in-stock' : 'sold-out')
+
+        switch (selectedStock) {
+          case 'in-stock':
+            return stockStatus === 'in-stock' && p.inStock
+          case 'pre-order':
+            return stockStatus === 'pre-order'
+          case 'sold-out':
+            return stockStatus === 'sold-out' || p.inStock === false
+          default:
+            return true
+        }
+      })
+    }
+
     if (selectedCondition !== 'all') {
       filtered = filtered.filter((p) => (p as any).condition === selectedCondition)
     }
@@ -163,8 +182,36 @@ export default function ProductsManagement() {
       }
     }
 
-    setFilteredProducts(filtered)
-  }, [searchTerm, selectedCategory, selectedBadge, selectedProductType, selectedCondition, selectedVisibility, productList])
+    const sorted = [...filtered].sort((a, b) => {
+      const aStockStatus = (a as any).stockStatus || (a.inStock ? 'in-stock' : 'sold-out')
+      const bStockStatus = (b as any).stockStatus || (b.inStock ? 'in-stock' : 'sold-out')
+      const stockRank: Record<string, number> = {
+        'in-stock': 0,
+        'pre-order': 1,
+        'sold-out': 2,
+      }
+
+      switch (sortBy) {
+        case 'name-desc':
+          return b.name.localeCompare(a.name)
+        case 'price-high':
+          return b.price - a.price
+        case 'price-low':
+          return a.price - b.price
+        case 'stock-high':
+          return (b.stock || 0) - (a.stock || 0)
+        case 'stock-low':
+          return (a.stock || 0) - (b.stock || 0)
+        case 'status':
+          return (stockRank[aStockStatus] ?? 99) - (stockRank[bStockStatus] ?? 99)
+        case 'name-asc':
+        default:
+          return a.name.localeCompare(b.name)
+      }
+    })
+
+    setFilteredProducts(sorted)
+  }, [searchTerm, selectedCategory, selectedBadge, selectedProductType, selectedStock, selectedCondition, selectedVisibility, sortBy, productList])
 
   // Auto-sync Brand, SKU, Condition, Model to specs when they change
   useEffect(() => {
@@ -487,6 +534,18 @@ export default function ProductsManagement() {
             </SelectContent>
           </Select>
 
+          <Select value={selectedStock} onValueChange={setSelectedStock}>
+            <SelectTrigger className="w-full lg:w-[150px]">
+              <SelectValue placeholder="All Stock" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All Stock</SelectItem>
+              <SelectItem value="in-stock">In Stock</SelectItem>
+              <SelectItem value="pre-order">Pre-Order</SelectItem>
+              <SelectItem value="sold-out">Sold Out</SelectItem>
+            </SelectContent>
+          </Select>
+
           {/* Condition Filter (only show when used is selected) */}
           {selectedProductType === 'used' && (
             <Select value={selectedCondition} onValueChange={setSelectedCondition}>
@@ -513,6 +572,21 @@ export default function ProductsManagement() {
               <SelectItem value="all">All Visibility</SelectItem>
               <SelectItem value="visible">Visible Only</SelectItem>
               <SelectItem value="hidden">Hidden Only</SelectItem>
+            </SelectContent>
+          </Select>
+
+          <Select value={sortBy} onValueChange={setSortBy}>
+            <SelectTrigger className="w-full lg:w-[170px]">
+              <SelectValue placeholder="Sort products" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="name-asc">Name A-Z</SelectItem>
+              <SelectItem value="name-desc">Name Z-A</SelectItem>
+              <SelectItem value="price-high">Price High-Low</SelectItem>
+              <SelectItem value="price-low">Price Low-High</SelectItem>
+              <SelectItem value="stock-high">Stock High-Low</SelectItem>
+              <SelectItem value="stock-low">Stock Low-High</SelectItem>
+              <SelectItem value="status">Stock Status</SelectItem>
             </SelectContent>
           </Select>
 
