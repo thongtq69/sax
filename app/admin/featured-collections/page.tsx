@@ -89,6 +89,7 @@ export default function FeaturedCollectionsPage() {
       const defaultCollections = [
         { name: 'New Arrivals', slug: 'new-arrivals' },
         { name: 'Featured Instruments', slug: 'featured-instruments' },
+        { name: 'Brands', slug: 'brands' },
       ]
 
       for (const col of defaultCollections) {

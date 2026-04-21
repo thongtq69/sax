@@ -47,6 +47,8 @@ export default function BlogManagement() {
     categories: [],
     image: '',
     readTime: 0,
+    status: 'published',
+    scheduledAt: '',
   })
 
   // Fetch data from API
@@ -54,7 +56,7 @@ export default function BlogManagement() {
     async function fetchData() {
       try {
         setIsLoading(true)
-        const response = await getBlogPosts({ limit: 1000 })
+        const response = await getBlogPosts({ limit: 1000, includeAll: true })
         const transformed = response.posts.map(transformBlogPost)
         setPostList(transformed)
         setFilteredPosts(transformed)
@@ -94,6 +96,10 @@ export default function BlogManagement() {
       setFormData({
         ...post,
         date: post.date ? new Date(post.date).toISOString().split('T')[0] : new Date().toISOString().split('T')[0],
+        status: post.status || 'published',
+        scheduledAt: post.scheduledAt
+          ? new Date(post.scheduledAt).toISOString().slice(0, 16)
+          : '',
       })
     } else {
       setEditingPost(null)
@@ -107,6 +113,8 @@ export default function BlogManagement() {
         categories: [],
         image: '',
         readTime: 0,
+        status: 'published',
+        scheduledAt: '',
       })
     }
     setActiveTab('content')
@@ -131,6 +139,17 @@ export default function BlogManagement() {
     try {
       setIsSaving(true)
       
+      const status = formData.status || 'published'
+      const scheduledAtIso = status === 'scheduled' && formData.scheduledAt
+        ? new Date(formData.scheduledAt).toISOString()
+        : null
+
+      if (status === 'scheduled' && !scheduledAtIso) {
+        alert('Please pick a scheduled publish date/time')
+        setIsSaving(false)
+        return
+      }
+
       const postData = {
         title: formData.title,
         slug: formData.slug || formData.title?.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '') || '',
@@ -141,6 +160,8 @@ export default function BlogManagement() {
         categories: formData.categories || [],
         image: formData.image || null,
         readTime: formData.readTime || Math.ceil(formData.content.split(/\s+/).length / 200),
+        status,
+        scheduledAt: scheduledAtIso,
       }
 
       if (editingPost) {
@@ -150,7 +171,7 @@ export default function BlogManagement() {
       }
 
       // Refresh data
-      const response = await getBlogPosts({ limit: 1000 })
+      const response = await getBlogPosts({ limit: 1000, includeAll: true })
       const transformed = response.posts.map(transformBlogPost)
       setPostList(transformed)
       
@@ -173,7 +194,7 @@ export default function BlogManagement() {
       await deleteBlogPost(id)
       
       // Refresh data
-      const response = await getBlogPosts({ limit: 1000 })
+      const response = await getBlogPosts({ limit: 1000, includeAll: true })
       const transformed = response.posts.map(transformBlogPost)
       setPostList(transformed)
     } catch (error: any) {
@@ -451,6 +472,49 @@ export default function BlogManagement() {
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-3">
+                  Publish Status
+                </label>
+                <div className="flex flex-wrap gap-2 mb-3">
+                  {[
+                    { value: 'draft', label: '📝 Draft', desc: 'Save without publishing' },
+                    { value: 'scheduled', label: '⏰ Schedule', desc: 'Auto-publish at a future time' },
+                    { value: 'published', label: '✅ Published', desc: 'Live now' },
+                  ].map((opt) => (
+                    <button
+                      key={opt.value}
+                      type="button"
+                      onClick={() => setFormData({ ...formData, status: opt.value })}
+                      title={opt.desc}
+                      className={`px-4 py-2 rounded-full text-sm font-medium transition-all ${
+                        formData.status === opt.value
+                          ? 'bg-primary text-primary-foreground shadow-md'
+                          : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                      }`}
+                    >
+                      {opt.label}
+                    </button>
+                  ))}
+                </div>
+
+                {formData.status === 'scheduled' && (
+                  <div className="mt-2">
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Scheduled publish date/time <span className="text-red-500">*</span>
+                    </label>
+                    <Input
+                      type="datetime-local"
+                      value={formData.scheduledAt || ''}
+                      onChange={(e) => setFormData({ ...formData, scheduledAt: e.target.value })}
+                    />
+                    <p className="text-xs text-gray-500 mt-1">
+                      Post will automatically go live at this time. Uses server timezone.
+                    </p>
+                  </div>
+                )}
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-3">
                   Categories
                 </label>
                 <div className="flex flex-wrap gap-2">
@@ -487,7 +551,13 @@ export default function BlogManagement() {
                   Saving...
                 </>
               ) : (
-                editingPost ? 'Update Post' : 'Publish Post'
+                editingPost
+                  ? 'Update Post'
+                  : formData.status === 'draft'
+                    ? 'Save Draft'
+                    : formData.status === 'scheduled'
+                      ? 'Schedule Post'
+                      : 'Publish Post'
               )}
             </Button>
           </DialogFooter>

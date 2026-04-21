@@ -197,6 +197,7 @@ export async function PATCH(request: NextRequest) {
           const totalForEmail = existingOrder.total // Full amount customer paid
 
           await sendOrderConfirmationEmail({
+            orderId: existingOrder.id,
             orderNumber: existingOrder.orderNumber || existingOrder.id,
             customerEmail,
             customerName: shippingAddress?.firstName

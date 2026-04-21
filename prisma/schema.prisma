@@ -75,20 +75,24 @@ model Product {
 }
 
 model BlogPost {
-  id         String   @id @default(auto()) @map("_id") @db.ObjectId
-  title      String
-  slug       String   @unique
-  excerpt    String
-  content    String
-  date       DateTime
-  author     String
-  categories String[] @default([])
-  image      String?
-  readTime   Int?
-  createdAt  DateTime @default(now())
-  updatedAt  DateTime @updatedAt
+  id          String    @id @default(auto()) @map("_id") @db.ObjectId
+  title       String
+  slug        String    @unique
+  excerpt     String
+  content     String
+  date        DateTime
+  author      String
+  categories  String[]  @default([])
+  image       String?
+  readTime    Int?
+  status      String    @default("published") // "draft" | "scheduled" | "published"
+  scheduledAt DateTime?
+  publishedAt DateTime?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
 
   @@index([date])
+  @@index([status])
 }
 
 model PromoBanner {
@@ -337,16 +341,19 @@ model ShippingZone {
 }
 
 model Brand {
-  id        String   @id @default(auto()) @map("_id") @db.ObjectId
-  name      String   @unique
-  slug      String   @unique
-  logo      String?  // Brand logo URL
-  description String? // Brand overview for brand page and SEO
-  models    String[] @default([]) // Sub-brands/models (e.g., "Mark VI", "Serie III", "YAS-62")
-  isActive  Boolean  @default(true)
-  order     Int      @default(0)
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  id              String   @id @default(auto()) @map("_id") @db.ObjectId
+  name            String   @unique
+  slug            String   @unique
+  logo            String?  // Brand logo URL
+  backgroundImage String?  // Hero banner for the brand page
+  description     String?  // Brand overview for brand page and SEO
+  metaTitle       String?  // Custom SEO title override
+  metaDescription String?  // Custom SEO description override
+  models          String[] @default([]) // Sub-brands/models (e.g., "Mark VI", "Serie III", "YAS-62")
+  isActive        Boolean  @default(true)
+  order           Int      @default(0)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
 }
 
 

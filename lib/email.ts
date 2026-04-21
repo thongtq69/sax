@@ -306,6 +306,7 @@ interface ShippingAddress {
 }
 
 interface OrderEmailData {
+  orderId?: string
   orderNumber: string
   customerEmail: string
   customerName: string
@@ -322,6 +323,7 @@ interface OrderEmailData {
 
 export async function sendOrderConfirmationEmail(data: OrderEmailData) {
   const {
+    orderId,
     orderNumber,
     customerEmail,
     customerName,
@@ -340,6 +342,9 @@ export async function sendOrderConfirmationEmail(data: OrderEmailData) {
 
   // Calculate price (subtotal without shipping)
   const price = subtotal
+
+  // Build status link — customers log in and see live paid/shipped/delivered status
+  const statusUrl = orderId ? `${baseUrl}/account/orders/${orderId}` : `${baseUrl}/account/orders`
 
   const html = `
     <!DOCTYPE html>
@@ -387,7 +392,7 @@ export async function sendOrderConfirmationEmail(data: OrderEmailData) {
             <strong>Total:</strong> $${total.toLocaleString()}
           </p>
           <p style="margin: 0 0 10px 0;">
-            <strong>Status:</strong> Order confirmed and in preparation
+            <strong>Status:</strong> Order confirmed and in preparation — <a href="${statusUrl}" style="color: #1a365d; font-weight: bold; text-decoration: underline;">View live order status</a>
           </p>
         </div>
         
@@ -607,6 +612,55 @@ ${message}
     subject: `Inquiry Received - James Sax Corner`,
     html,
     attachments: getEmailAttachments(),
+  })
+}
+
+
+export async function sendInquiryNotificationToAdmin(data: InquiryEmailData) {
+  const adminEmail = process.env.INQUIRY_ADMIN_EMAIL || process.env.ADMIN_EMAIL || 'info@jamessaxcorner.com'
+  const { name, email, inquiryType, message, productName, productSku } = data
+
+  const html = `
+    <!DOCTYPE html>
+    <html>
+    <head>
+      <meta charset="utf-8">
+      <title>New Inquiry</title>
+    </head>
+    <body style="font-family: Arial, sans-serif; line-height: 1.6; color: #333; max-width: 640px; margin: 0 auto; padding: 20px;">
+      <h2 style="color: #1a365d; margin: 0 0 16px 0;">📩 New inquiry from ${name}</h2>
+      <p style="margin: 0 0 20px 0; color: #555;">You have received a new inquiry on James Sax Corner.</p>
+
+      <table style="width: 100%; border-collapse: collapse; margin: 16px 0;">
+        <tr><td style="padding: 8px 0; width: 140px; color: #666;"><strong>Name</strong></td><td style="padding: 8px 0;">${name}</td></tr>
+        <tr><td style="padding: 8px 0; color: #666;"><strong>Email</strong></td><td style="padding: 8px 0;"><a href="mailto:${email}" style="color: #1a365d;">${email}</a></td></tr>
+        <tr><td style="padding: 8px 0; color: #666;"><strong>Type</strong></td><td style="padding: 8px 0;">${inquiryType}</td></tr>
+        ${productName ? `<tr><td style="padding: 8px 0; color: #666;"><strong>Product</strong></td><td style="padding: 8px 0;">${productName}${productSku ? ` (Serial: ${productSku})` : ''}</td></tr>` : ''}
+      </table>
+
+      <div style="background: #f6f6f6; border-left: 4px solid #1a365d; padding: 16px; margin: 20px 0; border-radius: 4px;">
+        <p style="margin: 0 0 8px 0; font-weight: bold; color: #1a365d;">Message:</p>
+        <p style="margin: 0; white-space: pre-wrap;">${message}</p>
+      </div>
+
+      <p style="margin: 24px 0 0 0;">
+        <a href="${baseUrl}/admin/inquiries" style="display: inline-block; background: #1a365d; color: #fff; padding: 12px 20px; text-decoration: none; border-radius: 5px; font-weight: bold;">
+          Open in Admin →
+        </a>
+      </p>
+
+      <hr style="border: none; border-top: 1px solid #eee; margin: 32px 0 16px 0;">
+      <p style="color: #888; font-size: 12px;">James Sax Corner — automated notification</p>
+    </body>
+    </html>
+  `
+
+  await transporter.sendMail({
+    from: `"James Sax Corner" <${fromEmail}>`,
+    to: adminEmail,
+    replyTo: email,
+    subject: `[Inquiry] ${inquiryType}${productName ? ` - ${productName}` : ''} (from ${name})`,
+    html,
   })
 }
 

@@ -29,6 +29,7 @@ interface BrandPageClientProps {
   brandName: string
   brandSlug: string
   brandLogo: string | null
+  brandBackgroundImage?: string | null
   brandDescription: string | null
   products: Product[]
   models: BrandModelSummary[]
@@ -40,6 +41,7 @@ export function BrandPageClient({
   brandName,
   brandSlug,
   brandLogo,
+  brandBackgroundImage,
   brandDescription,
   products,
   models,
@@ -270,6 +272,33 @@ export function BrandPageClient({
         </div>
       </div>
 
+      {/* Hero banner */}
+      <section
+        className="relative w-full overflow-hidden"
+        style={brandBackgroundImage ? {
+          backgroundImage: `url(${brandBackgroundImage})`,
+          backgroundSize: 'cover',
+          backgroundPosition: 'center',
+        } : {
+          background: 'linear-gradient(135deg, #2f3f4f 0%, #1a2530 100%)',
+        }}
+      >
+        <div className="absolute inset-0 bg-black/50" />
+        <div className="relative container mx-auto px-4 py-16 md:py-24 text-center">
+          <h1 className="text-4xl md:text-6xl font-bold text-white tracking-tight uppercase drop-shadow-lg">
+            {brandName} Saxophones
+          </h1>
+          {brandDescription && (
+            <p className="mt-4 max-w-3xl mx-auto text-sm md:text-base text-white/90 leading-relaxed drop-shadow">
+              {brandDescription}
+            </p>
+          )}
+          <p className="mt-3 text-xs md:text-sm text-white/80 uppercase tracking-[0.3em]">
+            {products.length} listing{products.length !== 1 ? 's' : ''} available
+          </p>
+        </div>
+      </section>
+
       <div className="container mx-auto px-4 py-8">
         <section className="border border-border bg-white p-5 md:p-7 mb-8">
           <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
@@ -282,15 +311,9 @@ export function BrandPageClient({
                 )}
               </div>
               <div>
-                <h1 className="text-3xl md:text-4xl font-bold text-secondary">{brandName} Saxophones</h1>
-                <p className="text-sm text-muted-foreground mt-1">
-                  {products.length} listing{products.length !== 1 ? 's' : ''} available
+                <p className="text-sm text-muted-foreground">
+                  Browse all {brandName} saxophones currently available.
                 </p>
-                {brandDescription && (
-                  <p className="text-sm text-muted-foreground mt-2 max-w-2xl leading-relaxed">
-                    {brandDescription}
-                  </p>
-                )}
               </div>
             </div>
 

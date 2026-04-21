@@ -151,6 +151,7 @@ export function Footer() {
               </h4>
               <div className="text-white/70 space-y-0 leading-tight text-[6px]">
                 <p><Link href="/shop" className="hover:text-white transition-colors">All Instruments</Link></p>
+                <p><Link href="/used-professional-saxophones" className="hover:text-white transition-colors">Used Professional Saxophones</Link></p>
                 <p><Link href="/cart" className="hover:text-white transition-colors">Cart</Link></p>
                 <p><Link href="/checkout" className="hover:text-white transition-colors">Checkout</Link></p>
               </div>
@@ -276,6 +277,7 @@ export function Footer() {
               </h4>
               <ul className="space-y-1.5 text-sm text-white/80">
                 <li><Link href="/shop" className="hover:text-white transition-colors">All Instruments</Link></li>
+                <li><Link href="/used-professional-saxophones" className="hover:text-white transition-colors">Used Professional Saxophones</Link></li>
                 <li><Link href="/cart" className="hover:text-white transition-colors">Cart</Link></li>
                 <li><Link href="/checkout" className="hover:text-white transition-colors">Checkout</Link></li>
               </ul>

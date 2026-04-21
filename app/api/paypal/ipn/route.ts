@@ -308,6 +308,7 @@ export async function POST(request: NextRequest) {
             const shippingAddr = updateData.shippingAddress || existingOrder.shippingAddress as any
 
             await sendOrderConfirmationEmail({
+              orderId: existingOrder.id,
               orderNumber: existingOrder.orderNumber || existingOrder.id,
               customerEmail,
               customerName,

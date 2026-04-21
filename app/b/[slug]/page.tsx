@@ -50,9 +50,11 @@ export async function generateMetadata({ params }: { params: { slug: string } })
   }
 
   const { brand } = data
-  const title = `Premium Saxophones | ${brand.name}`
-  const description = `Professional ${brand.name} saxophones carefully inspected and prepared. Premium instruments with worldwide shipping from James Sax Corner.`
-  const ogImage = brand.logo || '/1000007654.svg'
+  const title = (brand as any).metaTitle?.trim()
+    || `${brand.name} Saxophones for Sale | Professional Models | James Sax Corner`
+  const description = (brand as any).metaDescription?.trim()
+    || `Professional ${brand.name} saxophones carefully inspected and prepared. Premium instruments with worldwide shipping from James Sax Corner.`
+  const ogImage = (brand as any).backgroundImage || brand.logo || '/1000007654.svg'
 
   return {
     title,
@@ -149,6 +151,7 @@ export default async function BrandPage({ params }: { params: { slug: string } }
         brandName={brand.name}
         brandSlug={brand.slug}
         brandLogo={brand.logo}
+        brandBackgroundImage={(brand as any).backgroundImage || null}
         brandDescription={brandDescription}
         products={products}
         models={models}

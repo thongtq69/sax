@@ -21,7 +21,10 @@ interface Brand {
   name: string
   slug: string
   logo: string | null
+  backgroundImage: string | null
   description: string | null
+  metaTitle: string | null
+  metaDescription: string | null
   models: string[]
   isActive: boolean
   order: number
@@ -39,7 +42,10 @@ export default function BrandsManagement() {
   const [formData, setFormData] = useState({
     name: '',
     logo: null as string | null,
+    backgroundImage: null as string | null,
     description: '',
+    metaTitle: '',
+    metaDescription: '',
     models: [] as string[],
     isActive: true,
     order: 0
@@ -85,7 +91,10 @@ export default function BrandsManagement() {
       setFormData({
         name: brand.name,
         logo: brand.logo,
+        backgroundImage: brand.backgroundImage,
         description: brand.description || '',
+        metaTitle: brand.metaTitle || '',
+        metaDescription: brand.metaDescription || '',
         models: brand.models || [],
         isActive: brand.isActive,
         order: brand.order
@@ -95,7 +104,10 @@ export default function BrandsManagement() {
       setFormData({
         name: '',
         logo: null,
+        backgroundImage: null,
         description: '',
+        metaTitle: '',
+        metaDescription: '',
         models: [],
         isActive: true,
         order: brands.length
@@ -337,6 +349,46 @@ export default function BrandsManagement() {
                 image={formData.logo}
                 onChange={(logo) => setFormData({ ...formData, logo })}
                 folder="sax/brands"
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Hero Banner Image (Optional)
+              </label>
+              <p className="text-xs text-gray-500 mb-2">
+                Wide image shown as background on the brand page hero (e.g. /b/yamaha-saxophones)
+              </p>
+              <SingleImageUpload
+                image={formData.backgroundImage}
+                onChange={(backgroundImage) => setFormData({ ...formData, backgroundImage })}
+                folder="sax/brand-banners"
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Meta Title (SEO - Optional)
+              </label>
+              <p className="text-xs text-gray-500 mb-2">
+                E.g. "Yamaha Saxophones for Sale | Professional Models | James Sax Corner"
+              </p>
+              <Input
+                value={formData.metaTitle}
+                onChange={(e) => setFormData({ ...formData, metaTitle: e.target.value })}
+                placeholder={`${formData.name || 'Brand'} Saxophones for Sale | Professional Models | James Sax Corner`}
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Meta Description (SEO - Optional)
+              </label>
+              <Textarea
+                value={formData.metaDescription}
+                onChange={(e) => setFormData({ ...formData, metaDescription: e.target.value })}
+                placeholder={`Professional ${formData.name || 'brand'} soprano, alto, tenor and baritone saxophones. Carefully inspected instruments with worldwide shipping from James Sax Corner.`}
+                rows={3}
               />
             </div>
 

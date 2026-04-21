@@ -37,7 +37,30 @@ export async function PUT(
 ) {
   try {
     const body = await request.json()
-    const { title, slug, excerpt, content, date, author, categories, image, readTime } = body
+    const { title, slug, excerpt, content, date, author, categories, image, readTime, status, scheduledAt } = body
+
+    const existing = await prisma.blogPost.findUnique({ where: { id: params.id } })
+    const prevStatus = existing?.status || 'published'
+    const normalizedStatus: 'draft' | 'scheduled' | 'published' | undefined =
+      status === 'draft' || status === 'scheduled' || status === 'published'
+        ? status
+        : undefined
+
+    const extra: Record<string, any> = {}
+    if (normalizedStatus) {
+      extra.status = normalizedStatus
+      if (normalizedStatus === 'scheduled') {
+        extra.scheduledAt = scheduledAt ? new Date(scheduledAt) : null
+      } else {
+        extra.scheduledAt = null
+      }
+      // Stamp publishedAt the first time it actually goes live
+      if (normalizedStatus === 'published' && prevStatus !== 'published') {
+        extra.publishedAt = new Date()
+      }
+    } else if (scheduledAt !== undefined) {
+      extra.scheduledAt = scheduledAt ? new Date(scheduledAt) : null
+    }
 
     const post = await prisma.blogPost.update({
       where: { id: params.id },
@@ -51,6 +74,7 @@ export async function PUT(
         ...(categories !== undefined && { categories }),
         ...(image !== undefined && { image: image || null }),
         ...(readTime !== undefined && { readTime: readTime ? parseInt(readTime) : null }),
+        ...extra,
       },
     })
 

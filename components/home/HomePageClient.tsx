@@ -172,12 +172,21 @@ export function HomePageClient({ data }: { data: HomePageData }) {
         </section>
       )}
       {brands && brands.length > 0 && (
-        <section id="brands" className="relative overflow-hidden bg-white/50 py-8 sm:py-10 border-y border-border/50">
-          <div className="container mx-auto px-4">
+        <section
+          id="brands"
+          className="relative overflow-hidden border-y border-border/50"
+          style={collectionBackgrounds['brands'] ? {
+            backgroundImage: `url(${collectionBackgrounds['brands']})`,
+            backgroundSize: 'cover',
+            backgroundPosition: 'center',
+          } : { backgroundColor: 'rgba(255,255,255,0.5)' }}
+        >
+          {collectionBackgrounds['brands'] && <div className="absolute inset-0 bg-white/60" />}
+          <div className="relative container mx-auto px-4 py-8 sm:py-10">
             <div className="flex items-center justify-center gap-3 mb-8">
               <div className="flex-1 h-px bg-primary/30" />
               <span className="text-2xl sm:text-3xl text-primary">♫</span>
-              <h2 className="text-lg sm:text-xl md:text-2xl font-bold text-secondary tracking-wide uppercase">SHOP BY BRAND</h2>
+              <h2 className="text-lg sm:text-xl md:text-2xl font-bold text-secondary tracking-wide uppercase">BRANDS</h2>
               <span className="text-2xl sm:text-3xl text-primary">♫</span>
               <div className="flex-1 h-px bg-primary/30" />
             </div>
@@ -345,7 +354,7 @@ export function HomePageClient({ data }: { data: HomePageData }) {
           <div className="flex items-center justify-center gap-3">
             <div className="flex-1 h-px bg-primary/30" />
             <span className="text-2xl sm:text-3xl text-primary">♬</span>
-            <h2 className="text-lg sm:text-xl md:text-2xl font-bold text-secondary tracking-wide uppercase">SHOP BY CATEGORY</h2>
+            <h2 className="text-lg sm:text-xl md:text-2xl font-bold text-secondary tracking-wide uppercase">CATEGORIES</h2>
             <span className="text-2xl sm:text-3xl text-primary">♬</span>
             <div className="flex-1 h-px bg-primary/30" />
           </div>

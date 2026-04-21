@@ -174,13 +174,17 @@ export async function getBlogPosts(params?: {
   search?: string
   page?: number
   limit?: number
+  includeAll?: boolean
 }) {
   const searchParams = new URLSearchParams()
   if (params) {
     Object.entries(params).forEach(([key, value]) => {
-      if (value !== undefined && value !== null) {
-        searchParams.append(key, value.toString())
+      if (value === undefined || value === null) return
+      if (key === 'includeAll') {
+        if (value) searchParams.append('includeAll', '1')
+        return
       }
+      searchParams.append(key, value.toString())
     })
   }
   const query = searchParams.toString()
@@ -272,6 +276,9 @@ export function transformBlogPost(apiPost: any) {
     categories: apiPost.categories || [],
     image: apiPost.image,
     readTime: apiPost.readTime,
+    status: apiPost.status || 'published',
+    scheduledAt: apiPost.scheduledAt || null,
+    publishedAt: apiPost.publishedAt || null,
   }
 }
 

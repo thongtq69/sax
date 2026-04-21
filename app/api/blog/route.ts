@@ -15,6 +15,12 @@ export async function GET(request: NextRequest) {
 
     const where: any = {}
 
+    // Public feed: only show published posts unless caller sets includeAll=1 (admin)
+    const includeAll = searchParams.get('includeAll') === '1'
+    if (!includeAll) {
+      where.status = 'published'
+    }
+
     if (category) {
       where.categories = {
         has: category,
@@ -68,7 +74,7 @@ export async function GET(request: NextRequest) {
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json()
-    const { title, slug, excerpt, content, date, author, categories, image, readTime } = body
+    const { title, slug, excerpt, content, date, author, categories, image, readTime, status, scheduledAt } = body
 
     if (!title || !slug || !excerpt || !content || !date || !author) {
       const missingFields = []
@@ -89,6 +95,12 @@ export async function POST(request: NextRequest) {
       )
     }
 
+    const normalizedStatus: 'draft' | 'scheduled' | 'published' =
+      status === 'draft' || status === 'scheduled' ? status : 'published'
+    const scheduledDate = normalizedStatus === 'scheduled' && scheduledAt
+      ? new Date(scheduledAt)
+      : null
+
     const post = await prisma.blogPost.create({
       data: {
         title,
@@ -100,6 +112,9 @@ export async function POST(request: NextRequest) {
         categories: categories || [],
         image: image || null,
         readTime: readTime ? parseInt(readTime) : null,
+        status: normalizedStatus,
+        scheduledAt: scheduledDate,
+        publishedAt: normalizedStatus === 'published' ? new Date() : null,
       },
     })
 

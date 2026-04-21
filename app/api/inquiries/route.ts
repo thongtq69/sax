@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
-import { sendInquiryConfirmationEmail } from '@/lib/email'
+import { sendInquiryConfirmationEmail, sendInquiryNotificationToAdmin } from '@/lib/email'
 
 // POST - Create new inquiry
 export async function POST(request: NextRequest) {
@@ -27,19 +27,25 @@ export async function POST(request: NextRequest) {
       },
     })
 
-    // Send confirmation email to customer
+    const emailPayload = {
+      name,
+      email,
+      inquiryType,
+      message: message || '',
+      productName: productName || undefined,
+      productSku: productSku || undefined,
+    }
+
     try {
-      await sendInquiryConfirmationEmail({
-        name,
-        email,
-        inquiryType,
-        message: message || '',
-        productName: productName || undefined,
-        productSku: productSku || undefined,
-      })
+      await sendInquiryConfirmationEmail(emailPayload)
     } catch (emailError) {
       console.error('Error sending inquiry confirmation email:', emailError)
-      // Don't fail the request if email fails
+    }
+
+    try {
+      await sendInquiryNotificationToAdmin(emailPayload)
+    } catch (emailError) {
+      console.error('Error sending inquiry notification to admin:', emailError)
     }
 
     return NextResponse.json({ success: true, inquiry })

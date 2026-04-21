@@ -176,6 +176,7 @@ export async function POST(request: NextRequest) {
         })
 
         await sendOrderConfirmationEmail({
+          orderId: order.id,
           orderNumber: order.orderNumber!,
           customerEmail,
           customerName: customerName || 'Valued Customer',

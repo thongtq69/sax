@@ -151,10 +151,30 @@ export async function generateMetadata({
       modelLevel = 'Student Model'
     }
 
-    const title = `${product.name} | ${modelLevel}`
-    // Convert e.g., "Yamaha YTS-62 Tenor Saxophone SN 12345" to use the template
+    // Condition label — Mar 02 request format: "{Brand} {Model} {Instrument} – {Condition} | James Sax Corner"
+    const rawCondition =
+      (product as any).condition ||
+      (product.specs && (product.specs as Record<string, string>)['Condition']) ||
+      ''
+    const conditionLabel = rawCondition
+      ? String(rawCondition)
+          .split(/[-\s]+/)
+          .filter(Boolean)
+          .map((w) => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase())
+          .join(' ')
+      : ''
+
+    // Strip SN suffix from product name for meta
     const baseName = product.name.replace(/\s+SN\s+.*$/i, '')
-    const description = `${baseName} carefully inspected and professionally prepared. Premium ${origin} instrument with worldwide shipping available at James Sax Corner.`
+
+    const productType = (product as any).productType as string | undefined
+    const title = productType === 'used' && conditionLabel
+      ? `${baseName} – ${conditionLabel} Condition | James Sax Corner`
+      : `${baseName} | ${modelLevel} | James Sax Corner`
+
+    const description = productType === 'used' && conditionLabel
+      ? `Premium ${baseName} in ${conditionLabel.toLowerCase()} condition, professionally inspected and prepared. Worldwide shipping from James Sax Corner.`
+      : `${baseName} carefully inspected and professionally prepared. Premium ${origin} instrument with worldwide shipping available at James Sax Corner.`
 
     const keywords = [
       product.name,
