@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 
-export const dynamic = 'force-dynamic'
+export const revalidate = 120
 
 // GET /api/models - Get products by model (subBrand)
 export async function GET(request: NextRequest) {
@@ -36,6 +36,7 @@ export async function GET(request: NextRequest) {
                 },
             },
             orderBy: { createdAt: 'desc' },
+            take: 200,
         })
 
         // Calculate price range
@@ -103,6 +104,7 @@ export async function POST(request: NextRequest) {
                 category: { select: { name: true } },
             },
             orderBy: { brand: 'asc' },
+            take: 1000,
         })
 
         // Group by brand + model

@@ -93,7 +93,7 @@ export function HomePageClient({ data }: { data: HomePageData }) {
       <ScrollAnimations />
       <section className="homepage-hero relative overflow-hidden">
         <div className="absolute inset-0">
-          <Image src={heroContent.image} alt="Saxophones Background" fill className="object-cover" priority sizes="100vw" quality={85} />
+          <Image src={heroContent.image} alt="Saxophones Background" fill className="object-cover" priority sizes="100vw" quality={75} />
         </div>
         <div className="relative min-h-[280px] md:min-h-[350px] lg:min-h-[420px]">
           <div className="container mx-auto flex min-h-[280px] md:min-h-[350px] lg:min-h-[420px] items-center justify-center px-4 py-8 md:py-12">

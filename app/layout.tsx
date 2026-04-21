@@ -3,7 +3,6 @@ import { Lora } from 'next/font/google'
 import './globals.css'
 import { SiteLayout } from '@/components/site/SiteLayout'
 import { SessionProvider } from '@/components/providers/SessionProvider'
-import { GoogleAnalytics } from '@next/third-parties/google'
 import { OptimizedCSS } from '@/components/optimization/OptimizedCSS'
 import { buildCanonicalUrl, getBaseUrl } from '@/lib/seo'
 
@@ -18,10 +17,10 @@ const lora = Lora({
 export const metadata: Metadata = {
   metadataBase: new URL(getBaseUrl()),
   title: {
-    default: 'James Sax Corner - Premium Saxophones & Professional Wind Instruments',
+    default: 'Premium Saxophones | Yamaha, Yanagisawa & Selmer | James Sax Corner',
     template: '%s | James Sax Corner'
   },
-  description: 'Premium saxophones, expertly maintained for peak performance. Trusted by musicians worldwide, backed by outstanding reviews. Unmatched customer service—your satisfaction comes first! Buy with confidence!',
+  description: 'Professional Yamaha, Yanagisawa & Selmer saxophones carefully inspected and prepared. Premium instruments with worldwide shipping from James Sax Corner.',
   keywords: [
     'saxophone',
     'sax',
@@ -51,8 +50,8 @@ export const metadata: Metadata = {
     type: 'website',
     locale: 'en_US',
     url: getBaseUrl(),
-    title: 'James Sax Corner - Premium Saxophones & Professional Wind Instruments',
-    description: 'Premium saxophones, expertly maintained for peak performance. Trusted by musicians worldwide, backed by outstanding reviews.',
+    title: 'Premium Saxophones | Yamaha, Yanagisawa & Selmer | James Sax Corner',
+    description: 'Professional Yamaha, Yanagisawa & Selmer saxophones carefully inspected and prepared. Premium instruments with worldwide shipping from James Sax Corner.',
     siteName: 'James Sax Corner',
     images: [
       {
@@ -65,8 +64,8 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'James Sax Corner - Premium Saxophones',
-    description: 'Premium saxophones, expertly maintained for peak performance. Trusted by musicians worldwide.',
+    title: 'Premium Saxophones | Yamaha, Yanagisawa & Selmer | James Sax Corner',
+    description: 'Professional Yamaha, Yanagisawa & Selmer saxophones carefully inspected and prepared. Worldwide shipping from James Sax Corner.',
     images: ['/1000007654.svg'],
   },
   verification: {

@@ -51,6 +51,20 @@ async function getHomepageData(): Promise<HomePageData> {
   const collectionBackgrounds: Record<string, string> = {}
   const collectionProducts: Record<string, any[]> = {}
 
+  // Fetch all collection products in parallel instead of sequential awaits
+  const collectionResults = await Promise.all(
+    collections.map(async (collection) => {
+      if (!collection.productIds || collection.productIds.length === 0) {
+        return { slug: collection.slug, products: [] as any[] }
+      }
+      const products = await prisma.product.findMany({
+        where: { id: { in: collection.productIds } },
+        include: { category: true, subcategory: true },
+      }).catch(() => [])
+      return { slug: collection.slug, products: products.map(transformProduct) }
+    })
+  )
+
   for (const collection of collections) {
     if (collection.name) {
       collectionTitles[collection.slug] = collection.name.toUpperCase()
@@ -58,14 +72,9 @@ async function getHomepageData(): Promise<HomePageData> {
     if (collection.backgroundImage) {
       collectionBackgrounds[collection.slug] = collection.backgroundImage
     }
-    // Fetch products for this collection
-    if (collection.productIds && collection.productIds.length > 0) {
-      const products = await prisma.product.findMany({
-        where: { id: { in: collection.productIds } },
-        include: { category: true, subcategory: true },
-      }).catch(() => [])
-      collectionProducts[collection.slug] = products.map(transformProduct)
-    }
+  }
+  for (const result of collectionResults) {
+    collectionProducts[result.slug] = result.products
   }
 
   // Transform all products

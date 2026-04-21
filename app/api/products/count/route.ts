@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 
-export const dynamic = 'force-dynamic'
+export const revalidate = 60
 
 // Helper function to check if a string is a valid MongoDB ObjectID
 function isValidObjectId(str: string): boolean {

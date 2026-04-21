@@ -2,7 +2,10 @@ import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { generateSlug, getProductSerialFromSpecs, normalizeSerialNumber } from '@/lib/slug-utils'
 
-export const dynamic = 'force-dynamic'
+// Public GET responses can cache briefly at the edge. Admin-style calls
+// pass showHidden/showArchived and always send fresh auth cookies so the
+// browser layer still bypasses cache for those.
+export const revalidate = 60
 
 // GET /api/products - Get all products with optional filters
 export async function GET(request: NextRequest) {

@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 
-export const dynamic = 'force-dynamic'
+export const revalidate = 300
 
 // GET /api/subcategories - Get all subcategories
 export async function GET(request: NextRequest) {

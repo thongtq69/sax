@@ -7,16 +7,28 @@ import { ModelPageClient } from '@/components/model/ModelPageClient'
 import { StructuredData } from '@/components/seo/StructuredData'
 import { buildCanonicalUrl, getBaseUrl } from '@/lib/seo'
 
+export const revalidate = 300
+
 // Helper: find products matching a model slug (formerly brand + model)
 async function findModelProductsBySlug(slug: string) {
     const modelDecoded = decodeURIComponent(slug).toLowerCase()
 
-    // 1. Try strategy for new format: brand-model-subcategory-saxophone
-    // Fetch relevant products to filter in memory
+    // Narrow the DB query: pull candidates whose brand/subBrand/name overlaps with the slug
+    // tokens instead of loading the whole catalog into memory.
+    const tokens = modelDecoded.split('-').filter((t) => t.length >= 2)
+    const keywords = Array.from(new Set([modelDecoded, ...tokens]))
+    const keywordConditions = keywords.flatMap((kw) => [
+        { brand: { contains: kw, mode: 'insensitive' as const } },
+        { subBrand: { contains: kw, mode: 'insensitive' as const } },
+        { name: { contains: kw, mode: 'insensitive' as const } },
+    ])
+
     const allProducts = await prisma.product.findMany({
         where: {
             stockStatus: { not: 'archived' },
+            ...(keywordConditions.length > 0 ? { OR: keywordConditions } : {}),
         },
+        take: 200,
         include: {
             category: { select: { id: true, name: true, slug: true } },
             subcategory: { select: { id: true, name: true, slug: true } },

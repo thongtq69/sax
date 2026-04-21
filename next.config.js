@@ -67,21 +67,8 @@ const nextConfig = {
         source: '/:path*',
         headers: [
           {
-            key: 'Access-Control-Allow-Origin',
-            value: '*',
-          },
-          {
             key: 'X-Robots-Tag',
             value: 'index, follow',
-          },
-        ],
-      },
-      {
-        source: '/api/:path*',
-        headers: [
-          {
-            key: 'Cache-Control',
-            value: 'no-cache, no-store, must-revalidate',
           },
         ],
       },
@@ -96,6 +83,9 @@ const nextConfig = {
         ],
       },
     ];
+    // NOTE: Per-API cache headers are now managed in vercel.json so that
+    // public GET endpoints (products, blog, brands, categories) can be
+    // cached at the edge while mutation-prone endpoints stay no-store.
   },
 }
 

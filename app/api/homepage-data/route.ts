@@ -1,8 +1,7 @@
 import { NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 
-export const dynamic = 'force-dynamic'
-export const revalidate = 0
+export const revalidate = 60
 
 // GET /api/homepage-data - Combined endpoint for homepage data
 // This reduces 6 separate API calls to 1 for the homepage

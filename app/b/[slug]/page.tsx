@@ -34,6 +34,7 @@ async function getBrandData(slug: string) {
       subcategory: { select: { id: true, name: true, slug: true } },
     },
     orderBy: { createdAt: 'desc' },
+    take: 200,
   })
 
   return { brand, apiProducts }
