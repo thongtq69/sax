@@ -19,14 +19,24 @@ export default function robots(): MetadataRoute.Robots {
           '/_next/',
           '/private/',
           '/search',
-          '/*?*', // Disallow all query parameters to prevent duplicate content indexing of filter pages
+          // Blanket `/*?*` was blocking valuable landing pages like
+          // /shop?brand=yamaha and /blog?category=reviews. Rely on
+          // canonical tags instead. Only block noisy query params that
+          // create duplicate content (session, tracking, pagination noise).
+          '/*?utm_*',
+          '/*?fbclid=*',
+          '/*?gclid=*',
+          '/*?ref=*',
+          '/*?sessionid=*',
+          '/*?sid=*',
         ],
       },
       {
-        userAgent: 'GPTBot', // Explicitly block AI scrapers if desired, or allow them
+        userAgent: 'GPTBot',
         disallow: ['/'],
       }
     ],
     sitemap: `${baseUrl}/sitemap.xml`,
+    host: baseUrl,
   }
 }
