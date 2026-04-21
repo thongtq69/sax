@@ -1,36 +1,88 @@
-'use client';
-
 import Link from 'next/link';
 import { Search, Clock, Tag, ChevronRight } from 'lucide-react';
 import { Input } from '@/components/ui/input';
-import { getRecentPosts, blogCategories, getCategoryPostCounts, formatBlogDate } from '@/data/blogPosts';
+import { prisma } from '@/lib/prisma';
+import { blogCategories, formatBlogDate } from '@/data/blogPosts';
 
 interface BlogSidebarProps {
     showSearch?: boolean;
     currentCategory?: string;
 }
 
-export function BlogSidebar({ showSearch = false, currentCategory }: BlogSidebarProps) {
-    const recentPosts = getRecentPosts(4);
-    const categoryCounts = getCategoryPostCounts();
+// Exclude drafts and not-yet-published scheduled posts.
+// Old posts that predate the "status" field (status = null) still match.
+const publicBlogFilter = {
+    NOT: { status: { in: ['draft', 'scheduled'] } },
+};
+
+async function loadRecentPosts(count: number) {
+    try {
+        return await prisma.blogPost.findMany({
+            where: publicBlogFilter,
+            orderBy: { date: 'desc' },
+            take: count,
+            select: { id: true, slug: true, title: true, date: true },
+        });
+    } catch (err) {
+        console.error('BlogSidebar: failed to load recent posts', err);
+        return [];
+    }
+}
+
+async function loadCategoryCounts() {
+    try {
+        const posts = await prisma.blogPost.findMany({
+            where: publicBlogFilter,
+            select: { categories: true },
+        });
+        const counts: Record<string, number> = {};
+        blogCategories.forEach((cat) => {
+            counts[cat.slug] = posts.filter((post) =>
+                (post.categories || []).some(
+                    (postCat) =>
+                        postCat.toLowerCase().replace(/\s+/g, '-') === cat.slug
+                )
+            ).length;
+        });
+        return counts;
+    } catch (err) {
+        console.error('BlogSidebar: failed to load category counts', err);
+        return {} as Record<string, number>;
+    }
+}
+
+export async function BlogSidebar({
+    showSearch = false,
+    currentCategory,
+}: BlogSidebarProps) {
+    const [recentPosts, categoryCounts] = await Promise.all([
+        loadRecentPosts(4),
+        loadCategoryCounts(),
+    ]);
 
     return (
         <aside className="space-y-6 lg:space-y-8">
-            {/* Search */}
             {showSearch && (
                 <div className="rounded-lg border-2 border-primary/20 bg-white p-4 sm:p-5 lg:p-6 shadow-sm">
                     <h3 className="mb-3 sm:mb-4 font-display text-base sm:text-lg font-bold text-secondary flex items-center gap-2">
                         <Search className="h-4 w-4 text-primary" />
                         Search Articles
                     </h3>
-                    <div className="relative">
+                    <form action="/blog" method="get" className="relative">
                         <Input
                             type="search"
+                            name="q"
                             placeholder="Search..."
                             className="pr-10 border-primary/30 focus:border-primary text-sm"
                         />
-                        <Search className="absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-                    </div>
+                        <button
+                            type="submit"
+                            aria-label="Search"
+                            className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-primary"
+                        >
+                            <Search className="h-4 w-4" />
+                        </button>
+                    </form>
                 </div>
             )}
 
@@ -41,37 +93,43 @@ export function BlogSidebar({ showSearch = false, currentCategory }: BlogSidebar
                     Recent Articles
                 </h3>
 
-                {/* Decorative Line */}
                 <div className="flex items-center gap-2 mb-3 sm:mb-4">
                     <div className="h-0.5 w-8 bg-primary" />
                     <div className="h-0.5 flex-1 bg-primary/20" />
                 </div>
 
-                <ul className="space-y-3 sm:space-y-4">
-                    {recentPosts.map((post, index) => {
-                        const dateInfo = formatBlogDate(post.date);
-                        return (
-                            <li key={post.id} className="group">
-                                <Link href={`/blog/${post.slug}`} className="block">
-                                    <div className="flex gap-3">
-                                        {/* Number Badge */}
-                                        <span className="flex h-7 w-7 sm:h-8 sm:w-8 shrink-0 items-center justify-center rounded-full border border-primary/30 text-xs sm:text-sm font-bold text-primary group-hover:bg-primary group-hover:text-white transition-colors">
-                                            {index + 1}
-                                        </span>
-                                        <div className="flex-1 min-w-0">
-                                            <h4 className="text-xs sm:text-sm font-semibold text-secondary group-hover:text-primary transition-colors line-clamp-2 leading-tight">
-                                                {post.title}
-                                            </h4>
-                                            <p className="mt-1 text-[10px] sm:text-xs text-muted-foreground">
-                                                {dateInfo.full}
-                                            </p>
+                {recentPosts.length === 0 ? (
+                    <p className="text-sm text-muted-foreground">No articles yet.</p>
+                ) : (
+                    <ul className="space-y-3 sm:space-y-4">
+                        {recentPosts.map((post, index) => {
+                            const dateInfo = formatBlogDate(
+                                (post.date instanceof Date
+                                    ? post.date.toISOString()
+                                    : String(post.date))
+                            );
+                            return (
+                                <li key={post.id} className="group">
+                                    <Link href={`/blog/${post.slug}`} className="block">
+                                        <div className="flex gap-3">
+                                            <span className="flex h-7 w-7 sm:h-8 sm:w-8 shrink-0 items-center justify-center rounded-full border border-primary/30 text-xs sm:text-sm font-bold text-primary group-hover:bg-primary group-hover:text-white transition-colors">
+                                                {index + 1}
+                                            </span>
+                                            <div className="flex-1 min-w-0">
+                                                <h4 className="text-xs sm:text-sm font-semibold text-secondary group-hover:text-primary transition-colors line-clamp-2 leading-tight">
+                                                    {post.title}
+                                                </h4>
+                                                <p className="mt-1 text-[10px] sm:text-xs text-muted-foreground">
+                                                    {dateInfo.full}
+                                                </p>
+                                            </div>
                                         </div>
-                                    </div>
-                                </Link>
-                            </li>
-                        );
-                    })}
-                </ul>
+                                    </Link>
+                                </li>
+                            );
+                        })}
+                    </ul>
+                )}
             </div>
 
             {/* Categories */}
@@ -81,13 +139,11 @@ export function BlogSidebar({ showSearch = false, currentCategory }: BlogSidebar
                     Categories
                 </h3>
 
-                {/* Decorative Line */}
                 <div className="flex items-center gap-2 mb-3 sm:mb-4">
                     <div className="h-0.5 w-8 bg-primary" />
                     <div className="h-0.5 flex-1 bg-primary/20" />
                 </div>
 
-                {/* Vertical list on all screens */}
                 <ul className="space-y-1">
                     {blogCategories.map((category) => {
                         const count = categoryCounts[category.slug] || 0;
@@ -125,14 +181,18 @@ export function BlogSidebar({ showSearch = false, currentCategory }: BlogSidebar
                 <p className="mb-2 sm:mb-3 lg:mb-4 text-[11px] sm:text-xs lg:text-sm text-white/80 leading-snug">
                     Subscribe to receive the latest articles and exclusive offers.
                 </p>
-                <Input
-                    type="email"
-                    placeholder="Your email address"
-                    className="mb-2 sm:mb-3 border-white/30 bg-white/10 text-white placeholder:text-white/50 text-xs sm:text-sm"
-                />
-                <button className="w-full rounded bg-white py-1.5 sm:py-2 text-[10px] sm:text-xs lg:text-sm font-semibold text-primary hover:bg-white/90 transition-colors">
-                    Subscribe
-                </button>
+                <form action="/api/subscribers" method="post">
+                    <Input
+                        type="email"
+                        name="email"
+                        required
+                        placeholder="Your email address"
+                        className="mb-2 sm:mb-3 border-white/30 bg-white/10 text-white placeholder:text-white/50 text-xs sm:text-sm"
+                    />
+                    <button type="submit" className="w-full rounded bg-white py-1.5 sm:py-2 text-[10px] sm:text-xs lg:text-sm font-semibold text-primary hover:bg-white/90 transition-colors">
+                        Subscribe
+                    </button>
+                </form>
             </div>
         </aside>
     );

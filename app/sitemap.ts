@@ -77,8 +77,9 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       priority: 0.8,
     }))
 
-    // Dynamic blog post pages
+    // Dynamic blog post pages (skip drafts & scheduled-but-not-yet-published)
     const blogPosts = await prisma.blogPost.findMany({
+      where: { NOT: { status: { in: ['draft', 'scheduled'] } } },
       select: { slug: true, updatedAt: true },
     })
     const blogPages = blogPosts.map((post) => ({

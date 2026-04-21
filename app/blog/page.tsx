@@ -19,7 +19,11 @@ export default async function BlogPage({ searchParams }: BlogPageProps) {
     const itemsPerPage = 6;
 
     // Build where clause for prisma
-    const where: any = {}
+    // Hide drafts and scheduled-but-not-yet-published posts.
+    // Posts that predate the `status` field (null) still show.
+    const where: any = {
+        NOT: { status: { in: ['draft', 'scheduled'] } },
+    }
     if (categoryFilter) {
         where.categories = { has: categoryFilter.replace(/-/g, ' ').replace(/\b\w/g, (l: string) => l.toUpperCase()) }
     }

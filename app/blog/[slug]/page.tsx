@@ -18,12 +18,15 @@ export default async function BlogPostPage({
         where: { slug: params.slug },
     })
 
-    if (!post) {
+    // Block drafts and not-yet-published scheduled posts from the public URL.
+    // Old posts with no `status` field still show.
+    if (!post || post.status === 'draft' || post.status === 'scheduled') {
         notFound()
     }
 
-    // Fetch adjacent posts for navigation
+    // Fetch adjacent posts for navigation (same visibility rules)
     const allPosts = await prisma.blogPost.findMany({
+        where: { NOT: { status: { in: ['draft', 'scheduled'] } } },
         select: { slug: true, title: true },
         orderBy: { date: 'desc' },
     })

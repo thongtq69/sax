@@ -15,10 +15,11 @@ export async function GET(request: NextRequest) {
 
     const where: any = {}
 
-    // Public feed: only show published posts unless caller sets includeAll=1 (admin)
+    // Public feed: hide drafts and not-yet-published scheduled posts.
+    // Posts predating the `status` field (null) remain visible.
     const includeAll = searchParams.get('includeAll') === '1'
     if (!includeAll) {
-      where.status = 'published'
+      where.NOT = { status: { in: ['draft', 'scheduled'] } }
     }
 
     if (category) {
