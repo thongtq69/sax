@@ -217,9 +217,6 @@ export function HomePageClient({ data }: { data: HomePageData }) {
                         </span>
                       )}
                     </div>
-                    <span className="mt-3 text-sm sm:text-base font-medium text-secondary group-hover:text-primary transition-colors text-center w-full">
-                      {brand.name}
-                    </span>
                   </Link>
                 ))}
               </div>
