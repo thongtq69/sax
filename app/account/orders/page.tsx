@@ -165,7 +165,7 @@ export default async function OrdersPage() {
                             Total: ${order.total.toLocaleString()}
                           </div>
                           <Link
-                            href={`/account/orders/${order.id}`}
+                            href={`/account/orders/${order.orderNumber || order.id}`}
                             className="inline-flex items-center rounded-md border px-3 py-2 text-sm font-medium text-blue-600 hover:bg-blue-50"
                           >
                             View details

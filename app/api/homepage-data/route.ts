@@ -27,10 +27,11 @@ export async function GET() {
         const allProductIds = collections.flatMap((c) => c.productIds)
         const uniqueProductIds = [...new Set(allProductIds)]
 
-        // Fetch all products in a single query
+        // Fetch all products in a single query (exclude drafts from public homepage)
         const products = await prisma.product.findMany({
             where: {
                 id: { in: uniqueProductIds },
+                status: { not: 'draft' },
             },
             select: {
                 id: true,

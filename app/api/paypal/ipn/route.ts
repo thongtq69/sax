@@ -116,8 +116,22 @@ export async function POST(request: NextRequest) {
     console.log('IPN VERIFIED successfully')
 
     // Verify receiver email matches our business email
-    const expectedEmail = process.env.NEXT_PUBLIC_PAYPAL_BUSINESS_EMAIL
-    if (expectedEmail && receiverEmail !== expectedEmail) {
+    // Priority: admin-configured (SiteSettings.paypalReceiverEmail) > env var > hardcoded fallback
+    let expectedEmail: string | undefined = process.env.NEXT_PUBLIC_PAYPAL_BUSINESS_EMAIL
+    try {
+      const siteSettings = await prisma.siteSettings.findFirst({
+        select: { paypalReceiverEmail: true },
+      })
+      if (siteSettings?.paypalReceiverEmail?.trim()) {
+        expectedEmail = siteSettings.paypalReceiverEmail.trim()
+      }
+    } catch (err) {
+      console.warn('Could not load paypalReceiverEmail from SiteSettings, falling back to env:', err)
+    }
+    if (!expectedEmail) {
+      expectedEmail = 'order@jamessaxcorner.com'
+    }
+    if (receiverEmail !== expectedEmail) {
       console.error(`Receiver email mismatch: expected ${expectedEmail}, got ${receiverEmail}`)
       return new NextResponse('OK', { status: 200 })
     }
@@ -357,9 +371,19 @@ export async function POST(request: NextRequest) {
 // Handle GET requests (for testing)
 export async function GET() {
   const mode = process.env.PAYPAL_MODE || 'sandbox'
-  const businessEmail = process.env.NEXT_PUBLIC_PAYPAL_BUSINESS_EMAIL || 'not configured'
-  
-  return NextResponse.json({ 
+  let businessEmail = process.env.NEXT_PUBLIC_PAYPAL_BUSINESS_EMAIL || 'not configured'
+  try {
+    const siteSettings = await prisma.siteSettings.findFirst({
+      select: { paypalReceiverEmail: true },
+    })
+    if (siteSettings?.paypalReceiverEmail?.trim()) {
+      businessEmail = siteSettings.paypalReceiverEmail.trim()
+    }
+  } catch {
+    // Ignore - fall back to env
+  }
+
+  return NextResponse.json({
     message: 'PayPal IPN endpoint is active',
     mode,
     businessEmail: businessEmail.replace(/(.{3}).*(@.*)/, '$1***$2'), // Mask email

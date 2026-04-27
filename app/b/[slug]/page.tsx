@@ -28,6 +28,7 @@ async function getBrandData(slug: string) {
     where: {
       brand: { equals: brand.name, mode: 'insensitive' },
       stockStatus: { not: 'archived' },
+      status: { not: 'draft' },
     },
     include: {
       category: { select: { id: true, name: true, slug: true } },

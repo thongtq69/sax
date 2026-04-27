@@ -45,7 +45,7 @@ interface Order {
 const statuses = ['pending', 'paid', 'processing', 'shipped', 'delivered', 'cancelled']
 const carriers = ['fedex', 'ups', 'dhl']
 
-export default function AdminOrderDetailPage({ params }: { params: { id: string } }) {
+export default function AdminOrderDetailPage({ params }: { params: { orderNumber: string } }) {
   const router = useRouter()
   const [order, setOrder] = useState<Order | null>(null)
   const [loading, setLoading] = useState(true)
@@ -57,7 +57,7 @@ export default function AdminOrderDetailPage({ params }: { params: { id: string 
   const fetchOrder = async () => {
     setLoading(true)
     try {
-      const response = await fetch(`/api/orders?id=${params.id}`)
+      const response = await fetch(`/api/orders?identifier=${encodeURIComponent(params.orderNumber)}`)
       const data = await response.json()
       if (!response.ok) {
         throw new Error(data.error || 'Failed to load order')
@@ -77,7 +77,7 @@ export default function AdminOrderDetailPage({ params }: { params: { id: string 
 
   useEffect(() => {
     fetchOrder()
-  }, [params.id])
+  }, [params.orderNumber])
 
   const subtotal = useMemo(
     () => order?.items.reduce((sum, item) => sum + item.price * item.quantity, 0) || 0,

@@ -9,6 +9,68 @@ import { buildCanonicalUrl, getBaseUrl } from '@/lib/seo'
 
 export const revalidate = 300
 
+// Words that should stay lowercase in titles (other than the first word)
+const TITLE_LOWERCASE = new Set(['and', 'or', 'of', 'the', 'a', 'an', 'in', 'on', 'for', 'to'])
+
+// Format a single token: uppercase model codes (e.g. "yts-62", "wo20", "vi"),
+// otherwise capitalize the first letter.
+function formatTitleToken(token: string, isFirst: boolean): string {
+    if (!token) return token
+
+    // Roman numerals (I, II, III, IV, V, VI, VII, VIII, IX, X)
+    if (/^(i{1,3}|iv|vi{0,3}|ix|x)$/i.test(token)) return token.toUpperCase()
+
+    // Hyphenated model code: letters-digits ("yts-62", "yas-875ex")
+    if (/^[a-z]+-[a-z0-9]+$/i.test(token)) {
+        return token.replace(/^([a-z]+)-([a-z0-9]+)$/i, (_, letters: string, rest: string) => {
+            return `${letters.toUpperCase()}-${/^\d/.test(rest) ? rest.toUpperCase() : rest.toUpperCase()}`
+        })
+    }
+
+    // Compact alphanumeric model code with both letters and digits ("wo20", "62m")
+    if (/^[a-z0-9]+$/i.test(token) && /[a-z]/i.test(token) && /\d/.test(token)) {
+        return token.toUpperCase()
+    }
+
+    // Pure digits stay as-is
+    if (/^\d+$/.test(token)) return token
+
+    // Common lowercase words (skip for first token)
+    if (!isFirst && TITLE_LOWERCASE.has(token.toLowerCase())) return token.toLowerCase()
+
+    // Default: title case (Yamaha, Tenor, Saxophone)
+    return token.charAt(0).toUpperCase() + token.slice(1).toLowerCase()
+}
+
+function formatModelDisplayName(input: string): string {
+    const tokens = input.split(/\s+/).filter(Boolean)
+
+    // Merge "letters" + "digits" pairs into hyphenated model codes
+    // e.g. ["Yamaha", "yts", "62", "Tenor"] → ["Yamaha", "yts-62", "Tenor"]
+    // Skip well-known non-code letter tokens (brand / category words).
+    const NON_CODE_WORDS = new Set([
+        'yamaha', 'selmer', 'yanagisawa', 'keilwerth', 'buffet', 'conn', 'king', 'martin',
+        'buescher', 'mauriat', 'eastman', 'cannonball', 'jupiter', 'jean', 'paul',
+        'tenor', 'alto', 'soprano', 'baritone', 'bass', 'sopranino', 'curved', 'straight',
+        'saxophone', 'sax', 'mark', 'series', 'professional', 'student', 'intermediate',
+    ])
+    const merged: string[] = []
+    for (let i = 0; i < tokens.length; i++) {
+        const cur = tokens[i]
+        const next = tokens[i + 1]
+        const curIsLetters = /^[a-z]+$/i.test(cur)
+        const nextIsDigits = next ? /^\d+[a-z]*$/i.test(next) : false
+        if (curIsLetters && nextIsDigits && cur.length <= 4 && !NON_CODE_WORDS.has(cur.toLowerCase())) {
+            merged.push(`${cur}-${next}`)
+            i++
+        } else {
+            merged.push(cur)
+        }
+    }
+
+    return merged.map((token, idx) => formatTitleToken(token, idx === 0)).join(' ')
+}
+
 // Helper: find products matching a model slug (formerly brand + model)
 async function findModelProductsBySlug(slug: string) {
     const modelDecoded = decodeURIComponent(slug).toLowerCase()
@@ -26,6 +88,7 @@ async function findModelProductsBySlug(slug: string) {
     const allProducts = await prisma.product.findMany({
         where: {
             stockStatus: { not: 'archived' },
+            status: { not: 'draft' },
             ...(keywordConditions.length > 0 ? { OR: keywordConditions } : {}),
         },
         take: 200,
@@ -68,6 +131,7 @@ async function findModelProductsBySlug(slug: string) {
         where: {
             subBrand: { mode: 'insensitive', equals: modelDecoded },
             stockStatus: { not: 'archived' },
+            status: { not: 'draft' },
         },
         include: {
             category: { select: { id: true, name: true, slug: true } },
@@ -103,7 +167,9 @@ export async function generateMetadata({
     if (subcategory && name.toLowerCase().endsWith(subcategory.toLowerCase())) {
         name = name.substring(0, name.length - subcategory.length).trim()
     }
-    const cleanModelName = `${displayBrand} ${name} ${subcategory} Saxophone`.replace(/\s+/g, ' ').trim()
+    const cleanModelName = formatModelDisplayName(
+        `${displayBrand} ${name} ${subcategory} Saxophone`.replace(/\s+/g, ' ').trim()
+    )
 
     // Smart identify Origin
     const lowerBrand = displayBrand.toLowerCase()
@@ -216,7 +282,9 @@ export default async function ModelPage({
             name = name.substring(0, name.length - subcategoryName.length).trim()
         }
 
-        return `${displayBrand} ${name} ${subcategoryName} Saxophone`.replace(/\s+/g, ' ').trim()
+        return formatModelDisplayName(
+            `${displayBrand} ${name} ${subcategoryName} Saxophone`.replace(/\s+/g, ' ').trim()
+        )
     }
 
     const fullModelName = getFullModelName()

@@ -833,10 +833,6 @@ function CompareSection({ products, onClear }: { products: Product[]; onClear: (
                             values={products.map((p) => (p as any).productType === 'used' ? (conditionLabels[(p as any).condition || ''] || 'Used') : 'New')}
                         />
                         <CompareRow
-                            label="Shipping"
-                            values={products.map((p) => p.shippingCost && p.shippingCost > 0 ? `$${p.shippingCost.toLocaleString()}` : 'Free')}
-                        />
-                        <CompareRow
                             label="Availability"
                             values={products.map((p) => ((p as any).stockStatus || 'in-stock') === 'sold-out' ? 'Sold Out' : 'Available')}
                         />

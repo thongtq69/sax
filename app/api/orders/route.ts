@@ -29,14 +29,22 @@ export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url)
     const id = searchParams.get('id')
+    const identifier = searchParams.get('identifier') // orderNumber or _id
     const status = searchParams.get('status')
     const search = searchParams.get('search')
     const page = parseInt(searchParams.get('page') || '1')
     const limit = parseInt(searchParams.get('limit') || '20')
 
-    if (id) {
-      const order = await prisma.order.findUnique({
-        where: { id },
+    if (id || identifier) {
+      // Look up by orderNumber preferred, fall back to MongoDB _id for legacy callers.
+      const lookupValue = identifier || id || ''
+      const order = await prisma.order.findFirst({
+        where: {
+          OR: [
+            { orderNumber: lookupValue },
+            { id: lookupValue },
+          ],
+        },
         include: {
           items: true,
           user: {

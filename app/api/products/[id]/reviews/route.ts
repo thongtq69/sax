@@ -38,7 +38,7 @@ export async function POST(
     }
 
     const body = await request.json()
-    const { buyerName, rating, message, date } = body
+    const { buyerName, rating, message, title, date } = body
     const ratingValue = parseInt(rating)
 
     if (!message || Number.isNaN(ratingValue) || ratingValue < 1 || ratingValue > 5) {
@@ -70,14 +70,14 @@ export async function POST(
           },
         },
       },
-      select: { id: true },
+      select: { id: true, orderId: true },
     })
 
     if (!purchasedOrderItem) {
       return NextResponse.json(
         {
           error: 'Review not eligible',
-          message: 'You can review this product after purchase.',
+          message: "You can only review products you've purchased",
         },
         { status: 403 }
       )
@@ -87,7 +87,10 @@ export async function POST(
     const existingReview = await prisma.review.findFirst({
       where: {
         productId: params.id,
-        sourceApi: reviewerToken,
+        OR: [
+          { userId: session.user.id },
+          { sourceApi: reviewerToken },
+        ],
       },
       select: { id: true },
     })
@@ -105,8 +108,12 @@ export async function POST(
     const review = await prisma.review.create({
       data: {
         productId: params.id,
+        userId: session.user.id,
+        orderId: purchasedOrderItem.orderId,
+        isVerified: true,
         buyerName: session.user.name || buyerName || 'Verified Buyer',
         rating: ratingValue,
+        title: title || null,
         message,
         date: date ? new Date(date) : new Date(),
         sourceApi: reviewerToken,

@@ -1,17 +1,18 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { getProducts, getCategories, createProduct, updateProduct, deleteProduct, transformProduct, transformCategory, getProductUrl } from '@/lib/api'
+import { useRouter } from 'next/navigation'
+import {
+  getProducts,
+  getCategories,
+  deleteProduct,
+  transformProduct,
+  transformCategory,
+  getProductUrl,
+} from '@/lib/api'
 import type { Product } from '@/lib/data'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogFooter,
-} from '@/components/ui/dialog'
 import {
   Select,
   SelectContent,
@@ -19,27 +20,27 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import { Plus, Edit, Trash2, Search, Package, Loader2, Eye, Grid, List, Filter, MoreVertical } from 'lucide-react'
+import {
+  Plus,
+  Edit,
+  Trash2,
+  Search,
+  Package,
+  Loader2,
+  Eye,
+  Grid,
+  List,
+  ChevronUp,
+  ChevronDown,
+  ChevronsUpDown,
+} from 'lucide-react'
 import Image from 'next/image'
 import Link from 'next/link'
-import { ImageUpload } from '@/components/admin/ImageUpload'
 
 export default function ProductsManagement() {
+  const router = useRouter()
   const [productList, setProductList] = useState<Product[]>([])
   const [categories, setCategories] = useState<any[]>([])
-  const [brands, setBrands] = useState<{ id: string; name: string; models?: string[]; isActive: boolean }[]>([])
-  const [specKeys, setSpecKeys] = useState<{ id: string; name: string; isActive: boolean }[]>([])
-  const [newSpecKey, setNewSpecKey] = useState('')
-  const [accessories, setAccessories] = useState<{ id: string; name: string; isActive: boolean }[]>([])
-  const [newAccessory, setNewAccessory] = useState('')
-  const [descTemplates, setDescTemplates] = useState<{ id: string; name: string; content: string; type: string }[]>([])
-  const [selectedHeader, setSelectedHeader] = useState('')
-  const [selectedFooter, setSelectedFooter] = useState('')
-  const [descBody, setDescBody] = useState('')
-  const [newTemplateName, setNewTemplateName] = useState('')
-  const [newTemplateContent, setNewTemplateContent] = useState('')
-  const [newTemplateType, setNewTemplateType] = useState<'header' | 'footer'>('header')
   const [filteredProducts, setFilteredProducts] = useState<Product[]>([])
   const [searchTerm, setSearchTerm] = useState('')
   const [selectedCategory, setSelectedCategory] = useState<string>('all')
@@ -48,72 +49,40 @@ export default function ProductsManagement() {
   const [selectedStock, setSelectedStock] = useState<string>('all')
   const [selectedCondition, setSelectedCondition] = useState<string>('all')
   const [selectedVisibility, setSelectedVisibility] = useState<string>('all')
+  const [selectedStatus, setSelectedStatus] = useState<string>('all')
   const [sortBy, setSortBy] = useState<string>('name-asc')
-  const [isDialogOpen, setIsDialogOpen] = useState(false)
   const [isLoading, setIsLoading] = useState(true)
-  const [isSaving, setIsSaving] = useState(false)
-  const [editingProduct, setEditingProduct] = useState<Product | null>(null)
   const [viewMode, setViewMode] = useState<'table' | 'grid'>('table')
-  const [activeTab, setActiveTab] = useState('basic')
-  const [customBrand, setCustomBrand] = useState('')
-  const [formData, setFormData] = useState<Partial<Product> & {
-    stockStatus?: string
-    productType?: string
-    condition?: string
-    conditionNotes?: string
-    videoUrls?: string[]
-    subBrand?: string
-    isVisible?: boolean
-  }>({
-    name: '',
-    slug: '',
-    brand: '',
-    subBrand: '',
-    price: 0,
-    shippingCost: 0,
-    category: '',
-    subcategory: '',
-    images: [],
-    badge: undefined,
-    inStock: true,
-    stock: 0,
-    stockStatus: 'in-stock',
-    productType: 'new',
-    condition: undefined,
-    conditionNotes: '',
-    videoUrls: ['', '', '', ''],
-    description: '',
-    specs: {},
-    included: [],
-    warranty: '',
-    sku: '',
-    rating: 0,
-    reviewCount: 0,
-  })
 
-  // Fetch data from API
+  const refreshProducts = async () => {
+    const productsResponse = await getProducts({
+      limit: 1000,
+      showHidden: true,
+      showArchived: true,
+      showDrafts: true,
+    } as any)
+    const transformedProducts = productsResponse.products.map(transformProduct)
+    setProductList(transformedProducts)
+  }
+
+  // Fetch data
   useEffect(() => {
     async function fetchData() {
       try {
         setIsLoading(true)
-        const [productsResponse, categoriesData, brandsData, specKeysData, templatesData, accessoriesData] = await Promise.all([
-          getProducts({ limit: 1000, showHidden: true, showArchived: true }),
+        const [productsResponse, categoriesData] = await Promise.all([
+          getProducts({
+            limit: 1000,
+            showHidden: true,
+            showArchived: true,
+            showDrafts: true,
+          } as any),
           getCategories(),
-          fetch('/api/admin/brands').then(res => res.json()),
-          fetch('/api/admin/spec-keys').then(res => res.json()),
-          fetch('/api/admin/description-templates').then(res => res.json()),
-          fetch('/api/admin/accessories').then(res => res.json()),
         ])
-
         const transformedProducts = productsResponse.products.map(transformProduct)
         const transformedCategories = categoriesData.map(transformCategory)
-
         setProductList(transformedProducts)
         setCategories(transformedCategories)
-        setBrands(brandsData.filter((b: any) => b.isActive))
-        setSpecKeys(specKeysData.filter((s: any) => s.isActive))
-        setAccessories(accessoriesData.filter((a: any) => a.isActive))
-        setDescTemplates(templatesData)
       } catch (error) {
         console.error('Error fetching data:', error)
         alert('Failed to load data. Please refresh the page.')
@@ -125,7 +94,6 @@ export default function ProductsManagement() {
   }, [])
 
   useEffect(() => {
-    // Filter products
     let filtered = productList
 
     if (searchTerm) {
@@ -156,7 +124,6 @@ export default function ProductsManagement() {
     if (selectedStock !== 'all') {
       filtered = filtered.filter((p) => {
         const stockStatus = (p as any).stockStatus || (p.inStock ? 'in-stock' : 'sold-out')
-
         switch (selectedStock) {
           case 'in-stock':
             return stockStatus === 'in-stock' && p.inStock
@@ -182,6 +149,13 @@ export default function ProductsManagement() {
       }
     }
 
+    if (selectedStatus !== 'all') {
+      filtered = filtered.filter((p) => {
+        const status = (p as any).status || 'published'
+        return selectedStatus === 'draft' ? status === 'draft' : status === 'published'
+      })
+    }
+
     const sorted = [...filtered].sort((a, b) => {
       const aStockStatus = (a as any).stockStatus || (a.inStock ? 'in-stock' : 'sold-out')
       const bStockStatus = (b as any).stockStatus || (b.inStock ? 'in-stock' : 'sold-out')
@@ -191,17 +165,28 @@ export default function ProductsManagement() {
         'sold-out': 2,
       }
 
+      const aCategoryName = (a as any).categoryName || a.category || ''
+      const bCategoryName = (b as any).categoryName || b.category || ''
+
       switch (sortBy) {
         case 'name-desc':
           return b.name.localeCompare(a.name)
         case 'price-high':
+        case 'price-desc':
           return b.price - a.price
         case 'price-low':
+        case 'price-asc':
           return a.price - b.price
         case 'stock-high':
+        case 'stock-desc':
           return (b.stock || 0) - (a.stock || 0)
         case 'stock-low':
+        case 'stock-asc':
           return (a.stock || 0) - (b.stock || 0)
+        case 'category-asc':
+          return aCategoryName.localeCompare(bCategoryName)
+        case 'category-desc':
+          return bCategoryName.localeCompare(aCategoryName)
         case 'status':
           return (stockRank[aStockStatus] ?? 99) - (stockRank[bStockStatus] ?? 99)
         case 'name-asc':
@@ -211,227 +196,29 @@ export default function ProductsManagement() {
     })
 
     setFilteredProducts(sorted)
-  }, [searchTerm, selectedCategory, selectedBadge, selectedProductType, selectedStock, selectedCondition, selectedVisibility, sortBy, productList])
-
-  // Auto-sync Brand, SKU, Condition, Model to specs when they change
-  useEffect(() => {
-    if (!isDialogOpen) return
-
-    const currentSpecs = formData.specs || {}
-    const newSpecs = { ...currentSpecs }
-
-    // Auto-fill Brand
-    if (formData.brand) {
-      newSpecs['Brand'] = formData.brand
-    }
-
-    // Auto-fill Model (from subBrand)
-    if (formData.subBrand && formData.subBrand.trim() !== '') {
-      newSpecs['Model'] = formData.subBrand
-    }
-
-    // Auto-fill SKU
-    if (formData.sku && formData.sku.trim() !== '') {
-      newSpecs['SKU'] = formData.sku
-    }
-
-    // Auto-fill Condition (only for used products)
-    if (formData.productType === 'used' && formData.condition) {
-      const conditionLabels: Record<string, string> = {
-        'mint': 'Mint',
-        'excellent': 'Excellent',
-        'very-good': 'Very Good',
-        'good': 'Good',
-        'fair': 'Fair'
-      }
-      newSpecs['Condition'] = conditionLabels[formData.condition] || formData.condition
-    } else if (formData.productType === 'new') {
-      newSpecs['Condition'] = 'New'
-    }
-
-    // Only update if specs actually changed
-    if (JSON.stringify(newSpecs) !== JSON.stringify(currentSpecs)) {
-      setFormData(prev => ({ ...prev, specs: newSpecs }))
-    }
-  }, [formData.brand, formData.subBrand, formData.sku, formData.condition, formData.productType, isDialogOpen])
-
-  const handleOpenDialog = (product?: Product) => {
-    // Reset template states
-    setSelectedHeader('')
-    setSelectedFooter('')
-    setNewTemplateName('')
-    setNewTemplateContent('')
-    setNewTemplateType('header')
-
-    if (product) {
-      setEditingProduct(product)
-      // Check if brand exists in brands list
-      const brandExists = brands.some(b => b.name === product.brand)
-      setCustomBrand(brandExists ? '' : product.brand)
-
-      // Parse existing description to find header/body/footer
-      let parsedBody = product.description || ''
-      let foundHeader = ''
-      let foundFooter = ''
-
-      // Try to match header templates
-      for (const template of descTemplates.filter(t => t.type === 'header')) {
-        if (parsedBody.startsWith(template.content)) {
-          foundHeader = template.id
-          parsedBody = parsedBody.slice(template.content.length).replace(/^\n\n/, '')
-          break
-        }
-      }
-
-      // Try to match footer templates
-      for (const template of descTemplates.filter(t => t.type === 'footer')) {
-        if (parsedBody.endsWith(template.content)) {
-          foundFooter = template.id
-          parsedBody = parsedBody.slice(0, -template.content.length).replace(/\n\n$/, '')
-          break
-        }
-      }
-
-      setSelectedHeader(foundHeader)
-      setSelectedFooter(foundFooter)
-      setDescBody(parsedBody)
-
-      const normalizedSpecs = { ...((product as any).specs || {}) } as Record<string, any>
-      if (!normalizedSpecs['SKU'] && normalizedSpecs['Serial']) {
-        normalizedSpecs['SKU'] = normalizedSpecs['Serial']
-      }
-
-      setFormData({
-        ...product,
-        images: product.images || [],
-        stockStatus: (product as any).stockStatus || 'in-stock',
-        productType: (product as any).productType || 'new',
-        condition: (product as any).condition || undefined,
-        conditionNotes: (product as any).conditionNotes || '',
-        shippingCost: (product as any).shippingCost || undefined,
-        subBrand: (product as any).subBrand || '',
-        isVisible: product.isVisible !== false,
-        specs: normalizedSpecs,
-        videoUrls: (product as any).videoUrls?.length > 0
-          ? [...(product as any).videoUrls, '', '', '', ''].slice(0, 4)
-          : (product as any).videoUrl
-            ? [(product as any).videoUrl, '', '', '']
-            : ['', '', '', ''],
-      } as any)
-    } else {
-      setEditingProduct(null)
-      setCustomBrand('')
-      setDescBody('')
-      setFormData({
-        name: '',
-        slug: '',
-        brand: '',
-        subBrand: '',
-        price: 0,
-        shippingCost: undefined,
-        category: '',
-        subcategory: '',
-        images: [],
-        badge: undefined,
-        inStock: true,
-        stock: 0,
-        stockStatus: 'in-stock',
-        productType: 'new',
-        condition: undefined,
-        conditionNotes: '',
-        isVisible: true,
-        videoUrls: ['', '', '', ''],
-        description: '',
-        specs: {
-          'Brand': '',
-          'SKU': '',
-          'SN': '',
-          'Condition': '',
-        },
-        included: [],
-        warranty: '',
-        sku: '',
-        rating: 0,
-        reviewCount: 0,
-      } as any)
-    }
-    setActiveTab('basic')
-    setIsDialogOpen(true)
-  }
-
-  const handleSave = async () => {
-    try {
-      setIsSaving(true)
-
-      // Find category and subcategory IDs
-      const categoryObj = categories.find(c => c.id === formData.category || c.slug === formData.category)
-      const subcategoryObj = categoryObj?.subcategories?.find((s: any) => s.id === formData.subcategory || s.slug === formData.subcategory)
-
-      const productData = {
-        name: formData.name,
-        slug: formData.slug || formData.name?.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '') || '',
-        brand: formData.brand,
-        subBrand: (formData as any).subBrand || null,
-        price: formData.price,
-        shippingCost: (formData as any).shippingCost || null,
-        categoryId: categoryObj?.id || formData.category,
-        subcategoryId: subcategoryObj?.id || formData.subcategory || null,
-        images: formData.images || [],
-        badge: formData.badge || null,
-        inStock: formData.stockStatus === 'in-stock',
-        stock: formData.productType === 'used' ? 1 : (formData.stock || 0),
-        stockStatus: formData.stockStatus || 'in-stock',
-        productType: formData.productType || 'new',
-        condition: formData.productType === 'used' ? (formData.condition || 'excellent') : null,
-        conditionNotes: formData.productType === 'used' ? (formData.conditionNotes || null) : null,
-        videoUrls: (formData.videoUrls || []).filter(url => url && url.trim()),
-        description: formData.description,
-        specs: formData.specs || null,
-        included: formData.included || [],
-        warranty: formData.warranty || null,
-        sku: formData.sku,
-        rating: formData.rating || 0,
-        reviewCount: formData.reviewCount || 0,
-        isVisible: formData.isVisible !== false,
-      }
-
-      console.log('Saving product with images:', productData.images)
-
-      if (editingProduct) {
-        await updateProduct(editingProduct.id, productData)
-      } else {
-        await createProduct(productData)
-      }
-
-      // Refresh data
-      const productsResponse = await getProducts({ limit: 1000, showHidden: true, showArchived: true })
-      const transformedProducts = productsResponse.products.map(transformProduct)
-      setProductList(transformedProducts)
-
-      setIsDialogOpen(false)
-      setEditingProduct(null)
-    } catch (error: any) {
-      console.error('Error saving product:', error)
-      // Show detailed error message from API
-      const errorMessage = error.message || 'Failed to save product. Please try again.'
-      alert(errorMessage)
-    } finally {
-      setIsSaving(false)
-    }
-  }
+  }, [
+    searchTerm,
+    selectedCategory,
+    selectedBadge,
+    selectedProductType,
+    selectedStock,
+    selectedCondition,
+    selectedVisibility,
+    selectedStatus,
+    sortBy,
+    productList,
+  ])
 
   const handleDelete = async (id: string) => {
-    if (!confirm('Are you sure you want to delete this product? This action cannot be undone.')) {
+    if (
+      !confirm(
+        'Are you sure you want to delete this product? This action cannot be undone.'
+      )
+    )
       return
-    }
-
     try {
       await deleteProduct(id)
-
-      // Refresh data
-      const productsResponse = await getProducts({ limit: 1000, showHidden: true, showArchived: true })
-      const transformedProducts = productsResponse.products.map(transformProduct)
-      setProductList(transformedProducts)
+      await refreshProducts()
     } catch (error: any) {
       console.error('Error deleting product:', error)
       alert(error.message || 'Failed to delete product. Please try again.')
@@ -439,7 +226,7 @@ export default function ProductsManagement() {
   }
 
   const getCategoryName = (categoryId: string) => {
-    const cat = categories.find(c => c.id === categoryId)
+    const cat = categories.find((c) => c.id === categoryId)
     return cat?.name || categoryId
   }
 
@@ -450,6 +237,8 @@ export default function ProductsManagement() {
     'coming-soon': 'bg-yellow-100 text-yellow-800',
     'out-of-stock': 'bg-gray-100 text-gray-800',
   }
+
+  const draftCount = productList.filter((p) => (p as any).status === 'draft').length
 
   if (isLoading) {
     return (
@@ -468,18 +257,22 @@ export default function ProductsManagement() {
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
         <div>
           <h1 className="text-3xl font-bold text-gray-900">Products</h1>
-          <p className="text-gray-600 mt-1">Manage your product catalog ({productList.length} products)</p>
+          <p className="text-gray-600 mt-1">
+            Manage your product catalog ({productList.length} products
+            {draftCount > 0 && `, ${draftCount} draft${draftCount === 1 ? '' : 's'}`})
+          </p>
         </div>
-        <Button onClick={() => handleOpenDialog()} size="lg" className="w-full sm:w-auto">
-          <Plus className="h-5 w-5 mr-2" />
-          Add Product
-        </Button>
+        <Link href="/admin/products/new" className="w-full sm:w-auto">
+          <Button size="lg" className="w-full sm:w-auto">
+            <Plus className="h-5 w-5 mr-2" />
+            Add Product
+          </Button>
+        </Link>
       </div>
 
       {/* Filters & Search */}
       <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-4">
         <div className="flex flex-col lg:flex-row gap-4">
-          {/* Search */}
           <div className="relative flex-1">
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
             <Input
@@ -490,7 +283,6 @@ export default function ProductsManagement() {
             />
           </div>
 
-          {/* Category Filter */}
           <Select value={selectedCategory} onValueChange={setSelectedCategory}>
             <SelectTrigger className="w-full lg:w-[200px]">
               <SelectValue placeholder="All Categories" />
@@ -505,7 +297,17 @@ export default function ProductsManagement() {
             </SelectContent>
           </Select>
 
-          {/* Badge Filter */}
+          <Select value={selectedStatus} onValueChange={setSelectedStatus}>
+            <SelectTrigger className="w-full lg:w-[150px]">
+              <SelectValue placeholder="All Statuses" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All Statuses</SelectItem>
+              <SelectItem value="published">Published</SelectItem>
+              <SelectItem value="draft">Drafts only</SelectItem>
+            </SelectContent>
+          </Select>
+
           <Select value={selectedBadge} onValueChange={setSelectedBadge}>
             <SelectTrigger className="w-full lg:w-[150px]">
               <SelectValue placeholder="All Badges" />
@@ -522,7 +324,6 @@ export default function ProductsManagement() {
             </SelectContent>
           </Select>
 
-          {/* Product Type Filter */}
           <Select value={selectedProductType} onValueChange={setSelectedProductType}>
             <SelectTrigger className="w-full lg:w-[130px]">
               <SelectValue placeholder="All Types" />
@@ -546,7 +347,6 @@ export default function ProductsManagement() {
             </SelectContent>
           </Select>
 
-          {/* Condition Filter (only show when used is selected) */}
           {selectedProductType === 'used' && (
             <Select value={selectedCondition} onValueChange={setSelectedCondition}>
               <SelectTrigger className="w-full lg:w-[150px]">
@@ -563,7 +363,6 @@ export default function ProductsManagement() {
             </Select>
           )}
 
-          {/* Visibility Filter */}
           <Select value={selectedVisibility} onValueChange={setSelectedVisibility}>
             <SelectTrigger className="w-full lg:w-[150px]">
               <SelectValue placeholder="All Visibility" />
@@ -590,7 +389,6 @@ export default function ProductsManagement() {
             </SelectContent>
           </Select>
 
-          {/* View Mode Toggle */}
           <div className="flex border rounded-lg overflow-hidden">
             <Button
               variant={viewMode === 'table' ? 'default' : 'ghost'}
@@ -612,13 +410,14 @@ export default function ProductsManagement() {
         </div>
 
         <div className="mt-4 flex items-center justify-between text-sm text-gray-600">
-          <span>Showing {filteredProducts.length} of {productList.length} products</span>
+          <span>
+            Showing {filteredProducts.length} of {productList.length} products
+          </span>
         </div>
       </div>
 
       {/* Products Display */}
       {viewMode === 'table' ? (
-        // Table View
         <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
           <div className="overflow-x-auto">
             <table className="w-full">
@@ -628,19 +427,72 @@ export default function ProductsManagement() {
                     Product
                   </th>
                   <th className="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
-                    Category
+                    <button
+                      type="button"
+                      onClick={() =>
+                        setSortBy(sortBy === 'category-asc' ? 'category-desc' : 'category-asc')
+                      }
+                      className="inline-flex items-center gap-1 uppercase tracking-wider hover:text-gray-900 transition-colors"
+                    >
+                      Category
+                      {sortBy === 'category-asc' ? (
+                        <ChevronUp className="h-3.5 w-3.5" />
+                      ) : sortBy === 'category-desc' ? (
+                        <ChevronDown className="h-3.5 w-3.5" />
+                      ) : (
+                        <ChevronsUpDown className="h-3.5 w-3.5 opacity-50" />
+                      )}
+                    </button>
                   </th>
                   <th className="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
-                    Price
+                    <button
+                      type="button"
+                      onClick={() =>
+                        setSortBy(
+                          sortBy === 'price-asc' || sortBy === 'price-low'
+                            ? 'price-desc'
+                            : 'price-asc'
+                        )
+                      }
+                      className="inline-flex items-center gap-1 uppercase tracking-wider hover:text-gray-900 transition-colors"
+                    >
+                      Price
+                      {sortBy === 'price-asc' || sortBy === 'price-low' ? (
+                        <ChevronUp className="h-3.5 w-3.5" />
+                      ) : sortBy === 'price-desc' || sortBy === 'price-high' ? (
+                        <ChevronDown className="h-3.5 w-3.5" />
+                      ) : (
+                        <ChevronsUpDown className="h-3.5 w-3.5 opacity-50" />
+                      )}
+                    </button>
                   </th>
                   <th className="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
-                    Stock
+                    <button
+                      type="button"
+                      onClick={() =>
+                        setSortBy(
+                          sortBy === 'stock-asc' || sortBy === 'stock-low'
+                            ? 'stock-desc'
+                            : 'stock-asc'
+                        )
+                      }
+                      className="inline-flex items-center gap-1 uppercase tracking-wider hover:text-gray-900 transition-colors"
+                    >
+                      Stock
+                      {sortBy === 'stock-asc' || sortBy === 'stock-low' ? (
+                        <ChevronUp className="h-3.5 w-3.5" />
+                      ) : sortBy === 'stock-desc' || sortBy === 'stock-high' ? (
+                        <ChevronDown className="h-3.5 w-3.5" />
+                      ) : (
+                        <ChevronsUpDown className="h-3.5 w-3.5 opacity-50" />
+                      )}
+                    </button>
                   </th>
                   <th className="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
                     Badge
                   </th>
                   <th className="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
-                    Visibility
+                    Status
                   </th>
                   <th className="px-6 py-4 text-right text-xs font-semibold text-gray-600 uppercase tracking-wider">
                     Actions
@@ -653,104 +505,164 @@ export default function ProductsManagement() {
                     <td colSpan={7} className="px-6 py-16 text-center">
                       <Package className="h-16 w-16 text-gray-300 mx-auto mb-4" />
                       <p className="text-gray-500 text-lg">No products found</p>
-                      <p className="text-gray-400 text-sm mt-1">Try adjusting your search or filters</p>
+                      <p className="text-gray-400 text-sm mt-1">
+                        Try adjusting your search or filters
+                      </p>
                     </td>
                   </tr>
                 ) : (
-                  filteredProducts.map((product) => (
-                    <tr key={product.id} className="hover:bg-gray-50 transition-colors">
-                      <td className="px-6 py-4">
-                        <div className="flex items-center gap-4">
-                          <Link href={getProductUrl(product.sku, product.slug, product.serialNumber || product.specs?.SN)} target="_blank" className="h-14 w-14 rounded-lg overflow-hidden bg-gray-100 flex-shrink-0 hover:opacity-80 transition-opacity cursor-pointer">
-                            {product.images?.[0] ? (
-                              <Image
-                                src={product.images[0]}
-                                alt={product.name}
-                                width={56}
-                                height={56}
-                                className="object-cover w-full h-full"
-                              />
-                            ) : (
-                              <div className="w-full h-full flex items-center justify-center">
-                                <Package className="h-6 w-6 text-gray-400" />
+                  filteredProducts.map((product) => {
+                    const status = (product as any).status || 'published'
+                    const isDraft = status === 'draft'
+                    return (
+                      <tr key={product.id} className="hover:bg-gray-50 transition-colors">
+                        <td className="px-6 py-4">
+                          <div className="flex items-center gap-4">
+                            <Link
+                              href={getProductUrl(
+                                product.sku,
+                                product.slug,
+                                (product as any).serialNumber || product.specs?.SN
+                              )}
+                              target="_blank"
+                              className="h-14 w-14 rounded-lg overflow-hidden bg-gray-100 flex-shrink-0 hover:opacity-80 transition-opacity cursor-pointer"
+                            >
+                              {product.images?.[0] ? (
+                                <Image
+                                  src={product.images[0]}
+                                  alt={product.name}
+                                  width={56}
+                                  height={56}
+                                  className="object-cover w-full h-full"
+                                />
+                              ) : (
+                                <div className="w-full h-full flex items-center justify-center">
+                                  <Package className="h-6 w-6 text-gray-400" />
+                                </div>
+                              )}
+                            </Link>
+                            <div className="min-w-0">
+                              <Link
+                                href={getProductUrl(
+                                  product.sku,
+                                  product.slug,
+                                  (product as any).serialNumber || product.specs?.SN
+                                )}
+                                target="_blank"
+                                className="font-medium text-gray-900 truncate max-w-[300px] hover:text-primary hover:underline cursor-pointer block"
+                              >
+                                {product.name}
+                              </Link>
+                              <div className="text-sm text-gray-500">
+                                {product.brand} • {product.sku}
                               </div>
-                            )}
-                          </Link>
-                          <div className="min-w-0">
-                            <Link href={getProductUrl(product.sku, product.slug, product.serialNumber || product.specs?.SN)} target="_blank" className="font-medium text-gray-900 truncate max-w-[300px] hover:text-primary hover:underline cursor-pointer block">{product.name}</Link>
-                            <div className="text-sm text-gray-500">{product.brand} • {product.sku}</div>
+                            </div>
                           </div>
-                        </div>
-                      </td>
-                      <td className="px-6 py-4">
-                        <span className="text-sm text-gray-600">
-                          {getCategoryName(product.category)}
-                        </span>
-                      </td>
-                      <td className="px-6 py-4">
-                        <div className="font-semibold text-gray-900">${product.price.toLocaleString()}</div>
-                        {product.shippingCost && product.shippingCost > 0 && (
-                          <div className="text-sm text-blue-600">Ship: ${product.shippingCost.toLocaleString()}</div>
-                        )}
-                      </td>
-                      <td className="px-6 py-4">
-                        <div className="flex items-center gap-2">
-                          <span className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium ${(product as any).stockStatus === 'pre-order' ? 'bg-amber-100 text-amber-800' : product.inStock ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
-                            }`}>
-                            {(product as any).stockStatus === 'pre-order' ? 'Pre-Order' : product.inStock ? `${product.stock || 0} in stock` : 'Out of stock'}
+                        </td>
+                        <td className="px-6 py-4">
+                          <span className="text-sm text-gray-600">
+                            {getCategoryName(product.category)}
                           </span>
-                        </div>
-                      </td>
-                      <td className="px-6 py-4">
-                        {product.badge ? (
-                          <span className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium ${badgeColors[product.badge] || 'bg-gray-100 text-gray-800'}`}>
-                            {product.badge}
-                          </span>
-                        ) : (
-                          <span className="text-gray-400 text-sm">—</span>
-                        )}
-                      </td>
-                      <td className="px-6 py-4">
-                        {product.isVisible === false ? (
-                          <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-red-100 text-red-700 border border-red-200">
-                            Hidden
-                          </span>
-                        ) : (
-                          <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-green-100 text-green-700 border border-green-200">
-                            Visible
-                          </span>
-                        )}
-                      </td>
-                      <td className="px-6 py-4">
-                        <div className="flex items-center justify-end gap-1">
-                          <Link href={getProductUrl(product.sku, product.slug, product.serialNumber || product.specs?.SN)} target="_blank">
-                            <Button variant="ghost" size="sm" title="View">
-                              <Eye className="h-4 w-4" />
+                        </td>
+                        <td className="px-6 py-4">
+                          <div className="font-semibold text-gray-900">
+                            ${product.price.toLocaleString()}
+                          </div>
+                          {product.shippingCost && product.shippingCost > 0 && (
+                            <div className="text-sm text-blue-600">
+                              Ship: ${product.shippingCost.toLocaleString()}
+                            </div>
+                          )}
+                        </td>
+                        <td className="px-6 py-4">
+                          <div className="flex items-center gap-2">
+                            <span
+                              className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium ${
+                                (product as any).stockStatus === 'pre-order'
+                                  ? 'bg-amber-100 text-amber-800'
+                                  : product.inStock
+                                    ? 'bg-green-100 text-green-800'
+                                    : 'bg-red-100 text-red-800'
+                              }`}
+                            >
+                              {(product as any).stockStatus === 'pre-order'
+                                ? 'Pre-Order'
+                                : product.inStock
+                                  ? `${product.stock || 0} in stock`
+                                  : 'Out of stock'}
+                            </span>
+                          </div>
+                        </td>
+                        <td className="px-6 py-4">
+                          {product.badge ? (
+                            <span
+                              className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium ${
+                                badgeColors[product.badge] || 'bg-gray-100 text-gray-800'
+                              }`}
+                            >
+                              {product.badge}
+                            </span>
+                          ) : (
+                            <span className="text-gray-400 text-sm">—</span>
+                          )}
+                        </td>
+                        <td className="px-6 py-4">
+                          <div className="flex flex-col gap-1">
+                            {isDraft ? (
+                              <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold bg-amber-100 text-amber-800 border border-amber-200 uppercase tracking-wide w-fit">
+                                Draft
+                              </span>
+                            ) : (
+                              <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-emerald-100 text-emerald-800 border border-emerald-200 w-fit">
+                                Published
+                              </span>
+                            )}
+                            {product.isVisible === false && (
+                              <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-medium bg-gray-100 text-gray-700 border border-gray-200 w-fit">
+                                Hidden
+                              </span>
+                            )}
+                          </div>
+                        </td>
+                        <td className="px-6 py-4">
+                          <div className="flex items-center justify-end gap-1">
+                            <Link
+                              href={getProductUrl(
+                                product.sku,
+                                product.slug,
+                                (product as any).serialNumber || product.specs?.SN
+                              )}
+                              target="_blank"
+                            >
+                              <Button variant="ghost" size="sm" title="View">
+                                <Eye className="h-4 w-4" />
+                              </Button>
+                            </Link>
+                            <Link href={`/admin/products/${product.id}/edit`}>
+                              <Button variant="ghost" size="sm" title="Edit">
+                                <Edit className="h-4 w-4" />
+                              </Button>
+                            </Link>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => handleDelete(product.id)}
+                              className="text-red-600 hover:text-red-700 hover:bg-red-50"
+                              title="Delete"
+                            >
+                              <Trash2 className="h-4 w-4" />
                             </Button>
-                          </Link>
-                          <Button variant="ghost" size="sm" onClick={() => handleOpenDialog(product)} title="Edit">
-                            <Edit className="h-4 w-4" />
-                          </Button>
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={() => handleDelete(product.id)}
-                            className="text-red-600 hover:text-red-700 hover:bg-red-50"
-                            title="Delete"
-                          >
-                            <Trash2 className="h-4 w-4" />
-                          </Button>
-                        </div>
-                      </td>
-                    </tr>
-                  ))
+                          </div>
+                        </td>
+                      </tr>
+                    )
+                  })
                 )}
               </tbody>
             </table>
           </div>
         </div>
       ) : (
-        // Grid View
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
           {filteredProducts.length === 0 ? (
             <div className="col-span-full bg-white rounded-xl shadow-sm border border-gray-200 p-16 text-center">
@@ -759,1131 +671,107 @@ export default function ProductsManagement() {
               <p className="text-gray-400 text-sm mt-1">Try adjusting your search or filters</p>
             </div>
           ) : (
-            filteredProducts.map((product) => (
-              <div key={product.id} className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden group hover:shadow-md transition-shadow">
-                <div className="aspect-square relative bg-gray-100">
-                  {product.images?.[0] ? (
-                    <Image
-                      src={product.images[0]}
-                      alt={product.name}
-                      fill
-                      className="object-cover"
-                    />
-                  ) : (
-                    <div className="w-full h-full flex items-center justify-center">
-                      <Package className="h-16 w-16 text-gray-300" />
-                    </div>
-                  )}
-                  {product.badge && (
-                    <span className={`absolute top-3 left-3 px-2.5 py-1 rounded-full text-xs font-medium ${badgeColors[product.badge] || 'bg-gray-100 text-gray-800'}`}>
-                      {product.badge}
-                    </span>
-                  )}
-                  {product.isVisible === false && (
-                    <div className="absolute top-3 right-3 px-2.5 py-1 rounded-full text-xs font-medium bg-gray-800 text-white z-10">
-                      Hidden
-                    </div>
-                  )}
-                  <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
-                    <Link href={getProductUrl(product.sku, product.slug, product.serialNumber || product.specs?.SN)} target="_blank">
-                      <Button size="sm" variant="secondary">
-                        <Eye className="h-4 w-4" />
+            filteredProducts.map((product) => {
+              const status = (product as any).status || 'published'
+              const isDraft = status === 'draft'
+              return (
+                <div
+                  key={product.id}
+                  className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden group hover:shadow-md transition-shadow"
+                >
+                  <div className="aspect-square relative bg-gray-100">
+                    {product.images?.[0] ? (
+                      <Image src={product.images[0]} alt={product.name} fill className="object-cover" />
+                    ) : (
+                      <div className="w-full h-full flex items-center justify-center">
+                        <Package className="h-16 w-16 text-gray-300" />
+                      </div>
+                    )}
+                    {isDraft && (
+                      <span className="absolute top-3 left-3 px-2.5 py-1 rounded-full text-xs font-semibold bg-amber-100 text-amber-800 border border-amber-200 uppercase">
+                        Draft
+                      </span>
+                    )}
+                    {!isDraft && product.badge && (
+                      <span
+                        className={`absolute top-3 left-3 px-2.5 py-1 rounded-full text-xs font-medium ${
+                          badgeColors[product.badge] || 'bg-gray-100 text-gray-800'
+                        }`}
+                      >
+                        {product.badge}
+                      </span>
+                    )}
+                    {product.isVisible === false && (
+                      <div className="absolute top-3 right-3 px-2.5 py-1 rounded-full text-xs font-medium bg-gray-800 text-white z-10">
+                        Hidden
+                      </div>
+                    )}
+                    <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
+                      <Link
+                        href={getProductUrl(
+                          product.sku,
+                          product.slug,
+                          (product as any).serialNumber || product.specs?.SN
+                        )}
+                        target="_blank"
+                      >
+                        <Button size="sm" variant="secondary">
+                          <Eye className="h-4 w-4" />
+                        </Button>
+                      </Link>
+                      <Link href={`/admin/products/${product.id}/edit`}>
+                        <Button size="sm" variant="secondary">
+                          <Edit className="h-4 w-4" />
+                        </Button>
+                      </Link>
+                      <Button
+                        size="sm"
+                        variant="destructive"
+                        onClick={() => handleDelete(product.id)}
+                      >
+                        <Trash2 className="h-4 w-4" />
                       </Button>
-                    </Link>
-                    <Button size="sm" variant="secondary" onClick={() => handleOpenDialog(product)}>
-                      <Edit className="h-4 w-4" />
-                    </Button>
-                    <Button size="sm" variant="destructive" onClick={() => handleDelete(product.id)}>
-                      <Trash2 className="h-4 w-4" />
-                    </Button>
-                  </div>
-                </div>
-                <div className="p-4">
-                  <div className="text-xs text-gray-500 mb-1">{product.brand}</div>
-                  <h3 className="font-medium text-gray-900 line-clamp-2 min-h-[2.5rem]">{product.name}</h3>
-                  <div className="mt-2 flex items-center justify-between">
-                    <div>
-                      <span className="font-bold text-gray-900">${product.price.toLocaleString()}</span>
-                      {product.shippingCost && product.shippingCost > 0 && (
-                        <span className="text-sm text-blue-600 ml-2">Ship: ${product.shippingCost.toLocaleString()}</span>
-                      )}
                     </div>
-                    <span className={`text-xs px-2 py-1 rounded-full ${(product as any).stockStatus === 'pre-order' ? 'bg-amber-100 text-amber-700' : product.inStock ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`}>
-                      {(product as any).stockStatus === 'pre-order' ? 'Pre-Order' : product.inStock ? 'In Stock' : 'Out'}
-                    </span>
+                  </div>
+                  <div className="p-4">
+                    <div className="text-xs text-gray-500 mb-1">{product.brand}</div>
+                    <h3 className="font-medium text-gray-900 line-clamp-2 min-h-[2.5rem]">
+                      {product.name}
+                    </h3>
+                    <div className="mt-2 flex items-center justify-between">
+                      <div>
+                        <span className="font-bold text-gray-900">
+                          ${product.price.toLocaleString()}
+                        </span>
+                        {product.shippingCost && product.shippingCost > 0 && (
+                          <span className="text-sm text-blue-600 ml-2">
+                            Ship: ${product.shippingCost.toLocaleString()}
+                          </span>
+                        )}
+                      </div>
+                      <span
+                        className={`text-xs px-2 py-1 rounded-full ${
+                          (product as any).stockStatus === 'pre-order'
+                            ? 'bg-amber-100 text-amber-700'
+                            : product.inStock
+                              ? 'bg-green-100 text-green-700'
+                              : 'bg-red-100 text-red-700'
+                        }`}
+                      >
+                        {(product as any).stockStatus === 'pre-order'
+                          ? 'Pre-Order'
+                          : product.inStock
+                            ? 'In Stock'
+                            : 'Out'}
+                      </span>
+                    </div>
                   </div>
                 </div>
-              </div>
-            ))
+              )
+            })
           )}
         </div>
       )}
-
-      {/* Product Form Dialog */}
-      <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
-          <DialogHeader>
-            <DialogTitle className="text-2xl">
-              {editingProduct ? 'Edit Product' : 'Add New Product'}
-            </DialogTitle>
-          </DialogHeader>
-
-          <Tabs value={activeTab} onValueChange={setActiveTab} className="mt-4">
-            <TabsList className="grid grid-cols-5 w-full">
-              <TabsTrigger value="basic">Basic Info</TabsTrigger>
-              <TabsTrigger value="images">Images</TabsTrigger>
-              <TabsTrigger value="pricing">Pricing & Stock</TabsTrigger>
-              <TabsTrigger value="specs">Specs</TabsTrigger>
-              <TabsTrigger value="details">Details</TabsTrigger>
-            </TabsList>
-
-            {/* Basic Info Tab */}
-            <TabsContent value="basic" className="space-y-4 mt-6">
-              <div className="grid grid-cols-2 gap-4">
-                <div className="col-span-2">
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Product Name
-                  </label>
-                  <Input
-                    value={formData.name}
-                    onChange={(e) => {
-                      const newName = e.target.value
-                      // Auto-generate slug if slug is empty
-                      if (!formData.slug || formData.slug === '') {
-                        const autoSlug = newName
-                          .toLowerCase()
-                          .replace(/\s+/g, '-')
-                          .replace(/[^a-z0-9-]/g, '')
-                        setFormData({ ...formData, name: newName, slug: autoSlug })
-                      } else {
-                        setFormData({ ...formData, name: newName })
-                      }
-                    }}
-                    placeholder="Enter product name"
-                    className="text-lg"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    SKU
-                  </label>
-                  <div className="space-y-2">
-                    <Input
-                      value={formData.sku || ''}
-                      onChange={(e) => {
-                        const value = e.target.value.toUpperCase()
-                        setFormData({ ...formData, sku: value })
-                      }}
-                      placeholder="e.g., C143LF or A-9910042"
-                      className="font-mono"
-                    />
-                  </div>
-                  <p className="text-xs text-gray-500 mt-1">Product SKU used for internal lookup</p>
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    SN
-                  </label>
-                  <div className="space-y-2">
-                    <Input
-                      value={(formData.specs?.['SN'] as string) || ''}
-                      onChange={(e) => {
-                        const value = e.target.value.toUpperCase()
-                        const newSpecs = { ...(formData.specs || {}), SN: value }
-                        setFormData({ ...formData, specs: newSpecs })
-                      }}
-                      placeholder="e.g., 9910042"
-                      className="font-mono"
-                    />
-                  </div>
-                  <p className="text-xs text-gray-500 mt-1">Auto-synced to Specs → SN</p>
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Brand
-                  </label>
-                  <Select
-                    value={brands.some(b => b.name === formData.brand) ? formData.brand : '__custom__'}
-                    onValueChange={(value) => {
-                      if (value === '__custom__') {
-                        setFormData({ ...formData, brand: customBrand })
-                      } else {
-                        setFormData({ ...formData, brand: value })
-                        setCustomBrand('')
-                      }
-                    }}
-                  >
-                    <SelectTrigger>
-                      <SelectValue placeholder="Select brand" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {brands.map((brand) => (
-                        <SelectItem key={brand.id} value={brand.name}>
-                          {brand.name}
-                        </SelectItem>
-                      ))}
-                      <SelectItem value="__custom__">✏️ Enter custom brand...</SelectItem>
-                    </SelectContent>
-                  </Select>
-                  {(!brands.some(b => b.name === formData.brand) || formData.brand === '') && (
-                    <Input
-                      value={customBrand || formData.brand}
-                      onChange={(e) => {
-                        setCustomBrand(e.target.value)
-                        setFormData({ ...formData, brand: e.target.value })
-                      }}
-                      placeholder="Enter brand name"
-                      className="mt-2"
-                    />
-                  )}
-                  <p className="text-xs text-gray-500 mt-1">
-                    Select from list or enter custom brand. <a href="/admin/brands" target="_blank" className="text-primary hover:underline">Manage brands →</a>
-                  </p>
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Model
-                  </label>
-                  {(() => {
-                    const selectedBrand = brands.find(b => b.name === formData.brand)
-                    const brandModels = selectedBrand?.models || []
-                    return (
-                      <>
-                        {brandModels.length > 0 ? (
-                          <Select
-                            value={(formData as any).subBrand || '__custom__'}
-                            onValueChange={(value) => {
-                              if (value === '__custom__') {
-                                setFormData({ ...formData, subBrand: '' } as any)
-                              } else if (value === '__none__') {
-                                setFormData({ ...formData, subBrand: '' } as any)
-                              } else {
-                                setFormData({ ...formData, subBrand: value } as any)
-                              }
-                            }}
-                          >
-                            <SelectTrigger>
-                              <SelectValue placeholder="Select model" />
-                            </SelectTrigger>
-                            <SelectContent>
-                              <SelectItem value="__none__">None</SelectItem>
-                              {brandModels.map((model) => (
-                                <SelectItem key={model} value={model}>
-                                  {model}
-                                </SelectItem>
-                              ))}
-                              <SelectItem value="__custom__">✏️ Enter custom model...</SelectItem>
-                            </SelectContent>
-                          </Select>
-                        ) : null}
-                        {(brandModels.length === 0 || (formData as any).subBrand === '' || (!brandModels.includes((formData as any).subBrand || '') && (formData as any).subBrand)) && (
-                          <Input
-                            value={(formData as any).subBrand || ''}
-                            onChange={(e) => setFormData({ ...formData, subBrand: e.target.value } as any)}
-                            placeholder="e.g., Mark VI, Serie III, Custom Z, YAS-62"
-                            className={brandModels.length > 0 ? 'mt-2' : ''}
-                          />
-                        )}
-                      </>
-                    )
-                  })()}
-                  <p className="text-xs text-gray-500 mt-1">
-                    {formData.brand ? 'Select from list or enter custom model.' : 'Select a brand first to see available models.'} <a href="/admin/brands" target="_blank" className="text-primary hover:underline">Manage models →</a>
-                  </p>
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Category
-                  </label>
-                  <Select
-                    value={formData.category}
-                    onValueChange={(value) => setFormData({ ...formData, category: value, subcategory: '' })}
-                  >
-                    <SelectTrigger>
-                      <SelectValue placeholder="Select category" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {categories.map((cat) => (
-                        <SelectItem key={cat.id} value={cat.id}>
-                          {cat.name}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Subcategory
-                  </label>
-                  <Select
-                    value={formData.subcategory || 'none'}
-                    onValueChange={(value) => setFormData({ ...formData, subcategory: value === 'none' ? '' : value })}
-                    disabled={!formData.category}
-                  >
-                    <SelectTrigger>
-                      <SelectValue placeholder="Select subcategory" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="none">None</SelectItem>
-                      {categories
-                        .find(c => c.id === formData.category)
-                        ?.subcategories?.map((sub: any) => (
-                          <SelectItem key={sub.id} value={sub.id}>
-                            {sub.name}
-                          </SelectItem>
-                        ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Slug (URL Path)
-                  </label>
-                  <Input
-                    value={formData.slug}
-                    onChange={(e) => {
-                      // Auto-format slug: lowercase, replace spaces with hyphens, remove special chars
-                      const formatted = e.target.value
-                        .toLowerCase()
-                        .replace(/\s+/g, '-')
-                        .replace(/[^a-z0-9-]/g, '')
-                      setFormData({ ...formData, slug: formatted })
-                    }}
-                    placeholder="auto-generated-from-product-name"
-                  />
-                  <p className="text-xs text-gray-500 mt-1">
-                    Leave empty to auto-generate from product name. This will be used in the product URL.
-                  </p>
-                  {(formData.slug || formData.sku) && (
-                    <p className="text-xs text-blue-600 mt-1">
-                      URL: {getProductUrl(String(formData.sku || ''), String(formData.slug || ''), String((formData.specs?.['SN'] as string) || ''))}
-                    </p>
-                  )}
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Badges (select multiple)
-                  </label>
-                  <div className="grid grid-cols-2 gap-2">
-                    {[
-                      { value: 'new', label: '🆕 New Arrival' },
-                      { value: 'sale', label: '🔥 Special Pricing' },
-                      { value: 'rare', label: '⭐ Limited Availability' },
-                      { value: 'coming-soon', label: '🔜 Arriving Soon' },
-                      { value: 'premium', label: '👑 Premium Selection' },
-                      { value: 'top-tier', label: '🏆 Top-Tier' },
-                    ].map((badge) => {
-                      const badges = formData.badge ? formData.badge.split(',') : []
-                      const isSelected = badges.includes(badge.value)
-                      return (
-                        <label
-                          key={badge.value}
-                          className={`flex items-center gap-2 p-2 rounded-lg border cursor-pointer transition-all ${isSelected
-                            ? 'border-primary bg-primary/10 text-primary'
-                            : 'border-gray-200 hover:border-gray-300'
-                            }`}
-                        >
-                          <input
-                            type="checkbox"
-                            checked={isSelected}
-                            onChange={(e) => {
-                              let newBadges = badges.filter(b => b !== badge.value)
-                              if (e.target.checked) {
-                                newBadges.push(badge.value)
-                              }
-                              setFormData({
-                                ...formData,
-                                badge: newBadges.length > 0 ? newBadges.join(',') : undefined
-                              } as any)
-                            }}
-                            className="rounded border-gray-300 text-primary focus:ring-primary"
-                          />
-                          <span className="text-sm">{badge.label}</span>
-                        </label>
-                      )
-                    })}
-                  </div>
-                  <p className="text-xs text-gray-500 mt-2">Leave all unchecked for "Special Pricing" default</p>
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Product Type
-                  </label>
-                  <Select
-                    value={formData.productType || 'new'}
-                    onValueChange={(value) => {
-                      const updates: any = { productType: value }
-                      if (value === 'used') {
-                        updates.stock = 1
-                        if (!formData.condition) {
-                          updates.condition = 'excellent'
-                        }
-                      }
-                      setFormData({ ...formData, ...updates })
-                    }}
-                  >
-                    <SelectTrigger>
-                      <SelectValue placeholder="Select product type" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="new">New</SelectItem>
-                      <SelectItem value="used">Used</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-                {formData.productType === 'used' && (
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Condition
-                    </label>
-                    <Select
-                      value={formData.condition || 'excellent'}
-                      onValueChange={(value) => setFormData({ ...formData, condition: value as 'mint' | 'excellent' | 'very-good' | 'good' | 'fair' })}
-                    >
-                      <SelectTrigger>
-                        <SelectValue placeholder="Select condition" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="mint">Mint - Essentially new, opened/played</SelectItem>
-                        <SelectItem value="excellent">Excellent - Almost no blemishes</SelectItem>
-                        <SelectItem value="very-good">Very Good - Few slight marks</SelectItem>
-                        <SelectItem value="good">Good - Moderate wear</SelectItem>
-                        <SelectItem value="fair">Fair - Noticeable cosmetic damage</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-                )}
-              </div>
-              {formData.productType === 'used' && (
-                <div className="col-span-2">
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Condition Notes (Optional)
-                  </label>
-                  <textarea
-                    className="w-full min-h-[80px] rounded-lg border border-gray-300 bg-white px-4 py-3 text-sm focus:border-primary focus:ring-1 focus:ring-primary"
-                    value={formData.conditionNotes || ''}
-                    onChange={(e) => setFormData({ ...formData, conditionNotes: e.target.value })}
-                    placeholder="Additional notes about the item's condition..."
-                  />
-                </div>
-              )}
-
-              <div className="col-span-2 pt-4 border-t">
-                <label className="flex items-center gap-3 cursor-pointer group">
-                  <div className="relative">
-                    <input
-                      type="checkbox"
-                      className="sr-only"
-                      checked={formData.isVisible !== false}
-                      onChange={(e) => setFormData({ ...formData, isVisible: e.target.checked })}
-                    />
-                    <div className={`block w-14 h-8 rounded-full transition-colors ${formData.isVisible !== false ? 'bg-primary' : 'bg-gray-300'}`}></div>
-                    <div className={`absolute left-1 top-1 bg-white w-6 h-6 rounded-full transition-transform ${formData.isVisible !== false ? 'translate-x-6' : 'translate-x-0'}`}></div>
-                  </div>
-                  <div>
-                    <span className="text-sm font-semibold text-gray-900 group-hover:text-primary transition-colors">Visible on Website</span>
-                    <p className="text-xs text-gray-500">Uncheck to hide this product from the storefront without deleting it</p>
-                  </div>
-                </label>
-              </div>
-            </TabsContent>
-
-            {/* Images Tab */}
-            <TabsContent value="images" className="mt-6">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Product Images
-                </label>
-                <p className="text-sm text-gray-500 mb-4">
-                  Upload images from your device or add from URL. First image will be the main product image.
-                </p>
-                <ImageUpload
-                  images={formData.images || []}
-                  onChange={(images) => setFormData(prev => ({ ...prev, images }))}
-                  folder="sax/products"
-                />
-              </div>
-            </TabsContent>
-
-            {/* Pricing & Stock Tab */}
-            <TabsContent value="pricing" className="space-y-4 mt-6">
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Price ($)
-                  </label>
-                  <Input
-                    type="text"
-                    inputMode="decimal"
-                    value={formData.price === 0 ? '' : formData.price?.toString() || ''}
-                    onChange={(e) => {
-                      const value = e.target.value
-                      // Only allow numbers and one decimal point
-                      if (value === '' || /^\d*\.?\d*$/.test(value)) {
-                        // Remove leading zeros (except for "0." case)
-                        const cleanValue = value.replace(/^0+(?=\d)/, '')
-                        const numValue = parseFloat(cleanValue) || 0
-                        setFormData({ ...formData, price: numValue })
-                      }
-                    }}
-                    placeholder="0.00"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Shipping Cost ($)
-                  </label>
-                  <Input
-                    type="text"
-                    inputMode="decimal"
-                    value={(formData as any).shippingCost ? (formData as any).shippingCost.toString() : ''}
-                    onChange={(e) => {
-                      const value = e.target.value
-                      // Only allow numbers and one decimal point
-                      if (value === '' || /^\d*\.?\d*$/.test(value)) {
-                        // Remove leading zeros (except for "0." case)
-                        const cleanValue = value.replace(/^0+(?=\d)/, '')
-                        const numValue = cleanValue ? parseFloat(cleanValue) : undefined
-                        setFormData({ ...formData, shippingCost: numValue } as any)
-                      }
-                    }}
-                    placeholder="Leave empty to use zone rate"
-                  />
-                  <p className="text-xs text-gray-500 mt-1">Product-specific shipping cost (optional). Leave empty to use shipping zone rate.</p>
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Stock Quantity
-                  </label>
-                  <Input
-                    type="number"
-                    value={formData.stock}
-                    onChange={(e) => setFormData({ ...formData, stock: parseInt(e.target.value) || 0 })}
-                    placeholder="0"
-                    min="0"
-                    disabled={formData.productType === 'used'}
-                  />
-                  {formData.productType === 'used' && (
-                    <p className="text-xs text-gray-500 mt-1">Stock is automatically set to 1 for used products</p>
-                  )}
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Stock Status
-                  </label>
-                  <Select
-                    value={formData.stockStatus || 'in-stock'}
-                    onValueChange={(value) => setFormData({ ...formData, stockStatus: value as 'in-stock' | 'sold-out' | 'pre-order', inStock: value === 'in-stock' })}
-                  >
-                    <SelectTrigger>
-                      <SelectValue placeholder="Select stock status" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="in-stock">In Stock - Ships within 1-2 business days</SelectItem>
-                      <SelectItem value="sold-out">Sold Out - This item is currently unavailable</SelectItem>
-                      <SelectItem value="pre-order">Pre-Order - Ready to ship in 7-10 days</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-              </div>
-            </TabsContent>
-
-            {/* Specs Tab */}
-            <TabsContent value="specs" className="space-y-4 mt-6">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Product Specifications
-                </label>
-                <p className="text-sm text-gray-500 mb-4">
-                  All specification fields are shown below. Fill in the values as needed.
-                </p>
-                <div className="space-y-3">
-                  {/* Auto-populate all spec keys */}
-                  {specKeys.map((specKey) => (
-                    <div key={specKey.id} className="flex gap-2 items-center">
-                      <div className="flex-1 px-3 py-2 bg-gray-50 border border-gray-200 rounded-md text-sm font-medium text-gray-700">
-                        {specKey.name}
-                      </div>
-                      <Input
-                        value={(formData.specs?.[specKey.name] as string) || ''}
-                        onChange={(e) => {
-                          const newSpecs = { ...formData.specs, [specKey.name]: e.target.value }
-                          setFormData({ ...formData, specs: newSpecs })
-                        }}
-                        placeholder={`Enter ${specKey.name.toLowerCase()}...`}
-                        className="flex-1"
-                      />
-                    </div>
-                  ))}
-
-                  {/* Model field - auto-synced from Basic Info, show if not in specKeys */}
-                  {!specKeys.some(sk => sk.name === 'Model') && (
-                    <div className="flex gap-2 items-center">
-                      <div className="flex-1 px-3 py-2 bg-amber-50 border border-amber-200 rounded-md text-sm font-medium text-amber-700">
-                        Model <span className="text-xs font-normal">(auto-synced)</span>
-                      </div>
-                      <Input
-                        value={(formData.specs?.['Model'] as string) || ''}
-                        onChange={(e) => {
-                          const newSpecs = { ...formData.specs, ['Model']: e.target.value }
-                          setFormData({ ...formData, specs: newSpecs })
-                        }}
-                        placeholder="Auto-filled from Basic Info"
-                        className="flex-1"
-                        readOnly
-                      />
-                    </div>
-                  )}
-
-                  {/* Show any custom specs that are not in specKeys and not Model (already shown above) */}
-                  {Object.entries(formData.specs || {})
-                    .filter(([key]) => !specKeys.some(sk => sk.name === key) && key !== 'Model')
-                    .map(([key, value], index) => (
-                      <div key={`custom-${index}`} className="flex gap-2 items-center">
-                        <Select
-                          value={key}
-                          onValueChange={(newKey) => {
-                            const newSpecs = { ...formData.specs }
-                            const oldValue = newSpecs[key]
-                            delete newSpecs[key]
-                            if (newKey) {
-                              newSpecs[newKey] = oldValue
-                            }
-                            setFormData({ ...formData, specs: newSpecs })
-                          }}
-                        >
-                          <SelectTrigger className="flex-1">
-                            <SelectValue placeholder="Select spec key" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            {specKeys.map((specKey) => (
-                              <SelectItem key={specKey.id} value={specKey.name}>
-                                {specKey.name}
-                              </SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
-                        <Input
-                          value={value as string}
-                          onChange={(e) => {
-                            const newSpecs = { ...formData.specs, [key]: e.target.value }
-                            setFormData({ ...formData, specs: newSpecs })
-                          }}
-                          placeholder="Value"
-                          className="flex-1"
-                        />
-                        <Button
-                          type="button"
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => {
-                            const newSpecs = { ...formData.specs }
-                            delete newSpecs[key]
-                            setFormData({ ...formData, specs: newSpecs })
-                          }}
-                          className="text-red-500 hover:text-red-700 hover:bg-red-50 px-2"
-                        >
-                          <Trash2 className="h-4 w-4" />
-                        </Button>
-                      </div>
-                    ))}
-                </div>
-
-                {/* Add New Spec Key */}
-                <div className="mt-6 pt-4 border-t">
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Add New Spec Key
-                  </label>
-                  <div className="flex gap-2">
-                    <Input
-                      value={newSpecKey}
-                      onChange={(e) => setNewSpecKey(e.target.value)}
-                      placeholder="Key name (e.g., Material, Finish)"
-                      className="flex-1"
-                    />
-                    <Button
-                      type="button"
-                      variant="outline"
-                      onClick={async () => {
-                        if (!newSpecKey.trim()) return
-                        try {
-                          const response = await fetch('/api/admin/spec-keys', {
-                            method: 'POST',
-                            headers: { 'Content-Type': 'application/json' },
-                            body: JSON.stringify({ name: newSpecKey.trim() }),
-                          })
-                          if (response.ok) {
-                            const newKey = await response.json()
-                            setSpecKeys([...specKeys, newKey])
-                            setNewSpecKey('')
-                          } else {
-                            const error = await response.json()
-                            alert(error.error || 'Failed to add spec key')
-                          }
-                        } catch (error) {
-                          console.error('Error adding spec key:', error)
-                          alert('Failed to add spec key')
-                        }
-                      }}
-                    >
-                      <Plus className="h-4 w-4 mr-1" />
-                      Add Key
-                    </Button>
-                  </div>
-                  {specKeys.length > 0 && (
-                    <div className="mt-3 flex flex-wrap gap-2">
-                      {specKeys.map((key) => (
-                        <span
-                          key={key.id}
-                          className="inline-flex items-center gap-1 px-2 py-1 bg-gray-100 rounded text-sm"
-                        >
-                          {key.name}
-                          <button
-                            type="button"
-                            onClick={async () => {
-                              if (!confirm(`Delete spec key "${key.name}"?`)) return
-                              try {
-                                await fetch(`/api/admin/spec-keys?id=${key.id}`, { method: 'DELETE' })
-                                setSpecKeys(specKeys.filter(k => k.id !== key.id))
-                              } catch (error) {
-                                console.error('Error deleting spec key:', error)
-                              }
-                            }}
-                            className="text-gray-400 hover:text-red-500"
-                          >
-                            ×
-                          </button>
-                        </span>
-                      ))}
-                    </div>
-                  )}
-                </div>
-              </div>
-            </TabsContent>
-
-            {/* Details Tab */}
-            <TabsContent value="details" className="space-y-4 mt-6">
-              {/* Description with Header/Footer Templates */}
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Description
-                </label>
-
-                {/* Header Template Selection */}
-                <div className="mb-3">
-                  <label className="block text-xs text-gray-500 mb-1">Header Template (optional)</label>
-                  <div className="flex gap-2">
-                    <Select
-                      value={selectedHeader}
-                      onValueChange={(value) => {
-                        setSelectedHeader(value)
-                        // Update description with new header
-                        const header = descTemplates.find(t => t.id === value)?.content || ''
-                        const footer = descTemplates.find(t => t.id === selectedFooter)?.content || ''
-                        const newDesc = [header, descBody, footer].filter(Boolean).join('\n\n')
-                        setFormData({ ...formData, description: newDesc })
-                      }}
-                    >
-                      <SelectTrigger className="flex-1">
-                        <SelectValue placeholder="Select header template" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="none">No header</SelectItem>
-                        {descTemplates.filter(t => t.type === 'header').map((t) => (
-                          <SelectItem key={t.id} value={t.id}>{t.name}</SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                    {selectedHeader && selectedHeader !== 'none' && (
-                      <Button
-                        type="button"
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => {
-                          setSelectedHeader('')
-                          const footer = descTemplates.find(t => t.id === selectedFooter)?.content || ''
-                          const newDesc = [descBody, footer].filter(Boolean).join('\n\n')
-                          setFormData({ ...formData, description: newDesc })
-                        }}
-                        className="text-gray-400 hover:text-gray-600"
-                      >
-                        ×
-                      </Button>
-                    )}
-                  </div>
-                </div>
-
-                {/* Main Description Body */}
-                <div className="mb-3">
-                  <label className="block text-xs text-gray-500 mb-1">Main Content</label>
-                  <textarea
-                    className="w-full min-h-[120px] rounded-lg border border-gray-300 bg-white px-4 py-3 text-sm focus:border-primary focus:ring-1 focus:ring-primary"
-                    value={descBody}
-                    onChange={(e) => {
-                      setDescBody(e.target.value)
-                      const header = descTemplates.find(t => t.id === selectedHeader)?.content || ''
-                      const footer = descTemplates.find(t => t.id === selectedFooter)?.content || ''
-                      const newDesc = [header, e.target.value, footer].filter(Boolean).join('\n\n')
-                      setFormData({ ...formData, description: newDesc })
-                    }}
-                    placeholder="Enter main product description..."
-                  />
-                </div>
-
-                {/* Footer Template Selection */}
-                <div className="mb-3">
-                  <label className="block text-xs text-gray-500 mb-1">Footer Template (optional)</label>
-                  <div className="flex gap-2">
-                    <Select
-                      value={selectedFooter}
-                      onValueChange={(value) => {
-                        setSelectedFooter(value)
-                        const header = descTemplates.find(t => t.id === selectedHeader)?.content || ''
-                        const footer = descTemplates.find(t => t.id === value)?.content || ''
-                        const newDesc = [header, descBody, footer].filter(Boolean).join('\n\n')
-                        setFormData({ ...formData, description: newDesc })
-                      }}
-                    >
-                      <SelectTrigger className="flex-1">
-                        <SelectValue placeholder="Select footer template" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="none">No footer</SelectItem>
-                        {descTemplates.filter(t => t.type === 'footer').map((t) => (
-                          <SelectItem key={t.id} value={t.id}>{t.name}</SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                    {selectedFooter && selectedFooter !== 'none' && (
-                      <Button
-                        type="button"
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => {
-                          setSelectedFooter('')
-                          const header = descTemplates.find(t => t.id === selectedHeader)?.content || ''
-                          const newDesc = [header, descBody].filter(Boolean).join('\n\n')
-                          setFormData({ ...formData, description: newDesc })
-                        }}
-                        className="text-gray-400 hover:text-gray-600"
-                      >
-                        ×
-                      </Button>
-                    )}
-                  </div>
-                </div>
-
-                {/* Preview */}
-                <div className="bg-gray-50 rounded-lg p-4 border">
-                  <label className="block text-xs text-gray-500 mb-2">Preview</label>
-                  <div className="text-sm whitespace-pre-wrap text-gray-700 max-h-[200px] overflow-y-auto">
-                    {formData.description || <span className="text-gray-400 italic">No description</span>}
-                  </div>
-                </div>
-
-                {/* Add New Template */}
-                <div className="mt-4 pt-4 border-t">
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Add New Template</label>
-                  <div className="space-y-2">
-                    <div className="flex gap-2">
-                      <Input
-                        value={newTemplateName}
-                        onChange={(e) => setNewTemplateName(e.target.value)}
-                        placeholder="Template name"
-                        className="flex-1"
-                      />
-                      <Select value={newTemplateType} onValueChange={(v: 'header' | 'footer') => setNewTemplateType(v)}>
-                        <SelectTrigger className="w-32">
-                          <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="header">Header</SelectItem>
-                          <SelectItem value="footer">Footer</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </div>
-                    <textarea
-                      className="w-full min-h-[80px] rounded-lg border border-gray-300 bg-white px-4 py-3 text-sm focus:border-primary focus:ring-1 focus:ring-primary"
-                      value={newTemplateContent}
-                      onChange={(e) => setNewTemplateContent(e.target.value)}
-                      placeholder="Template content..."
-                    />
-                    <Button
-                      type="button"
-                      variant="outline"
-                      size="sm"
-                      onClick={async () => {
-                        if (!newTemplateName.trim() || !newTemplateContent.trim()) {
-                          alert('Please enter template name and content')
-                          return
-                        }
-                        try {
-                          const response = await fetch('/api/admin/description-templates', {
-                            method: 'POST',
-                            headers: { 'Content-Type': 'application/json' },
-                            body: JSON.stringify({
-                              name: newTemplateName.trim(),
-                              content: newTemplateContent.trim(),
-                              type: newTemplateType,
-                            }),
-                          })
-                          if (response.ok) {
-                            const newTemplate = await response.json()
-                            setDescTemplates([...descTemplates, newTemplate])
-                            setNewTemplateName('')
-                            setNewTemplateContent('')
-                          } else {
-                            const error = await response.json()
-                            alert(error.error || 'Failed to add template')
-                          }
-                        } catch (error) {
-                          console.error('Error adding template:', error)
-                          alert('Failed to add template')
-                        }
-                      }}
-                    >
-                      <Plus className="h-4 w-4 mr-1" />
-                      Add Template
-                    </Button>
-                  </div>
-
-                  {/* Existing Templates */}
-                  {descTemplates.length > 0 && (
-                    <div className="mt-3 space-y-2">
-                      <p className="text-xs text-gray-500">Existing Templates:</p>
-                      <div className="flex flex-wrap gap-2">
-                        {descTemplates.map((t) => (
-                          <span
-                            key={t.id}
-                            className={`inline-flex items-center gap-1 px-2 py-1 rounded text-xs ${t.type === 'header' ? 'bg-blue-100 text-blue-700' : 'bg-green-100 text-green-700'
-                              }`}
-                          >
-                            [{t.type}] {t.name}
-                            <button
-                              type="button"
-                              onClick={async () => {
-                                if (!confirm(`Delete template "${t.name}"?`)) return
-                                try {
-                                  await fetch(`/api/admin/description-templates?id=${t.id}`, { method: 'DELETE' })
-                                  setDescTemplates(descTemplates.filter(x => x.id !== t.id))
-                                } catch (error) {
-                                  console.error('Error deleting template:', error)
-                                }
-                              }}
-                              className="text-gray-400 hover:text-red-500 ml-1"
-                            >
-                              ×
-                            </button>
-                          </span>
-                        ))}
-                      </div>
-                    </div>
-                  )}
-                </div>
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  YouTube Video URLs (up to 4)
-                </label>
-                <div className="space-y-3">
-                  {[0, 1, 2, 3].map((index) => (
-                    <div key={index}>
-                      <Input
-                        value={formData.videoUrls?.[index] || ''}
-                        onChange={(e) => {
-                          const newVideoUrls = [...(formData.videoUrls || ['', '', '', ''])]
-                          newVideoUrls[index] = e.target.value
-                          setFormData({ ...formData, videoUrls: newVideoUrls })
-                        }}
-                        placeholder={`Video ${index + 1}: https://www.youtube.com/watch?v=...`}
-                      />
-                    </div>
-                  ))}
-                </div>
-                <p className="text-xs text-gray-500 mt-2">Add YouTube videos to showcase the product (supports youtube.com/watch, youtu.be, shorts)</p>
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Warranty
-                </label>
-                <Input
-                  value={formData.warranty || ''}
-                  onChange={(e) => setFormData({ ...formData, warranty: e.target.value })}
-                  placeholder="e.g., 2 Year Manufacturer Warranty"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  What&apos;s Included
-                </label>
-                <p className="text-sm text-gray-500 mb-3">
-                  Click to add accessories, or type custom items
-                </p>
-
-                {/* Selected accessories */}
-                <div className="flex flex-wrap gap-2 mb-3">
-                  {(formData.included || []).map((item, index) => (
-                    <span
-                      key={index}
-                      className="inline-flex items-center gap-1 px-3 py-1.5 bg-primary/10 text-primary rounded-full text-sm"
-                    >
-                      {item}
-                      <button
-                        type="button"
-                        onClick={() => {
-                          const newIncluded = [...(formData.included || [])]
-                          newIncluded.splice(index, 1)
-                          setFormData({ ...formData, included: newIncluded })
-                        }}
-                        className="text-primary/60 hover:text-red-500 ml-1"
-                      >
-                        ×
-                      </button>
-                    </span>
-                  ))}
-                </div>
-
-                {/* Available accessories to add */}
-                <div className="flex flex-wrap gap-2 mb-3">
-                  {accessories
-                    .filter(acc => !(formData.included || []).includes(acc.name))
-                    .map((acc) => (
-                      <button
-                        key={acc.id}
-                        type="button"
-                        onClick={() => {
-                          setFormData({
-                            ...formData,
-                            included: [...(formData.included || []), acc.name]
-                          })
-                        }}
-                        className="inline-flex items-center gap-1 px-3 py-1.5 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-full text-sm transition-colors"
-                      >
-                        <Plus className="h-3 w-3" />
-                        {acc.name}
-                      </button>
-                    ))}
-                </div>
-
-                {/* Add custom accessory */}
-                <div className="flex gap-2 mt-4 pt-4 border-t">
-                  <Input
-                    value={newAccessory}
-                    onChange={(e) => setNewAccessory(e.target.value)}
-                    placeholder="Add custom item or new accessory..."
-                    className="flex-1"
-                    onKeyDown={(e) => {
-                      if (e.key === 'Enter' && newAccessory.trim()) {
-                        e.preventDefault()
-                        setFormData({
-                          ...formData,
-                          included: [...(formData.included || []), newAccessory.trim()]
-                        })
-                        setNewAccessory('')
-                      }
-                    }}
-                  />
-                  <Button
-                    type="button"
-                    variant="outline"
-                    onClick={() => {
-                      if (newAccessory.trim()) {
-                        setFormData({
-                          ...formData,
-                          included: [...(formData.included || []), newAccessory.trim()]
-                        })
-                        setNewAccessory('')
-                      }
-                    }}
-                  >
-                    Add
-                  </Button>
-                  <Button
-                    type="button"
-                    variant="outline"
-                    onClick={async () => {
-                      if (!newAccessory.trim()) return
-                      try {
-                        const response = await fetch('/api/admin/accessories', {
-                          method: 'POST',
-                          headers: { 'Content-Type': 'application/json' },
-                          body: JSON.stringify({ name: newAccessory.trim() }),
-                        })
-                        if (response.ok) {
-                          const newAcc = await response.json()
-                          setAccessories([...accessories, newAcc])
-                          setFormData({
-                            ...formData,
-                            included: [...(formData.included || []), newAcc.name]
-                          })
-                          setNewAccessory('')
-                        } else {
-                          const error = await response.json()
-                          alert(error.error || 'Failed to save accessory')
-                        }
-                      } catch (error) {
-                        console.error('Error saving accessory:', error)
-                      }
-                    }}
-                    title="Save as reusable accessory"
-                  >
-                    Save & Add
-                  </Button>
-                </div>
-
-                {/* Manage saved accessories */}
-                {accessories.length > 0 && (
-                  <div className="mt-3 pt-3 border-t">
-                    <p className="text-xs text-gray-500 mb-2">Saved Accessories (click × to delete):</p>
-                    <div className="flex flex-wrap gap-2">
-                      {accessories.map((acc) => (
-                        <span
-                          key={acc.id}
-                          className="inline-flex items-center gap-1 px-2 py-1 bg-gray-100 rounded text-xs"
-                        >
-                          {acc.name}
-                          <button
-                            type="button"
-                            onClick={async () => {
-                              if (!confirm(`Delete accessory "${acc.name}"?`)) return
-                              try {
-                                await fetch(`/api/admin/accessories?id=${acc.id}`, { method: 'DELETE' })
-                                setAccessories(accessories.filter(a => a.id !== acc.id))
-                              } catch (error) {
-                                console.error('Error deleting accessory:', error)
-                              }
-                            }}
-                            className="text-gray-400 hover:text-red-500"
-                          >
-                            ×
-                          </button>
-                        </span>
-                      ))}
-                    </div>
-                  </div>
-                )}
-              </div>
-            </TabsContent>
-          </Tabs>
-
-          <DialogFooter className="mt-6 pt-4 border-t">
-            <Button variant="outline" onClick={() => setIsDialogOpen(false)} disabled={isSaving}>
-              Cancel
-            </Button>
-            <Button onClick={handleSave} disabled={isSaving} size="lg">
-              {isSaving ? (
-                <>
-                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                  Saving...
-                </>
-              ) : (
-                editingProduct ? 'Update Product' : 'Create Product'
-              )}
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
     </div>
   )
 }

@@ -255,13 +255,21 @@ export default function OrdersManagement() {
                 </tr>
               </thead>
               <tbody className="bg-white divide-y divide-gray-200">
-                {orders.map((order) => (
+                {orders.map((order) => {
+                  const orderUrlId = order.orderNumber || order.id
+                  return (
                   <tr
                     key={order.id}
                     className="hover:bg-gray-50"
                   >
-                    <td className="px-6 py-4 whitespace-nowrap text-sm font-mono text-gray-900">
-                      #{order.orderNumber || order.id.slice(-8)}
+                    <td className="px-6 py-4 whitespace-nowrap text-sm font-mono">
+                      <Link
+                        href={`/admin/orders/${orderUrlId}`}
+                        className="text-primary hover:underline"
+                        title="View order details"
+                      >
+                        #{order.orderNumber || order.id.slice(-8)}
+                      </Link>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
                       <div className="text-sm font-medium text-gray-900">
@@ -308,7 +316,7 @@ export default function OrdersManagement() {
                         variant="ghost"
                         size="sm"
                       >
-                        <Link href={`/admin/orders/${order.id}`} title="View details">
+                        <Link href={`/admin/orders/${orderUrlId}`} title="View details">
                           <Eye className="h-4 w-4" />
                         </Link>
                       </Button>
@@ -323,7 +331,8 @@ export default function OrdersManagement() {
                       </Button>
                     </td>
                   </tr>
-                ))}
+                  )
+                })}
               </tbody>
             </table>
           </div>

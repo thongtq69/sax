@@ -57,10 +57,10 @@ export function PromoCarousel({ promos = [] }: PromoCarouselProps) {
             onMouseLeave={() => setIsPaused(false)}
         >
             {/* Animated background shimmer */}
-            <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/5 to-transparent animate-shimmer" />
-            
+            <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/5 to-transparent animate-shimmer pointer-events-none" />
+
             {/* Decorative dots pattern */}
-            <div className="absolute inset-0 opacity-10" style={{
+            <div className="absolute inset-0 opacity-10 pointer-events-none" style={{
                 backgroundImage: `radial-gradient(circle, currentColor 1px, transparent 1px)`,
                 backgroundSize: '20px 20px',
             }} />
@@ -96,17 +96,32 @@ export function PromoCarousel({ promos = [] }: PromoCarouselProps) {
                                 </span>
                             </>
                         )}
-                        {slide.ctaLink && slide.ctaText && (
-                            <div className="w-full flex justify-center sm:w-auto">
-                                <Link
-                                    href={slide.ctaLink}
-                                    className="rounded-full border border-[#D4AF37] px-2.5 sm:px-3 py-0.5 sm:py-1 text-[10px] font-semibold uppercase tracking-widest text-[#D4AF37] hover:bg-[#D4AF37] hover:text-[#2c3e50] transition-colors duration-300"
-                                    prefetch={true}
-                                >
-                                    {slide.ctaText}
-                                </Link>
-                            </div>
-                        )}
+                        {slide.ctaLink && slide.ctaText && (() => {
+                            const isExternal = /^https?:\/\//i.test(slide.ctaLink)
+                            const linkClass = "relative z-10 rounded-full border border-[#D4AF37] px-2.5 sm:px-3 py-0.5 sm:py-1 text-[10px] font-semibold uppercase tracking-widest text-[#D4AF37] hover:bg-[#D4AF37] hover:text-[#2c3e50] transition-colors duration-300"
+                            return (
+                                <div className="relative z-10 w-full flex justify-center sm:w-auto">
+                                    {isExternal ? (
+                                        <a
+                                            href={slide.ctaLink}
+                                            target="_blank"
+                                            rel="noopener noreferrer"
+                                            className={linkClass}
+                                        >
+                                            {slide.ctaText}
+                                        </a>
+                                    ) : (
+                                        <Link
+                                            href={slide.ctaLink}
+                                            className={linkClass}
+                                            prefetch={true}
+                                        >
+                                            {slide.ctaText}
+                                        </Link>
+                                    )}
+                                </div>
+                            )
+                        })()}
                     </div>
 
                     {/* Next Button */}

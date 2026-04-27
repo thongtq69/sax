@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import { Settings as SettingsIcon, Save, Globe, Phone, Mail, Clock, Facebook, Youtube, Instagram, Twitter } from 'lucide-react'
+import { Settings as SettingsIcon, Save, Globe, Phone, Mail, Clock, Facebook, Youtube, Instagram, Twitter, CreditCard } from 'lucide-react'
 
 interface SocialLinks {
   facebook?: string
@@ -24,6 +24,7 @@ interface SiteSettings {
   socialLinks: SocialLinks
   footerText: string
   copyrightText: string
+  paypalReceiverEmail?: string
   updatedAt: string
 }
 
@@ -44,6 +45,7 @@ export default function SettingsPage() {
     tiktok: '',
     footerText: '',
     copyrightText: '',
+    paypalReceiverEmail: '',
   })
   const [errors, setErrors] = useState<string[]>([])
   const [successMessage, setSuccessMessage] = useState('')
@@ -72,6 +74,7 @@ export default function SettingsPage() {
           tiktok: socialLinks.tiktok || '',
           footerText: data.footerText || '',
           copyrightText: data.copyrightText || '',
+          paypalReceiverEmail: data.paypalReceiverEmail || '',
         })
       }
     } catch (error) {
@@ -107,6 +110,7 @@ export default function SettingsPage() {
           socialLinks: socialLinksData,
           footerText: formData.footerText,
           copyrightText: formData.copyrightText,
+          paypalReceiverEmail: formData.paypalReceiverEmail.trim(),
         }),
       })
 
@@ -331,6 +335,34 @@ export default function SettingsPage() {
               placeholder="© 2024 Your Company. All rights reserved."
             />
           </div>
+        </div>
+      </div>
+
+      {/* PayPal Configuration */}
+      <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+        <h2 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
+          <CreditCard className="h-5 w-5" />
+          PayPal Configuration
+        </h2>
+        <p className="text-sm text-gray-500 mb-4">
+          The PayPal merchant email address that receives customer payments. Update this when your PayPal account changes.
+        </p>
+        <div>
+          <Label htmlFor="paypalReceiverEmail">PayPal Receiver Email</Label>
+          <div className="relative">
+            <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
+            <Input
+              id="paypalReceiverEmail"
+              type="email"
+              value={formData.paypalReceiverEmail}
+              onChange={(e) => setFormData({ ...formData, paypalReceiverEmail: e.target.value })}
+              placeholder="order@jamessaxcorner.com"
+              className="pl-10"
+            />
+          </div>
+          <p className="text-xs text-gray-500 mt-1">
+            Defaults to <code className="bg-gray-100 px-1 py-0.5 rounded">order@jamessaxcorner.com</code> if left blank.
+          </p>
         </div>
       </div>
 

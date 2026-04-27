@@ -67,7 +67,10 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   try {
     // Dynamic product pages - fetch directly from DB for reliability
     const products = await prisma.product.findMany({
-      where: { stockStatus: { not: 'archived' } },
+      where: {
+        stockStatus: { not: 'archived' },
+        status: { not: 'draft' },
+      },
       select: { sku: true, slug: true, specs: true, updatedAt: true },
     })
     const productPages = products.map((product) => ({
@@ -94,6 +97,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       where: {
         subBrand: { not: null },
         stockStatus: { not: 'archived' },
+        status: { not: 'draft' },
       },
       select: { brand: true, subBrand: true, updatedAt: true },
     })

@@ -343,8 +343,13 @@ export async function sendOrderConfirmationEmail(data: OrderEmailData) {
   // Calculate price (subtotal without shipping)
   const price = subtotal
 
-  // Build status link — customers log in and see live paid/shipped/delivered status
-  const statusUrl = orderId ? `${baseUrl}/account/orders/${orderId}` : `${baseUrl}/account/orders`
+  // Build status link — customers log in and see live paid/shipped/delivered status.
+  // Prefer the human-readable orderNumber so the URL matches what customers see in admin/UI.
+  const statusUrl = orderNumber
+    ? `${baseUrl}/account/orders/${orderNumber}`
+    : orderId
+      ? `${baseUrl}/account/orders/${orderId}`
+      : `${baseUrl}/account/orders`
 
   const html = `
     <!DOCTYPE html>
@@ -372,7 +377,7 @@ export async function sendOrderConfirmationEmail(data: OrderEmailData) {
         
         <div style="margin: 25px 0; font-size: 16px;">
           <p style="margin: 0 0 10px 0;">
-            <strong>Order Number:</strong> #${orderNumber}
+            <strong>Order Number:</strong> #${orderNumber} — <a href="${statusUrl}" style="color: #1a365d; font-weight: bold; text-decoration: underline;">Click here to view details</a>
           </p>
           <p style="margin: 0 0 10px 0;">
             <strong>Instrument:</strong> ${instrumentName}
@@ -392,7 +397,7 @@ export async function sendOrderConfirmationEmail(data: OrderEmailData) {
             <strong>Total:</strong> $${total.toLocaleString()}
           </p>
           <p style="margin: 0 0 10px 0;">
-            <strong>Status:</strong> Order confirmed and in preparation — <a href="${statusUrl}" style="color: #1a365d; font-weight: bold; text-decoration: underline;">View live order status</a>
+            <strong>Status:</strong> Order confirmed and in preparation
           </p>
         </div>
         

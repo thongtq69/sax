@@ -3,6 +3,7 @@
 import { useState } from 'react'
 import { useSession } from 'next-auth/react'
 import { useCartStore } from '@/lib/store/cart'
+import { useSiteSettings } from '@/contexts/SiteSettingsContext'
 import { Button } from '@/components/ui/button'
 import { Loader2 } from 'lucide-react'
 
@@ -68,6 +69,7 @@ export function PayPalStandardButton({ shippingInfo, shippingCost, discountAmoun
   const { data: session } = useSession()
   const items = useCartStore((state) => state.items)
   const subtotal = useCartStore((state) => state.getSubtotal())
+  const siteSettings = useSiteSettings()
   // Use calculated shipping cost if provided, otherwise 0 (will be handled in PayPal)
   const shipping = shippingCost ?? 0
   const tax = 0 // No tax
@@ -75,8 +77,12 @@ export function PayPalStandardButton({ shippingInfo, shippingCost, discountAmoun
   const total = Math.max(0, subtotal + shipping + tax - discount)
 
   // PayPal Business Email (Sandbox or Live)
-  const paypalEmail = process.env.NEXT_PUBLIC_PAYPAL_BUSINESS_EMAIL || 'sb-stwky48264789@business.example.com'
+  // In sandbox mode, prefer the env-configured sandbox business account.
+  // In live mode, prefer the admin-configured receiver email from SiteSettings (so it can be changed without code/env edits).
   const isSandbox = process.env.NEXT_PUBLIC_PAYPAL_MODE !== 'live'
+  const paypalEmail = isSandbox
+    ? (process.env.NEXT_PUBLIC_PAYPAL_BUSINESS_EMAIL || siteSettings.paypalReceiverEmail?.trim() || 'order@jamessaxcorner.com')
+    : (siteSettings.paypalReceiverEmail?.trim() || process.env.NEXT_PUBLIC_PAYPAL_BUSINESS_EMAIL || 'order@jamessaxcorner.com')
 
   // PayPal Standard Button URL
   const paypalUrl = isSandbox

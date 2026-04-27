@@ -19,6 +19,7 @@ interface SiteSettings {
     socialLinks: SocialLinks
     footerText: string
     copyrightText: string
+    paypalReceiverEmail: string
 }
 
 const defaultSettings: SiteSettings = {
@@ -36,6 +37,7 @@ const defaultSettings: SiteSettings = {
     },
     footerText: '',
     copyrightText: '© 2024 James Sax Corner. All rights reserved.',
+    paypalReceiverEmail: 'order@jamessaxcorner.com',
 }
 
 const SiteSettingsContext = createContext<SiteSettings>(defaultSettings)
@@ -81,6 +83,7 @@ export function SiteSettingsProvider({ children }: { children: ReactNode }) {
                         },
                         footerText: data.footerText || defaultSettings.footerText,
                         copyrightText: data.copyrightText || defaultSettings.copyrightText,
+                        paypalReceiverEmail: data.paypalReceiverEmail || defaultSettings.paypalReceiverEmail,
                     }
 
                     setSettings(newSettings)

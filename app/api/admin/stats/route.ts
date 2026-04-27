@@ -15,6 +15,7 @@ export async function GET() {
       usersCount,
       blogPostsCount,
       reviewsCount,
+      inquiriesCount,
       recentOrders,
       pendingOrdersCount,
       activeUsers,
@@ -26,6 +27,7 @@ export async function GET() {
       prisma.user.count(),
       prisma.blogPost.count(),
       prisma.review.count(),
+      prisma.inquiry.count(),
       prisma.order.findMany({
         take: 5,
         orderBy: { createdAt: 'desc' },
@@ -56,6 +58,7 @@ export async function GET() {
         users: usersCount,
         blogPosts: blogPostsCount,
         reviews: reviewsCount,
+        inquiries: inquiriesCount,
         pendingOrders: pendingOrdersCount,
         totalRevenue: totalRevenue._sum.total || 0,
         activeUsers: activeUsers || 0,

@@ -4,6 +4,7 @@ export interface Product {
   slug: string
   brand: string
   price: number
+  discount?: number
   shippingCost?: number
   category: string
   categoryName?: string
@@ -27,6 +28,7 @@ export interface Product {
   condition?: 'mint' | 'excellent' | 'very-good' | 'good' | 'fair'
   conditionNotes?: string
   isVisible?: boolean
+  status?: 'draft' | 'published'
 }
 
 export interface Category {

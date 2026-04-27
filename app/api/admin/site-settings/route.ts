@@ -58,6 +58,7 @@ export async function PUT(request: NextRequest) {
       footerText,
       copyrightText,
       domesticShippingCost,
+      paypalReceiverEmail,
     } = body
 
     // Validate required fields
@@ -69,11 +70,21 @@ export async function PUT(request: NextRequest) {
     }
 
     // Validate email format if provided
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
     if (email && email.trim() !== '') {
-      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
       if (!emailRegex.test(email)) {
         return NextResponse.json(
           { error: 'Email không hợp lệ', message: 'Vui lòng nhập địa chỉ email đúng định dạng (ví dụ: example@domain.com)' },
+          { status: 400 }
+        )
+      }
+    }
+
+    // Validate PayPal receiver email format if provided
+    if (paypalReceiverEmail !== undefined && paypalReceiverEmail.trim() !== '') {
+      if (!emailRegex.test(paypalReceiverEmail)) {
+        return NextResponse.json(
+          { error: 'Email PayPal không hợp lệ', message: 'Vui lòng nhập địa chỉ email PayPal đúng định dạng' },
           { status: 400 }
         )
       }
@@ -96,6 +107,7 @@ export async function PUT(request: NextRequest) {
           ...(footerText !== undefined && { footerText }),
           ...(copyrightText !== undefined && { copyrightText }),
           ...(domesticShippingCost !== undefined && { domesticShippingCost }),
+          ...(paypalReceiverEmail !== undefined && { paypalReceiverEmail: paypalReceiverEmail.trim() || 'order@jamessaxcorner.com' }),
         },
       })
     } else {
@@ -111,6 +123,7 @@ export async function PUT(request: NextRequest) {
           footerText: footerText || '',
           copyrightText: copyrightText || '',
           domesticShippingCost: domesticShippingCost ?? 25,
+          paypalReceiverEmail: (paypalReceiverEmail && paypalReceiverEmail.trim()) || 'order@jamessaxcorner.com',
         },
       })
     }

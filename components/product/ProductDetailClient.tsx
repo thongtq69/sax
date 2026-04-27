@@ -21,6 +21,8 @@ import { Star, ChevronRight, ChevronLeft, Heart, Share2, Check, X, ZoomIn, Loade
 import { ConditionTooltip } from './ConditionTooltip'
 import { ConditionRating } from '@/lib/product-conditions'
 import { isProductSoldOut } from '@/lib/inventory'
+import { OrderReviewForm } from '@/components/account/OrderReviewForm'
+import { ShieldCheck } from 'lucide-react'
 
 interface ProductDetailClientProps {
   product: Product
@@ -57,6 +59,16 @@ export function ProductDetailClient({ product }: ProductDetailClientProps) {
   // Check if product is sold out
   const isPreOrder = (product as any).stockStatus === 'pre-order'
   const isSoldOut = isProductSoldOut(product)
+
+  // Discount handling
+  const discount = (product as any).discount && (product as any).discount > 0 ? (product as any).discount : 0
+  const hasDiscount = discount > 0 && discount < product.price
+  const salePrice = hasDiscount ? product.price - discount : product.price
+
+  // Reviews from API (verified purchasers)
+  const [productReviews, setProductReviews] = useState<any[]>([])
+  const [hasUserReviewed, setHasUserReviewed] = useState(false)
+  const [hasUserPurchased, setHasUserPurchased] = useState(false)
 
   // Fetch user's default address and auto-calculate shipping
   useEffect(() => {
@@ -193,6 +205,62 @@ export function ProductDetailClient({ product }: ProductDetailClientProps) {
   useEffect(() => {
     getAllReviewsAsync().then(setReviews)
   }, [])
+
+  // Fetch product-specific reviews (verified purchasers) and check user purchase eligibility
+  useEffect(() => {
+    let cancelled = false
+    const loadProductReviews = async () => {
+      try {
+        const res = await fetch(`/api/products/${product.id}/reviews`)
+        if (!res.ok) return
+        const data = await res.json()
+        if (cancelled) return
+        const list = Array.isArray(data) ? data : []
+        setProductReviews(list)
+        if (session?.user?.id) {
+          const reviewerToken = `verified:${session.user.id}`
+          setHasUserReviewed(
+            list.some(
+              (r: any) =>
+                r.userId === session.user!.id ||
+                r.sourceApi === reviewerToken,
+            ),
+          )
+        }
+      } catch {
+        // Silently ignore - reviews simply won't render
+      }
+    }
+    if (product.id) loadProductReviews()
+    return () => {
+      cancelled = true
+    }
+  }, [product.id, session?.user?.id])
+
+  // Check if current user has purchased this product (used to gate the review form)
+  useEffect(() => {
+    let cancelled = false
+    const checkPurchase = async () => {
+      if (!session?.user?.id || !product.id) {
+        setHasUserPurchased(false)
+        return
+      }
+      try {
+        const res = await fetch(`/api/products/${product.id}/can-review`)
+        if (!res.ok) return
+        const data = await res.json()
+        if (cancelled) return
+        setHasUserPurchased(Boolean(data.hasPurchased))
+        setHasUserReviewed(Boolean(data.hasReviewed))
+      } catch {
+        // Silently ignore — user simply won't see the inline review form
+      }
+    }
+    checkPurchase()
+    return () => {
+      cancelled = true
+    }
+  }, [session?.user?.id, product.id])
 
   const reviewStats = useMemo(() => getProductRatingStats(product.name), [product.name])
 
@@ -472,7 +540,7 @@ export function ProductDetailClient({ product }: ProductDetailClientProps) {
       name: product.name,
       slug: product.slug,
       sku: product.sku,
-      price: product.price,
+      price: salePrice,
       image: product.images[0],
       shippingCost: product.shippingCost ?? null,
     })
@@ -778,9 +846,23 @@ export function ProductDetailClient({ product }: ProductDetailClientProps) {
               ) : (
                 <>
                   <div className="flex items-baseline gap-2 md:gap-3 mb-2 flex-wrap">
-                    <span className="text-3xl md:text-4xl font-bold text-primary">
-                      ${product.price.toLocaleString()}
-                    </span>
+                    {hasDiscount ? (
+                      <>
+                        <span className="text-3xl md:text-4xl font-bold text-primary">
+                          ${salePrice.toLocaleString()}
+                        </span>
+                        <span className="text-lg md:text-2xl text-gray-400 line-through">
+                          ${product.price.toLocaleString()}
+                        </span>
+                        <Badge className="bg-red-600 text-white border-red-600 hover:bg-red-700 text-xs md:text-sm px-2 py-0.5">
+                          Save ${discount.toLocaleString()}
+                        </Badge>
+                      </>
+                    ) : (
+                      <span className="text-3xl md:text-4xl font-bold text-primary">
+                        ${product.price.toLocaleString()}
+                      </span>
+                    )}
                   </div>
 
                   {/* Shipping Info - Auto-show if user has address */}
@@ -928,7 +1010,7 @@ export function ProductDetailClient({ product }: ProductDetailClientProps) {
                     name: product.name,
                     slug: product.slug,
                     sku: product.sku,
-                    price: product.price,
+                    price: salePrice,
                     image: product.images[0],
                     shippingCost: product.shippingCost ?? null,
                   })
@@ -1139,6 +1221,79 @@ export function ProductDetailClient({ product }: ProductDetailClientProps) {
 
           <TabsContent value="reviews" className="mt-4 md:mt-6 lg:mt-8 animate-fade-in">
             <div className="space-y-4 md:space-y-6">
+              {/* Customer Reviews (verified purchasers) */}
+              {(productReviews.length > 0 || (session?.user?.id && hasUserPurchased && !hasUserReviewed)) && (
+                <section className="space-y-4">
+                  <div className="flex items-center justify-between">
+                    <h3 className="text-base md:text-lg font-bold text-secondary">Customer Reviews</h3>
+                    {productReviews.length > 0 && (
+                      <span className="text-xs md:text-sm text-gray-500">
+                        {productReviews.length} {productReviews.length === 1 ? 'verified review' : 'verified reviews'}
+                      </span>
+                    )}
+                  </div>
+
+                  {productReviews.length > 0 && (
+                    <div className="space-y-3 md:space-y-4">
+                      {productReviews.map((review: any) => {
+                        const verified = review.isVerified || review.userId || (typeof review.sourceApi === 'string' && review.sourceApi.startsWith('verified:'))
+                        return (
+                          <div key={review.id} className="p-4 md:p-5 bg-white rounded-xl border border-gray-200">
+                            <div className="flex items-start justify-between gap-3 flex-wrap">
+                              <div>
+                                <div className="flex items-center gap-2 flex-wrap">
+                                  <span className="font-semibold text-secondary">{review.buyerName}</span>
+                                  {verified && (
+                                    <span className="inline-flex items-center gap-1 rounded-full bg-emerald-50 px-2 py-0.5 text-[11px] font-medium text-emerald-700 border border-emerald-200">
+                                      <ShieldCheck className="h-3 w-3" />
+                                      Verified Purchase
+                                    </span>
+                                  )}
+                                </div>
+                                <span className="text-xs text-gray-500">
+                                  {new Date(review.date).toLocaleDateString('en-US', {
+                                    year: 'numeric',
+                                    month: 'long',
+                                    day: 'numeric',
+                                  })}
+                                </span>
+                              </div>
+                              <div className="flex items-center gap-0.5">
+                                {Array.from({ length: 5 }).map((_, i) => (
+                                  <Star
+                                    key={i}
+                                    className={`h-4 w-4 ${i < review.rating ? 'fill-amber-400 text-amber-400' : 'fill-gray-200 text-gray-200'}`}
+                                  />
+                                ))}
+                              </div>
+                            </div>
+                            {review.title && (
+                              <p className="mt-2 text-sm font-semibold text-secondary">{review.title}</p>
+                            )}
+                            <p className="mt-2 text-sm md:text-base text-gray-700 whitespace-pre-line">
+                              {review.message}
+                            </p>
+                          </div>
+                        )
+                      })}
+                    </div>
+                  )}
+
+                  {session?.user?.id && hasUserPurchased && !hasUserReviewed && (
+                    <OrderReviewForm productId={product.id} />
+                  )}
+
+                  {!session?.user?.id && (
+                    <div className="rounded-2xl border bg-slate-50 p-4 text-sm text-slate-600">
+                      <Link href={`/auth/login?callbackUrl=${encodeURIComponent(typeof window !== 'undefined' ? window.location.pathname : '/')}`} className="font-medium text-primary hover:underline">
+                        Log in to review
+                      </Link>
+                      <span className="ml-1">(verified purchasers only).</span>
+                    </div>
+                  )}
+                </section>
+              )}
+
               {reviews.length > 0 && (
                 <div className="flex flex-col sm:flex-row items-center gap-4 md:gap-8 p-4 md:p-6 bg-gradient-to-br from-amber-50 to-orange-50 rounded-xl md:rounded-2xl border border-amber-100">
                   <div className="text-center">

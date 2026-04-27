@@ -48,6 +48,7 @@ export async function PUT(
       brand,
       subBrand,
       price,
+      discount,
       shippingCost,
       categoryId,
       subcategoryId,
@@ -68,6 +69,7 @@ export async function PUT(
       reviewCount,
       videoUrls,
       isVisible,
+      status,
     } = body
 
     // Build update data - always include images if provided (even empty array)
@@ -128,6 +130,7 @@ export async function PUT(
     if (brand) updateData.brand = brand
     if (subBrand !== undefined) updateData.subBrand = subBrand || null
     if (price !== undefined) updateData.price = parseFloat(price)
+    if (discount !== undefined) updateData.discount = discount === null || discount === '' ? 0 : parseFloat(discount) || 0
     if (shippingCost !== undefined) updateData.shippingCost = shippingCost ? parseFloat(shippingCost) : null
     if (categoryId) updateData.categoryId = categoryId
     if (subcategoryId !== undefined) updateData.subcategoryId = subcategoryId || null
@@ -144,6 +147,9 @@ export async function PUT(
     if (rating !== undefined) updateData.rating = parseFloat(rating)
     if (reviewCount !== undefined) updateData.reviewCount = parseInt(reviewCount)
     if (isVisible !== undefined) updateData.isVisible = isVisible
+    if (status !== undefined) {
+      updateData.status = status === 'draft' ? 'draft' : 'published'
+    }
 
     // Handle product type and condition
     if (productType !== undefined) {

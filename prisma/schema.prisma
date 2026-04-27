@@ -42,6 +42,7 @@ model Product {
   brand       String
   subBrand    String?      // Sub-brand or model line (e.g., "Mark VI", "Serie III", "Custom Z")
   price       Float
+  discount    Float?       @default(0) // Product-level discount in dollars (e.g., 200 for $200 off)
   shippingCost Float?      // Product-specific shipping cost (optional)
   categoryId  String       @db.ObjectId
   category    Category     @relation(fields: [categoryId], references: [id], onDelete: Cascade)
@@ -54,6 +55,7 @@ model Product {
   stock       Int?         @default(0)
   stockStatus String?      @default("in-stock") // 'in-stock' | 'sold-out' | 'pre-order'
   isVisible   Boolean      @default(true)
+  status      String       @default("published") // 'draft' | 'published' — controls whether SP appears anywhere except admin
   productType String       @default("new")      // 'new' | 'used'
   condition   String?                           // 'mint' | 'excellent' | 'very-good' | 'good' | 'fair' (for used products)
   conditionNotes String?                        // Additional notes for used items
@@ -230,8 +232,12 @@ model Review {
   productId   String?  @db.ObjectId
   product     Product? @relation(fields: [productId], references: [id], onDelete: Cascade)
   customProductName String? // For reviews from external channels (Reverb, eBay, etc.)
+  userId      String?  @db.ObjectId // Authenticated user who submitted (for verified purchases)
+  orderId     String?  @db.ObjectId // Linked order, proving purchase
+  isVerified  Boolean  @default(false) // True if linked to a real paid order
   buyerName   String
   rating      Int      // 1-5 stars
+  title       String?  // Optional review title
   message     String
   date        DateTime
   sourceUrl   String?  // Reverb listing URL
@@ -240,6 +246,8 @@ model Review {
   updatedAt   DateTime @updatedAt
 
   @@index([productId])
+  @@index([userId])
+  @@index([orderId])
   @@index([date])
 }
 
@@ -291,6 +299,7 @@ model SiteSettings {
   footerText    String   @default("")
   copyrightText String   @default("")
   domesticShippingCost Float @default(25) // Vietnam domestic shipping cost
+  paypalReceiverEmail  String @default("order@jamessaxcorner.com") // PayPal receiver email for orders
   updatedAt     DateTime @updatedAt
 }
 

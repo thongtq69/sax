@@ -26,6 +26,14 @@ export async function GET(
       )
     }
 
+    // Hide drafts from public lookups
+    if ((product as any).status === 'draft') {
+      return NextResponse.json(
+        { error: 'Product not found' },
+        { status: 404 }
+      )
+    }
+
     return NextResponse.json(product)
   } catch (error) {
     console.error('Error fetching product by slug:', error)

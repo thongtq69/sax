@@ -15,7 +15,7 @@ import {
 } from '@/components/ui/select'
 import { Input } from '@/components/ui/input'
 import type { Product } from '@/lib/data'
-import { ChevronLeft, ChevronRight, Search, Tag } from 'lucide-react'
+import { ChevronLeft, ChevronRight, Search, Tag, ChevronDown, ChevronUp, SlidersHorizontal, X } from 'lucide-react'
 import { getModelSlug } from '@/lib/slug-utils'
 
 type SortOption = 'featured' | 'price-low' | 'price-high' | 'rating' | 'name'
@@ -58,6 +58,8 @@ export function BrandPageClient({
   const [searchTerm, setSearchTerm] = useState('')
   const [sortBy, setSortBy] = useState<SortOption>('featured')
   const [currentPage, setCurrentPage] = useState(1)
+  const [isIntroExpanded, setIsIntroExpanded] = useState(false)
+  const [isMobileFiltersOpen, setIsMobileFiltersOpen] = useState(false)
 
   const maxPrice = useMemo(() => {
     if (products.length === 0) return 0
@@ -260,6 +262,14 @@ export function BrandPageClient({
     setPriceRange([0, maxPrice])
   }
 
+  const activeFilterCount =
+    selectedModels.length +
+    selectedSubcategories.length +
+    selectedConditions.length +
+    (inStockOnly ? 1 : 0) +
+    (priceRange[0] > 0 ? 1 : 0) +
+    (maxPrice > 0 && priceRange[1] < maxPrice ? 1 : 0)
+
   return (
     <div className="min-h-screen">
       <div className="bg-muted/30 border-b">
@@ -274,7 +284,7 @@ export function BrandPageClient({
 
       {/* Hero banner */}
       <section
-        className="relative w-full overflow-hidden"
+        className="relative w-full overflow-hidden min-h-[260px] md:min-h-[360px] flex items-center"
         style={brandBackgroundImage ? {
           backgroundImage: `url(${brandBackgroundImage})`,
           backgroundSize: 'cover',
@@ -284,16 +294,43 @@ export function BrandPageClient({
         }}
       >
         <div className="absolute inset-0 bg-black/50" />
-        <div className="relative container mx-auto px-4 py-16 md:py-24 text-center">
-          <h1 className="text-4xl md:text-6xl font-bold text-white tracking-tight uppercase drop-shadow-lg">
+        <div className="relative container mx-auto px-4 py-12 md:py-24 text-center w-full">
+          <h1 className="text-3xl sm:text-4xl md:text-6xl font-bold text-white tracking-tight uppercase drop-shadow-lg">
             {brandName} Saxophones
           </h1>
           {brandDescription && (
-            <p className="mt-4 max-w-3xl mx-auto text-sm md:text-base text-white/90 leading-relaxed drop-shadow">
-              {brandDescription}
-            </p>
+            <div className="mt-4 max-w-3xl mx-auto">
+              {/* Desktop: full text always shown */}
+              <p className="hidden md:block text-sm md:text-base text-white/90 leading-relaxed drop-shadow">
+                {brandDescription}
+              </p>
+              {/* Mobile: clamped with Read more / Read less toggle */}
+              <div className="md:hidden">
+                <p
+                  className={`text-sm text-white/90 leading-relaxed drop-shadow ${isIntroExpanded ? '' : 'line-clamp-3'}`}
+                >
+                  {brandDescription}
+                </p>
+                <button
+                  type="button"
+                  onClick={() => setIsIntroExpanded((prev) => !prev)}
+                  className="mt-2 inline-flex items-center gap-1 text-xs font-semibold text-white/95 underline-offset-4 hover:underline"
+                  aria-expanded={isIntroExpanded}
+                >
+                  {isIntroExpanded ? (
+                    <>
+                      Read less <ChevronUp className="h-3.5 w-3.5" />
+                    </>
+                  ) : (
+                    <>
+                      Read more <ChevronDown className="h-3.5 w-3.5" />
+                    </>
+                  )}
+                </button>
+              </div>
+            </div>
           )}
-          <p className="mt-3 text-xs md:text-sm text-white/80 uppercase tracking-[0.3em]">
+          <p className="mt-3 text-[10px] sm:text-xs md:text-sm text-white/80 uppercase tracking-[0.3em]">
             {products.length} listing{products.length !== 1 ? 's' : ''} available
           </p>
         </div>
@@ -359,12 +396,25 @@ export function BrandPageClient({
         </section>
 
         <div className="grid grid-cols-1 lg:grid-cols-[280px_1fr] gap-6">
-          <aside className="border border-border bg-white p-4 h-fit lg:sticky lg:top-24">
+          <aside
+            id="brand-filters-aside"
+            className={`border border-border bg-white p-4 h-fit lg:sticky lg:top-24 lg:block ${isMobileFiltersOpen ? 'block' : 'hidden'}`}
+          >
             <div className="flex items-center justify-between mb-4">
               <h2 className="text-sm uppercase tracking-wider font-semibold text-muted-foreground">Filters</h2>
-              <button type="button" onClick={clearFilters} className="text-xs text-primary hover:underline">
-                Clear all
-              </button>
+              <div className="flex items-center gap-3">
+                <button type="button" onClick={clearFilters} className="text-xs text-primary hover:underline">
+                  Clear all
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setIsMobileFiltersOpen(false)}
+                  className="lg:hidden text-muted-foreground hover:text-secondary"
+                  aria-label="Close filters"
+                >
+                  <X className="h-4 w-4" />
+                </button>
+              </div>
             </div>
 
             <div className="space-y-5">
@@ -457,10 +507,22 @@ export function BrandPageClient({
 
           <main>
             <div className="border border-border bg-white p-3 md:p-4 mb-4 flex flex-wrap items-center justify-between gap-3">
-              <p className="text-sm text-muted-foreground">
-                Showing <span className="font-semibold text-secondary">{paginatedProducts.length}</span> of{' '}
-                <span className="font-semibold text-secondary">{filteredProducts.length}</span> listings
-              </p>
+              <div className="flex items-center gap-3 flex-wrap">
+                <button
+                  type="button"
+                  onClick={() => setIsMobileFiltersOpen((prev) => !prev)}
+                  className="lg:hidden inline-flex items-center gap-2 px-3 py-1.5 border border-border bg-white text-sm text-secondary hover:border-secondary/40 transition-colors"
+                  aria-expanded={isMobileFiltersOpen}
+                  aria-controls="brand-filters-aside"
+                >
+                  <SlidersHorizontal className="h-4 w-4" />
+                  Filters{activeFilterCount > 0 ? ` (${activeFilterCount})` : ''}
+                </button>
+                <p className="text-sm text-muted-foreground">
+                  Showing <span className="font-semibold text-secondary">{paginatedProducts.length}</span> of{' '}
+                  <span className="font-semibold text-secondary">{filteredProducts.length}</span> listings
+                </p>
+              </div>
 
               <Select value={sortBy} onValueChange={(value) => setSortBy(value as SortOption)}>
                 <SelectTrigger className="w-[180px] h-9">

@@ -172,52 +172,57 @@ export function HomePageClient({ data }: { data: HomePageData }) {
         </section>
       )}
       {brands && brands.length > 0 && (
-        <section
-          id="brands"
-          className="relative overflow-hidden border-y border-border/50"
-          style={collectionBackgrounds['brands'] ? {
-            backgroundImage: `url(${collectionBackgrounds['brands']})`,
-            backgroundSize: 'cover',
-            backgroundPosition: 'center',
-          } : { backgroundColor: 'rgba(255,255,255,0.5)' }}
-        >
-          {collectionBackgrounds['brands'] && <div className="absolute inset-0 bg-white/60" />}
-          <div className="relative container mx-auto px-4 py-8 sm:py-10">
-            <div className="flex items-center justify-center gap-3 mb-8">
-              <div className="flex-1 h-px bg-primary/30" />
-              <span className="text-2xl sm:text-3xl text-primary">♫</span>
-              <h2 className="text-lg sm:text-xl md:text-2xl font-bold text-secondary tracking-wide uppercase">BRANDS</h2>
-              <span className="text-2xl sm:text-3xl text-primary">♫</span>
-              <div className="flex-1 h-px bg-primary/30" />
+        <section id="brands" className="relative overflow-hidden">
+          {/* Title section - white strip above (matches FEATURED INSTRUMENTS) */}
+          <div className="bg-white">
+            <div className="container mx-auto px-4 pt-1 pb-2">
+              <div className="flex items-center justify-center gap-3">
+                <div className="flex-1 h-px bg-primary/30" />
+                <span className="text-2xl sm:text-3xl text-primary">♪</span>
+                <h2 className="text-lg sm:text-xl md:text-2xl font-bold text-secondary tracking-wide uppercase">BRANDS</h2>
+                <span className="text-2xl sm:text-3xl text-primary">♪</span>
+                <div className="flex-1 h-px bg-primary/30" />
+              </div>
             </div>
-
-            <div className="flex flex-wrap justify-center gap-4 sm:gap-6 md:gap-8 lg:gap-12">
-              {brands.map((brand) => (
-                <Link
-                  key={brand.slug}
-                  href={`/b/${brand.slug}-saxophones`}
-                  className="group flex flex-col items-center flex-shrink-0"
-                >
-                  <div className="w-20 h-20 sm:w-28 sm:h-28 md:w-32 md:h-32 rounded-full border border-border bg-white shadow-sm flex items-center justify-center p-4 group-hover:border-primary group-hover:shadow-md transition-all duration-300">
-                    {brand.logo ? (
-                      <Image
-                        src={brand.logo}
-                        alt={brand.name}
-                        width={100}
-                        height={100}
-                        className="w-full h-full object-contain filter group-hover:brightness-110 transition-all"
-                      />
-                    ) : (
-                      <span className="text-lg sm:text-xl font-semibold text-secondary">
-                        {brand.name.substring(0, 1)}
-                      </span>
-                    )}
-                  </div>
-                  <span className="mt-3 text-sm sm:text-base font-medium text-secondary group-hover:text-primary transition-colors text-center w-full">
-                    {brand.name}
-                  </span>
-                </Link>
-              ))}
+          </div>
+          {/* Logos section - with background image, NO overlay */}
+          <div
+            className="relative"
+            style={collectionBackgrounds['brands'] ? {
+              backgroundImage: `url(${collectionBackgrounds['brands']})`,
+              backgroundSize: 'cover',
+              backgroundPosition: 'center',
+            } : { backgroundColor: 'rgba(255,255,255,0.5)' }}
+          >
+            <div className="relative container mx-auto px-4 py-8 sm:py-10">
+              <div className="flex flex-wrap justify-center gap-4 sm:gap-6 md:gap-8 lg:gap-12">
+                {brands.map((brand) => (
+                  <Link
+                    key={brand.slug}
+                    href={`/b/${brand.slug}-saxophones`}
+                    className="group flex flex-col items-center flex-shrink-0"
+                  >
+                    <div className="w-20 h-20 sm:w-28 sm:h-28 md:w-32 md:h-32 rounded-full border border-border bg-white shadow-sm flex items-center justify-center p-4 group-hover:border-primary group-hover:shadow-md transition-all duration-300">
+                      {brand.logo ? (
+                        <Image
+                          src={brand.logo}
+                          alt={brand.name}
+                          width={100}
+                          height={100}
+                          className="w-full h-full object-contain filter group-hover:brightness-110 transition-all"
+                        />
+                      ) : (
+                        <span className="text-lg sm:text-xl font-semibold text-secondary">
+                          {brand.name.substring(0, 1)}
+                        </span>
+                      )}
+                    </div>
+                    <span className="mt-3 text-sm sm:text-base font-medium text-secondary group-hover:text-primary transition-colors text-center w-full">
+                      {brand.name}
+                    </span>
+                  </Link>
+                ))}
+              </div>
             </div>
           </div>
         </section>

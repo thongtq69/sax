@@ -54,14 +54,16 @@ async function findProductByItemParam(param: string, includeCategoryOnly = false
       subcategory: true,
     }
 
-  // 1. Try exact slug as given (case-insensitive) 
+  const isPublic = (p: any) => p && p.isVisible !== false && p.status !== 'draft'
+
+  // 1. Try exact slug as given (case-insensitive)
   const byExactSlug = await prisma.product.findFirst({
     where: {
       slug: { equals: decodedParam, mode: 'insensitive' }
     },
     include,
   })
-  if (byExactSlug && ((byExactSlug as any).isVisible !== false)) return byExactSlug
+  if (isPublic(byExactSlug)) return byExactSlug
 
   // 2. Handle legacy -SN- format
   const snMatch = decodedParam.match(/^(.*)-SN-(.+)$/i)
@@ -74,7 +76,7 @@ async function findProductByItemParam(param: string, includeCategoryOnly = false
       where: { slug: { equals: slugCandidate, mode: 'insensitive' } },
       include,
     })
-    if (byBaseSlug && ((byBaseSlug as any).isVisible !== false)) return byBaseSlug
+    if (isPublic(byBaseSlug)) return byBaseSlug
 
     // Try combined slug (new format name-SN)
     const combinedSlug = `${slugCandidate}-${snCandidate}`
@@ -82,7 +84,7 @@ async function findProductByItemParam(param: string, includeCategoryOnly = false
       where: { slug: { equals: combinedSlug, mode: 'insensitive' } },
       include,
     })
-    if (byCombinedSlug && ((byCombinedSlug as any).isVisible !== false)) return byCombinedSlug
+    if (isPublic(byCombinedSlug)) return byCombinedSlug
   }
 
   // 3. Try candidates from URL (SKU/SN)
@@ -98,7 +100,7 @@ async function findProductByItemParam(param: string, includeCategoryOnly = false
       },
       include,
     })
-    if (bySku && ((bySku as any).isVisible !== false)) return bySku
+    if (isPublic(bySku)) return bySku
   }
 
   // 4. Try a partial slug match by extracted name parts
@@ -112,7 +114,7 @@ async function findProductByItemParam(param: string, includeCategoryOnly = false
         },
         include
       })
-      if (byPartialName && ((byPartialName as any).isVisible !== false)) return byPartialName
+      if (isPublic(byPartialName)) return byPartialName
     }
   }
 

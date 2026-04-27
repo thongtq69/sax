@@ -36,6 +36,17 @@ export async function GET(request: NextRequest) {
       where.isVisible = { not: false }
     }
 
+    // Hide drafts from public queries; admin uses showDrafts=true to see them
+    const showDrafts = searchParams.get('showDrafts') === 'true'
+    if (!showDrafts) {
+      where.status = { not: 'draft' }
+    }
+    // Optional status filter (e.g. status=draft to view only drafts in admin)
+    const statusFilter = searchParams.get('status')
+    if (statusFilter) {
+      where.status = statusFilter
+    }
+
     if (category) {
       // Check if category is a slug or ID
       const categoryRecord = await prisma.category.findFirst({
@@ -155,6 +166,7 @@ export async function POST(request: NextRequest) {
       brand,
       subBrand,
       price,
+      discount,
       shippingCost,
       categoryId,
       subcategoryId,
@@ -176,6 +188,7 @@ export async function POST(request: NextRequest) {
       rating,
       reviewCount,
       isVisible,
+      status,
     } = body
 
     // Fallbacks for missing fields to allow partial creation
@@ -240,6 +253,7 @@ export async function POST(request: NextRequest) {
         brand: finalBrand,
         subBrand: subBrand || null,
         price: finalPrice,
+        discount: discount !== undefined && discount !== null && discount !== '' ? parseFloat(discount) : 0,
         shippingCost: shippingCost ? parseFloat(shippingCost) : null,
         categoryId: finalCategoryId,
         subcategoryId: subcategoryId || null,
@@ -260,6 +274,7 @@ export async function POST(request: NextRequest) {
         rating: rating ? parseFloat(rating) : 0,
         reviewCount: reviewCount ? parseInt(reviewCount) : 0,
         isVisible: isVisible !== undefined ? isVisible : true,
+        status: status === 'draft' ? 'draft' : (status === 'published' ? 'published' : 'draft'),
       },
       include: {
         category: true,

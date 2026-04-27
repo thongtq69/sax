@@ -34,6 +34,7 @@ async function getUsedProductsByBrand() {
           brand: { equals: brand, mode: 'insensitive' },
           productType: 'used',
           stockStatus: { not: 'archived' },
+          status: { not: 'draft' },
         },
         include: {
           category: { select: { id: true, name: true, slug: true } },
@@ -118,32 +119,49 @@ export default async function UsedProfessionalSaxophonesPage() {
       </article>
 
       <div className="container mx-auto px-4 pb-16 space-y-12">
-        {sections.map(({ brand, products }) => (
-          <section key={brand} id={brand.toLowerCase()}>
-            <div className="flex items-center justify-between mb-4 border-b border-border pb-2">
-              <h2 className="text-2xl md:text-3xl font-bold text-secondary">
-                {brand} Saxophones
-              </h2>
-              <Link
-                href={`/b/${brand.toLowerCase()}-saxophones`}
-                className="text-sm text-primary hover:text-secondary transition-colors"
-              >
-                View all {brand} →
-              </Link>
-            </div>
-            {products.length === 0 ? (
-              <p className="text-sm text-muted-foreground py-6">
-                No used {brand} saxophones are currently in stock. Please check back soon.
-              </p>
-            ) : (
-              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-                {products.map((product) => (
-                  <ProductCard key={product.id} product={product} />
-                ))}
+        {sections.map(({ brand, products }) => {
+          const previewProducts = products.slice(0, 4)
+          const hasMore = products.length > 4
+          const brandHref = `/b/${brand.toLowerCase()}-saxophones`
+          return (
+            <section key={brand} id={brand.toLowerCase()}>
+              <div className="flex items-center justify-between mb-4 border-b border-border pb-2">
+                <h2 className="text-2xl md:text-3xl font-bold text-secondary">
+                  {brand} Saxophones
+                </h2>
+                <Link
+                  href={brandHref}
+                  className="text-sm text-primary hover:text-secondary transition-colors whitespace-nowrap"
+                >
+                  View all {brand} →
+                </Link>
               </div>
-            )}
-          </section>
-        ))}
+              {products.length === 0 ? (
+                <p className="text-sm text-muted-foreground py-6">
+                  No used {brand} saxophones are currently in stock. Please check back soon.
+                </p>
+              ) : (
+                <>
+                  <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
+                    {previewProducts.map((product) => (
+                      <ProductCard key={product.id} product={product} />
+                    ))}
+                  </div>
+                  {hasMore && (
+                    <div className="mt-6 text-center">
+                      <Link
+                        href={brandHref}
+                        className="inline-flex items-center gap-1 px-5 py-2 text-sm font-medium text-primary border border-primary/30 rounded hover:bg-primary hover:text-white transition-colors"
+                      >
+                        View All {brand} ({products.length}) →
+                      </Link>
+                    </div>
+                  )}
+                </>
+              )}
+            </section>
+          )
+        })}
       </div>
     </div>
   )

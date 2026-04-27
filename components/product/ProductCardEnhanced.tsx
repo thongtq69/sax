@@ -114,6 +114,10 @@ export function ProductCardEnhanced({
   const finishes = getProductFinishes(product.id)
   const savings = 0 // Removed retailPrice, now using shippingCost
 
+  const discount = (product as any).discount && (product as any).discount > 0 ? (product as any).discount : 0
+  const hasDiscount = discount > 0 && discount < product.price
+  const salePrice = hasDiscount ? product.price - discount : product.price
+
   const handleAddToCart = async () => {
     setIsAddingToCart(true)
     await new Promise(resolve => setTimeout(resolve, 500))
@@ -123,7 +127,7 @@ export function ProductCardEnhanced({
       name: product.name,
       slug: product.slug,
       sku: product.sku,
-      price: product.price,
+      price: salePrice,
       image: product.images[0],
       shippingCost: product.shippingCost ?? null,
     })
@@ -367,11 +371,26 @@ export function ProductCardEnhanced({
 
             {/* Pricing */}
             <div className="mb-3">
-              <div className="flex items-baseline gap-2">
+              <div className="flex items-baseline gap-2 flex-wrap">
                 {hasOutOfStock ? (
                   <span className="text-xl font-bold text-red-500">
                     SOLD
                   </span>
+                ) : hasDiscount ? (
+                  <>
+                    <span className={cn(
+                      "text-xl font-bold text-primary transition-all duration-300",
+                      isHovered && "text-2xl"
+                    )}>
+                      ${salePrice.toLocaleString()}
+                    </span>
+                    <span className="text-sm text-gray-400 line-through">
+                      ${product.price.toLocaleString()}
+                    </span>
+                    <Badge className="ml-1 text-[10px] bg-red-600 text-white border-red-600 hover:bg-red-700 px-1.5 py-0">
+                      ${discount.toLocaleString()} OFF
+                    </Badge>
+                  </>
                 ) : (
                   <>
                     <span className={cn(

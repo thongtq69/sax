@@ -61,6 +61,10 @@ export function QuickViewModal({
 
   const videoId = product.videoUrl ? getYouTubeVideoId(product.videoUrl) : null
 
+  const discount = (product as any).discount && (product as any).discount > 0 ? (product as any).discount : 0
+  const hasDiscount = discount > 0 && discount < product.price
+  const salePrice = hasDiscount ? product.price - discount : product.price
+
   const handleAddToCart = async () => {
     setIsAddingToCart(true)
     // Simulate async operation
@@ -71,7 +75,7 @@ export function QuickViewModal({
       name: product.name,
       slug: product.slug,
       sku: product.sku,
-      price: product.price,
+      price: salePrice,
       image: product.images[0],
       shippingCost: product.shippingCost ?? null,
     })
@@ -304,11 +308,23 @@ export function QuickViewModal({
 
             {/* Pricing */}
             <div className="p-4 rounded-xl bg-gradient-to-br from-primary/5 to-primary/10 border border-primary/20 animate-fade-in-up hover:shadow-lg transition-all duration-300" style={{ animationDelay: '0.15s' }}>
-              <div className="flex items-baseline gap-2 sm:gap-3">
+              <div className="flex items-baseline gap-2 sm:gap-3 flex-wrap">
                 {!product.inStock ? (
                   <span className="text-2xl sm:text-3xl font-bold text-red-500">
                     SOLD
                   </span>
+                ) : hasDiscount ? (
+                  <>
+                    <span className="text-2xl sm:text-3xl font-bold text-primary">
+                      ${salePrice.toLocaleString()}
+                    </span>
+                    <span className="text-base sm:text-lg text-gray-400 line-through">
+                      ${product.price.toLocaleString()}
+                    </span>
+                    <Badge className="bg-red-600 text-white border-red-600 hover:bg-red-700">
+                      Save ${discount.toLocaleString()}
+                    </Badge>
+                  </>
                 ) : (
                   <>
                     <span className="text-2xl sm:text-3xl font-bold text-primary">

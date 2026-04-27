@@ -55,16 +55,10 @@
       ]
     },
     {
-      "source": "/(.*).(?:jpg|jpeg|png|gif|webp|svg|ico|woff2)",
+      "source": "/:path*.:ext(jpg|jpeg|png|gif|webp|svg|ico|woff2)",
       "headers": [
         { "key": "Cache-Control", "value": "public, max-age=31536000, immutable" }
       ]
-    }
-  ],
-  "crons": [
-    {
-      "path": "/api/blog/publish-scheduled",
-      "schedule": "*/15 * * * *"
     }
   ]
 }

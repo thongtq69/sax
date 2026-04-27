@@ -7,17 +7,22 @@ import { getProductUrl } from '@/lib/api'
 import { getOrderTrackingMeta } from '@/lib/order-utils'
 import { OrderReviewForm } from '@/components/account/OrderReviewForm'
 
-export default async function AccountOrderDetailPage({ params }: { params: { id: string } }) {
+export default async function AccountOrderDetailPage({ params }: { params: { orderNumber: string } }) {
   const session = await auth()
 
   if (!session?.user?.id) {
     redirect('/auth/login')
   }
 
+  // Look up by orderNumber first; fall back to MongoDB _id for legacy URLs.
+  const identifier = params.orderNumber
   const order = await prisma.order.findFirst({
     where: {
-      id: params.id,
       userId: session.user.id,
+      OR: [
+        { orderNumber: identifier },
+        { id: identifier },
+      ],
     },
     include: {
       items: true,

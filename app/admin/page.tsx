@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react'
 import {
   Package, FileText, ShoppingCart, TrendingUp, Users, Plus,
   ArrowUpRight, ArrowDownRight, Eye, Star, Image as ImageIcon,
-  HelpCircle, MessageSquare, Settings, Home, Layers, ListOrdered,
+  HelpCircle, MessageSquare, MessageCircle, Settings, Home, Layers, ListOrdered,
   ClipboardList, Tag, BarChart3
 } from 'lucide-react'
 import Link from 'next/link'
@@ -20,6 +20,7 @@ interface DashboardStats {
   users: number
   blogPosts: number
   reviews: number
+  inquiries: number
   pendingOrders: number
   totalRevenue: number
   activeUsers: number
@@ -87,12 +88,12 @@ export default function AdminDashboard() {
       href: '/admin/blog',
     },
     {
-      title: 'Reviews',
-      value: stats?.reviews || 0,
-      icon: Star,
+      title: 'Inquiries',
+      value: stats?.inquiries || 0,
+      icon: MessageCircle,
       bgColor: 'bg-amber-500/10',
       textColor: 'text-amber-600',
-      href: '/admin/reviews',
+      href: '/admin/inquiries',
     },
   ]
 

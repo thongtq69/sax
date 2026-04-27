@@ -92,6 +92,10 @@ export function ProductCard({ product, index = 0 }: ProductCardProps) {
 
   const finishes = getProductFinishes(product.id)
 
+  const discount = (product as any).discount && (product as any).discount > 0 ? (product as any).discount : 0
+  const hasDiscount = discount > 0 && discount < product.price
+  const salePrice = hasDiscount ? product.price - discount : product.price
+
   const handleAddToCart = async () => {
     setIsAddingToCart(true)
     await new Promise(resolve => setTimeout(resolve, 500))
@@ -101,7 +105,7 @@ export function ProductCard({ product, index = 0 }: ProductCardProps) {
       name: product.name,
       slug: product.slug,
       sku: product.sku,
-      price: product.price,
+      price: salePrice,
       image: product.images[0],
       shippingCost: product.shippingCost ?? null,
     })
@@ -181,6 +185,11 @@ export function ProductCard({ product, index = 0 }: ProductCardProps) {
                 ⏳ Pre-Order
               </Badge>
             )}
+            {hasDiscount && !hasOutOfStock && (
+              <Badge className="shadow-lg text-[10px] sm:text-xs px-1.5 sm:px-2.5 py-0.5 bg-red-600 text-white border-red-600 hover:bg-red-700">
+                ${discount.toLocaleString()} OFF
+              </Badge>
+            )}
           </div>
 
           <button
@@ -240,9 +249,18 @@ export function ProductCard({ product, index = 0 }: ProductCardProps) {
             )}
 
             <div className="mb-1.5 sm:mb-3">
-              <div className="flex items-baseline gap-1 sm:gap-2">
+              <div className="flex items-baseline gap-1 sm:gap-2 flex-wrap">
                 {hasOutOfStock ? (
                   <span className="price-highlight text-sm sm:text-xl font-bold text-red-500">SOLD</span>
+                ) : hasDiscount ? (
+                  <>
+                    <span className="price-highlight text-sm sm:text-xl font-bold text-primary transition-all duration-300 group-hover:text-base sm:group-hover:text-2xl">
+                      ${salePrice.toLocaleString()}
+                    </span>
+                    <span className="text-[10px] sm:text-sm text-gray-400 line-through">
+                      ${product.price.toLocaleString()}
+                    </span>
+                  </>
                 ) : (
                   <>
                     <span className="price-highlight text-sm sm:text-xl font-bold text-primary transition-all duration-300 group-hover:text-base sm:group-hover:text-2xl">

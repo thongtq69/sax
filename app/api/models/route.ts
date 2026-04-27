@@ -26,6 +26,7 @@ export async function GET(request: NextRequest) {
                     { subBrand: { contains: model, mode: 'insensitive' } },
                 ],
                 stockStatus: { not: 'archived' },
+                status: { not: 'draft' },
             },
             include: {
                 category: {
@@ -88,6 +89,7 @@ export async function POST(request: NextRequest) {
         const where: any = {
             subBrand: { not: null },
             stockStatus: { not: 'archived' },
+            status: { not: 'draft' },
         }
 
         if (brand) {

@@ -134,6 +134,8 @@ export async function getProducts(params?: {
   badge?: string
   showHidden?: boolean
   showArchived?: boolean
+  showDrafts?: boolean
+  status?: string
 }) {
   const searchParams = new URLSearchParams()
   if (params) {
@@ -222,6 +224,7 @@ export function transformProduct(apiProduct: any) {
     brand: apiProduct.brand,
     subBrand: apiProduct.subBrand || apiProduct.specs?.['Model'] || apiProduct.specs?.['model'],
     price: apiProduct.price,
+    discount: apiProduct.discount ?? 0,
     shippingCost: apiProduct.shippingCost,
     category: apiProduct.category?.slug || apiProduct.categoryId,
     categoryName: apiProduct.category?.name,
@@ -244,6 +247,7 @@ export function transformProduct(apiProduct: any) {
     condition: apiProduct.condition,
     conditionNotes: apiProduct.conditionNotes,
     isVisible: apiProduct.isVisible !== false,
+    status: apiProduct.status || 'published',
   }
 }
 
