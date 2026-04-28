@@ -37,14 +37,15 @@ export async function GET(request: NextRequest) {
 
     if (id || identifier) {
       // Look up by orderNumber preferred, fall back to MongoDB _id for legacy callers.
+      // MongoDB ObjectId must be 24 hex chars; querying { id: <non-hex> } makes
+      // Prisma throw at the driver layer, so only include the id branch when valid.
       const lookupValue = identifier || id || ''
+      const isObjectId = /^[a-f0-9]{24}$/i.test(lookupValue)
+      const orConditions: any[] = [{ orderNumber: lookupValue }]
+      if (isObjectId) orConditions.push({ id: lookupValue })
+
       const order = await prisma.order.findFirst({
-        where: {
-          OR: [
-            { orderNumber: lookupValue },
-            { id: lookupValue },
-          ],
-        },
+        where: { OR: orConditions },
         include: {
           items: true,
           user: {
@@ -68,9 +69,13 @@ export async function GET(request: NextRequest) {
     }
 
     if (search) {
+      // Note: MongoDB ObjectId fields (id) cannot use contains/insensitive,
+      // and exact id match needs the 24-hex format. Only add the id branch
+      // when the search term looks like an ObjectId.
+      const isObjectId = /^[a-f0-9]{24}$/i.test(search)
       where.OR = [
         { orderNumber: { contains: search, mode: 'insensitive' } },
-        { id: { contains: search, mode: 'insensitive' } },
+        ...(isObjectId ? [{ id: search }] : []),
         { shippingAddress: { path: ['email'], string_contains: search } },
         { shippingAddress: { path: ['firstName'], string_contains: search } },
         { shippingAddress: { path: ['lastName'], string_contains: search } },
