@@ -116,7 +116,7 @@ export async function GET(request: NextRequest) {
 
 export async function PATCH(request: NextRequest) {
   try {
-    const { id, status, carrier, trackingNumber } = await request.json()
+    const { id, status, carrier, trackingNumber, notes } = await request.json()
 
     if (!id) {
       return NextResponse.json(
@@ -125,7 +125,7 @@ export async function PATCH(request: NextRequest) {
       )
     }
 
-    if (!status && carrier === undefined && trackingNumber === undefined) {
+    if (!status && carrier === undefined && trackingNumber === undefined && notes === undefined) {
       return NextResponse.json(
         { error: 'Thiếu thông tin', message: 'Vui lòng cập nhật ít nhất một trường đơn hàng' },
         { status: 400 }
@@ -167,6 +167,7 @@ export async function PATCH(request: NextRequest) {
       data: {
         ...(status ? { status } : {}),
         ...(carrier !== undefined || trackingNumber !== undefined ? { shippingAddress: nextShippingAddress } : {}),
+        ...(notes !== undefined ? { notes: notes || null } : {}),
       },
     })
 

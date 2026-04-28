@@ -31,6 +31,7 @@ interface Order {
   total: number
   discount?: number
   couponCode?: string
+  notes?: string | null
   user?: {
     id: string
     name?: string | null
@@ -53,6 +54,7 @@ export default function AdminOrderDetailPage({ params }: { params: { orderNumber
   const [status, setStatus] = useState('pending')
   const [carrier, setCarrier] = useState('')
   const [trackingNumber, setTrackingNumber] = useState('')
+  const [notes, setNotes] = useState('')
 
   const fetchOrder = async () => {
     setLoading(true)
@@ -67,6 +69,7 @@ export default function AdminOrderDetailPage({ params }: { params: { orderNumber
       setStatus(data.order.status)
       setCarrier(data.order.shippingAddress?.carrier || '')
       setTrackingNumber(data.order.shippingAddress?.trackingNumber || '')
+      setNotes(data.order.notes || '')
     } catch (error) {
       console.error('Error fetching order:', error)
       alert(error instanceof Error ? error.message : 'Failed to load order')
@@ -101,6 +104,7 @@ export default function AdminOrderDetailPage({ params }: { params: { orderNumber
           status,
           carrier: carrier || null,
           trackingNumber: trackingNumber || null,
+          notes: notes || null,
         }),
       })
 
@@ -224,6 +228,18 @@ export default function AdminOrderDetailPage({ params }: { params: { orderNumber
                 <ExternalLink className="h-4 w-4" />
               </Link>
             )}
+
+            {/* Admin-only internal note (per Apr 28 feedback) */}
+            <div className="mt-6">
+              <p className="mb-2 text-xs font-semibold uppercase tracking-[0.2em] text-slate-500">Order Note (admin only)</p>
+              <textarea
+                value={notes}
+                onChange={(e) => setNotes(e.target.value)}
+                placeholder="Internal note for this order — not visible to customer"
+                rows={4}
+                className="w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50 resize-y"
+              />
+            </div>
           </section>
 
           <section className="rounded-3xl border bg-white p-6 shadow-sm">

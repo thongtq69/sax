@@ -96,8 +96,10 @@ export function PromoCarousel({ promos = [] }: PromoCarouselProps) {
                                 </span>
                             </>
                         )}
-                        {slide.ctaLink && slide.ctaText && (() => {
+                        {slide.ctaLink && (() => {
                             const isExternal = /^https?:\/\//i.test(slide.ctaLink)
+                            // Fallback CTA text when admin only fills the link.
+                            const ctaText = (slide.ctaText && slide.ctaText.trim()) || 'View'
                             const linkClass = "relative z-10 rounded-full border border-[#D4AF37] px-2.5 sm:px-3 py-0.5 sm:py-1 text-[10px] font-semibold uppercase tracking-widest text-[#D4AF37] hover:bg-[#D4AF37] hover:text-[#2c3e50] transition-colors duration-300"
                             return (
                                 <div className="relative z-10 w-full flex justify-center sm:w-auto">
@@ -108,7 +110,7 @@ export function PromoCarousel({ promos = [] }: PromoCarouselProps) {
                                             rel="noopener noreferrer"
                                             className={linkClass}
                                         >
-                                            {slide.ctaText}
+                                            {ctaText}
                                         </a>
                                     ) : (
                                         <Link
@@ -116,7 +118,7 @@ export function PromoCarousel({ promos = [] }: PromoCarouselProps) {
                                             className={linkClass}
                                             prefetch={true}
                                         >
-                                            {slide.ctaText}
+                                            {ctaText}
                                         </Link>
                                     )}
                                 </div>

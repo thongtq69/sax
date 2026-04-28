@@ -33,6 +33,7 @@ export async function GET() {
         orderBy: { createdAt: 'desc' },
         select: {
           id: true,
+          orderNumber: true,
           status: true,
           total: true,
           createdAt: true,
@@ -42,10 +43,12 @@ export async function GET() {
       getRealtimeActiveUsers().catch(() => 0),
     ])
 
-    // Calculate total revenue
+    // Calculate total revenue.
+    // Per Apr 28 feedback: paid orders must count too (customer already paid),
+    // not just shipped/delivered/processing.
     const totalRevenue = await prisma.order.aggregate({
       _sum: { total: true },
-      where: { status: { in: ['delivered', 'shipped', 'processing'] } },
+      where: { status: { in: ['paid', 'processing', 'shipped', 'delivered'] } },
     })
 
     return NextResponse.json({

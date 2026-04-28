@@ -300,34 +300,28 @@ export function BrandPageClient({
           </h1>
           {brandDescription && (
             <div className="mt-4 max-w-3xl mx-auto">
-              {/* Desktop: full text always shown */}
-              <p className="hidden md:block text-sm md:text-base text-white/90 leading-relaxed drop-shadow">
+              {/* Read more / Read less toggle on BOTH mobile and desktop */}
+              <p
+                className={`text-sm md:text-base text-white/90 leading-relaxed drop-shadow ${isIntroExpanded ? '' : 'line-clamp-3 md:line-clamp-4'}`}
+              >
                 {brandDescription}
               </p>
-              {/* Mobile: clamped with Read more / Read less toggle */}
-              <div className="md:hidden">
-                <p
-                  className={`text-sm text-white/90 leading-relaxed drop-shadow ${isIntroExpanded ? '' : 'line-clamp-3'}`}
-                >
-                  {brandDescription}
-                </p>
-                <button
-                  type="button"
-                  onClick={() => setIsIntroExpanded((prev) => !prev)}
-                  className="mt-2 inline-flex items-center gap-1 text-xs font-semibold text-white/95 underline-offset-4 hover:underline"
-                  aria-expanded={isIntroExpanded}
-                >
-                  {isIntroExpanded ? (
-                    <>
-                      Read less <ChevronUp className="h-3.5 w-3.5" />
-                    </>
-                  ) : (
-                    <>
-                      Read more <ChevronDown className="h-3.5 w-3.5" />
-                    </>
-                  )}
-                </button>
-              </div>
+              <button
+                type="button"
+                onClick={() => setIsIntroExpanded((prev) => !prev)}
+                className="mt-2 inline-flex items-center gap-1 text-xs md:text-sm font-semibold text-white/95 underline-offset-4 hover:underline"
+                aria-expanded={isIntroExpanded}
+              >
+                {isIntroExpanded ? (
+                  <>
+                    Read less <ChevronUp className="h-3.5 w-3.5" />
+                  </>
+                ) : (
+                  <>
+                    Read more <ChevronDown className="h-3.5 w-3.5" />
+                  </>
+                )}
+              </button>
             </div>
           )}
           <p className="mt-3 text-[10px] sm:text-xs md:text-sm text-white/80 uppercase tracking-[0.3em]">

@@ -588,7 +588,9 @@ export default function ProductsManagement() {
                               {(product as any).stockStatus === 'pre-order'
                                 ? 'Pre-Order'
                                 : product.inStock
-                                  ? `${product.stock || 0} in stock`
+                                  ? ((product as any).productType === 'used'
+                                      ? 'In stock'
+                                      : `${product.stock || 0} in stock`)
                                   : 'Out of stock'}
                             </span>
                           </div>
@@ -638,7 +640,7 @@ export default function ProductsManagement() {
                                 <Eye className="h-4 w-4" />
                               </Button>
                             </Link>
-                            <Link href={`/admin/products/${product.id}/edit`}>
+                            <Link href={`/admin/products/${encodeURIComponent(product.sku || product.id)}/edit`}>
                               <Button variant="ghost" size="sm" title="Edit">
                                 <Edit className="h-4 w-4" />
                               </Button>
@@ -719,7 +721,7 @@ export default function ProductsManagement() {
                           <Eye className="h-4 w-4" />
                         </Button>
                       </Link>
-                      <Link href={`/admin/products/${product.id}/edit`}>
+                      <Link href={`/admin/products/${encodeURIComponent(product.sku || product.id)}/edit`}>
                         <Button size="sm" variant="secondary">
                           <Edit className="h-4 w-4" />
                         </Button>
@@ -761,7 +763,7 @@ export default function ProductsManagement() {
                         {(product as any).stockStatus === 'pre-order'
                           ? 'Pre-Order'
                           : product.inStock
-                            ? 'In Stock'
+                            ? ((product as any).productType === 'used' ? 'In Stock' : `${product.stock || 0} in stock`)
                             : 'Out'}
                       </span>
                     </div>

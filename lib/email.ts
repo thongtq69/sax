@@ -397,7 +397,10 @@ export async function sendOrderConfirmationEmail(data: OrderEmailData) {
             <strong>Total:</strong> $${total.toLocaleString()}
           </p>
           <p style="margin: 0 0 10px 0;">
-            <strong>Status:</strong> Order confirmed and in preparation
+            <strong>Stock Status:</strong> In Stock — Ships within 1–2 business days
+          </p>
+          <p style="margin: 0 0 10px 0;">
+            <strong>Order status:</strong> Order confirmed and in preparation — <a href="${statusUrl}" style="color: #1a365d; text-decoration: underline;">track here</a>
           </p>
         </div>
         

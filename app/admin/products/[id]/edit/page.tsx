@@ -4,15 +4,21 @@ import ProductForm from '@/components/admin/ProductForm'
 
 export const dynamic = 'force-dynamic'
 
-async function getFormData(productId: string) {
+async function getFormData(idOrSku: string) {
+  // Accept both MongoDB _id (24 hex chars) and SKU. Per Apr 28 feedback,
+  // the URL should prefer SKU so the route is human-readable.
+  const isObjectId = /^[a-f0-9]{24}$/i.test(idOrSku)
+  const productPromise = isObjectId
+    ? prisma.product.findFirst({
+        where: { OR: [{ id: idOrSku }, { sku: idOrSku }] },
+        include: { category: true, subcategory: true },
+      })
+    : prisma.product.findFirst({
+        where: { sku: idOrSku },
+        include: { category: true, subcategory: true },
+      })
   const [product, categories, brands, specKeys, accessories, descTemplates] = await Promise.all([
-    prisma.product.findUnique({
-      where: { id: productId },
-      include: {
-        category: true,
-        subcategory: true,
-      },
-    }),
+    productPromise,
     prisma.category.findMany({
       include: {
         subcategories: { orderBy: { name: 'asc' } },
@@ -79,7 +85,7 @@ export default async function EditProductPage({ params }: { params: { id: string
 
   return (
     <ProductForm
-      productId={params.id}
+      productId={data.product.id}
       initialData={initialData}
       categories={data.categories}
       brands={data.brands}

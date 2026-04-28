@@ -580,14 +580,20 @@ function ListingCard({
                     {/* Price & Actions */}
                     <div className="flex flex-col sm:flex-row items-start sm:items-end justify-between gap-4 mt-4 pt-4 border-t border-border/50">
                         <div>
-                            <div className="text-xl md:text-2xl font-bold text-secondary">
-                                ${product.price.toLocaleString()}
-                            </div>
-                            {product.shippingCost && product.shippingCost > 0 ? (
-                                <p className="text-xs text-muted-foreground mt-0.5">
-                                    + ${product.shippingCost.toLocaleString()} Shipping
-                                </p>
-                            ) : null}
+                            {isSoldOut ? (
+                                <div className="text-xl md:text-2xl font-bold text-red-600">SOLD OUT</div>
+                            ) : (
+                                <>
+                                    <div className="text-xl md:text-2xl font-bold text-secondary">
+                                        ${product.price.toLocaleString()}
+                                    </div>
+                                    {product.shippingCost && product.shippingCost > 0 ? (
+                                        <p className="text-xs text-muted-foreground mt-0.5">
+                                            + ${product.shippingCost.toLocaleString()} Shipping
+                                        </p>
+                                    ) : null}
+                                </>
+                            )}
                         </div>
 
                         <div className="flex flex-col gap-2 w-full sm:w-auto">
@@ -704,10 +710,16 @@ function GridCard({
                 </div>
 
                 <div className="mt-auto pt-3">
-                    <div className="text-lg font-bold text-secondary">${product.price.toLocaleString()}</div>
-                    {product.shippingCost && product.shippingCost > 0 ? (
-                        <p className="text-[10px] text-muted-foreground">+ ${product.shippingCost.toLocaleString()} ship</p>
-                    ) : null}
+                    {isSoldOut ? (
+                        <div className="text-lg font-bold text-red-600">SOLD OUT</div>
+                    ) : (
+                        <>
+                            <div className="text-lg font-bold text-secondary">${product.price.toLocaleString()}</div>
+                            {product.shippingCost && product.shippingCost > 0 ? (
+                                <p className="text-[10px] text-muted-foreground">+ ${product.shippingCost.toLocaleString()} ship</p>
+                            ) : null}
+                        </>
+                    )}
 
                     {!isSoldOut && (
                         <>
@@ -813,11 +825,11 @@ function CompareSection({ products, onClear }: { products: Product[]; onClear: (
                 <table className="w-full min-w-[720px] border-collapse">
                     <thead>
                         <tr className="border-b">
-                            <th className="text-left p-3 text-xs uppercase text-muted-foreground font-semibold">Field</th>
+                            <th className="text-left p-3 text-xs uppercase text-muted-foreground font-semibold">Title</th>
                             {products.map((product) => (
                                 <th key={product.id} className="text-left p-3 text-sm font-semibold text-secondary">
                                     <Link href={getProductUrl(product.sku, product.slug, product.serialNumber || product.specs?.SN)} className="hover:text-primary transition-colors">
-                                        {product.sku}
+                                        {product.name}
                                     </Link>
                                 </th>
                             ))}
@@ -826,7 +838,10 @@ function CompareSection({ products, onClear }: { products: Product[]; onClear: (
                     <tbody>
                         <CompareRow
                             label="Price"
-                            values={products.map((p) => `$${p.price.toLocaleString()}`)}
+                            values={products.map((p) => {
+                                const isSold = ((p as any).stockStatus || 'in-stock') === 'sold-out'
+                                return isSold ? 'SOLD OUT' : `$${p.price.toLocaleString()}`
+                            })}
                         />
                         <CompareRow
                             label="Condition"
@@ -837,7 +852,7 @@ function CompareSection({ products, onClear }: { products: Product[]; onClear: (
                             values={products.map((p) => ((p as any).stockStatus || 'in-stock') === 'sold-out' ? 'Sold Out' : 'Available')}
                         />
                         <CompareRow
-                            label="Serial"
+                            label="SKU"
                             values={products.map((p) => p.sku)}
                         />
                     </tbody>
