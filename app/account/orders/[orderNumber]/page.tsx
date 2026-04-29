@@ -15,14 +15,18 @@ export default async function AccountOrderDetailPage({ params }: { params: { ord
   }
 
   // Look up by orderNumber first; fall back to MongoDB _id for legacy URLs.
+  // Only include the id branch for valid 24-hex ObjectIds — otherwise Prisma
+  // throws at the driver layer when given a non-ObjectId string (e.g. the
+  // 15-digit human-readable orderNumber that customer emails link to).
   const identifier = params.orderNumber
+  const isObjectId = /^[a-f0-9]{24}$/i.test(identifier)
+  const orConditions: any[] = [{ orderNumber: identifier }]
+  if (isObjectId) orConditions.push({ id: identifier })
+
   const order = await prisma.order.findFirst({
     where: {
       userId: session.user.id,
-      OR: [
-        { orderNumber: identifier },
-        { id: identifier },
-      ],
+      OR: orConditions,
     },
     include: {
       items: true,

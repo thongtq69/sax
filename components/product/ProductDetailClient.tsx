@@ -1488,9 +1488,15 @@ export function ProductDetailClient({ product }: ProductDetailClientProps) {
                     </p>
                     <p className="text-[10px] md:text-sm text-gray-600">{item.inStock ? 'In Stock' : 'Sold'}</p>
                     <div className="flex items-center justify-between">
-                      <span className="text-base md:text-xl font-bold text-primary">
-                        ${item.price.toLocaleString()}
-                      </span>
+                      {item.inStock ? (
+                        <span className="text-base md:text-xl font-bold text-primary">
+                          ${item.price.toLocaleString()}
+                        </span>
+                      ) : (
+                        <span className="text-base md:text-xl font-bold text-red-600">
+                          SOLD OUT
+                        </span>
+                      )}
                     </div>
                   </div>
                 </Link>

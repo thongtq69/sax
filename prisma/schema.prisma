@@ -208,6 +208,7 @@ model Order {
   items       OrderItem[]
   shippingAddress Json?
   billingAddress  Json?
+  notes       String?     // Admin-only internal note (e.g. off-platform payment channel)
   createdAt   DateTime    @default(now())
   updatedAt   DateTime    @updatedAt
 

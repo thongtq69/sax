@@ -235,12 +235,19 @@ export function ModelPageClient({ data, brandSlug, modelSlug }: ModelPageClientP
                                 {data.model}
                             </h1>
 
-                            {/* Categories */}
-                            {data.categories.length > 0 && (
-                                <p className="text-muted-foreground text-sm mt-1">
-                                    {data.categories.join(' · ')}
-                                </p>
-                            )}
+                            {/* Categories — drop any category whose name is already in the model title
+                                (e.g. "Tenor" under "Yamaha YTS-62 Tenor Saxophone" is redundant). */}
+                            {(() => {
+                                const modelLower = (data.model || '').toLowerCase()
+                                const visible = data.categories.filter(
+                                    (cat) => !modelLower.includes(cat.toLowerCase())
+                                )
+                                return visible.length > 0 ? (
+                                    <p className="text-muted-foreground text-sm mt-1">
+                                        {visible.join(' · ')}
+                                    </p>
+                                ) : null
+                            })()}
                         </div>
 
                         {/* Price Guide Badge */}
@@ -596,33 +603,27 @@ function ListingCard({
                             )}
                         </div>
 
-                        <div className="flex flex-col gap-2 w-full sm:w-auto">
-                            {!isSoldOut ? (
-                                <>
-                                    <Button
-                                        onClick={() => onAddToCart(product)}
-                                        className="w-full sm:w-auto bg-secondary hover:bg-secondary/90 text-white font-medium px-6 py-2 text-sm"
-                                    >
-                                        <ShoppingCart className="h-4 w-4 mr-2" />
-                                        Add to Cart
-                                    </Button>
+                        {!isSoldOut && (
+                            <div className="flex flex-col gap-2 w-full sm:w-auto">
+                                <Button
+                                    onClick={() => onAddToCart(product)}
+                                    className="w-full sm:w-auto bg-secondary hover:bg-secondary/90 text-white font-medium px-6 py-2 text-sm"
+                                >
+                                    <ShoppingCart className="h-4 w-4 mr-2" />
+                                    Add to Cart
+                                </Button>
 
-                                    <Button
-                                        type="button"
-                                        variant="outline"
-                                        className={`w-full text-xs ${isCompared ? 'border-secondary bg-secondary/5 text-secondary' : 'border-border text-muted-foreground'}`}
-                                        onClick={() => onToggleCompare(product.id)}
-                                    >
-                                        {isCompared ? <Check className="h-3.5 w-3.5 mr-1" /> : null}
-                                        {isCompared ? 'Compared' : 'Compare'}
-                                    </Button>
-                                </>
-                            ) : (
-                                <span className="text-sm font-medium text-red-600 bg-red-50 px-4 py-2 text-center border border-red-200">
-                                    Sold Out
-                                </span>
-                            )}
-                        </div>
+                                <Button
+                                    type="button"
+                                    variant="outline"
+                                    className={`w-full text-xs ${isCompared ? 'border-secondary bg-secondary/5 text-secondary' : 'border-border text-muted-foreground'}`}
+                                    onClick={() => onToggleCompare(product.id)}
+                                >
+                                    {isCompared ? <Check className="h-3.5 w-3.5 mr-1" /> : null}
+                                    {isCompared ? 'Compared' : 'Compare'}
+                                </Button>
+                            </div>
+                        )}
                     </div>
                 </div>
             </div>
@@ -1028,6 +1029,7 @@ function SimilarProductsSection({ brand, products, isLoading }: { brand: string;
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
                     {products.map((product) => {
                         const url = getProductUrl(product.sku, product.slug, product.serialNumber || product.specs?.SN)
+                        const isSold = ((product as any).stockStatus || 'in-stock') === 'sold-out' || (product as any).inStock === false
                         return (
                             <Link key={product.id} href={url} className="border border-border bg-white hover:border-primary/40 transition-colors">
                                 <div className="aspect-square bg-muted/20 overflow-hidden">
@@ -1042,7 +1044,11 @@ function SimilarProductsSection({ brand, products, isLoading }: { brand: string;
                                 <div className="p-3">
                                     <p className="text-[11px] uppercase tracking-wider text-muted-foreground">{brand}</p>
                                     <h3 className="text-sm font-semibold text-secondary line-clamp-2 mt-1">{product.name}</h3>
-                                    <p className="text-base font-bold text-secondary mt-2">${product.price.toLocaleString()}</p>
+                                    {isSold ? (
+                                        <p className="text-base font-bold text-red-600 mt-2">SOLD OUT</p>
+                                    ) : (
+                                        <p className="text-base font-bold text-secondary mt-2">${product.price.toLocaleString()}</p>
+                                    )}
                                 </div>
                             </Link>
                         )
