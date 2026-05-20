@@ -12,10 +12,24 @@ import {
   DialogFooter,
 } from '@/components/ui/dialog'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import { Plus, Edit, Trash2, Search, FileText, Loader2, Eye, Calendar, User, Clock } from 'lucide-react'
+import {
+  AlertTriangle,
+  CheckCircle2,
+  Clock,
+  Code2,
+  Edit,
+  Eye,
+  FileText,
+  Loader2,
+  Plus,
+  Search,
+  Trash2,
+  User,
+  Calendar,
+} from 'lucide-react'
 import Image from 'next/image'
 import Link from 'next/link'
-import { RichTextEditor } from '@/components/admin/RichTextEditor'
+import { RichTextEditor, sanitizeHtmlDesign, type HtmlImportLog } from '@/components/admin/RichTextEditor'
 import { SingleImageUpload } from '@/components/admin/ImageUpload'
 
 const blogCategories = [
@@ -37,6 +51,10 @@ export default function BlogManagement() {
   const [isSaving, setIsSaving] = useState(false)
   const [editingPost, setEditingPost] = useState<any | null>(null)
   const [activeTab, setActiveTab] = useState('content')
+  const [htmlCode, setHtmlCode] = useState('')
+  const [htmlImportLogs, setHtmlImportLogs] = useState<HtmlImportLog[]>([])
+  const [htmlPreview, setHtmlPreview] = useState('')
+  const [htmlImportMode, setHtmlImportMode] = useState<'replace' | 'append'>('replace')
   const [formData, setFormData] = useState<any>({
     title: '',
     slug: '',
@@ -117,6 +135,10 @@ export default function BlogManagement() {
         scheduledAt: '',
       })
     }
+    setHtmlCode('')
+    setHtmlImportLogs([])
+    setHtmlPreview('')
+    setHtmlImportMode('replace')
     setActiveTab('content')
     setIsDialogOpen(true)
   }
@@ -211,6 +233,50 @@ export default function BlogManagement() {
       setFormData({ ...formData, categories: [...current, category] })
     }
   }
+
+  const handleValidateHtml = () => {
+    const result = sanitizeHtmlDesign(htmlCode)
+    setHtmlPreview(result.html)
+    setHtmlImportLogs(result.logs)
+    return result
+  }
+
+  const handleLoadHtml = () => {
+    const result = handleValidateHtml()
+
+    if (result.logs.some((log) => log.level === 'error')) {
+      return
+    }
+
+    setFormData((current: any) => ({
+      ...current,
+      content:
+        htmlImportMode === 'append' && current.content
+          ? `${current.content}\n${result.html}`
+          : result.html,
+    }))
+
+    setHtmlImportLogs([
+      ...result.logs,
+      {
+        level: 'info',
+        message: htmlImportMode === 'append' ? 'HTML appended to the post content.' : 'HTML loaded into the post content.',
+      },
+    ])
+  }
+
+  const htmlPreviewDocument = `<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <style>
+      body { margin: 0; padding: 24px; font-family: Arial, sans-serif; color: #111827; background: #fff; }
+      img { max-width: 100%; height: auto; }
+      table { max-width: 100%; border-collapse: collapse; }
+    </style>
+  </head>
+  <body>${htmlPreview || '<p style="color:#6b7280">No preview yet.</p>'}</body>
+</html>`
 
   if (isLoading) {
     return (
@@ -362,8 +428,9 @@ export default function BlogManagement() {
           </DialogHeader>
 
           <Tabs value={activeTab} onValueChange={setActiveTab} className="mt-4">
-            <TabsList className="grid grid-cols-3 w-full">
+            <TabsList className="grid grid-cols-4 w-full">
               <TabsTrigger value="content">Content</TabsTrigger>
+              <TabsTrigger value="html">AI HTML</TabsTrigger>
               <TabsTrigger value="media">Featured Image</TabsTrigger>
               <TabsTrigger value="settings">Settings</TabsTrigger>
             </TabsList>
@@ -404,6 +471,102 @@ export default function BlogManagement() {
                 <p className="text-xs text-gray-500 mt-2">
                   💡 Tip: You can paste content directly from Microsoft Word or Google Docs. The editor will automatically clean and format it.
                 </p>
+              </div>
+            </TabsContent>
+
+            {/* AI HTML Tab */}
+            <TabsContent value="html" className="space-y-4 mt-6">
+              <div className="rounded-lg border border-gray-200 bg-white">
+                <div className="flex flex-col gap-3 border-b border-gray-200 p-4 sm:flex-row sm:items-center sm:justify-between">
+                  <div className="flex items-center gap-2">
+                    <Code2 className="h-5 w-5 text-primary" />
+                    <h3 className="font-semibold text-gray-900">AI HTML Import</h3>
+                  </div>
+                  <div className="flex rounded-md border border-gray-200 p-1">
+                    {[
+                      { value: 'replace', label: 'Replace' },
+                      { value: 'append', label: 'Append' },
+                    ].map((option) => (
+                      <button
+                        key={option.value}
+                        type="button"
+                        onClick={() => setHtmlImportMode(option.value as 'replace' | 'append')}
+                        className={`rounded px-3 py-1 text-sm font-medium ${
+                          htmlImportMode === option.value
+                            ? 'bg-primary text-primary-foreground'
+                            : 'text-gray-600 hover:bg-gray-100'
+                        }`}
+                      >
+                        {option.label}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                <div className="grid gap-4 p-4 lg:grid-cols-2">
+                  <div className="space-y-3">
+                    <label className="block text-sm font-medium text-gray-700">
+                      HTML code
+                    </label>
+                    <textarea
+                      value={htmlCode}
+                      onChange={(event) => setHtmlCode(event.target.value)}
+                      spellCheck={false}
+                      className="min-h-[360px] w-full rounded-lg border border-gray-300 bg-gray-950 px-4 py-3 font-mono text-sm text-gray-100 outline-none focus:border-primary focus:ring-1 focus:ring-primary"
+                      placeholder="<section style=&quot;padding: 32px; ...&quot;>...</section>"
+                    />
+                    <div className="flex flex-wrap gap-2">
+                      <Button type="button" variant="outline" onClick={handleValidateHtml}>
+                        Validate
+                      </Button>
+                      <Button type="button" onClick={handleLoadHtml} disabled={!htmlCode.trim()}>
+                        Load into Post
+                      </Button>
+                    </div>
+                  </div>
+
+                  <div className="space-y-3">
+                    <label className="block text-sm font-medium text-gray-700">
+                      Clean preview
+                    </label>
+                    <iframe
+                      title="AI HTML preview"
+                      srcDoc={htmlPreviewDocument}
+                      className="h-[360px] w-full rounded-lg border border-gray-300 bg-white"
+                      sandbox=""
+                    />
+                    <div className="rounded-lg border border-gray-200 bg-gray-50 p-3">
+                      <div className="mb-2 flex items-center gap-2 text-sm font-semibold text-gray-800">
+                        {htmlImportLogs.some((log) => log.level === 'error') ? (
+                          <AlertTriangle className="h-4 w-4 text-red-600" />
+                        ) : (
+                          <CheckCircle2 className="h-4 w-4 text-green-600" />
+                        )}
+                        Import log
+                      </div>
+                      <div className="max-h-40 space-y-2 overflow-y-auto text-sm">
+                        {htmlImportLogs.length === 0 ? (
+                          <p className="text-gray-500">No log yet.</p>
+                        ) : (
+                          htmlImportLogs.map((log, index) => (
+                            <div
+                              key={`${log.level}-${index}`}
+                              className={`rounded border px-3 py-2 ${
+                                log.level === 'error'
+                                  ? 'border-red-200 bg-red-50 text-red-800'
+                                  : log.level === 'warning'
+                                    ? 'border-amber-200 bg-amber-50 text-amber-800'
+                                    : 'border-blue-200 bg-blue-50 text-blue-800'
+                              }`}
+                            >
+                              {log.message}
+                            </div>
+                          ))
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                </div>
               </div>
             </TabsContent>
 

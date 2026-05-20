@@ -40,12 +40,45 @@ import {
   DialogTitle,
   DialogFooter,
 } from '@/components/ui/dialog'
-import { useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 
 interface RichTextEditorProps {
   content: string
   onChange: (content: string) => void
   placeholder?: string
+}
+
+export interface HtmlImportLog {
+  level: 'error' | 'warning' | 'info'
+  message: string
+}
+
+interface HtmlSanitizeStats {
+  removedAttributes: Record<string, number>
+  removedBlankNodes: number
+  removedStyleProperties: Record<string, number>
+  removedTags: Record<string, number>
+  inlinedStyleRules: number
+  skippedStyleRules: number
+  structureIssues: string[]
+}
+
+interface HtmlSanitizeOptions {
+  preserveDesignStyles?: boolean
+}
+
+const createSanitizeStats = (): HtmlSanitizeStats => ({
+  removedAttributes: {},
+  removedBlankNodes: 0,
+  removedStyleProperties: {},
+  removedTags: {},
+  inlinedStyleRules: 0,
+  skippedStyleRules: 0,
+  structureIssues: [],
+})
+
+function incrementStat(bucket: Record<string, number>, key: string) {
+  bucket[key] = (bucket[key] || 0) + 1
 }
 
 const STYLE_ATTRIBUTE_NODES = [
@@ -64,42 +97,134 @@ const STYLE_ATTRIBUTE_NODES = [
 ]
 
 const ALLOWED_STYLE_PROPERTIES = new Set([
+  'align-content',
+  'align-items',
+  'background',
   'background-color',
   'border',
   'border-bottom',
+  'border-bottom-left-radius',
+  'border-bottom-right-radius',
+  'border-collapse',
   'border-color',
   'border-left',
+  'border-radius',
   'border-right',
+  'border-spacing',
   'border-style',
   'border-top',
+  'border-top-left-radius',
+  'border-top-right-radius',
   'border-width',
   'break-after',
   'break-before',
+  'box-shadow',
+  'box-sizing',
   'color',
+  'column-gap',
+  'display',
+  'flex-direction',
+  'flex-wrap',
   'font-family',
   'font-size',
   'font-style',
+  'font-variant',
   'font-weight',
+  'gap',
+  'grid-template-columns',
+  'grid-template-rows',
   'height',
+  'justify-content',
+  'justify-items',
+  'letter-spacing',
   'line-height',
   'list-style-type',
+  'margin',
   'margin-bottom',
   'margin-left',
   'margin-right',
   'margin-top',
+  'max-height',
   'max-width',
+  'min-height',
   'min-width',
+  'object-fit',
+  'opacity',
+  'overflow',
+  'overflow-x',
+  'overflow-y',
+  'padding',
+  'padding-bottom',
   'padding-left',
   'padding-right',
+  'padding-top',
   'page-break-after',
   'page-break-before',
+  'place-items',
+  'row-gap',
   'text-align',
   'text-decoration',
+  'text-decoration-color',
   'text-decoration-line',
+  'text-decoration-style',
   'text-indent',
+  'text-shadow',
+  'text-transform',
   'vertical-align',
   'white-space',
   'width',
+])
+
+const DISALLOWED_HTML_TAGS = [
+  'script',
+  'style',
+  'meta',
+  'link',
+  'iframe',
+  'object',
+  'embed',
+  'xml',
+  'o\\:p',
+  'form',
+  'input',
+  'textarea',
+  'select',
+  'option',
+]
+
+const VOID_HTML_TAGS = new Set([
+  'area',
+  'base',
+  'br',
+  'col',
+  'embed',
+  'hr',
+  'img',
+  'input',
+  'link',
+  'meta',
+  'param',
+  'source',
+  'track',
+  'wbr',
+])
+
+const OPTIONAL_CLOSE_TAGS = new Set([
+  'body',
+  'colgroup',
+  'dd',
+  'dt',
+  'head',
+  'html',
+  'li',
+  'option',
+  'p',
+  'tbody',
+  'td',
+  'tfoot',
+  'th',
+  'thead',
+  'tr',
 ])
 
 const STYLE_PROPERTY_ALIASES: Record<string, string> = {
@@ -201,7 +326,11 @@ function isSafeStyleValue(property: string, value: string) {
   return true
 }
 
-function sanitizeStyleAttribute(style: string | null) {
+function sanitizeStyleAttribute(
+  style: string | null,
+  stats?: HtmlSanitizeStats,
+  options?: HtmlSanitizeOptions
+) {
   if (!style) return null
 
   const declarations = style
@@ -210,8 +339,13 @@ function sanitizeStyleAttribute(style: string | null) {
       const separatorIndex = declaration.indexOf(':')
       if (separatorIndex === -1) return null
 
-      const property = normalizeStyleProperty(declaration.slice(0, separatorIndex))
+      const rawProperty = declaration.slice(0, separatorIndex).trim().toLowerCase()
+      const property =
+        options?.preserveDesignStyles && rawProperty === 'background'
+          ? 'background'
+          : normalizeStyleProperty(rawProperty)
       if (property.startsWith('mso-') || !ALLOWED_STYLE_PROPERTIES.has(property)) {
+        if (stats) incrementStat(stats.removedStyleProperties, property)
         return null
       }
 
@@ -222,10 +356,16 @@ function sanitizeStyleAttribute(style: string | null) {
 
       if (property === 'background-color') {
         value = extractCssColor(value)
-        if (isOfficeSelectionBackground(value)) return null
+        if (isOfficeSelectionBackground(value)) {
+          if (stats) incrementStat(stats.removedStyleProperties, 'selection-background')
+          return null
+        }
       }
 
-      if (!isSafeStyleValue(property, value)) return null
+      if (!isSafeStyleValue(property, value)) {
+        if (stats) incrementStat(stats.removedStyleProperties, property)
+        return null
+      }
 
       return `${property}: ${value}`
     })
@@ -268,6 +408,93 @@ function removeComments(root: HTMLElement) {
   }
 
   comments.forEach((comment) => comment.parentNode?.removeChild(comment))
+}
+
+function validateHtmlStructure(html: string, stats: HtmlSanitizeStats) {
+  const stack: string[] = []
+  const tagPattern = /<\/?([a-zA-Z][\w:-]*)(?:\s[^<>]*)?>/g
+  let match: RegExpExecArray | null
+
+  while ((match = tagPattern.exec(html)) !== null) {
+    const rawTag = match[0]
+    const tag = match[1].toLowerCase()
+
+    if (rawTag.startsWith('<!--') || rawTag.endsWith('/>') || VOID_HTML_TAGS.has(tag) || OPTIONAL_CLOSE_TAGS.has(tag)) {
+      continue
+    }
+
+    if (rawTag.startsWith('</')) {
+      const index = stack.lastIndexOf(tag)
+      if (index === -1) {
+        stats.structureIssues.push(`Closing tag </${tag}> does not match any opened tag.`)
+        continue
+      }
+
+      stack.slice(index + 1).forEach((unclosedTag) => {
+        stats.structureIssues.push(`Missing closing tag for <${unclosedTag}> before </${tag}>.`)
+      })
+      stack.splice(index)
+      continue
+    }
+
+    stack.push(tag)
+  }
+
+  stack.slice(-5).forEach((tag) => {
+    stats.structureIssues.push(`Missing closing tag for <${tag}>.`)
+  })
+}
+
+function combineStyles(...styles: Array<string | null | undefined>) {
+  return styles.filter(Boolean).join('; ')
+}
+
+function inlineStyleBlocks(root: HTMLElement, stats: HtmlSanitizeStats, options?: HtmlSanitizeOptions) {
+  root.querySelectorAll('style').forEach((styleElement) => {
+    const css = styleElement.textContent || ''
+    const ruleMatches = css.matchAll(/([^{}@]+)\{([^{}]+)\}/g)
+
+    for (const match of ruleMatches) {
+      const selectors = match[1]
+        .split(',')
+        .map((selector) => selector.trim())
+        .filter(Boolean)
+      const sanitizedRuleStyle = sanitizeStyleAttribute(match[2], stats, options)
+
+      if (!sanitizedRuleStyle) {
+        stats.skippedStyleRules += 1
+        continue
+      }
+
+      selectors.forEach((selector) => {
+        if (
+          selector.length > 160 ||
+          /[{}@]/.test(selector) ||
+          /:(?:hover|active|focus|visited|before|after)/i.test(selector)
+        ) {
+          stats.skippedStyleRules += 1
+          return
+        }
+
+        try {
+          root.querySelectorAll(selector).forEach((element) => {
+            const mergedStyle = sanitizeStyleAttribute(
+              combineStyles(sanitizedRuleStyle, element.getAttribute('style')),
+              stats,
+              options
+            )
+
+            if (mergedStyle) {
+              element.setAttribute('style', mergedStyle)
+              stats.inlinedStyleRules += 1
+            }
+          })
+        } catch {
+          stats.skippedStyleRules += 1
+        }
+      })
+    }
+  })
 }
 
 function convertFontTags(root: HTMLElement) {
@@ -350,7 +577,7 @@ function convertWordLists(container: Element) {
   }
 }
 
-function sanitizeElementAttributes(element: Element) {
+function sanitizeElementAttributes(element: Element, stats?: HtmlSanitizeStats, options?: HtmlSanitizeOptions) {
   const tagName = element.tagName.toLowerCase()
 
   Array.from(element.attributes).forEach((attribute) => {
@@ -358,7 +585,7 @@ function sanitizeElementAttributes(element: Element) {
     const value = attribute.value
 
     if (name === 'style') {
-      const sanitizedStyle = sanitizeStyleAttribute(value)
+      const sanitizedStyle = sanitizeStyleAttribute(value, stats, options)
       if (sanitizedStyle) {
         element.setAttribute('style', sanitizedStyle)
       } else {
@@ -378,12 +605,14 @@ function sanitizeElementAttributes(element: Element) {
       name.startsWith('xmlns') ||
       name.startsWith('mso-')
     ) {
+      if (stats) incrementStat(stats.removedAttributes, name)
       element.removeAttribute(attribute.name)
       return
     }
 
     if (tagName === 'a' && name === 'href') {
       if (!isSafeUrl(value, 'href')) {
+        if (stats) incrementStat(stats.removedAttributes, 'unsafe href')
         element.removeAttribute(attribute.name)
       }
       return
@@ -391,6 +620,7 @@ function sanitizeElementAttributes(element: Element) {
 
     if (tagName === 'img' && name === 'src') {
       if (!isSafeUrl(value, 'src')) {
+        if (stats) incrementStat(stats.removedAttributes, 'unsafe src')
         element.removeAttribute(attribute.name)
       }
       return
@@ -402,6 +632,7 @@ function sanitizeElementAttributes(element: Element) {
 
     if (['width', 'height'].includes(name) && ['img', 'table', 'td', 'th'].includes(tagName)) {
       if (!isSafeDimension(value)) {
+        if (stats) incrementStat(stats.removedAttributes, name)
         element.removeAttribute(attribute.name)
       }
       return
@@ -410,41 +641,145 @@ function sanitizeElementAttributes(element: Element) {
     if (['colspan', 'rowspan'].includes(name) && ['td', 'th'].includes(tagName)) {
       const numberValue = Number.parseInt(value, 10)
       if (!Number.isFinite(numberValue) || numberValue < 1 || numberValue > 100) {
+        if (stats) incrementStat(stats.removedAttributes, name)
         element.removeAttribute(attribute.name)
       }
       return
     }
 
+    if (stats) incrementStat(stats.removedAttributes, name)
     element.removeAttribute(attribute.name)
   })
 }
 
-function cleanPastedHtml(html: string): string {
+function cleanPastedHtml(html: string, stats?: HtmlSanitizeStats, options?: HtmlSanitizeOptions): string {
   if (!html) return ''
+
+  if (stats) {
+    validateHtmlStructure(html, stats)
+  }
 
   const tempDiv = document.createElement('div')
   tempDiv.innerHTML = html
 
   removeComments(tempDiv)
+  if (stats) {
+    inlineStyleBlocks(tempDiv, stats, options)
+  }
 
   tempDiv
-    .querySelectorAll('script, style, meta, link, iframe, object, embed, xml, o\\:p')
-    .forEach((element) => element.remove())
+    .querySelectorAll(DISALLOWED_HTML_TAGS.join(', '))
+    .forEach((element) => {
+      if (stats) incrementStat(stats.removedTags, element.tagName.toLowerCase())
+      element.remove()
+    })
 
   convertFontTags(tempDiv)
   convertWordLists(tempDiv)
 
   tempDiv.querySelectorAll('*').forEach((element) => {
-    sanitizeElementAttributes(element)
+    sanitizeElementAttributes(element, stats, options)
   })
 
   tempDiv.querySelectorAll('span, p:empty, div:empty').forEach((element) => {
     if (isBlankTextContent(element) && !element.querySelector('img, table')) {
+      if (stats) stats.removedBlankNodes += 1
       element.remove()
     }
   })
 
   return tempDiv.innerHTML.trim()
+}
+
+function summarizeStats(stats: HtmlSanitizeStats, sanitizedHtml: string): HtmlImportLog[] {
+  const logs: HtmlImportLog[] = []
+  const removedTags = Object.entries(stats.removedTags)
+  const removedAttrs = Object.entries(stats.removedAttributes)
+  const removedStyles = Object.entries(stats.removedStyleProperties)
+
+  if (!sanitizedHtml.trim()) {
+    logs.push({ level: 'error', message: 'HTML has no safe content after cleaning.' })
+  }
+
+  stats.structureIssues.slice(0, 6).forEach((message) => {
+    logs.push({ level: 'warning', message })
+  })
+
+  if (removedTags.length) {
+    logs.push({
+      level: 'warning',
+      message: `Removed unsafe tags: ${removedTags.map(([tag, count]) => `${tag} (${count})`).join(', ')}.`,
+    })
+  }
+
+  if (removedAttrs.length) {
+    logs.push({
+      level: 'warning',
+      message: `Removed unsafe or unsupported attributes: ${removedAttrs.map(([attr, count]) => `${attr} (${count})`).join(', ')}.`,
+    })
+  }
+
+  if (removedStyles.length) {
+    logs.push({
+      level: 'info',
+      message: `Dropped unsupported or unsafe CSS properties: ${removedStyles.map(([prop, count]) => `${prop} (${count})`).join(', ')}.`,
+    })
+  }
+
+  if (stats.inlinedStyleRules) {
+    logs.push({
+      level: 'info',
+      message: `Converted ${stats.inlinedStyleRules} CSS rule application(s) from <style> blocks to inline styles.`,
+    })
+  }
+
+  if (stats.skippedStyleRules) {
+    logs.push({
+      level: 'info',
+      message: `Skipped ${stats.skippedStyleRules} unsupported CSS selector/rule(s).`,
+    })
+  }
+
+  if (stats.removedBlankNodes) {
+    logs.push({
+      level: 'info',
+      message: `Removed ${stats.removedBlankNodes} blank selection/spacing node(s).`,
+    })
+  }
+
+  if (!logs.length) {
+    logs.push({ level: 'info', message: 'HTML looks valid and did not require cleanup.' })
+  }
+
+  return logs
+}
+
+function normalizeHtmlDesignSource(html: string) {
+  if (!/<\/?(?:html|head|body|style)\b/i.test(html)) {
+    return html
+  }
+
+  try {
+    const documentFromHtml = new DOMParser().parseFromString(html, 'text/html')
+    const bodyHtml = documentFromHtml.body?.innerHTML || ''
+    const styleHtml = Array.from(documentFromHtml.querySelectorAll('style'))
+      .map((styleElement) => styleElement.outerHTML)
+      .join('')
+
+    return bodyHtml.includes('<style') ? bodyHtml : `${styleHtml}${bodyHtml || html}`
+  } catch {
+    return html
+  }
+}
+
+export function sanitizeHtmlDesign(html: string): { html: string; logs: HtmlImportLog[] } {
+  const stats = createSanitizeStats()
+  const sanitizedHtml = cleanPastedHtml(normalizeHtmlDesignSource(html), stats, { preserveDesignStyles: true })
+
+  return {
+    html: sanitizedHtml,
+    logs: summarizeStats(stats, sanitizedHtml),
+  }
 }
 
 const PreservedStyleAttributes = Extension.create({
@@ -509,6 +844,7 @@ export function RichTextEditor({ content, onChange, placeholder = 'Start writing
   const [linkUrl, setLinkUrl] = useState('')
   const [isImageDialogOpen, setIsImageDialogOpen] = useState(false)
   const [imageUrl, setImageUrl] = useState('')
+  const lastContentRef = useRef(content)
 
   const editor = useEditor({
     immediatelyRender: false,
@@ -556,7 +892,9 @@ export function RichTextEditor({ content, onChange, placeholder = 'Start writing
     ],
     content,
     onUpdate: ({ editor }) => {
-      onChange(editor.getHTML())
+      const html = editor.getHTML()
+      lastContentRef.current = html
+      onChange(html)
     },
     editorProps: {
       attributes: {
@@ -569,6 +907,18 @@ export function RichTextEditor({ content, onChange, placeholder = 'Start writing
       },
     },
   })
+
+  useEffect(() => {
+    if (!editor) return
+    if (content === lastContentRef.current) return
+
+    const currentHtml = editor.getHTML()
+    if (content !== currentHtml) {
+      editor.commands.setContent(content || '', { emitUpdate: false })
+    }
+
+    lastContentRef.current = content
+  }, [content, editor])
 
   if (!editor) {
     return null
