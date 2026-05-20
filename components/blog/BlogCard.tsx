@@ -3,6 +3,8 @@ import Image from 'next/image';
 import { BlogPost, formatBlogDate } from '@/data/blogPosts';
 import { Clock, User, ArrowRight, Sparkles } from 'lucide-react';
 
+const BLOG_FALLBACK_IMAGE = '/1000007654.svg';
+
 interface BlogCardProps {
     post: BlogPost;
     featured?: boolean;
@@ -10,6 +12,7 @@ interface BlogCardProps {
 
 export function BlogCard({ post, featured = false }: BlogCardProps) {
     const dateInfo = formatBlogDate(post.date);
+    const imageSrc = post.image || BLOG_FALLBACK_IMAGE;
 
     if (featured) {
         return (
@@ -22,7 +25,7 @@ export function BlogCard({ post, featured = false }: BlogCardProps) {
                     <div className="relative aspect-[16/10] md:aspect-auto overflow-hidden">
                         <Link href={`/blog/${post.slug}`}>
                             <Image
-                                src={post.image}
+                                src={imageSrc}
                                 alt={post.title}
                                 fill
                                 className="object-cover transition-all duration-700 group-hover:scale-105 group-hover:brightness-105"
@@ -108,7 +111,7 @@ export function BlogCard({ post, featured = false }: BlogCardProps) {
             <div className="relative aspect-[16/10] sm:aspect-[4/3] overflow-hidden">
                 <Link href={`/blog/${post.slug}`}>
                     <Image
-                        src={post.image}
+                        src={imageSrc}
                         alt={post.title}
                         fill
                         className="object-cover transition-all duration-700 group-hover:scale-110 group-hover:brightness-105"

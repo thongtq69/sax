@@ -278,7 +278,7 @@ export function transformBlogPost(apiPost: any) {
     date: apiPost.date,
     author: apiPost.author,
     categories: apiPost.categories || [],
-    image: apiPost.image,
+    image: apiPost.image || '',
     readTime: apiPost.readTime,
     status: apiPost.status || 'published',
     scheduledAt: apiPost.scheduledAt || null,
