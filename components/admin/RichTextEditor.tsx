@@ -2,11 +2,17 @@
 
 import { useEditor, EditorContent } from '@tiptap/react'
 import StarterKit from '@tiptap/starter-kit'
+import { Extension } from '@tiptap/core'
 import Placeholder from '@tiptap/extension-placeholder'
 import Image from '@tiptap/extension-image'
 import Link from '@tiptap/extension-link'
 import TextAlign from '@tiptap/extension-text-align'
+import { TextStyleKit } from '@tiptap/extension-text-style'
 import Underline from '@tiptap/extension-underline'
+import { Table as TiptapTable } from '@tiptap/extension-table'
+import TableRow from '@tiptap/extension-table-row'
+import TableHeader from '@tiptap/extension-table-header'
+import TableCell from '@tiptap/extension-table-cell'
 import { 
   Bold, 
   Italic, 
@@ -23,6 +29,7 @@ import {
   AlignCenter,
   AlignRight,
   AlignJustify,
+  Table as TableIcon,
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -41,6 +48,351 @@ interface RichTextEditorProps {
   placeholder?: string
 }
 
+const STYLE_ATTRIBUTE_NODES = [
+  'paragraph',
+  'heading',
+  'blockquote',
+  'bulletList',
+  'orderedList',
+  'listItem',
+  'table',
+  'tableRow',
+  'tableCell',
+  'tableHeader',
+  'image',
+  'horizontalRule',
+]
+
+const ALLOWED_STYLE_PROPERTIES = new Set([
+  'background-color',
+  'border',
+  'border-bottom',
+  'border-color',
+  'border-left',
+  'border-right',
+  'border-style',
+  'border-top',
+  'border-width',
+  'break-after',
+  'break-before',
+  'color',
+  'font-family',
+  'font-size',
+  'font-style',
+  'font-weight',
+  'height',
+  'line-height',
+  'list-style-type',
+  'margin-bottom',
+  'margin-left',
+  'margin-right',
+  'margin-top',
+  'max-width',
+  'min-width',
+  'padding-left',
+  'padding-right',
+  'page-break-after',
+  'page-break-before',
+  'text-align',
+  'text-decoration',
+  'text-decoration-line',
+  'text-indent',
+  'vertical-align',
+  'white-space',
+  'width',
+])
+
+const STYLE_PROPERTY_ALIASES: Record<string, string> = {
+  background: 'background-color',
+  'mso-highlight': 'background-color',
+}
+
+const HTML_FONT_SIZE_MAP: Record<string, string> = {
+  '1': '8pt',
+  '2': '10pt',
+  '3': '12pt',
+  '4': '14pt',
+  '5': '18pt',
+  '6': '24pt',
+  '7': '36pt',
+}
+
+function normalizeStyleProperty(property: string) {
+  const normalized = property.trim().toLowerCase()
+  return STYLE_PROPERTY_ALIASES[normalized] || normalized
+}
+
+function isSafeStyleValue(property: string, value: string) {
+  if (!value) return false
+  if (/[\u0000-\u001f<>]/.test(value)) return false
+  if (/(?:url\s*\(|expression\s*\(|javascript:|vbscript:|behavior\s*:|binding\s*:|@import)/i.test(value)) {
+    return false
+  }
+  if (property === 'background-color' && /\b(?:none|initial|inherit)\b/i.test(value)) {
+    return false
+  }
+  return true
+}
+
+function sanitizeStyleAttribute(style: string | null) {
+  if (!style) return null
+
+  const declarations = style
+    .split(';')
+    .map((declaration) => {
+      const separatorIndex = declaration.indexOf(':')
+      if (separatorIndex === -1) return null
+
+      const property = normalizeStyleProperty(declaration.slice(0, separatorIndex))
+      if (property.startsWith('mso-') || !ALLOWED_STYLE_PROPERTIES.has(property)) {
+        return null
+      }
+
+      const value = declaration
+        .slice(separatorIndex + 1)
+        .replace(/\s*!important/gi, '')
+        .trim()
+
+      if (!isSafeStyleValue(property, value)) return null
+
+      return `${property}: ${value}`
+    })
+    .filter(Boolean)
+
+  return declarations.length ? declarations.join('; ') : null
+}
+
+function isSafeUrl(value: string, type: 'href' | 'src') {
+  const url = value.trim()
+  if (!url) return false
+
+  if (/^(https?:|mailto:|tel:|#|\/)/i.test(url)) {
+    return true
+  }
+
+  if (type === 'src' && /^(data:image\/(?:png|jpe?g|gif|webp);base64,|blob:)/i.test(url)) {
+    return true
+  }
+
+  return false
+}
+
+function isSafeDimension(value: string) {
+  return /^-?\d+(?:\.\d+)?(?:px|pt|pc|em|rem|%|cm|mm|in)?$/i.test(value.trim())
+}
+
+function removeComments(root: HTMLElement) {
+  const walker = document.createTreeWalker(root, NodeFilter.SHOW_COMMENT)
+  const comments: ChildNode[] = []
+  let node = walker.nextNode()
+
+  while (node) {
+    comments.push(node as ChildNode)
+    node = walker.nextNode()
+  }
+
+  comments.forEach((comment) => comment.parentNode?.removeChild(comment))
+}
+
+function convertFontTags(root: HTMLElement) {
+  root.querySelectorAll('font').forEach((font) => {
+    const span = document.createElement('span')
+    const styles = [
+      font.getAttribute('style') || '',
+      font.getAttribute('color') ? `color: ${font.getAttribute('color')}` : '',
+      font.getAttribute('face') ? `font-family: ${font.getAttribute('face')}` : '',
+      font.getAttribute('size') ? `font-size: ${HTML_FONT_SIZE_MAP[font.getAttribute('size') || ''] || ''}` : '',
+    ]
+      .filter(Boolean)
+      .join('; ')
+
+    const sanitizedStyle = sanitizeStyleAttribute(styles)
+    if (sanitizedStyle) {
+      span.setAttribute('style', sanitizedStyle)
+    }
+
+    while (font.firstChild) {
+      span.appendChild(font.firstChild)
+    }
+
+    font.replaceWith(span)
+  })
+}
+
+function getWordListMarker(paragraph: Element) {
+  return Array.from(paragraph.querySelectorAll('span')).find((span) => {
+    return /mso-list\s*:\s*ignore/i.test(span.getAttribute('style') || '')
+  })
+}
+
+function isWordListParagraph(element: Element) {
+  if (element.tagName.toLowerCase() !== 'p') return false
+
+  const className = element.getAttribute('class') || ''
+  const style = element.getAttribute('style') || ''
+
+  return /MsoListParagraph/i.test(className) || /mso-list\s*:/i.test(style)
+}
+
+function getWordListType(paragraph: Element): 'ol' | 'ul' {
+  const markerText = getWordListMarker(paragraph)?.textContent?.replace(/\s+/g, '') || ''
+  return /^(?:\d+|[a-z]|[ivxlcdm]+)[.)]/i.test(markerText) ? 'ol' : 'ul'
+}
+
+function convertWordLists(container: Element) {
+  let child = container.firstElementChild
+
+  while (child) {
+    if (isWordListParagraph(child)) {
+      const listType = getWordListType(child)
+      const list = document.createElement(listType)
+
+      while (child && isWordListParagraph(child) && getWordListType(child) === listType) {
+        const current = child
+        child = child.nextElementSibling
+
+        getWordListMarker(current)?.remove()
+
+        const listItem = document.createElement('li')
+        const style = sanitizeStyleAttribute(current.getAttribute('style'))
+
+        if (style) {
+          listItem.setAttribute('style', style)
+        }
+
+        listItem.innerHTML = current.innerHTML
+        list.appendChild(listItem)
+        current.remove()
+      }
+
+      container.insertBefore(list, child)
+      continue
+    }
+
+    convertWordLists(child)
+    child = child.nextElementSibling
+  }
+}
+
+function sanitizeElementAttributes(element: Element) {
+  const tagName = element.tagName.toLowerCase()
+
+  Array.from(element.attributes).forEach((attribute) => {
+    const name = attribute.name.toLowerCase()
+    const value = attribute.value
+
+    if (name === 'style') {
+      const sanitizedStyle = sanitizeStyleAttribute(value)
+      if (sanitizedStyle) {
+        element.setAttribute('style', sanitizedStyle)
+      } else {
+        element.removeAttribute(attribute.name)
+      }
+      return
+    }
+
+    if (
+      name.startsWith('on') ||
+      name.startsWith('data-') ||
+      name.startsWith('aria-') ||
+      name === 'class' ||
+      name === 'id' ||
+      name === 'lang' ||
+      name === 'xml:lang' ||
+      name.startsWith('xmlns') ||
+      name.startsWith('mso-')
+    ) {
+      element.removeAttribute(attribute.name)
+      return
+    }
+
+    if (tagName === 'a' && name === 'href') {
+      if (!isSafeUrl(value, 'href')) {
+        element.removeAttribute(attribute.name)
+      }
+      return
+    }
+
+    if (tagName === 'img' && name === 'src') {
+      if (!isSafeUrl(value, 'src')) {
+        element.removeAttribute(attribute.name)
+      }
+      return
+    }
+
+    if (['alt', 'title'].includes(name) && ['a', 'img'].includes(tagName)) {
+      return
+    }
+
+    if (['width', 'height'].includes(name) && ['img', 'table', 'td', 'th'].includes(tagName)) {
+      if (!isSafeDimension(value)) {
+        element.removeAttribute(attribute.name)
+      }
+      return
+    }
+
+    if (['colspan', 'rowspan'].includes(name) && ['td', 'th'].includes(tagName)) {
+      const numberValue = Number.parseInt(value, 10)
+      if (!Number.isFinite(numberValue) || numberValue < 1 || numberValue > 100) {
+        element.removeAttribute(attribute.name)
+      }
+      return
+    }
+
+    element.removeAttribute(attribute.name)
+  })
+}
+
+function cleanPastedHtml(html: string): string {
+  if (!html) return ''
+
+  const tempDiv = document.createElement('div')
+  tempDiv.innerHTML = html
+
+  removeComments(tempDiv)
+
+  tempDiv
+    .querySelectorAll('script, style, meta, link, iframe, object, embed, xml, o\\:p')
+    .forEach((element) => element.remove())
+
+  convertFontTags(tempDiv)
+  convertWordLists(tempDiv)
+
+  tempDiv.querySelectorAll('*').forEach((element) => {
+    sanitizeElementAttributes(element)
+  })
+
+  tempDiv.querySelectorAll('p:empty, span:empty, div:empty').forEach((element) => {
+    if (!element.textContent?.trim() && !element.querySelector('img, table')) {
+      element.remove()
+    }
+  })
+
+  return tempDiv.innerHTML.trim()
+}
+
+const PreservedStyleAttributes = Extension.create({
+  name: 'preservedStyleAttributes',
+
+  addGlobalAttributes() {
+    return [
+      {
+        types: STYLE_ATTRIBUTE_NODES,
+        attributes: {
+          style: {
+            default: null,
+            parseHTML: (element) => sanitizeStyleAttribute(element.getAttribute('style')),
+            renderHTML: (attributes) => {
+              if (!attributes.style) return {}
+              return { style: attributes.style }
+            },
+          },
+        },
+      },
+    ]
+  },
+})
+
 export function RichTextEditor({ content, onChange, placeholder = 'Start writing...' }: RichTextEditorProps) {
   const [isLinkDialogOpen, setIsLinkDialogOpen] = useState(false)
   const [linkUrl, setLinkUrl] = useState('')
@@ -55,6 +407,14 @@ export function RichTextEditor({ content, onChange, placeholder = 'Start writing
           levels: [1, 2, 3],
         },
       }),
+      TextStyleKit.configure({
+        backgroundColor: {},
+        color: {},
+        fontFamily: {},
+        fontSize: {},
+        lineHeight: {},
+      }),
+      PreservedStyleAttributes,
       Placeholder.configure({
         placeholder,
       }),
@@ -69,9 +429,18 @@ export function RichTextEditor({ content, onChange, placeholder = 'Start writing
         },
       }),
       TextAlign.configure({
-        types: ['heading', 'paragraph'],
+        types: ['heading', 'paragraph', 'listItem', 'tableCell', 'tableHeader'],
       }),
       Underline,
+      TiptapTable.configure({
+        resizable: true,
+        HTMLAttributes: {
+          class: 'rich-text-table',
+        },
+      }),
+      TableRow,
+      TableHeader,
+      TableCell,
     ],
     content,
     onUpdate: ({ editor }) => {
@@ -88,102 +457,6 @@ export function RichTextEditor({ content, onChange, placeholder = 'Start writing
       },
     },
   })
-
-  const cleanPastedHtml = (html: string): string => {
-    if (!html) return ''
-    
-    // Create a temporary div to parse and clean HTML
-    const tempDiv = document.createElement('div')
-    tempDiv.innerHTML = html
-    
-    // Remove Word/Google Docs specific elements
-    const removeElements = tempDiv.querySelectorAll('o\\:p, [class*="Mso"], [style*="mso-"]')
-    removeElements.forEach((el) => el.remove())
-    
-    // Remove comments
-    const walker = document.createTreeWalker(
-      tempDiv,
-      NodeFilter.SHOW_COMMENT,
-      null
-    )
-    const comments: ChildNode[] = []
-    let node
-    while ((node = walker.nextNode())) {
-      if (node.parentNode) {
-        comments.push(node as ChildNode)
-      }
-    }
-    comments.forEach((comment) => {
-      if (comment.parentNode) {
-        comment.parentNode.removeChild(comment)
-      }
-    })
-    
-    // Clean up styles - keep only essential formatting
-    const allElements = tempDiv.querySelectorAll('*')
-    allElements.forEach((el) => {
-      const htmlEl = el as HTMLElement
-      if (htmlEl.style) {
-        // Keep only essential styles
-        const style = htmlEl.style
-        const essential: Record<string, string> = {}
-        
-        if (style.fontWeight && ['bold', '700', '600'].includes(style.fontWeight)) {
-          essential['font-weight'] = 'bold'
-        }
-        if (style.fontStyle === 'italic') {
-          essential['font-style'] = 'italic'
-        }
-        if (style.textDecoration && style.textDecoration.includes('underline')) {
-          essential['text-decoration'] = 'underline'
-        }
-        if (style.textDecoration && style.textDecoration.includes('line-through')) {
-          essential['text-decoration'] = 'line-through'
-        }
-        if (style.color && style.color !== 'rgb(0, 0, 0)' && style.color !== '#000000') {
-          essential['color'] = style.color
-        }
-        if (style.textAlign) {
-          essential['text-align'] = style.textAlign
-        }
-        
-        // Clear all styles and set only essential ones
-        htmlEl.removeAttribute('style')
-        if (Object.keys(essential).length > 0) {
-          htmlEl.setAttribute('style', Object.entries(essential).map(([k, v]) => `${k}: ${v}`).join('; '))
-        }
-      }
-      
-      // Remove Word-specific attributes
-      htmlEl.removeAttribute('lang')
-      htmlEl.removeAttribute('xml:lang')
-      htmlEl.removeAttribute('class')
-      if (htmlEl.className && htmlEl.className.includes('Mso')) {
-        htmlEl.removeAttribute('class')
-      }
-    })
-    
-    // Clean up empty paragraphs and spans
-    const emptyElements = tempDiv.querySelectorAll('p:empty, span:empty, div:empty')
-    emptyElements.forEach((el) => {
-      if (el.textContent?.trim() === '') {
-        el.remove()
-      }
-    })
-    
-    // Convert to clean HTML string
-    let cleaned = tempDiv.innerHTML
-    
-    // Final cleanup - remove any remaining Word artifacts
-    cleaned = cleaned
-      .replace(/<o:p>.*?<\/o:p>/gi, '')
-      .replace(/<!--\[if[^\]]*\]>.*?<!\[endif\]-->/gi, '')
-      .replace(/<span[^>]*>\s*<\/span>/gi, '')
-      .replace(/\s+/g, ' ')
-      .trim()
-    
-    return cleaned
-  }
 
   if (!editor) {
     return null
@@ -377,6 +650,15 @@ export function RichTextEditor({ content, onChange, placeholder = 'Start writing
           >
             <ImageIcon className="h-4 w-4" />
           </Button>
+          <Button
+            type="button"
+            variant={editor.isActive('table') ? 'default' : 'ghost'}
+            size="sm"
+            onClick={() => editor.chain().focus().insertTable({ rows: 3, cols: 3, withHeaderRow: true }).run()}
+            className="h-8 w-8 p-0"
+          >
+            <TableIcon className="h-4 w-4" />
+          </Button>
         </div>
 
         {/* Undo/Redo */}
@@ -465,4 +747,3 @@ export function RichTextEditor({ content, onChange, placeholder = 'Start writing
     </div>
   )
 }
-
