@@ -2,7 +2,7 @@
 
 import { useEditor, EditorContent } from '@tiptap/react'
 import StarterKit from '@tiptap/starter-kit'
-import { Extension } from '@tiptap/core'
+import { Extension, Mark } from '@tiptap/core'
 import Placeholder from '@tiptap/extension-placeholder'
 import Image from '@tiptap/extension-image'
 import Link from '@tiptap/extension-link'
@@ -103,8 +103,11 @@ const ALLOWED_STYLE_PROPERTIES = new Set([
 ])
 
 const STYLE_PROPERTY_ALIASES: Record<string, string> = {
+  '-webkit-text-fill-color': 'color',
   background: 'background-color',
   'mso-highlight': 'background-color',
+  'mso-color-alt': 'color',
+  'mso-style-textfill-fill-color': 'color',
 }
 
 const HTML_FONT_SIZE_MAP: Record<string, string> = {
@@ -120,6 +123,70 @@ const HTML_FONT_SIZE_MAP: Record<string, string> = {
 function normalizeStyleProperty(property: string) {
   const normalized = property.trim().toLowerCase()
   return STYLE_PROPERTY_ALIASES[normalized] || normalized
+}
+
+function extractCssColor(value: string) {
+  const trimmed = value.trim()
+  const hexMatch = trimmed.match(/#[0-9a-f]{3,8}\b/i)
+  if (hexMatch) return hexMatch[0]
+
+  const rgbMatch = trimmed.match(/rgba?\(\s*[\d.]+(?:\s*,\s*[\d.]+){2}(?:\s*,\s*[\d.]+)?\s*\)/i)
+  if (rgbMatch) return rgbMatch[0]
+
+  const namedMatch = trimmed.match(/\b(?:black|gray|grey|silver|white|yellow|orange|red|blue|green|purple|brown)\b/i)
+  if (namedMatch) return namedMatch[0]
+
+  return trimmed
+}
+
+function parseColorChannels(value: string): { r: number; g: number; b: number; a: number } | null {
+  const hex = value.trim().match(/^#([0-9a-f]{3}|[0-9a-f]{6}|[0-9a-f]{8})$/i)
+  if (hex) {
+    const raw = hex[1]
+    const expanded = raw.length === 3
+      ? raw.split('').map((char) => `${char}${char}`).join('')
+      : raw
+
+    return {
+      r: Number.parseInt(expanded.slice(0, 2), 16),
+      g: Number.parseInt(expanded.slice(2, 4), 16),
+      b: Number.parseInt(expanded.slice(4, 6), 16),
+      a: expanded.length === 8 ? Number.parseInt(expanded.slice(6, 8), 16) / 255 : 1,
+    }
+  }
+
+  const rgb = value.trim().match(/^rgba?\(\s*([\d.]+)\s*,\s*([\d.]+)\s*,\s*([\d.]+)(?:\s*,\s*([\d.]+))?\s*\)$/i)
+  if (rgb) {
+    return {
+      r: Number(rgb[1]),
+      g: Number(rgb[2]),
+      b: Number(rgb[3]),
+      a: rgb[4] === undefined ? 1 : Number(rgb[4]),
+    }
+  }
+
+  const named: Record<string, { r: number; g: number; b: number; a: number }> = {
+    black: { r: 0, g: 0, b: 0, a: 1 },
+    gray: { r: 128, g: 128, b: 128, a: 1 },
+    grey: { r: 128, g: 128, b: 128, a: 1 },
+    silver: { r: 192, g: 192, b: 192, a: 1 },
+  }
+
+  return named[value.trim().toLowerCase()] || null
+}
+
+function isOfficeSelectionBackground(value: string) {
+  const color = extractCssColor(value)
+  const channels = parseColorChannels(color)
+  if (!channels) return false
+
+  const { r, g, b, a } = channels
+  const isNeutral = Math.max(r, g, b) - Math.min(r, g, b) <= 10
+  if (!isNeutral) return false
+
+  // Office/Word web often serializes copy-selection as neutral grey spans.
+  // Real content color is preserved; this only strips selection-like backgrounds.
+  return a <= 0.45 || r <= 50 || (r >= 80 && r <= 230)
 }
 
 function isSafeStyleValue(property: string, value: string) {
@@ -148,10 +215,15 @@ function sanitizeStyleAttribute(style: string | null) {
         return null
       }
 
-      const value = declaration
+      let value = declaration
         .slice(separatorIndex + 1)
         .replace(/\s*!important/gi, '')
         .trim()
+
+      if (property === 'background-color') {
+        value = extractCssColor(value)
+        if (isOfficeSelectionBackground(value)) return null
+      }
 
       if (!isSafeStyleValue(property, value)) return null
 
@@ -160,6 +232,10 @@ function sanitizeStyleAttribute(style: string | null) {
     .filter(Boolean)
 
   return declarations.length ? declarations.join('; ') : null
+}
+
+function isBlankTextContent(element: Element) {
+  return !(element.textContent || '').replace(/\u00a0/g, ' ').trim()
 }
 
 function isSafeUrl(value: string, type: 'href' | 'src') {
@@ -362,8 +438,8 @@ function cleanPastedHtml(html: string): string {
     sanitizeElementAttributes(element)
   })
 
-  tempDiv.querySelectorAll('p:empty, span:empty, div:empty').forEach((element) => {
-    if (!element.textContent?.trim() && !element.querySelector('img, table')) {
+  tempDiv.querySelectorAll('span, p:empty, div:empty').forEach((element) => {
+    if (isBlankTextContent(element) && !element.querySelector('img, table')) {
       element.remove()
     }
   })
@@ -393,6 +469,41 @@ const PreservedStyleAttributes = Extension.create({
   },
 })
 
+const InlineStyle = Mark.create({
+  name: 'inlineStyle',
+
+  priority: 110,
+
+  addAttributes() {
+    return {
+      style: {
+        default: null,
+        parseHTML: (element) => sanitizeStyleAttribute(element.getAttribute('style')),
+        renderHTML: (attributes) => {
+          if (!attributes.style) return {}
+          return { style: attributes.style }
+        },
+      },
+    }
+  },
+
+  parseHTML() {
+    return [
+      {
+        tag: 'span[style]',
+        getAttrs: (element) => {
+          const style = sanitizeStyleAttribute((element as HTMLElement).getAttribute('style'))
+          return style ? { style } : false
+        },
+      },
+    ]
+  },
+
+  renderHTML({ HTMLAttributes }) {
+    return ['span', HTMLAttributes, 0]
+  },
+})
+
 export function RichTextEditor({ content, onChange, placeholder = 'Start writing...' }: RichTextEditorProps) {
   const [isLinkDialogOpen, setIsLinkDialogOpen] = useState(false)
   const [linkUrl, setLinkUrl] = useState('')
@@ -414,6 +525,7 @@ export function RichTextEditor({ content, onChange, placeholder = 'Start writing
         fontSize: {},
         lineHeight: {},
       }),
+      InlineStyle,
       PreservedStyleAttributes,
       Placeholder.configure({
         placeholder,
