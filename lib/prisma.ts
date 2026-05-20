@@ -159,9 +159,6 @@ function getOptimizedDatabaseUrl(url: string | undefined): string | undefined {
       if (!urlObj.searchParams.has('retryWrites')) {
         urlObj.searchParams.set('retryWrites', 'true')
       }
-      if (!urlObj.searchParams.has('readPreference')) {
-        urlObj.searchParams.set('readPreference', 'primaryPreferred')
-      }
 
       return urlObj.toString()
     } catch (e) {
