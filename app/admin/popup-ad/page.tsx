@@ -118,7 +118,7 @@ export default function PopupAdManagement() {
         setHtmlCode(item.htmlContent || '')
         setHtmlPreview(item.htmlContent || '')
         setHtmlImportLogs([])
-        setActiveTab('content')
+        setActiveTab(item.isHtml ? 'html' : 'content')
         setDialogOpen(true)
     }
 
@@ -157,13 +157,28 @@ export default function PopupAdManagement() {
             toast.error('Title is required')
             return
         }
-        if (!formData.isHtml && !formData.image) {
-            toast.error('Image is required for standard template')
-            return
-        }
-        if (formData.isHtml && !formData.htmlContent.trim()) {
-            toast.error('HTML content is required for custom HTML popups')
-            return
+
+        let submissionData = { ...formData }
+
+        if (formData.isHtml) {
+            // Auto-load/sanitize HTML from code editor if not yet loaded or updated
+            const result = sanitizeHtmlDesign(htmlCode)
+            if (result.logs.some((log) => log.level === 'error')) {
+                toast.error('HTML content has errors. Please check the AI HTML tab.')
+                setActiveTab('html')
+                return
+            }
+            if (!result.html.trim()) {
+                toast.error('HTML content is required for custom HTML popups')
+                setActiveTab('html')
+                return
+            }
+            submissionData.htmlContent = result.html
+        } else {
+            if (!formData.image) {
+                toast.error('Image is required for standard template')
+                return
+            }
         }
 
         try {
@@ -177,7 +192,7 @@ export default function PopupAdManagement() {
             const res = await fetch(url, {
                 method,
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(formData),
+                body: JSON.stringify(submissionData),
             })
 
             if (!res.ok) throw new Error('Failed to save')
@@ -351,37 +366,49 @@ export default function PopupAdManagement() {
                         </DialogTitle>
                     </DialogHeader>
                     <form onSubmit={handleSubmit} className="space-y-4 py-2">
+                        {/* Title & Type Selection placed globally at the top */}
+                        <div className="space-y-4 pb-4 border-b border-gray-100">
+                            <div>
+                                <Label htmlFor="title" className="font-semibold text-gray-900">Title *</Label>
+                                <Input
+                                    id="title"
+                                    value={formData.title}
+                                    onChange={(e) => setFormData({ ...formData, title: e.target.value })}
+                                    placeholder="e.g., Special Offer!"
+                                    className="mt-1.5"
+                                />
+                            </div>
+
+                            <div className="flex items-center gap-2.5 py-1">
+                                <Switch
+                                    id="isHtml"
+                                    checked={formData.isHtml}
+                                    onCheckedChange={(checked) => {
+                                        setFormData({ ...formData, isHtml: checked })
+                                        setActiveTab(checked ? 'html' : 'content')
+                                    }}
+                                />
+                                <Label htmlFor="isHtml" className="font-semibold text-gray-800 cursor-pointer">
+                                    Use Custom HTML Template
+                                </Label>
+                            </div>
+                        </div>
+
                         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-                            <TabsList className="grid grid-cols-3 w-full">
-                                <TabsTrigger value="content">Content</TabsTrigger>
-                                <TabsTrigger value="html">AI HTML</TabsTrigger>
+                            <TabsList className="grid grid-cols-2 w-full">
+                                {formData.isHtml ? (
+                                    <TabsTrigger value="html">AI HTML</TabsTrigger>
+                                ) : (
+                                    <TabsTrigger value="content">Content</TabsTrigger>
+                                )}
                                 <TabsTrigger value="settings">Settings</TabsTrigger>
                             </TabsList>
 
                             <TabsContent value="content" className="space-y-4 mt-4">
-                                <div>
-                                    <Label htmlFor="title">Title *</Label>
-                                    <Input
-                                        id="title"
-                                        value={formData.title}
-                                        onChange={(e) => setFormData({ ...formData, title: e.target.value })}
-                                        placeholder="e.g., Special Offer!"
-                                    />
-                                </div>
-
-                                <div className="flex items-center gap-2 py-2">
-                                    <Switch
-                                        id="isHtml"
-                                        checked={formData.isHtml}
-                                        onCheckedChange={(checked) => setFormData({ ...formData, isHtml: checked })}
-                                    />
-                                    <Label htmlFor="isHtml" className="font-semibold text-gray-800">Use Custom HTML Template</Label>
-                                </div>
-
                                 {!formData.isHtml ? (
                                     <div className="space-y-4">
                                         <div>
-                                            <Label className="mb-2 block">Popup Image *</Label>
+                                            <Label className="mb-2 block font-semibold text-gray-900">Popup Image *</Label>
                                             <SingleImageUpload
                                                 image={formData.image}
                                                 onChange={(image) => setFormData({ ...formData, image })}
@@ -390,33 +417,36 @@ export default function PopupAdManagement() {
                                         </div>
 
                                         <div>
-                                            <Label htmlFor="description">Description (optional)</Label>
+                                            <Label htmlFor="description" className="font-semibold text-gray-900">Description (optional)</Label>
                                             <Textarea
                                                 id="description"
                                                 value={formData.description}
                                                 onChange={(e) => setFormData({ ...formData, description: e.target.value })}
                                                 placeholder="Describe your promotion..."
                                                 rows={3}
+                                                className="mt-1.5"
                                             />
                                         </div>
 
                                         <div className="grid grid-cols-2 gap-4">
                                             <div>
-                                                <Label htmlFor="ctaText">Button Text</Label>
+                                                <Label htmlFor="ctaText" className="font-semibold text-gray-900">Button Text</Label>
                                                 <Input
                                                     id="ctaText"
                                                     value={formData.ctaText}
                                                     onChange={(e) => setFormData({ ...formData, ctaText: e.target.value })}
                                                     placeholder="e.g., Xem ngay"
+                                                    className="mt-1.5"
                                                 />
                                             </div>
                                             <div>
-                                                <Label htmlFor="ctaLink">Button Link</Label>
+                                                <Label htmlFor="ctaLink" className="font-semibold text-gray-900">Button Link</Label>
                                                 <Input
                                                     id="ctaLink"
                                                     value={formData.ctaLink}
                                                     onChange={(e) => setFormData({ ...formData, ctaLink: e.target.value })}
                                                     placeholder="e.g., /shop"
+                                                    className="mt-1.5"
                                                 />
                                             </div>
                                         </div>
@@ -424,7 +454,7 @@ export default function PopupAdManagement() {
                                 ) : (
                                     <div className="p-4 bg-indigo-50 border border-indigo-100 rounded-lg text-indigo-900 text-sm">
                                         <p className="font-semibold">Custom HTML Mode Enabled</p>
-                                        <p className="mt-1 text-xs">Please go to the <strong>AI HTML</strong> tab to write or paste your custom HTML code. Standard title will be used for administration and reference only.</p>
+                                        <p className="mt-1 text-xs">Please go to the <strong>AI HTML</strong> tab to write or paste your custom HTML code.</p>
                                     </div>
                                 )}
                             </TabsContent>
