@@ -375,7 +375,97 @@ function sanitizeStyleAttribute(
 }
 
 function isBlankTextContent(element: Element) {
-  return !(element.textContent || '').replace(/\u00a0/g, ' ').trim()
+  return !(element.textContent || '')
+    .replace(/[\u00a0\u2000-\u200f\u2028\u2029\u2060\ufeff]/g, ' ')
+    .trim()
+}
+
+function normalizePastedLabel(text: string) {
+  return text
+    .replace(/[\u2600-\u27bf]|\uD83C[\uDF00-\uDFFF]|\uD83D[\uDC00-\uDEFF]|\uD83E[\uDD00-\uDFFF]/g, '')
+    .replace(/[\u00a0\u2000-\u200f\u2028\u2029\u2060\ufeff]/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim()
+    .toLowerCase()
+}
+
+function isMetadataLabel(element: Element, label: 'seo title' | 'meta description') {
+  return normalizePastedLabel(element.textContent || '') === label
+}
+
+function removeLeadingSeoMetadataFromContainer(container: Element, stats?: HtmlSanitizeStats) {
+  const children = Array.from(container.children)
+  const firstMeaningfulIndex = children.findIndex((child) => {
+    return child.tagName.toLowerCase() === 'hr' || !isBlankTextContent(child)
+  })
+
+  if (firstMeaningfulIndex === -1) return false
+
+  const scanLimit = Math.min(children.length, firstMeaningfulIndex + 24)
+  const seoIndex = children.findIndex((child, index) => {
+    return index >= firstMeaningfulIndex && index < scanLimit && isMetadataLabel(child, 'seo title')
+  })
+
+  if (seoIndex === -1 || seoIndex > firstMeaningfulIndex + 2) return false
+
+  const metaIndex = children.findIndex((child, index) => {
+    return index > seoIndex && index < scanLimit && isMetadataLabel(child, 'meta description')
+  })
+
+  if (metaIndex === -1) return false
+
+  let removeThroughIndex = children.findIndex((child, index) => {
+    return index > metaIndex && child.tagName.toLowerCase() === 'hr'
+  })
+
+  if (removeThroughIndex === -1) {
+    removeThroughIndex = metaIndex
+    for (let index = metaIndex + 1; index < children.length; index += 1) {
+      if (!isBlankTextContent(children[index])) {
+        removeThroughIndex = index
+        break
+      }
+    }
+  }
+
+  while (removeThroughIndex + 1 < children.length && isBlankTextContent(children[removeThroughIndex + 1])) {
+    removeThroughIndex += 1
+  }
+
+  children.slice(0, removeThroughIndex + 1).forEach((child) => {
+    child.remove()
+    if (stats) stats.removedBlankNodes += 1
+  })
+
+  return true
+}
+
+function removeLeadingSeoMetadata(root: HTMLElement, stats?: HtmlSanitizeStats) {
+  const containers = [root, ...Array.from(root.querySelectorAll('div, section, article'))]
+  containers.some((container) => removeLeadingSeoMetadataFromContainer(container, stats))
+}
+
+function removeBlankFormattingNodes(root: HTMLElement, stats?: HtmlSanitizeStats, options?: HtmlSanitizeOptions) {
+  const selector = options?.preserveDesignStyles
+    ? 'span, p:empty, div:empty'
+    : 'span, p, div, blockquote, h1, h2, h3, h4, h5, h6, li'
+
+  for (let pass = 0; pass < 4; pass += 1) {
+    let removedAny = false
+
+    Array.from(root.querySelectorAll(selector)).forEach((element) => {
+      if (
+        isBlankTextContent(element) &&
+        !element.querySelector('img, table, hr, svg, video, audio')
+      ) {
+        element.remove()
+        removedAny = true
+        if (stats) stats.removedBlankNodes += 1
+      }
+    })
+
+    if (!removedAny) break
+  }
 }
 
 function isSafeUrl(value: string, type: 'href' | 'src') {
@@ -677,16 +767,15 @@ function cleanPastedHtml(html: string, stats?: HtmlSanitizeStats, options?: Html
   convertFontTags(tempDiv)
   convertWordLists(tempDiv)
 
+  if (!options?.preserveDesignStyles) {
+    removeLeadingSeoMetadata(tempDiv, stats)
+  }
+
   tempDiv.querySelectorAll('*').forEach((element) => {
     sanitizeElementAttributes(element, stats, options)
   })
 
-  tempDiv.querySelectorAll('span, p:empty, div:empty').forEach((element) => {
-    if (isBlankTextContent(element) && !element.querySelector('img, table')) {
-      if (stats) stats.removedBlankNodes += 1
-      element.remove()
-    }
-  })
+  removeBlankFormattingNodes(tempDiv, stats, options)
 
   return tempDiv.innerHTML.trim()
 }
