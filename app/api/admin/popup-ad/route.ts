@@ -18,19 +18,31 @@ export async function GET() {
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json()
-    const { title, description, image, ctaText, ctaLink, isActive } = body
+    const { title, description, image, ctaText, ctaLink, isActive, isHtml, htmlContent } = body
 
-    if (!title || !image) {
-      return NextResponse.json({ error: 'Title and image are required' }, { status: 400 })
+    if (!title) {
+      return NextResponse.json({ error: 'Title is required' }, { status: 400 })
+    }
+
+    if (isHtml) {
+      if (!htmlContent) {
+        return NextResponse.json({ error: 'HTML content is required for HTML popups' }, { status: 400 })
+      }
+    } else {
+      if (!image) {
+        return NextResponse.json({ error: 'Image is required for standard template' }, { status: 400 })
+      }
     }
 
     const popupAd = await prisma.popupAd.create({
       data: {
         title,
         description: description || '',
-        image,
+        image: image || null,
         ctaText: ctaText || 'Xem ngay',
         ctaLink: ctaLink || '/',
+        isHtml: isHtml ?? false,
+        htmlContent: htmlContent || null,
         isActive: isActive ?? true,
       },
     })

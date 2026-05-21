@@ -27,17 +27,19 @@ export async function PUT(
 ) {
     try {
         const body = await request.json()
-        const { title, description, image, ctaText, ctaLink, isActive } = body
+        const { title, description, image, ctaText, ctaLink, isActive, isHtml, htmlContent } = body
 
         const popupAd = await prisma.popupAd.update({
             where: { id: params.id },
             data: {
                 title,
-                description,
-                image,
-                ctaText,
-                ctaLink,
-                isActive,
+                description: description !== undefined ? description : undefined,
+                image: image !== undefined ? image : undefined,
+                ctaText: ctaText !== undefined ? ctaText : undefined,
+                ctaLink: ctaLink !== undefined ? ctaLink : undefined,
+                isHtml: isHtml !== undefined ? isHtml : undefined,
+                htmlContent: htmlContent !== undefined ? htmlContent : undefined,
+                isActive: isActive !== undefined ? isActive : undefined,
             },
         })
 

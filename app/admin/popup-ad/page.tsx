@@ -23,18 +23,22 @@ import {
     TableHeader,
     TableRow,
 } from '@/components/ui/table'
-import { Plus, Pencil, Trash2, Megaphone, Loader2 } from 'lucide-react'
+import { Plus, Pencil, Trash2, Loader2, AlertTriangle, CheckCircle2, Code2 } from 'lucide-react'
 import { toast } from 'sonner'
 import Image from 'next/image'
 import { SingleImageUpload } from '@/components/admin/ImageUpload'
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
+import { sanitizeHtmlDesign, type HtmlImportLog } from '@/components/admin/RichTextEditor'
 
 interface PopupAd {
     id: string
     title: string
-    description: string
-    image: string
+    description: string | null
+    image: string | null
     ctaText: string | null
     ctaLink: string | null
+    isHtml: boolean
+    htmlContent: string | null
     isActive: boolean
 }
 
@@ -44,12 +48,19 @@ export default function PopupAdManagement() {
     const [dialogOpen, setDialogOpen] = useState(false)
     const [editingItem, setEditingItem] = useState<PopupAd | null>(null)
     const [isSaving, setIsSaving] = useState(false)
+    const [activeTab, setActiveTab] = useState('content')
+    const [htmlCode, setHtmlCode] = useState('')
+    const [htmlImportLogs, setHtmlImportLogs] = useState<HtmlImportLog[]>([])
+    const [htmlPreview, setHtmlPreview] = useState('')
+
     const [formData, setFormData] = useState({
         title: '',
         description: '',
         image: '' as string | null,
         ctaText: 'Xem ngay',
         ctaLink: '/',
+        isHtml: false,
+        htmlContent: '',
         isActive: true,
     })
 
@@ -76,8 +87,14 @@ export default function PopupAdManagement() {
             image: '' as string | null,
             ctaText: 'Xem ngay',
             ctaLink: '/',
+            isHtml: false,
+            htmlContent: '',
             isActive: true,
         })
+        setHtmlCode('')
+        setHtmlPreview('')
+        setHtmlImportLogs([])
+        setActiveTab('content')
         setEditingItem(null)
     }
 
@@ -90,13 +107,47 @@ export default function PopupAdManagement() {
         setEditingItem(item)
         setFormData({
             title: item.title,
-            description: item.description,
+            description: item.description || '',
             image: item.image,
             ctaText: item.ctaText || 'Xem ngay',
             ctaLink: item.ctaLink || '/',
+            isHtml: item.isHtml ?? false,
+            htmlContent: item.htmlContent || '',
             isActive: item.isActive,
         })
+        setHtmlCode(item.htmlContent || '')
+        setHtmlPreview(item.htmlContent || '')
+        setHtmlImportLogs([])
+        setActiveTab('content')
         setDialogOpen(true)
+    }
+
+    const handleValidateHtml = () => {
+        const result = sanitizeHtmlDesign(htmlCode)
+        setHtmlPreview(result.html)
+        setHtmlImportLogs(result.logs)
+        return result
+    }
+
+    const handleLoadHtml = () => {
+        const result = handleValidateHtml()
+
+        if (result.logs.some((log) => log.level === 'error')) {
+            return
+        }
+
+        setFormData((current) => ({
+            ...current,
+            htmlContent: result.html,
+        }))
+
+        setHtmlImportLogs([
+            ...result.logs,
+            {
+                level: 'info',
+                message: 'HTML successfully loaded. Click Update/Create to save.',
+            },
+        ])
     }
 
     const handleSubmit = async (e: React.FormEvent) => {
@@ -106,8 +157,12 @@ export default function PopupAdManagement() {
             toast.error('Title is required')
             return
         }
-        if (!formData.image) {
-            toast.error('Image is required')
+        if (!formData.isHtml && !formData.image) {
+            toast.error('Image is required for standard template')
+            return
+        }
+        if (formData.isHtml && !formData.htmlContent.trim()) {
+            toast.error('HTML content is required for custom HTML popups')
             return
         }
 
@@ -175,6 +230,19 @@ export default function PopupAdManagement() {
         }
     }
 
+    const htmlPreviewDocument = `<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <style>
+      body { margin: 0; padding: 16px; font-family: Arial, sans-serif; color: #111827; background: #fff; }
+      img { max-width: 100%; height: auto; }
+      table { max-width: 100%; border-collapse: collapse; }
+    </style>
+  </head>
+  <body>${htmlPreview || '<p style="color:#6b7280">No preview yet.</p>'}</body>
+</html>`
+
     if (loading) {
         return (
             <div className="flex items-center justify-center min-h-[400px]">
@@ -201,9 +269,9 @@ export default function PopupAdManagement() {
                     <Table>
                         <TableHeader>
                             <TableRow>
-                                <TableHead>Image</TableHead>
+                                <TableHead>Image / Type</TableHead>
                                 <TableHead>Title</TableHead>
-                                <TableHead className="hidden md:table-cell">Description</TableHead>
+                                <TableHead className="hidden md:table-cell">Details</TableHead>
                                 <TableHead className="w-20">Active</TableHead>
                                 <TableHead className="w-24">Actions</TableHead>
                             </TableRow>
@@ -219,18 +287,28 @@ export default function PopupAdManagement() {
                                 popupAds.map((item) => (
                                     <TableRow key={item.id} className={!item.isActive ? 'opacity-50' : ''}>
                                         <TableCell>
-                                            <div className="relative h-12 w-20 rounded overflow-hidden bg-gray-100">
-                                                <Image
-                                                    src={item.image}
-                                                    alt={item.title}
-                                                    fill
-                                                    className="object-cover"
-                                                />
-                                            </div>
+                                            {item.isHtml ? (
+                                                <div className="flex items-center justify-center h-12 w-20 rounded bg-indigo-50 border border-indigo-200 text-indigo-700 text-xs font-semibold uppercase">
+                                                    HTML
+                                                </div>
+                                            ) : (
+                                                <div className="relative h-12 w-20 rounded overflow-hidden bg-gray-100">
+                                                    {item.image ? (
+                                                        <Image
+                                                            src={item.image}
+                                                            alt={item.title}
+                                                            fill
+                                                            className="object-cover"
+                                                        />
+                                                    ) : (
+                                                        <div className="flex items-center justify-center h-full w-full text-xs text-gray-400">No Image</div>
+                                                    )}
+                                                </div>
+                                            )}
                                         </TableCell>
                                         <TableCell className="font-medium">{item.title}</TableCell>
                                         <TableCell className="hidden md:table-cell max-w-xs truncate">
-                                            {item.description}
+                                            {item.isHtml ? 'Custom HTML Template' : item.description}
                                         </TableCell>
                                         <TableCell>
                                             <Switch
@@ -266,72 +344,177 @@ export default function PopupAdManagement() {
             </Card>
 
             <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-                <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+                <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
                     <DialogHeader>
                         <DialogTitle>
                             {editingItem ? 'Edit Popup Ad' : 'Add Popup Ad'}
                         </DialogTitle>
                     </DialogHeader>
-                    <form onSubmit={handleSubmit} className="space-y-4 py-4">
-                        <div>
-                            <Label className="mb-2 block">Popup Image *</Label>
-                            <SingleImageUpload
-                                image={formData.image}
-                                onChange={(image) => setFormData({ ...formData, image })}
-                                folder="sax/popups"
-                            />
-                        </div>
+                    <form onSubmit={handleSubmit} className="space-y-4 py-2">
+                        <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+                            <TabsList className="grid grid-cols-3 w-full">
+                                <TabsTrigger value="content">Content</TabsTrigger>
+                                <TabsTrigger value="html">AI HTML</TabsTrigger>
+                                <TabsTrigger value="settings">Settings</TabsTrigger>
+                            </TabsList>
 
-                        <div>
-                            <Label htmlFor="title">Title *</Label>
-                            <Input
-                                id="title"
-                                value={formData.title}
-                                onChange={(e) => setFormData({ ...formData, title: e.target.value })}
-                                placeholder="e.g., Special Offer!"
-                            />
-                        </div>
+                            <TabsContent value="content" className="space-y-4 mt-4">
+                                <div>
+                                    <Label htmlFor="title">Title *</Label>
+                                    <Input
+                                        id="title"
+                                        value={formData.title}
+                                        onChange={(e) => setFormData({ ...formData, title: e.target.value })}
+                                        placeholder="e.g., Special Offer!"
+                                    />
+                                </div>
 
-                        <div>
-                            <Label htmlFor="description">Description (optional)</Label>
-                            <Textarea
-                                id="description"
-                                value={formData.description}
-                                onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                                placeholder="Describe your promotion..."
-                                rows={3}
-                            />
-                        </div>
+                                <div className="flex items-center gap-2 py-2">
+                                    <Switch
+                                        id="isHtml"
+                                        checked={formData.isHtml}
+                                        onCheckedChange={(checked) => setFormData({ ...formData, isHtml: checked })}
+                                    />
+                                    <Label htmlFor="isHtml" className="font-semibold text-gray-800">Use Custom HTML Template</Label>
+                                </div>
 
-                        <div className="grid grid-cols-2 gap-4">
-                            <div>
-                                <Label htmlFor="ctaText">Button Text</Label>
-                                <Input
-                                    id="ctaText"
-                                    value={formData.ctaText}
-                                    onChange={(e) => setFormData({ ...formData, ctaText: e.target.value })}
-                                    placeholder="e.g., Xem ngay"
-                                />
-                            </div>
-                            <div>
-                                <Label htmlFor="ctaLink">Button Link</Label>
-                                <Input
-                                    id="ctaLink"
-                                    value={formData.ctaLink}
-                                    onChange={(e) => setFormData({ ...formData, ctaLink: e.target.value })}
-                                    placeholder="e.g., /shop"
-                                />
-                            </div>
-                        </div>
+                                {!formData.isHtml ? (
+                                    <div className="space-y-4">
+                                        <div>
+                                            <Label className="mb-2 block">Popup Image *</Label>
+                                            <SingleImageUpload
+                                                image={formData.image}
+                                                onChange={(image) => setFormData({ ...formData, image })}
+                                                folder="sax/popups"
+                                            />
+                                        </div>
 
-                        <div className="flex items-center gap-2">
-                            <Switch
-                                id="isActive"
-                                checked={formData.isActive}
-                                onCheckedChange={(checked) => setFormData({ ...formData, isActive: checked })}
-                            />
-                            <Label htmlFor="isActive">Active</Label>
-                        </div>
+                                        <div>
+                                            <Label htmlFor="description">Description (optional)</Label>
+                                            <Textarea
+                                                id="description"
+                                                value={formData.description}
+                                                onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                                                placeholder="Describe your promotion..."
+                                                rows={3}
+                                            />
+                                        </div>
+
+                                        <div className="grid grid-cols-2 gap-4">
+                                            <div>
+                                                <Label htmlFor="ctaText">Button Text</Label>
+                                                <Input
+                                                    id="ctaText"
+                                                    value={formData.ctaText}
+                                                    onChange={(e) => setFormData({ ...formData, ctaText: e.target.value })}
+                                                    placeholder="e.g., Xem ngay"
+                                                />
+                                            </div>
+                                            <div>
+                                                <Label htmlFor="ctaLink">Button Link</Label>
+                                                <Input
+                                                    id="ctaLink"
+                                                    value={formData.ctaLink}
+                                                    onChange={(e) => setFormData({ ...formData, ctaLink: e.target.value })}
+                                                    placeholder="e.g., /shop"
+                                                />
+                                            </div>
+                                        </div>
+                                    </div>
+                                ) : (
+                                    <div className="p-4 bg-indigo-50 border border-indigo-100 rounded-lg text-indigo-900 text-sm">
+                                        <p className="font-semibold">Custom HTML Mode Enabled</p>
+                                        <p className="mt-1 text-xs">Please go to the <strong>AI HTML</strong> tab to write or paste your custom HTML code. Standard title will be used for administration and reference only.</p>
+                                    </div>
+                                )}
+                            </TabsContent>
+
+                            <TabsContent value="html" className="space-y-4 mt-4">
+                                <div className="rounded-lg border border-gray-200 bg-white">
+                                    <div className="flex items-center gap-2 border-b border-gray-200 p-4">
+                                        <Code2 className="h-5 w-5 text-primary" />
+                                        <h3 className="font-semibold text-gray-900">Custom HTML Code</h3>
+                                    </div>
+
+                                    <div className="grid gap-4 p-4 lg:grid-cols-2">
+                                        <div className="space-y-3">
+                                            <Label className="block text-sm font-medium text-gray-700">
+                                                HTML / CSS Code
+                                            </Label>
+                                            <textarea
+                                                value={htmlCode}
+                                                onChange={(event) => setHtmlCode(event.target.value)}
+                                                spellCheck={false}
+                                                className="min-h-[300px] w-full rounded-lg border border-gray-300 bg-gray-950 px-4 py-3 font-mono text-sm text-gray-100 outline-none focus:border-primary focus:ring-1 focus:ring-primary"
+                                                placeholder={`<div style="padding: 24px; text-align: center; background: linear-gradient(to right, #f43f5e, #e11d48); color: white; border-radius: 16px;">\n  <h2>Custom Flash Sale!</h2>\n  <p>Get 20% off all saxophones</p>\n</div>`}
+                                            />
+                                            <div className="flex gap-2">
+                                                <Button type="button" variant="outline" size="sm" onClick={handleValidateHtml}>
+                                                    Validate
+                                                </Button>
+                                                <Button type="button" size="sm" onClick={handleLoadHtml} disabled={!htmlCode.trim()}>
+                                                    Load HTML
+                                                </Button>
+                                            </div>
+                                        </div>
+
+                                        <div className="space-y-3">
+                                            <Label className="block text-sm font-medium text-gray-700">
+                                                Clean Preview
+                                            </Label>
+                                            <iframe
+                                                title="HTML preview"
+                                                srcDoc={htmlPreviewDocument}
+                                                className="h-[300px] w-full rounded-lg border border-gray-300 bg-white"
+                                                sandbox=""
+                                            />
+                                        </div>
+                                    </div>
+
+                                    <div className="border-t border-gray-200 p-4 bg-gray-50 rounded-b-lg">
+                                        <div className="mb-2 flex items-center gap-2 text-sm font-semibold text-gray-800">
+                                            {htmlImportLogs.some((log) => log.level === 'error') ? (
+                                                <AlertTriangle className="h-4 w-4 text-red-600" />
+                                            ) : (
+                                                <CheckCircle2 className="h-4 w-4 text-green-600" />
+                                            )}
+                                            Import Log
+                                        </div>
+                                        <div className="max-h-32 space-y-2 overflow-y-auto text-sm">
+                                            {htmlImportLogs.length === 0 ? (
+                                                <p className="text-gray-500">No logs yet. Enter HTML and click Validate or Load.</p>
+                                            ) : (
+                                                htmlImportLogs.map((log, index) => (
+                                                    <div
+                                                        key={`${log.level}-${index}`}
+                                                        className={`rounded border px-3 py-2 ${
+                                                            log.level === 'error'
+                                                                ? 'border-red-200 bg-red-50 text-red-800'
+                                                                : log.level === 'warning'
+                                                                ? 'border-amber-200 bg-amber-50 text-amber-800'
+                                                                : 'border-blue-200 bg-blue-50 text-blue-800'
+                                                        }`}
+                                                    >
+                                                        {log.message}
+                                                    </div>
+                                                ))
+                                            )}
+                                        </div>
+                                    </div>
+                                </div>
+                            </TabsContent>
+
+                            <TabsContent value="settings" className="space-y-4 mt-4">
+                                <div className="flex items-center gap-2 py-4">
+                                    <Switch
+                                        id="isActive"
+                                        checked={formData.isActive}
+                                        onCheckedChange={(checked) => setFormData({ ...formData, isActive: checked })}
+                                    />
+                                    <Label htmlFor="isActive">Active (Display on Homepage)</Label>
+                                </div>
+                            </TabsContent>
+                        </Tabs>
 
                         <DialogFooter className="pt-4 border-t">
                             <Button type="button" variant="outline" onClick={() => setDialogOpen(false)} disabled={isSaving}>
