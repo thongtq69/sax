@@ -54,13 +54,19 @@ export interface HtmlImportLog {
 }
 
 interface HtmlSanitizeStats {
+  cssVariablesResolved: number
+  fullDocumentDetected: boolean
   removedAttributes: Record<string, number>
   removedBlankNodes: number
   removedStyleProperties: Record<string, number>
   removedTags: Record<string, number>
   inlinedStyleRules: number
+  skippedHiddenRevealRules: number
+  skippedMediaRules: number
+  skippedPseudoSelectorRules: number
   skippedStyleRules: number
   structureIssues: string[]
+  unresolvedCssVariables: Record<string, number>
 }
 
 interface HtmlSanitizeOptions {
@@ -68,13 +74,19 @@ interface HtmlSanitizeOptions {
 }
 
 const createSanitizeStats = (): HtmlSanitizeStats => ({
+  cssVariablesResolved: 0,
+  fullDocumentDetected: false,
   removedAttributes: {},
   removedBlankNodes: 0,
   removedStyleProperties: {},
   removedTags: {},
   inlinedStyleRules: 0,
+  skippedHiddenRevealRules: 0,
+  skippedMediaRules: 0,
+  skippedPseudoSelectorRules: 0,
   skippedStyleRules: 0,
   structureIssues: [],
+  unresolvedCssVariables: {},
 })
 
 function incrementStat(bucket: Record<string, number>, key: string) {
@@ -549,9 +561,20 @@ function collectCssVariables(css: string) {
   return variables
 }
 
-function resolveCssVariables(css: string, variables: Record<string, string>) {
+function resolveCssVariables(css: string, variables: Record<string, string>, stats?: HtmlSanitizeStats) {
   return css.replace(/var\(\s*(--[a-z0-9-_]+)\s*(?:,\s*([^)]+))?\)/gi, (_, name: string, fallback?: string) => {
-    return variables[name] || fallback?.trim() || ''
+    if (variables[name]) {
+      if (stats) stats.cssVariablesResolved += 1
+      return variables[name]
+    }
+
+    if (fallback?.trim()) {
+      if (stats) stats.cssVariablesResolved += 1
+      return fallback.trim()
+    }
+
+    if (stats) incrementStat(stats.unresolvedCssVariables, name)
+    return ''
   })
 }
 
@@ -566,6 +589,7 @@ function inlineStyleBlocks(root: HTMLElement, stats: HtmlSanitizeStats, options?
   root.querySelectorAll('style').forEach((styleElement) => {
     const css = styleElement.textContent || ''
     const cssVariables = collectCssVariables(css)
+    stats.skippedMediaRules += css.match(/@media\b/gi)?.length || 0
     const ruleMatches = css.matchAll(/([^{}@]+)\{([^{}]+)\}/g)
 
     for (const match of ruleMatches) {
@@ -573,7 +597,7 @@ function inlineStyleBlocks(root: HTMLElement, stats: HtmlSanitizeStats, options?
         .split(',')
         .map((selector) => selector.trim())
         .filter(Boolean)
-      const sanitizedRuleStyle = sanitizeStyleAttribute(resolveCssVariables(match[2], cssVariables), stats, options)
+      const sanitizedRuleStyle = sanitizeStyleAttribute(resolveCssVariables(match[2], cssVariables, stats), stats, options)
 
       if (!sanitizedRuleStyle) {
         stats.skippedStyleRules += 1
@@ -581,6 +605,7 @@ function inlineStyleBlocks(root: HTMLElement, stats: HtmlSanitizeStats, options?
       }
 
       if (isHiddenRevealRule(selectors, sanitizedRuleStyle, options)) {
+        stats.skippedHiddenRevealRules += selectors.length || 1
         stats.skippedStyleRules += selectors.length || 1
         continue
       }
@@ -591,6 +616,9 @@ function inlineStyleBlocks(root: HTMLElement, stats: HtmlSanitizeStats, options?
           /[{}@]/.test(selector) ||
           /:(?:hover|active|focus|visited|before|after)/i.test(selector)
         ) {
+          if (/:(?:before|after)/i.test(selector)) {
+            stats.skippedPseudoSelectorRules += 1
+          }
           stats.skippedStyleRules += 1
           return
         }
@@ -814,59 +842,126 @@ function summarizeStats(stats: HtmlSanitizeStats, sanitizedHtml: string): HtmlIm
   const removedTags = Object.entries(stats.removedTags)
   const removedAttrs = Object.entries(stats.removedAttributes)
   const removedStyles = Object.entries(stats.removedStyleProperties)
+  const unresolvedCssVariables = Object.entries(stats.unresolvedCssVariables)
 
   if (!sanitizedHtml.trim()) {
-    logs.push({ level: 'error', message: 'HTML has no safe content after cleaning.' })
+    logs.push({ level: 'error', message: 'HTML không còn nội dung an toàn sau khi làm sạch. File có thể chỉ chứa script/style hoặc nội dung bị chặn.' })
+  }
+
+  if (stats.fullDocumentDetected) {
+    logs.push({
+      level: 'info',
+      message: 'Đã phát hiện file HTML nguyên trang. Hệ thống chỉ lấy phần nội dung hiển thị trong <body> và chuyển CSS trong <style> sang inline style để dùng trong blog.',
+    })
   }
 
   stats.structureIssues.slice(0, 6).forEach((message) => {
-    logs.push({ level: 'warning', message })
+    logs.push({ level: 'warning', message: `Cấu trúc HTML cần kiểm tra: ${message}` })
   })
 
   if (removedTags.length) {
+    const scriptCount = stats.removedTags.script || 0
+    if (scriptCount) {
+      logs.push({
+        level: 'warning',
+        message: `Đã xoá <script> (${scriptCount}) vì blog không cho chạy JavaScript. Các hiệu ứng cần JS như scroll reveal, animation khi cuộn, click handler hoặc form tùy chỉnh sẽ không hoạt động trong bài viết.`,
+      })
+    }
+
+    const styleCount = stats.removedTags.style || 0
+    if (styleCount) {
+      logs.push({
+        level: 'info',
+        message: `Đã xoá <style> (${styleCount}) sau khi cố gắng chuyển CSS sang inline style. Những CSS không thể inline như @media, hover, ::before/::after sẽ bị bỏ qua.`,
+      })
+    }
+
     logs.push({
       level: 'warning',
-      message: `Removed unsafe tags: ${removedTags.map(([tag, count]) => `${tag} (${count})`).join(', ')}.`,
+      message: `Tag bị xoá vì không an toàn hoặc không phù hợp trong blog: ${removedTags.map(([tag, count]) => `${tag} (${count})`).join(', ')}.`,
     })
   }
 
   if (removedAttrs.length) {
+    const classCount = stats.removedAttributes.class || 0
+    if (classCount) {
+      logs.push({
+        level: 'info',
+        message: `Đã xoá class (${classCount}) sau khi import. Blog không lưu class/id để tránh CSS hoặc JavaScript bên ngoài tác động sai; style cần giữ nên đặt inline style trực tiếp trên từng thẻ.`,
+      })
+    }
+
     logs.push({
       level: 'warning',
-      message: `Removed unsafe or unsupported attributes: ${removedAttrs.map(([attr, count]) => `${attr} (${count})`).join(', ')}.`,
+      message: `Attribute bị xoá vì không an toàn hoặc không hỗ trợ: ${removedAttrs.map(([attr, count]) => `${attr} (${count})`).join(', ')}.`,
+    })
+  }
+
+  if (stats.cssVariablesResolved) {
+    logs.push({
+      level: 'info',
+      message: `Đã chuyển CSS variable var(--...) sang màu/giá trị thật (${stats.cssVariablesResolved} lần).`,
+    })
+  }
+
+  if (unresolvedCssVariables.length) {
+    logs.push({
+      level: 'warning',
+      message: `Không tìm thấy giá trị cho CSS variable: ${unresolvedCssVariables.map(([name, count]) => `${name} (${count})`).join(', ')}. Các style dùng biến này có thể bị mất.`,
     })
   }
 
   if (removedStyles.length) {
     logs.push({
       level: 'info',
-      message: `Dropped unsupported or unsafe CSS properties: ${removedStyles.map(([prop, count]) => `${prop} (${count})`).join(', ')}.`,
+      message: `CSS property bị bỏ vì không an toàn hoặc blog chưa hỗ trợ: ${removedStyles.map(([prop, count]) => `${prop} (${count})`).join(', ')}. Các phần layout/hiệu ứng phụ thuộc vào property này có thể khác file gốc.`,
     })
   }
 
   if (stats.inlinedStyleRules) {
     logs.push({
       level: 'info',
-      message: `Converted ${stats.inlinedStyleRules} CSS rule application(s) from <style> blocks to inline styles.`,
+      message: `Đã chuyển ${stats.inlinedStyleRules} CSS rule từ <style> sang inline style.`,
+    })
+  }
+
+  if (stats.skippedHiddenRevealRules) {
+    logs.push({
+      level: 'warning',
+      message: `Đã bỏ ${stats.skippedHiddenRevealRules} rule animation/reveal có opacity: 0. Lý do: script tạo hiệu ứng bị xoá, nếu giữ rule này thì nội dung sẽ bị ẩn trên bài blog.`,
+    })
+  }
+
+  if (stats.skippedMediaRules) {
+    logs.push({
+      level: 'info',
+      message: `File có @media responsive rule (${stats.skippedMediaRules}) nhưng blog importer chưa thể inline @media. Bố cục mobile có thể không giống 100% file gốc.`,
+    })
+  }
+
+  if (stats.skippedPseudoSelectorRules) {
+    logs.push({
+      level: 'info',
+      message: `Đã bỏ ${stats.skippedPseudoSelectorRules} rule dùng ::before/::after. Các icon/đường trang trí tạo bằng pseudo-element sẽ không hiện; hãy viết chúng thành thẻ HTML thật nếu cần giữ.`,
     })
   }
 
   if (stats.skippedStyleRules) {
     logs.push({
       level: 'info',
-      message: `Skipped ${stats.skippedStyleRules} unsupported CSS selector/rule(s).`,
+      message: `Tổng cộng đã bỏ ${stats.skippedStyleRules} CSS selector/rule không thể chuyển sang inline style.`,
     })
   }
 
   if (stats.removedBlankNodes) {
     logs.push({
       level: 'info',
-      message: `Removed ${stats.removedBlankNodes} blank selection/spacing node(s).`,
+      message: `Đã xoá ${stats.removedBlankNodes} node rỗng hoặc spacing do copy/paste tạo ra.`,
     })
   }
 
   if (!logs.length) {
-    logs.push({ level: 'info', message: 'HTML looks valid and did not require cleanup.' })
+    logs.push({ level: 'info', message: 'HTML hợp lệ, không cần làm sạch thêm.' })
   }
 
   return logs
@@ -892,6 +987,7 @@ function normalizeHtmlDesignSource(html: string) {
 
 export function sanitizeHtmlDesign(html: string): { html: string; logs: HtmlImportLog[] } {
   const stats = createSanitizeStats()
+  stats.fullDocumentDetected = /<\/?(?:html|head|body)\b/i.test(html)
   const sanitizedHtml = cleanPastedHtml(normalizeHtmlDesignSource(html), stats, { preserveDesignStyles: true })
 
   return {
