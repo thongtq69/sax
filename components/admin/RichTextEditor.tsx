@@ -356,7 +356,7 @@ function sanitizeStyleAttribute(
 
       if (property === 'background-color') {
         value = extractCssColor(value)
-        if (isOfficeSelectionBackground(value)) {
+        if (!options?.preserveDesignStyles && isOfficeSelectionBackground(value)) {
           if (stats) incrementStat(stats.removedStyleProperties, 'selection-background')
           return null
         }
@@ -539,9 +539,33 @@ function combineStyles(...styles: Array<string | null | undefined>) {
   return styles.filter(Boolean).join('; ')
 }
 
+function collectCssVariables(css: string) {
+  const variables: Record<string, string> = {}
+
+  Array.from(css.matchAll(/(--[a-z0-9-_]+)\s*:\s*([^;{}]+)\s*;/gi)).forEach((match) => {
+    variables[match[1]] = match[2].trim()
+  })
+
+  return variables
+}
+
+function resolveCssVariables(css: string, variables: Record<string, string>) {
+  return css.replace(/var\(\s*(--[a-z0-9-_]+)\s*(?:,\s*([^)]+))?\)/gi, (_, name: string, fallback?: string) => {
+    return variables[name] || fallback?.trim() || ''
+  })
+}
+
+function isHiddenRevealRule(selectors: string[], style: string, options?: HtmlSanitizeOptions) {
+  if (!options?.preserveDesignStyles) return false
+  if (!/\bopacity\s*:\s*0(?:\.0+)?\b/i.test(style)) return false
+
+  return selectors.some((selector) => /(?:reveal|stagger|animate|animation|fade|scroll)/i.test(selector))
+}
+
 function inlineStyleBlocks(root: HTMLElement, stats: HtmlSanitizeStats, options?: HtmlSanitizeOptions) {
   root.querySelectorAll('style').forEach((styleElement) => {
     const css = styleElement.textContent || ''
+    const cssVariables = collectCssVariables(css)
     const ruleMatches = css.matchAll(/([^{}@]+)\{([^{}]+)\}/g)
 
     for (const match of ruleMatches) {
@@ -549,10 +573,15 @@ function inlineStyleBlocks(root: HTMLElement, stats: HtmlSanitizeStats, options?
         .split(',')
         .map((selector) => selector.trim())
         .filter(Boolean)
-      const sanitizedRuleStyle = sanitizeStyleAttribute(match[2], stats, options)
+      const sanitizedRuleStyle = sanitizeStyleAttribute(resolveCssVariables(match[2], cssVariables), stats, options)
 
       if (!sanitizedRuleStyle) {
         stats.skippedStyleRules += 1
+        continue
+      }
+
+      if (isHiddenRevealRule(selectors, sanitizedRuleStyle, options)) {
+        stats.skippedStyleRules += selectors.length || 1
         continue
       }
 
