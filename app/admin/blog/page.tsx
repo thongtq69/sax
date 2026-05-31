@@ -42,6 +42,48 @@ const blogCategories = [
   { slug: 'news', name: 'News', icon: '📰' },
 ]
 
+function cleanImportedText(text: string | null | undefined) {
+  return (text || '').replace(/\s+/g, ' ').trim()
+}
+
+function trimSiteTitle(title: string) {
+  return title
+    .replace(/\s+[\-|]\s+James Sax Corner$/i, '')
+    .replace(/\s+[\-|]\s+Sax Corner$/i, '')
+    .trim()
+}
+
+function getHtmlPostMetadata(html: string) {
+  if (typeof window === 'undefined') return { title: '', excerpt: '' }
+
+  try {
+    const doc = new DOMParser().parseFromString(html, 'text/html')
+    const metaTags = Array.from(doc.querySelectorAll('meta'))
+    const metaDescription = cleanImportedText(
+      metaTags.find((meta) => {
+        const name = meta.getAttribute('name')?.toLowerCase()
+        const property = meta.getAttribute('property')?.toLowerCase()
+        return name === 'description' || property === 'og:description'
+      })?.getAttribute('content')
+    )
+    const ogTitle = cleanImportedText(
+      metaTags.find((meta) => meta.getAttribute('property')?.toLowerCase() === 'og:title')?.getAttribute('content')
+    )
+    const documentTitle = cleanImportedText(doc.querySelector('title')?.textContent)
+    const headingTitle = cleanImportedText(doc.body.querySelector('h1')?.textContent)
+    const firstUsefulParagraph = Array.from(doc.body.querySelectorAll('p'))
+      .map((paragraph) => cleanImportedText(paragraph.textContent))
+      .find((text) => text.length >= 60)
+
+    return {
+      title: trimSiteTitle(ogTitle || documentTitle || headingTitle),
+      excerpt: metaDescription || firstUsefulParagraph || '',
+    }
+  } catch {
+    return { title: '', excerpt: '' }
+  }
+}
+
 export default function BlogManagement() {
   const [postList, setPostList] = useState<any[]>([])
   const [filteredPosts, setFilteredPosts] = useState<any[]>([])
@@ -242,16 +284,44 @@ export default function BlogManagement() {
     return result
   }
 
+  const loadHtmlIntoPost = (html: string, sourceHtml = html) => {
+    const metadata = getHtmlPostMetadata(sourceHtml)
+
+    setFormData((current: any) => ({
+      ...current,
+      title: current.title?.trim() ? current.title : metadata.title,
+      excerpt: current.excerpt?.trim() ? current.excerpt : metadata.excerpt,
+      author: current.author?.trim() ? current.author : 'James',
+      content:
+        htmlImportMode === 'append' && current.content
+          ? `${current.content}\n${html}`
+          : html,
+    }))
+  }
+
   const handleHtmlFileLoad = ({ file, text }: { file: File; text: string }) => {
     const result = sanitizeHtmlDesign(text)
     setHtmlCode(text)
     setHtmlPreview(result.html)
+    if (!result.logs.some((log) => log.level === 'error')) {
+      loadHtmlIntoPost(result.html, text)
+    }
     setHtmlImportLogs([
       {
         level: 'info',
         message: `Loaded HTML file "${file.name}" (${formatHtmlFileSize(file.size)}).`,
       },
       ...result.logs,
+      ...(result.logs.some((log) => log.level === 'error')
+        ? []
+        : [
+            {
+              level: 'info' as const,
+              message: htmlImportMode === 'append'
+                ? 'HTML appended to the post content from file.'
+                : 'HTML loaded into the post content from file.',
+            },
+          ]),
     ])
   }
 
@@ -262,13 +332,7 @@ export default function BlogManagement() {
       return
     }
 
-    setFormData((current: any) => ({
-      ...current,
-      content:
-        htmlImportMode === 'append' && current.content
-          ? `${current.content}\n${result.html}`
-          : result.html,
-    }))
+    loadHtmlIntoPost(result.html, htmlCode)
 
     setHtmlImportLogs([
       ...result.logs,
@@ -490,6 +554,40 @@ export default function BlogManagement() {
 
             {/* AI HTML Tab */}
             <TabsContent value="html" className="space-y-4 mt-6">
+              <div className="grid gap-4 rounded-lg border border-gray-200 bg-gray-50 p-4 md:grid-cols-2">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Title <span className="text-red-500">*</span>
+                  </label>
+                  <Input
+                    value={formData.title}
+                    onChange={(e) => setFormData({ ...formData, title: e.target.value })}
+                    placeholder="Auto-filled from HTML title or H1"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Author <span className="text-red-500">*</span>
+                  </label>
+                  <Input
+                    value={formData.author}
+                    onChange={(e) => setFormData({ ...formData, author: e.target.value })}
+                    placeholder="James"
+                  />
+                </div>
+                <div className="md:col-span-2">
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Excerpt
+                  </label>
+                  <textarea
+                    className="w-full min-h-[72px] rounded-lg border border-gray-300 bg-white px-4 py-3 text-sm focus:border-primary focus:ring-1 focus:ring-primary"
+                    value={formData.excerpt}
+                    onChange={(e) => setFormData({ ...formData, excerpt: e.target.value })}
+                    placeholder="Auto-filled from meta description or first paragraph"
+                  />
+                </div>
+              </div>
+
               <div className="rounded-lg border border-gray-200 bg-white">
                 <div className="flex flex-col gap-3 border-b border-gray-200 p-4 sm:flex-row sm:items-center sm:justify-between">
                   <div className="flex items-center gap-2">
