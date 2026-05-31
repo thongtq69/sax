@@ -31,6 +31,7 @@ import Image from 'next/image'
 import Link from 'next/link'
 import { RichTextEditor, sanitizeHtmlDesign, type HtmlImportLog } from '@/components/admin/RichTextEditor'
 import { SingleImageUpload } from '@/components/admin/ImageUpload'
+import { HtmlFileUploadButton, formatHtmlFileSize } from '@/components/admin/HtmlFileUploadButton'
 
 const blogCategories = [
   { slug: 'instruments', name: 'Instruments', icon: '🎷' },
@@ -239,6 +240,19 @@ export default function BlogManagement() {
     setHtmlPreview(result.html)
     setHtmlImportLogs(result.logs)
     return result
+  }
+
+  const handleHtmlFileLoad = ({ file, text }: { file: File; text: string }) => {
+    const result = sanitizeHtmlDesign(text)
+    setHtmlCode(text)
+    setHtmlPreview(result.html)
+    setHtmlImportLogs([
+      {
+        level: 'info',
+        message: `Loaded HTML file "${file.name}" (${formatHtmlFileSize(file.size)}).`,
+      },
+      ...result.logs,
+    ])
   }
 
   const handleLoadHtml = () => {
@@ -505,9 +519,15 @@ export default function BlogManagement() {
 
                 <div className="grid gap-4 p-4 lg:grid-cols-2">
                   <div className="space-y-3">
-                    <label className="block text-sm font-medium text-gray-700">
-                      HTML code
-                    </label>
+                    <div className="flex flex-wrap items-center justify-between gap-2">
+                      <label className="block text-sm font-medium text-gray-700">
+                        HTML code
+                      </label>
+                      <HtmlFileUploadButton
+                        onLoad={handleHtmlFileLoad}
+                        onError={(message) => alert(message)}
+                      />
+                    </div>
                     <textarea
                       value={htmlCode}
                       onChange={(event) => setHtmlCode(event.target.value)}

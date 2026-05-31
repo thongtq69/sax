@@ -29,6 +29,7 @@ import Image from 'next/image'
 import { SingleImageUpload } from '@/components/admin/ImageUpload'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { sanitizeHtmlDesign, type HtmlImportLog } from '@/components/admin/RichTextEditor'
+import { HtmlFileUploadButton, formatHtmlFileSize } from '@/components/admin/HtmlFileUploadButton'
 
 interface PopupAd {
     id: string
@@ -127,6 +128,19 @@ export default function PopupAdManagement() {
         setHtmlPreview(result.html)
         setHtmlImportLogs(result.logs)
         return result
+    }
+
+    const handleHtmlFileLoad = ({ file, text }: { file: File; text: string }) => {
+        const result = sanitizeHtmlDesign(text)
+        setHtmlCode(text)
+        setHtmlPreview(result.html)
+        setHtmlImportLogs([
+            {
+                level: 'info',
+                message: `Loaded HTML file "${file.name}" (${formatHtmlFileSize(file.size)}).`,
+            },
+            ...result.logs,
+        ])
     }
 
     const handleLoadHtml = () => {
@@ -468,9 +482,15 @@ export default function PopupAdManagement() {
 
                                     <div className="grid gap-4 p-4 lg:grid-cols-2">
                                         <div className="space-y-3">
-                                            <Label className="block text-sm font-medium text-gray-700">
-                                                HTML / CSS Code
-                                            </Label>
+                                            <div className="flex flex-wrap items-center justify-between gap-2">
+                                                <Label className="block text-sm font-medium text-gray-700">
+                                                    HTML / CSS Code
+                                                </Label>
+                                                <HtmlFileUploadButton
+                                                    onLoad={handleHtmlFileLoad}
+                                                    onError={(message) => toast.error(message)}
+                                                />
+                                            </div>
                                             <textarea
                                                 value={htmlCode}
                                                 onChange={(event) => setHtmlCode(event.target.value)}
