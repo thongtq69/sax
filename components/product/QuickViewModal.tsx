@@ -14,9 +14,10 @@ import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { useCartStore } from '@/lib/store/cart'
 import { SmartImage } from '@/components/ui/smart-image'
-import { Star, Heart, Check, ExternalLink, Truck, Shield, Award, X, Loader2, ChevronLeft, ChevronRight } from 'lucide-react'
+import { Star, Heart, Check, ExternalLink, X, Loader2, ChevronLeft, ChevronRight } from 'lucide-react'
 import { getProductRatingStats } from '@/lib/reviews'
 import { getProductUrl } from '@/lib/api'
+import { isProductSoldOut } from '@/lib/inventory'
 
 interface QuickViewModalProps {
   product: Product
@@ -36,6 +37,7 @@ export function QuickViewModal({
   const [isAddingToCart, setIsAddingToCart] = useState(false)
   const addItem = useCartStore((state) => state.addItem)
   const router = useRouter()
+  const isSoldOut = isProductSoldOut(product)
 
   // Product URL with SEO-friendly slug
   const productUrl = getProductUrl(product.sku, product.slug, product.serialNumber || product.specs?.SN)
@@ -276,8 +278,6 @@ export function QuickViewModal({
                 <span className="font-semibold text-accent uppercase tracking-wider">
                   {product.brand}
                 </span>
-                <span className="text-gray-300">•</span>
-                <span className="text-muted-foreground">Serial: {product.sku}</span>
               </div>
               <DialogTitle className="text-xl sm:text-2xl font-bold text-secondary leading-tight line-clamp-2">
                 {product.name}
@@ -309,7 +309,7 @@ export function QuickViewModal({
             {/* Pricing */}
             <div className="p-4 rounded-xl bg-gradient-to-br from-primary/5 to-primary/10 border border-primary/20 animate-fade-in-up hover:shadow-lg transition-all duration-300" style={{ animationDelay: '0.15s' }}>
               <div className="flex items-baseline gap-2 sm:gap-3 flex-wrap">
-                {!product.inStock ? (
+                {isSoldOut ? (
                   <span className="text-2xl sm:text-3xl font-bold text-red-500">
                     SOLD
                   </span>
@@ -341,9 +341,9 @@ export function QuickViewModal({
             </div>
 
             {/* Stock Status */}
-            <div className={`flex items-center gap-2 text-xs sm:text-sm font-medium animate-fade-in-up ${product.inStock ? 'text-green-600' : 'text-red-600'
+            <div className={`flex items-center gap-2 text-xs sm:text-sm font-medium animate-fade-in-up ${!isSoldOut ? 'text-green-600' : 'text-red-600'
               }`} style={{ animationDelay: '0.2s' }}>
-              {product.inStock ? (
+              {!isSoldOut ? (
                 <>
                   <Check className="h-4 w-4 animate-bounce" />
                   <span>In Stock</span>
@@ -351,7 +351,7 @@ export function QuickViewModal({
               ) : (
                 <span>Out of Stock</span>
               )}
-              {product.stock && product.stock <= 5 && product.inStock && (
+              {product.stock && product.stock <= 5 && !isSoldOut && (
                 <Badge variant="outline" className="ml-2 text-orange-600 border-orange-300 animate-pulse text-xs">
                   Only {product.stock} left!
                 </Badge>
@@ -362,7 +362,9 @@ export function QuickViewModal({
             <div className="space-y-3 animate-fade-in-up" style={{ animationDelay: '0.25s' }}>
               <div className="p-2 sm:p-3 rounded-lg bg-gray-50 border text-xs sm:text-sm text-gray-700 hover:bg-gray-100 transition-colors">
                 <p className="font-semibold text-secondary">One-of-a-kind listing</p>
-                <p className="text-gray-600">Each horn is sold individually; we reserve this instrument for you once you add to cart.</p>
+                <p className="text-gray-600">
+                  Each horn is sold individually. Adding an instrument to your cart does not reserve it, and availability is subject to change until your order has been successfully completed.
+                </p>
               </div>
 
               <Button
@@ -372,13 +374,15 @@ export function QuickViewModal({
                   }`}
                 size="lg"
                 onClick={handleAddToCart}
-                disabled={!product.inStock || isAddingToCart}
+                disabled={isSoldOut || isAddingToCart}
               >
                 {isAddingToCart ? (
                   <span className="flex items-center gap-2">
                     <Loader2 className="h-5 w-5 animate-spin" />
                     Adding...
                   </span>
+                ) : isSoldOut ? (
+                  'Sold Out'
                 ) : isAddedToCart ? (
                   <span className="flex items-center gap-2">
                     <Check className="h-5 w-5 animate-bounce" />
@@ -406,19 +410,6 @@ export function QuickViewModal({
               </Button>
             </div>
 
-            {/* Trust badges */}
-            <div className="flex gap-2 pt-2 md:grid md:grid-cols-3 animate-fade-in-up" style={{ animationDelay: '0.3s' }}>
-              {[
-                { icon: Truck, text: 'Free Ship' },
-                { icon: Shield, text: '30-Day Return' },
-                { icon: Award, text: 'Pro Setup' },
-              ].map((item, i) => (
-                <div key={i} className="flex-1 flex flex-col items-center gap-1 p-1.5 sm:p-2 rounded-lg bg-gray-50 text-center hover:bg-primary/5 hover:shadow transition-all duration-300 group/trust cursor-default">
-                  <item.icon className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-primary transition-transform group-hover/trust:scale-110" />
-                  <span className="text-[10px] sm:text-xs text-gray-600">{item.text}</span>
-                </div>
-              ))}
-            </div>
           </div>
         </div>
       </DialogContent>

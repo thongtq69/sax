@@ -70,6 +70,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       where: {
         stockStatus: { not: 'archived' },
         status: { not: 'draft' },
+        isVisible: { not: false },
       },
       select: { sku: true, slug: true, specs: true, updatedAt: true },
     })
@@ -98,6 +99,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
         subBrand: { not: null },
         stockStatus: { not: 'archived' },
         status: { not: 'draft' },
+        isVisible: { not: false },
       },
       select: { brand: true, subBrand: true, updatedAt: true },
     })

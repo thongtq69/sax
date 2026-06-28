@@ -54,7 +54,7 @@ async function findProductByItemParam(param: string, includeCategoryOnly = false
       subcategory: true,
     }
 
-  const isPublic = (p: any) => p && p.isVisible !== false && p.status !== 'draft'
+  const isPublic = (p: any) => p && p.isVisible !== false && p.status !== 'draft' && p.stockStatus !== 'archived'
 
   // 1. Try exact slug as given (case-insensitive)
   const byExactSlug = await prisma.product.findFirst({

@@ -164,6 +164,16 @@ export default function TestimonialsPage() {
     )
   })
 
+  const reviewedProductIds = new Set(
+    reviews
+      .map((review) => review.productId)
+      .filter((productId): productId is string => Boolean(productId))
+  )
+
+  const selectableProducts = products.filter((product) => {
+    return product.id === formData.productId || !reviewedProductIds.has(product.id)
+  })
+
   const renderStars = (rating: number) => {
     return Array.from({ length: 5 }, (_, i) => (
       <Star
@@ -269,12 +279,15 @@ export default function TestimonialsPage() {
                   className="w-full px-3 py-2 border border-gray-300 rounded-md"
                 >
                   <option value="">Select a product (or enter custom below)</option>
-                  {products.map(product => (
+                  {selectableProducts.map(product => (
                     <option key={product.id} value={product.id}>
                       {product.name}
                     </option>
                   ))}
                 </select>
+                <p className="mt-1 text-xs text-gray-500">
+                  Products that already have a review are hidden from this list.
+                </p>
               </div>
               <div>
                 <Label htmlFor="customProductName">Or Enter Custom Product Name</Label>

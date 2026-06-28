@@ -38,7 +38,7 @@ export async function PUT(
 
     const { id } = await params
     const body = await request.json()
-    const { name, logo, backgroundImage, description, metaTitle, metaDescription, models, isActive, order } = body
+    const { name, logo, backgroundImage, description, customHtml, modelPageContent, metaTitle, metaDescription, models, isActive, order } = body
 
     if (!name?.trim()) {
       return NextResponse.json({ error: 'Brand name is required' }, { status: 400 })
@@ -80,6 +80,8 @@ export async function PUT(
         logo: logo || null,
         backgroundImage: backgroundImage || null,
         description: finalDescription,
+        customHtml: (typeof customHtml === 'string' && customHtml.trim()) || null,
+        modelPageContent: modelPageContent && typeof modelPageContent === 'object' ? modelPageContent : {},
         metaTitle: (typeof metaTitle === 'string' && metaTitle.trim()) || null,
         metaDescription: (typeof metaDescription === 'string' && metaDescription.trim()) || null,
         models: models || [],

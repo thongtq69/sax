@@ -22,6 +22,7 @@ interface ModelPageData {
     representativeImage: string | null
     categories: string[]
     modelSpecs: Record<string, string>
+    customHtml?: string | null
 }
 
 interface ModelPageClientProps {
@@ -283,6 +284,15 @@ export function ModelPageClient({ data, brandSlug, modelSlug }: ModelPageClientP
                     </div>
                 </div>
             </div>
+
+            {data.customHtml && (
+                <div className="bg-white border-b">
+                    <div
+                        className="container mx-auto px-4 py-8 md:py-10 model-custom-content"
+                        dangerouslySetInnerHTML={{ __html: data.customHtml }}
+                    />
+                </div>
+            )}
 
             {/* Jump Navigation */}
             <div className="border-b bg-white sticky top-0 z-20">

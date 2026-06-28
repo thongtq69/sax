@@ -29,6 +29,7 @@ async function getBrandData(slug: string) {
       brand: { equals: brand.name, mode: 'insensitive' },
       stockStatus: { not: 'archived' },
       status: { not: 'draft' },
+      isVisible: { not: false },
     },
     include: {
       category: { select: { id: true, name: true, slug: true } },
@@ -155,6 +156,7 @@ export default async function BrandPage({ params }: { params: { slug: string } }
         brandLogo={brand.logo}
         brandBackgroundImage={(brand as any).backgroundImage || null}
         brandDescription={brandDescription}
+        brandCustomHtml={(brand as any).customHtml || null}
         products={products}
         models={models}
       />

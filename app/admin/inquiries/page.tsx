@@ -274,9 +274,6 @@ export default function InquiriesManagement() {
                       {inquiry.productName ? (
                         <div>
                           <div className="text-sm text-gray-900 truncate max-w-[200px]">{inquiry.productName}</div>
-                          {inquiry.productSku && (
-                            <div className="text-xs text-gray-500">Serial: {inquiry.productSku}</div>
-                          )}
                         </div>
                       ) : (
                         <span className="text-gray-400 text-sm">-</span>
@@ -382,9 +379,6 @@ export default function InquiriesManagement() {
                       Product
                     </div>
                     <p className="font-medium text-blue-900">{selectedInquiry.productName}</p>
-                    {selectedInquiry.productSku && (
-                      <p className="text-xs text-blue-600">Serial: {selectedInquiry.productSku}</p>
-                    )}
                   </div>
                 )}
               </div>

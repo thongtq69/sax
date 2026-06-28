@@ -13,7 +13,11 @@ async function getHomepageData(): Promise<HomePageData> {
   const [collections, productsResult, heroContent, reviewsResult, brands] = await Promise.all([
     prisma.featuredCollection.findMany().catch(() => []),
     prisma.product.findMany({
-      where: { status: { not: 'draft' } },
+      where: {
+        status: { not: 'draft' },
+        isVisible: { not: false },
+        stockStatus: { not: 'archived' },
+      },
       take: 28,
       orderBy: { createdAt: 'desc' },
       include: { category: true, subcategory: true },
@@ -62,6 +66,8 @@ async function getHomepageData(): Promise<HomePageData> {
         where: {
           id: { in: collection.productIds },
           status: { not: 'draft' },
+          isVisible: { not: false },
+          stockStatus: { not: 'archived' },
         },
         include: { category: true, subcategory: true },
       }).catch(() => [])

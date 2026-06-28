@@ -17,7 +17,11 @@ export async function GET(request: NextRequest) {
 
     // Handle batch request
     if (batch === 'true') {
-      const where: any = { status: { not: 'draft' } }
+      const where: any = {
+        status: { not: 'draft' },
+        isVisible: { not: false },
+        stockStatus: { not: 'archived' },
+      }
       if (inStock !== null) {
         where.inStock = inStock === 'true'
       }
@@ -87,7 +91,11 @@ export async function GET(request: NextRequest) {
     const category = searchParams.get('category')
     const subcategory = searchParams.get('subcategory')
 
-    const where: any = { status: { not: 'draft' } }
+    const where: any = {
+      status: { not: 'draft' },
+      isVisible: { not: false },
+      stockStatus: { not: 'archived' },
+    }
 
     if (category) {
       // Check if it's a valid ObjectID, otherwise treat as slug

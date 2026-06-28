@@ -2,8 +2,10 @@
 
 import Link from 'next/link'
 import Image from 'next/image'
-import { X, ShoppingBag, Trash2, Plus, Minus, Sparkles, ArrowRight, Package } from 'lucide-react'
+import { useRouter } from 'next/navigation'
+import { X, ShoppingBag, Trash2, Plus, Minus, Sparkles, ArrowRight, AlertCircle, Loader2 } from 'lucide-react'
 import { useCartStore } from '@/lib/store/cart'
+import { useCartAvailability } from '@/hooks/use-cart-availability'
 import {
   Sheet,
   SheetContent,
@@ -22,11 +24,18 @@ interface MiniCartDrawerProps {
 }
 
 export function MiniCartDrawer({ open, onOpenChange }: MiniCartDrawerProps) {
+  const router = useRouter()
   const items = useCartStore((state) => state.items)
   const removeItem = useCartStore((state) => state.removeItem)
   const updateQuantity = useCartStore((state) => state.updateQuantity)
   const subtotal = useCartStore((state) => state.getSubtotal())
   const [removingId, setRemovingId] = useState<string | null>(null)
+  const {
+    resultByItemId,
+    hasUnavailable,
+    isValidating,
+    error: availabilityError,
+  } = useCartAvailability(items, open)
 
   const handleRemove = (id: string) => {
     setRemovingId(id)
@@ -81,10 +90,27 @@ export function MiniCartDrawer({ open, onOpenChange }: MiniCartDrawerProps) {
         ) : (
           <>
             <div className="flex-1 overflow-y-auto p-4 space-y-3">
+              {(hasUnavailable || availabilityError) && (
+                <div className="rounded-lg border border-amber-200 bg-amber-50 p-3 text-sm text-amber-800">
+                  <div className="flex items-start gap-2">
+                    <AlertCircle className="mt-0.5 h-4 w-4 flex-shrink-0" />
+                    <div>
+                      <p className="font-semibold">Please review your cart</p>
+                      <p className="text-xs">
+                        {availabilityError || 'Some instruments are no longer available. Remove them before checkout.'}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              )}
               {items.map((item, index) => (
+                (() => {
+                  const availability = resultByItemId.get(item.id)
+                  const unavailable = availability && !availability.available
+                  return (
                 <div
                   key={item.id}
-                  className={`flex gap-4 p-3 rounded-xl bg-gradient-to-r from-gray-50 to-white border border-gray-100 hover:border-primary/30 hover:shadow-lg transition-all duration-300 group animate-fade-in-up ${removingId === item.id ? 'opacity-0 scale-95 -translate-x-full' : ''
+                  className={`flex gap-4 p-3 rounded-xl bg-gradient-to-r from-gray-50 to-white border ${unavailable ? 'border-red-200 bg-red-50/40' : 'border-gray-100 hover:border-primary/30'} hover:shadow-lg transition-all duration-300 group animate-fade-in-up ${removingId === item.id ? 'opacity-0 scale-95 -translate-x-full' : ''
                     }`}
                   style={{
                     animationDelay: `${index * 0.05}s`,
@@ -121,6 +147,11 @@ export function MiniCartDrawer({ open, onOpenChange }: MiniCartDrawerProps) {
                         <Trash2 className="h-4 w-4" />
                       </button>
                     </div>
+                    {availability && (
+                      <p className={`mt-1 text-xs font-medium ${availability.available ? 'text-green-600' : 'text-red-600'}`}>
+                        {availability.message}
+                      </p>
+                    )}
 
                     <div className="mt-auto flex items-center justify-between pt-2">
                       {/* Quantity controls */}
@@ -136,6 +167,7 @@ export function MiniCartDrawer({ open, onOpenChange }: MiniCartDrawerProps) {
                         </span>
                         <button
                           onClick={() => updateQuantity(item.id, item.quantity + 1)}
+                          disabled={unavailable}
                           className="w-7 h-7 rounded-full flex items-center justify-center hover:bg-white hover:shadow transition-all duration-200 active:scale-90"
                         >
                           <Plus className="h-3 w-3" />
@@ -156,6 +188,8 @@ export function MiniCartDrawer({ open, onOpenChange }: MiniCartDrawerProps) {
                     </div>
                   </div>
                 </div>
+                  )
+                })()
               ))}
             </div>
 
@@ -179,12 +213,24 @@ export function MiniCartDrawer({ open, onOpenChange }: MiniCartDrawerProps) {
               <div className="space-y-2">
                 <Button
                   className="w-full h-12 text-base font-semibold bg-gradient-to-r from-primary to-accent hover:from-primary/90 hover:to-accent/90 shadow-lg hover:shadow-xl transition-all duration-300 group"
-                  asChild
+                  disabled={isValidating || hasUnavailable || Boolean(availabilityError)}
+                  onClick={() => {
+                    if (isValidating || hasUnavailable || availabilityError) return
+                    onOpenChange(false)
+                    router.push('/checkout')
+                  }}
                 >
-                  <Link href="/checkout" onClick={() => onOpenChange(false)} className="flex items-center justify-center gap-2">
-                    Proceed to Checkout
-                    <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
-                  </Link>
+                  {isValidating ? (
+                    <span className="flex items-center justify-center gap-2">
+                      <Loader2 className="h-4 w-4 animate-spin" />
+                      Checking availability...
+                    </span>
+                  ) : (
+                    <span className="flex items-center justify-center gap-2">
+                      {hasUnavailable ? 'Remove unavailable items' : 'Proceed to Checkout'}
+                      {!hasUnavailable && <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />}
+                    </span>
+                  )}
                 </Button>
                 <Button
                   variant="outline"

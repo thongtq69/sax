@@ -15,6 +15,7 @@ import { Plus, Edit, Trash2, Loader2, Tag, Search, GripVertical } from 'lucide-r
 import Image from 'next/image'
 import { SingleImageUpload } from '@/components/admin/ImageUpload'
 import { getBrandDescriptionTemplate } from '@/lib/brand-description'
+import { RichTextEditor } from '@/components/admin/RichTextEditor'
 
 interface Brand {
   id: string
@@ -23,6 +24,8 @@ interface Brand {
   logo: string | null
   backgroundImage: string | null
   description: string | null
+  customHtml: string | null
+  modelPageContent?: Record<string, string> | null
   metaTitle: string | null
   metaDescription: string | null
   models: string[]
@@ -44,6 +47,8 @@ export default function BrandsManagement() {
     logo: null as string | null,
     backgroundImage: null as string | null,
     description: '',
+    customHtml: '',
+    modelPageContent: {} as Record<string, string>,
     metaTitle: '',
     metaDescription: '',
     models: [] as string[],
@@ -51,6 +56,14 @@ export default function BrandsManagement() {
     order: 0
   })
   const [newModel, setNewModel] = useState('')
+
+  const getModelContentKey = (model: string) => {
+    return model
+      .toLowerCase()
+      .trim()
+      .replace(/[^a-z0-9]+/g, '-')
+      .replace(/^-+|-+$/g, '')
+  }
 
   // Fetch brands
   useEffect(() => {
@@ -93,6 +106,8 @@ export default function BrandsManagement() {
         logo: brand.logo,
         backgroundImage: brand.backgroundImage,
         description: brand.description || '',
+        customHtml: brand.customHtml || '',
+        modelPageContent: brand.modelPageContent || {},
         metaTitle: brand.metaTitle || '',
         metaDescription: brand.metaDescription || '',
         models: brand.models || [],
@@ -106,6 +121,8 @@ export default function BrandsManagement() {
         logo: null,
         backgroundImage: null,
         description: '',
+        customHtml: '',
+        modelPageContent: {},
         metaTitle: '',
         metaDescription: '',
         models: [],
@@ -287,7 +304,7 @@ export default function BrandsManagement() {
 
       {/* Brand Form Dialog */}
       <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-        <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto">
+        <DialogContent className="max-w-5xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>
               {editingBrand ? 'Edit Brand' : 'Add New Brand'}
@@ -339,6 +356,22 @@ export default function BrandsManagement() {
                   Suggested: {getBrandDescriptionTemplate(formData.name)}
                 </p>
               )}
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Brand Page HTML Section (Optional)
+              </label>
+              <p className="text-xs text-gray-500 mb-2">
+                Shown below the brand hero and before the product section.
+              </p>
+              <div className="border rounded-md overflow-hidden">
+                <RichTextEditor
+                  content={formData.customHtml}
+                  onChange={(customHtml) => setFormData({ ...formData, customHtml })}
+                  placeholder="Add custom content for this brand page..."
+                />
+              </div>
             </div>
 
             <div>
@@ -461,6 +494,42 @@ export default function BrandsManagement() {
                 </Button>
               </div>
             </div>
+
+            {formData.models.length > 0 && (
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Model Page HTML Sections (Optional)
+                </label>
+                <p className="text-xs text-gray-500 mb-3">
+                  Each block is shown below the model title/header and before listings on that model page.
+                </p>
+                <div className="space-y-4">
+                  {formData.models.map((model) => {
+                    const key = getModelContentKey(model)
+                    return (
+                      <div key={key} className="border rounded-lg overflow-hidden">
+                        <div className="bg-gray-50 px-3 py-2 text-sm font-semibold text-gray-800 border-b">
+                          {model}
+                        </div>
+                        <RichTextEditor
+                          content={formData.modelPageContent[key] || ''}
+                          onChange={(html) => {
+                            setFormData({
+                              ...formData,
+                              modelPageContent: {
+                                ...formData.modelPageContent,
+                                [key]: html,
+                              },
+                            })
+                          }}
+                          placeholder={`Add custom content for ${model} model page...`}
+                        />
+                      </div>
+                    )
+                  })}
+                </div>
+              </div>
+            )}
 
             <div className="flex items-center gap-2">
               <input

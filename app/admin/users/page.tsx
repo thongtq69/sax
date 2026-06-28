@@ -3,7 +3,27 @@
 import { useState, useEffect } from 'react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
-import { Search, Users, Mail, Shield, ShoppingBag, Heart, CheckCircle, XCircle, Loader2, Trash2 } from 'lucide-react'
+import {
+  Search,
+  Users,
+  Mail,
+  Shield,
+  ShoppingBag,
+  Heart,
+  CheckCircle,
+  XCircle,
+  Loader2,
+  Trash2,
+  Eye,
+  MapPin,
+  Package,
+} from 'lucide-react'
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog'
 
 // Format date helper
 function formatDate(dateString: string): string {
@@ -32,6 +52,64 @@ interface Pagination {
   totalPages: number
 }
 
+interface UserDetail {
+  user: User & {
+    updatedAt: string
+  }
+  addresses: Array<{
+    id: string
+    firstName: string
+    lastName: string
+    address1: string
+    address2?: string | null
+    city: string
+    state: string
+    zip: string
+    country: string
+    phone: string
+    isDefault: boolean
+  }>
+  wishlist: Array<{
+    id: string
+    productId: string
+    createdAt: string
+    product: {
+      id: string
+      name: string
+      sku: string
+      slug: string
+      images: string[]
+      price: number
+      stockStatus: string | null
+      inStock: boolean | null
+      isVisible: boolean | null
+      status: string | null
+    } | null
+  }>
+  orders: Array<{
+    id: string
+    orderNumber: string | null
+    status: string
+    total: number
+    discount?: number | null
+    couponCode?: string | null
+    shippingAddress?: any
+    createdAt: string
+    items: Array<{
+      id: string
+      productId: string
+      quantity: number
+      price: number
+      product: {
+        id: string
+        name: string
+        sku: string
+        slug: string
+      } | null
+    }>
+  }>
+}
+
 export default function UsersManagement() {
   const [users, setUsers] = useState<User[]>([])
   const [pagination, setPagination] = useState<Pagination | null>(null)
@@ -39,6 +117,8 @@ export default function UsersManagement() {
   const [isLoading, setIsLoading] = useState(true)
   const [currentPage, setCurrentPage] = useState(1)
   const [deletingId, setDeletingId] = useState<string | null>(null)
+  const [selectedDetail, setSelectedDetail] = useState<UserDetail | null>(null)
+  const [detailLoadingId, setDetailLoadingId] = useState<string | null>(null)
 
   const fetchUsers = async (page: number = 1, search: string = '') => {
     setIsLoading(true)
@@ -102,6 +182,23 @@ export default function UsersManagement() {
       alert('Failed to delete user')
     } finally {
       setDeletingId(null)
+    }
+  }
+
+  const handleViewUser = async (userId: string) => {
+    setDetailLoadingId(userId)
+    try {
+      const response = await fetch(`/api/admin/users/${userId}`)
+      if (!response.ok) {
+        const data = await response.json().catch(() => ({}))
+        throw new Error(data.error || 'Failed to load user detail')
+      }
+      const data = await response.json()
+      setSelectedDetail(data)
+    } catch (error: any) {
+      alert(error.message || 'Failed to load user detail')
+    } finally {
+      setDetailLoadingId(null)
     }
   }
 
@@ -243,6 +340,20 @@ export default function UsersManagement() {
                         <Button
                           variant="ghost"
                           size="sm"
+                          onClick={() => handleViewUser(user.id)}
+                          disabled={detailLoadingId === user.id}
+                          className="text-blue-600 hover:text-blue-800 hover:bg-blue-50"
+                          title="View user details"
+                        >
+                          {detailLoadingId === user.id ? (
+                            <Loader2 className="h-4 w-4 animate-spin" />
+                          ) : (
+                            <Eye className="h-4 w-4" />
+                          )}
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="sm"
                           onClick={() => handleDeleteUser(user.id, user.email)}
                           disabled={deletingId === user.id || user.role === 'admin'}
                           className="text-red-500 hover:text-red-700 hover:bg-red-50"
@@ -292,6 +403,140 @@ export default function UsersManagement() {
           </>
         )}
       </div>
+
+      <Dialog open={!!selectedDetail} onOpenChange={() => setSelectedDetail(null)}>
+        <DialogContent className="max-w-5xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>User Details</DialogTitle>
+          </DialogHeader>
+
+          {selectedDetail && (
+            <div className="space-y-6">
+              <section className="rounded-lg border bg-gray-50 p-4">
+                <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
+                  <div>
+                    <h2 className="text-lg font-semibold text-gray-900">
+                      {selectedDetail.user.name || 'No name'}
+                    </h2>
+                    <p className="text-sm text-gray-600">{selectedDetail.user.email}</p>
+                    <p className="text-xs text-gray-500">
+                      Joined {formatDate(selectedDetail.user.createdAt)} · Role: {selectedDetail.user.role}
+                    </p>
+                  </div>
+                  <span className={`inline-flex w-fit items-center gap-1 rounded-full px-2.5 py-0.5 text-xs font-medium ${
+                    selectedDetail.user.emailVerified
+                      ? 'bg-green-100 text-green-800'
+                      : 'bg-yellow-100 text-yellow-800'
+                  }`}>
+                    {selectedDetail.user.emailVerified ? <CheckCircle className="h-3 w-3" /> : <XCircle className="h-3 w-3" />}
+                    {selectedDetail.user.emailVerified ? 'Verified email' : 'Unverified email'}
+                  </span>
+                </div>
+              </section>
+
+              <section>
+                <div className="mb-3 flex items-center gap-2">
+                  <MapPin className="h-5 w-5 text-primary" />
+                  <h3 className="font-semibold text-gray-900">Addresses</h3>
+                </div>
+                {selectedDetail.addresses.length === 0 ? (
+                  <p className="rounded-lg border p-4 text-sm text-gray-500">No saved addresses.</p>
+                ) : (
+                  <div className="grid gap-3 md:grid-cols-2">
+                    {selectedDetail.addresses.map((address) => (
+                      <div key={address.id} className="rounded-lg border p-4 text-sm">
+                        <div className="mb-1 flex items-center gap-2">
+                          <p className="font-semibold text-gray-900">{address.firstName} {address.lastName}</p>
+                          {address.isDefault && (
+                            <span className="rounded-full bg-blue-100 px-2 py-0.5 text-xs text-blue-700">Default</span>
+                          )}
+                        </div>
+                        <p>{address.address1}{address.address2 ? `, ${address.address2}` : ''}</p>
+                        <p>{address.city}, {address.state} {address.zip}</p>
+                        <p>{address.country}</p>
+                        <p className="mt-1 text-gray-600">Phone: {address.phone}</p>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </section>
+
+              <section>
+                <div className="mb-3 flex items-center gap-2">
+                  <Heart className="h-5 w-5 text-primary" />
+                  <h3 className="font-semibold text-gray-900">Wishlist</h3>
+                </div>
+                {selectedDetail.wishlist.length === 0 ? (
+                  <p className="rounded-lg border p-4 text-sm text-gray-500">No wishlist products.</p>
+                ) : (
+                  <div className="grid gap-3 md:grid-cols-2">
+                    {selectedDetail.wishlist.map((item) => (
+                      <div key={item.id} className="rounded-lg border p-4 text-sm">
+                        <p className="font-semibold text-gray-900">{item.product?.name || 'Deleted product'}</p>
+                        {item.product && (
+                          <>
+                            <p className="text-gray-600">${item.product.price.toLocaleString()}</p>
+                            <p className="text-xs text-gray-500">
+                              Status: {item.product.stockStatus || (item.product.inStock ? 'in-stock' : 'sold-out')}
+                              {item.product.isVisible === false ? ' · hidden' : ''}
+                              {item.product.status === 'draft' ? ' · draft' : ''}
+                            </p>
+                          </>
+                        )}
+                        <p className="mt-1 text-xs text-gray-400">Added {formatDate(item.createdAt)}</p>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </section>
+
+              <section>
+                <div className="mb-3 flex items-center gap-2">
+                  <Package className="h-5 w-5 text-primary" />
+                  <h3 className="font-semibold text-gray-900">Orders</h3>
+                </div>
+                {selectedDetail.orders.length === 0 ? (
+                  <p className="rounded-lg border p-4 text-sm text-gray-500">No orders yet.</p>
+                ) : (
+                  <div className="space-y-3">
+                    {selectedDetail.orders.map((order) => (
+                      <div key={order.id} className="rounded-lg border p-4">
+                        <div className="mb-3 flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between">
+                          <div>
+                            <p className="font-semibold text-gray-900">Order {order.orderNumber || order.id}</p>
+                            <p className="text-xs text-gray-500">{formatDate(order.createdAt)} · {order.status}</p>
+                          </div>
+                          <p className="font-bold text-primary">${order.total.toLocaleString()}</p>
+                        </div>
+                        <div className="space-y-2">
+                          {order.items.map((item) => (
+                            <div key={item.id} className="flex justify-between gap-3 rounded bg-gray-50 px-3 py-2 text-sm">
+                              <span className="min-w-0 truncate">
+                                {item.product?.name || 'Deleted product'} x {item.quantity}
+                              </span>
+                              <span className="font-medium">${(item.price * item.quantity).toLocaleString()}</span>
+                            </div>
+                          ))}
+                        </div>
+                        {order.shippingAddress && (
+                          <div className="mt-3 rounded bg-blue-50 p-3 text-xs text-blue-900">
+                            <p className="font-semibold">Shipping address</p>
+                            <p>
+                              {order.shippingAddress.firstName} {order.shippingAddress.lastName}, {order.shippingAddress.address1}
+                              {order.shippingAddress.address2 ? `, ${order.shippingAddress.address2}` : ''}, {order.shippingAddress.city}, {order.shippingAddress.state} {order.shippingAddress.zip}, {order.shippingAddress.country}
+                            </p>
+                            {order.shippingAddress.phone && <p>Phone: {order.shippingAddress.phone}</p>}
+                          </div>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </section>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   )
 }

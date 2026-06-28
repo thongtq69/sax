@@ -2,19 +2,28 @@
 
 import Link from 'next/link'
 import Image from 'next/image'
+import { useRouter } from 'next/navigation'
 import { useCartStore } from '@/lib/store/cart'
+import { useCartAvailability } from '@/hooks/use-cart-availability'
 import { getProductUrl } from '@/lib/api'
 import { Button } from '@/components/ui/button'
 import { Separator } from '@/components/ui/separator'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { X, Plus, Minus, ShoppingBag, Zap } from 'lucide-react'
+import { AlertCircle, Loader2, X, Plus, Minus, ShoppingBag, Zap } from 'lucide-react'
 import { Input } from '@/components/ui/input'
 
 export default function CartPage() {
+  const router = useRouter()
   const items = useCartStore((state) => state.items)
   const removeItem = useCartStore((state) => state.removeItem)
   const updateQuantity = useCartStore((state) => state.updateQuantity)
   const subtotal = useCartStore((state) => state.getSubtotal())
+  const {
+    resultByItemId,
+    hasUnavailable,
+    isValidating,
+    error: availabilityError,
+  } = useCartAvailability(items)
   const shipping = subtotal > 500 ? 0 : 25
   const tax = subtotal * 0.08 // 8% tax
   const total = subtotal + shipping + tax
@@ -43,8 +52,25 @@ export default function CartPage() {
       <div className="flex flex-col gap-8 lg:grid lg:grid-cols-3">
         {/* Cart Items */}
         <div className="lg:col-span-2 space-y-4">
+          {(hasUnavailable || availabilityError) && (
+            <Card className="border-amber-200 bg-amber-50">
+              <CardContent className="flex gap-3 p-4 text-amber-800">
+                <AlertCircle className="mt-0.5 h-5 w-5 flex-shrink-0" />
+                <div>
+                  <p className="font-semibold">Please review your cart</p>
+                  <p className="text-sm">
+                    {availabilityError || 'Some instruments are no longer available. Remove them before checkout.'}
+                  </p>
+                </div>
+              </CardContent>
+            </Card>
+          )}
           {items.map((item) => (
-            <Card key={item.id}>
+            (() => {
+              const availability = resultByItemId.get(item.id)
+              const unavailable = availability && !availability.available
+              return (
+            <Card key={item.id} className={unavailable ? 'border-red-200 bg-red-50/30' : ''}>
               <CardContent className="flex items-center space-x-3 md:space-x-4 p-3 md:p-6">
                 <div className="relative h-20 w-20 md:h-24 md:w-24 flex-shrink-0 overflow-hidden rounded-md border">
                   <Image
@@ -65,6 +91,11 @@ export default function CartPage() {
                         {item.name}
                       </Link>
                       <p className="text-sm text-gray-500">Serial: {item.sku}</p>
+                      {availability && (
+                        <p className={`mt-1 text-sm font-medium ${availability.available ? 'text-green-600' : 'text-red-600'}`}>
+                          {availability.message}
+                        </p>
+                      )}
                     </div>
                     <Button
                       variant="ghost"
@@ -91,6 +122,7 @@ export default function CartPage() {
                         size="sm"
                         className="h-8 w-8"
                         onClick={() => updateQuantity(item.id, item.quantity + 1)}
+                        disabled={unavailable}
                       >
                         <Plus className="h-4 w-4" />
                       </Button>
@@ -102,6 +134,8 @@ export default function CartPage() {
                 </div>
               </CardContent>
             </Card>
+              )
+            })()
           ))}
         </div>
 
@@ -157,8 +191,25 @@ export default function CartPage() {
                 </p>
               </div>
 
-              <Button className="w-full" size="lg" asChild>
-                <Link href="/checkout">Proceed to Checkout</Link>
+              <Button
+                className="w-full"
+                size="lg"
+                disabled={isValidating || hasUnavailable || Boolean(availabilityError)}
+                onClick={() => {
+                  if (isValidating || hasUnavailable || availabilityError) return
+                  router.push('/checkout')
+                }}
+              >
+                {isValidating ? (
+                  <span className="flex items-center gap-2">
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                    Checking availability...
+                  </span>
+                ) : hasUnavailable ? (
+                  'Remove unavailable items'
+                ) : (
+                  'Proceed to Checkout'
+                )}
               </Button>
               <Button variant="outline" className="w-full" asChild>
                 <Link href="/shop">Continue Shopping</Link>

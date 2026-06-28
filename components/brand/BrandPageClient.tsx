@@ -31,6 +31,7 @@ interface BrandPageClientProps {
   brandLogo: string | null
   brandBackgroundImage?: string | null
   brandDescription: string | null
+  brandCustomHtml?: string | null
   products: Product[]
   models: BrandModelSummary[]
 }
@@ -43,6 +44,7 @@ export function BrandPageClient({
   brandLogo,
   brandBackgroundImage,
   brandDescription,
+  brandCustomHtml,
   products,
   models,
 }: BrandPageClientProps) {
@@ -329,6 +331,15 @@ export function BrandPageClient({
           </p>
         </div>
       </section>
+
+      {brandCustomHtml && (
+        <section className="bg-white border-b">
+          <div
+            className="container mx-auto px-4 py-8 md:py-10 brand-custom-content"
+            dangerouslySetInnerHTML={{ __html: brandCustomHtml }}
+          />
+        </section>
+      )}
 
       <div className="container mx-auto px-4 py-8">
         <section className="border border-border bg-white p-5 md:p-7 mb-8">

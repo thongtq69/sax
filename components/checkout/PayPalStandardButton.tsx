@@ -6,43 +6,7 @@ import { useCartStore } from '@/lib/store/cart'
 import { useSiteSettings } from '@/contexts/SiteSettingsContext'
 import { Button } from '@/components/ui/button'
 import { Loader2 } from 'lucide-react'
-
-// Country name to ISO 3166-1 alpha-2 code mapping
-const countryCodeMap: Record<string, string> = {
-  'Vietnam': 'VN',
-  'United States': 'US',
-  'Canada': 'CA',
-  'United Kingdom': 'GB',
-  'Australia': 'AU',
-  'Germany': 'DE',
-  'France': 'FR',
-  'Japan': 'JP',
-  'South Korea': 'KR',
-  'Singapore': 'SG',
-  'Thailand': 'TH',
-  'Malaysia': 'MY',
-  'Indonesia': 'ID',
-  'Philippines': 'PH',
-  'China': 'CN',
-  'Taiwan': 'TW',
-  'Hong Kong': 'HK',
-  'India': 'IN',
-  'Netherlands': 'NL',
-  'Belgium': 'BE',
-  'Switzerland': 'CH',
-  'Italy': 'IT',
-  'Spain': 'ES',
-  'Sweden': 'SE',
-  'Norway': 'NO',
-  'Denmark': 'DK',
-  'New Zealand': 'NZ',
-  'Brazil': 'BR',
-  'Mexico': 'MX',
-}
-
-function getCountryCode(countryName: string): string {
-  return countryCodeMap[countryName] || 'US'
-}
+import { getCountryByName } from '@/lib/location-data'
 
 interface PayPalStandardButtonProps {
   shippingInfo: {
@@ -198,7 +162,7 @@ export function PayPalStandardButton({ shippingInfo, shippingCost, discountAmoun
         params.state = shippingInfo.state
         params.zip = shippingInfo.zip
         // Convert country name to ISO 3166-1 alpha-2 code for PayPal
-        params.country = getCountryCode(shippingInfo.country)
+        params.country = getCountryByName(shippingInfo.country)?.code || shippingInfo.country || 'US'
         params.email = shippingInfo.email
         params.night_phone_b = shippingInfo.phone
 

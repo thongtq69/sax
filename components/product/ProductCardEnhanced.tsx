@@ -17,6 +17,7 @@ import { useCursorSpotlight } from '@/hooks/use-cursor-spotlight'
 import { useReducedMotion } from '@/hooks/use-reduced-motion'
 import { cn } from '@/lib/utils'
 import { getProductUrl } from '@/lib/api'
+import { isProductSoldOut } from '@/lib/inventory'
 
 interface ProductCardEnhancedProps {
   product: Product
@@ -138,7 +139,7 @@ export function ProductCardEnhanced({
   const staggerDelay = Math.min(index * 0.05, 0.6)
 
   const isPreOrder = (product as any).stockStatus === 'pre-order'
-  const hasOutOfStock = product.badge === 'out-of-stock' || (!product.inStock && !isPreOrder)
+  const hasOutOfStock = product.badge === 'out-of-stock' || isProductSoldOut(product)
 
   return (
     <>
@@ -246,7 +247,7 @@ export function ProductCardEnhanced({
                 ⏳ Pre-Order
               </Badge>
             )}
-            {product.stock && product.stock <= 2 && product.inStock && (
+            {product.stock && product.stock <= 2 && !hasOutOfStock && (
               <Badge variant="destructive" className="stock-warning shadow-lg text-xs">
                 Only {product.stock} left!
               </Badge>

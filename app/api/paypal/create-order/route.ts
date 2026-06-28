@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { prisma } from '@/lib/prisma'
 
 const PAYPAL_API_URL = process.env.PAYPAL_MODE === 'sandbox' 
   ? 'https://api-m.sandbox.paypal.com'
@@ -26,6 +27,56 @@ async function getAccessToken() {
 export async function POST(request: NextRequest) {
   try {
     const { items, shippingInfo } = await request.json()
+
+    if (!Array.isArray(items) || items.length === 0) {
+      return NextResponse.json({ error: 'No items in cart' }, { status: 400 })
+    }
+
+    const validItems = items.filter((item: any) => {
+      const productId = item.productId || item.id
+      return productId && /^[a-f\d]{24}$/i.test(productId)
+    })
+
+    if (validItems.length !== items.length) {
+      return NextResponse.json({ error: 'Invalid cart items' }, { status: 400 })
+    }
+
+    const productIds = validItems.map((item: any) => item.productId || item.id)
+    const products = await prisma.product.findMany({
+      where: { id: { in: productIds } },
+      select: { id: true, name: true, stock: true, stockStatus: true, inStock: true, isVisible: true, status: true },
+    })
+
+    const productMap = new Map(products.map((product) => [product.id, product]))
+    const unavailable = validItems
+      .map((item: any) => {
+        const productId = item.productId || item.id
+        const product = productMap.get(productId)
+        if (!product) return { productId, reason: 'Product not found' }
+
+        const requestedQty = Math.max(1, parseInt(item.quantity) || 1)
+        const stock = product.stock ?? 0
+        const hidden = product.status === 'draft' || product.isVisible === false || product.stockStatus === 'archived'
+        const soldOut = product.stockStatus === 'sold-out' || product.inStock === false || (product.stockStatus !== 'pre-order' && stock < requestedQty)
+
+        if (hidden || soldOut) {
+          return {
+            productId,
+            name: product.name,
+            reason: hidden ? 'Product is no longer available' : 'Sold out',
+          }
+        }
+
+        return null
+      })
+      .filter(Boolean)
+
+    if (unavailable.length > 0) {
+      return NextResponse.json(
+        { error: 'Some products are no longer available', unavailable },
+        { status: 409 },
+      )
+    }
 
     // Calculate totals
     const subtotal = items.reduce((sum: number, item: any) => sum + item.price * item.quantity, 0)

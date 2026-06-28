@@ -89,6 +89,7 @@ async function findModelProductsBySlug(slug: string) {
         where: {
             stockStatus: { not: 'archived' },
             status: { not: 'draft' },
+            isVisible: { not: false },
             ...(keywordConditions.length > 0 ? { OR: keywordConditions } : {}),
         },
         take: 200,
@@ -132,6 +133,7 @@ async function findModelProductsBySlug(slug: string) {
             subBrand: { mode: 'insensitive', equals: modelDecoded },
             stockStatus: { not: 'archived' },
             status: { not: 'draft' },
+            isVisible: { not: false },
         },
         include: {
             category: { select: { id: true, name: true, slug: true } },
@@ -246,6 +248,13 @@ export default async function ModelPage({
 
     const representativeImage = products.find(p => p.images?.length > 0)?.images[0] || null
     const subcategories = [...new Set(apiProducts.map(p => p.subcategory?.name).filter((n): n is string => !!n))]
+    const brandRecord = await prisma.brand.findFirst({
+        where: { name: { equals: displayBrand, mode: 'insensitive' } },
+        select: { modelPageContent: true },
+    })
+    const modelPageContent = ((brandRecord?.modelPageContent as Record<string, string> | null) || {})
+    const modelContentKey = generateSlug(displayModel)
+    const customHtml = modelPageContent[modelContentKey] || modelPageContent[params.slug] || null
 
     const allSpecs: Record<string, Set<string>> = {}
     products.forEach(p => {
@@ -301,6 +310,7 @@ export default async function ModelPage({
         representativeImage,
         categories: subcategories,
         modelSpecs,
+        customHtml,
     }
 
     const breadcrumbSchema = {

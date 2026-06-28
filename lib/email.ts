@@ -563,7 +563,7 @@ export async function sendInquiryConfirmationEmail(data: InquiryEmailData) {
           </p>
           ${productName ? `
           <p style="margin: 0 0 10px 0; font-size: 15px;">
-            <strong>Product:</strong> ${productName}${productSku ? ` (Serial: ${productSku})` : ''}
+            <strong>Product:</strong> ${productName}
           </p>
           ` : ''}
           <p style="margin: 0 0 10px 0; font-size: 15px;">
@@ -643,7 +643,7 @@ export async function sendInquiryNotificationToAdmin(data: InquiryEmailData) {
         <tr><td style="padding: 8px 0; width: 140px; color: #666;"><strong>Name</strong></td><td style="padding: 8px 0;">${name}</td></tr>
         <tr><td style="padding: 8px 0; color: #666;"><strong>Email</strong></td><td style="padding: 8px 0;"><a href="mailto:${email}" style="color: #1a365d;">${email}</a></td></tr>
         <tr><td style="padding: 8px 0; color: #666;"><strong>Type</strong></td><td style="padding: 8px 0;">${inquiryType}</td></tr>
-        ${productName ? `<tr><td style="padding: 8px 0; color: #666;"><strong>Product</strong></td><td style="padding: 8px 0;">${productName}${productSku ? ` (Serial: ${productSku})` : ''}</td></tr>` : ''}
+        ${productName ? `<tr><td style="padding: 8px 0; color: #666;"><strong>Product</strong></td><td style="padding: 8px 0;">${productName}</td></tr>` : ''}
       </table>
 
       <div style="background: #f6f6f6; border-left: 4px solid #1a365d; padding: 16px; margin: 20px 0; border-radius: 4px;">

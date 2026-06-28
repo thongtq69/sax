@@ -35,6 +35,7 @@ async function getUsedProductsByBrand() {
           productType: 'used',
           stockStatus: { not: 'archived' },
           status: { not: 'draft' },
+          isVisible: { not: false },
         },
         include: {
           category: { select: { id: true, name: true, slug: true } },

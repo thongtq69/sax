@@ -23,6 +23,7 @@ import { ConditionRating } from '@/lib/product-conditions'
 import { isProductSoldOut } from '@/lib/inventory'
 import { OrderReviewForm } from '@/components/account/OrderReviewForm'
 import { ShieldCheck } from 'lucide-react'
+import { countries, getCountryByName } from '@/lib/location-data'
 
 interface ProductDetailClientProps {
   product: Product
@@ -107,15 +108,7 @@ export function ProductDetailClient({ product }: ProductDetailClientProps) {
   const autoCalculateShipping = async (country: string, zip: string) => {
     setIsCalculatingShipping(true)
     try {
-      // Get country code
-      const countryMap: Record<string, string> = {
-        'Vietnam': 'VN', 'United States': 'US', 'Canada': 'CA', 'United Kingdom': 'GB',
-        'Australia': 'AU', 'Germany': 'DE', 'France': 'FR', 'Japan': 'JP',
-        'South Korea': 'KR', 'Singapore': 'SG', 'Thailand': 'TH', 'Malaysia': 'MY',
-        'Indonesia': 'ID', 'Philippines': 'PH', 'China': 'CN', 'Taiwan': 'TW',
-        'Hong Kong': 'HK', 'India': 'IN'
-      }
-      const countryCode = countryMap[country] || country
+      const countryCode = getCountryByName(country)?.code || country
 
       const response = await fetch('/api/shipping/calculate', {
         method: 'POST',
@@ -907,25 +900,11 @@ export function ProductDetailClient({ product }: ProductDetailClientProps) {
                             className="flex-1 px-3 py-2 text-sm border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/30 bg-white"
                           >
                             <option value="">Select Country</option>
-                            <option value="Vietnam">Vietnam</option>
-                            <option value="United States">United States</option>
-                            <option value="Canada">Canada</option>
-                            <option value="United Kingdom">United Kingdom</option>
-                            <option value="Australia">Australia</option>
-                            <option value="Germany">Germany</option>
-                            <option value="France">France</option>
-                            <option value="Japan">Japan</option>
-                            <option value="South Korea">South Korea</option>
-                            <option value="Singapore">Singapore</option>
-                            <option value="Thailand">Thailand</option>
-                            <option value="Malaysia">Malaysia</option>
-                            <option value="Indonesia">Indonesia</option>
-                            <option value="Philippines">Philippines</option>
-                            <option value="China">China</option>
-                            <option value="Taiwan">Taiwan</option>
-                            <option value="Hong Kong">Hong Kong</option>
-                            <option value="India">India</option>
-                            <option value="Other">Other</option>
+                            {countries.map((country) => (
+                              <option key={country.code} value={country.name}>
+                                {country.name}
+                              </option>
+                            ))}
                           </select>
                           <button
                             onClick={calculateShipping}
@@ -993,7 +972,89 @@ export function ProductDetailClient({ product }: ProductDetailClientProps) {
 
             {/* Action Buttons - 3 Rows Layout (eBay style) */}
             <div className="space-y-3">
-              {/* Row 1: Buy Now - Gold/Primary */}
+              {/* Row 1: Inquiry + Favorite */}
+              <div className="flex gap-2">
+                <Button
+                  size="lg"
+                  variant="outline"
+                  onClick={() => setIsInquiryOpen(true)}
+                  className="flex-1 bg-gray-100 hover:bg-[#D4AF37] hover:text-secondary hover:border-[#D4AF37] text-gray-800 border-gray-200 rounded-full h-12 gap-2"
+                  title={`Inquiry about ${product.name}`}
+                >
+                  <MessageCircle className="h-5 w-5" />
+                  <span>Inquiry</span>
+                </Button>
+
+                <Button
+                  size="lg"
+                  variant="outline"
+                  onClick={handleToggleWishlist}
+                  disabled={isWishlistLoading}
+                  className={`px-4 shrink-0 transition-all duration-300 rounded-full h-12 ${isWishlisted ? 'border-red-300 bg-red-50 text-red-500 hover:bg-red-100' : 'bg-gray-100 hover:bg-[#D4AF37] hover:text-secondary hover:border-[#D4AF37] text-gray-600 border-gray-200'
+                    }`}
+                  title={session?.user ? (isWishlisted ? "Remove from Wishlist" : "Add to Wishlist") : "Login to add to Wishlist"}
+                >
+                  {isWishlistLoading ? (
+                    <Loader2 className="h-5 w-5 animate-spin" />
+                  ) : (
+                    <Heart className={`h-5 w-5 transition-all ${isWishlisted ? 'fill-current scale-110' : ''}`} />
+                  )}
+                </Button>
+
+                <div className="relative">
+                  <Button
+                    size="lg"
+                    variant="outline"
+                    onClick={() => setShowShareMenu(!showShareMenu)}
+                    className="px-4 shrink-0 transition-all duration-300 rounded-full h-12 bg-gray-100 hover:bg-[#D4AF37] hover:text-secondary hover:border-[#D4AF37] text-gray-600 border-gray-200"
+                    title="Share this product"
+                  >
+                    <Share2 className="h-5 w-5" />
+                  </Button>
+                  {showShareMenu && (
+                    <>
+                      <div
+                        className="fixed inset-0 z-40"
+                        onClick={() => setShowShareMenu(false)}
+                      />
+                      <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 flex flex-col gap-1 bg-white border border-gray-200 rounded-lg shadow-lg p-2 min-w-[140px] z-50">
+                        <a
+                          href={`https://twitter.com/intent/tweet?text=${encodeURIComponent(product.name)}&url=${encodeURIComponent(typeof window !== 'undefined' ? window.location.href : '')}`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="flex items-center gap-2 px-3 py-2 text-sm text-gray-700 hover:bg-gray-100 rounded-md transition-colors"
+                          onClick={() => setShowShareMenu(false)}
+                        >
+                          <svg className="h-4 w-4" viewBox="0 0 24 24" fill="currentColor"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z" /></svg>
+                          X (Twitter)
+                        </a>
+                        <a
+                          href={`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(typeof window !== 'undefined' ? window.location.href : '')}`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="flex items-center gap-2 px-3 py-2 text-sm text-gray-700 hover:bg-gray-100 rounded-md transition-colors"
+                          onClick={() => setShowShareMenu(false)}
+                        >
+                          <svg className="h-4 w-4" viewBox="0 0 24 24" fill="currentColor"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z" /></svg>
+                          Facebook
+                        </a>
+                        <a
+                          href="https://www.instagram.com/"
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="flex items-center gap-2 px-3 py-2 text-sm text-gray-700 hover:bg-gray-100 rounded-md transition-colors"
+                          onClick={() => setShowShareMenu(false)}
+                        >
+                          <svg className="h-4 w-4" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z" /></svg>
+                          Instagram
+                        </a>
+                      </div>
+                    </>
+                  )}
+                </div>
+              </div>
+
+              {/* Row 2: Buy Now - Gold/Primary */}
               <Button
                 size="lg"
                 className={`w-full text-sm md:text-base font-semibold transition-all duration-300 rounded-full h-12 ${isSoldOut
@@ -1021,7 +1082,7 @@ export function ProductDetailClient({ product }: ProductDetailClientProps) {
                 {isSoldOut ? 'Sold Out' : isPreOrder ? 'Pre-Order Now' : 'Buy it now'}
               </Button>
 
-              {/* Row 2: Add to Cart - Gray */}
+              {/* Row 3: Add to Cart - Gray */}
               <Button
                 size="lg"
                 variant="outline"
@@ -1053,93 +1114,6 @@ export function ProductDetailClient({ product }: ProductDetailClientProps) {
                 )}
               </Button>
 
-              {/* Row 3: Inquiry + Favorite */}
-              <div className="flex gap-2">
-                {/* Inquiry Button - Gray */}
-                <Button
-                  size="lg"
-                  variant="outline"
-                  onClick={() => setIsInquiryOpen(true)}
-                  className="flex-1 bg-gray-100 hover:bg-[#D4AF37] hover:text-secondary hover:border-[#D4AF37] text-gray-800 border-gray-200 rounded-full h-12 gap-2"
-                  title={`Inquiry about ${product.name}`}
-                >
-                  <MessageCircle className="h-5 w-5" />
-                  <span>Inquiry</span>
-                </Button>
-
-                {/* Favorite Button */}
-                <Button
-                  size="lg"
-                  variant="outline"
-                  onClick={handleToggleWishlist}
-                  disabled={isWishlistLoading}
-                  className={`px-4 shrink-0 transition-all duration-300 rounded-full h-12 ${isWishlisted ? 'border-red-300 bg-red-50 text-red-500 hover:bg-red-100' : 'bg-gray-100 hover:bg-[#D4AF37] hover:text-secondary hover:border-[#D4AF37] text-gray-600 border-gray-200'
-                    }`}
-                  title={session?.user ? (isWishlisted ? "Remove from Wishlist" : "Add to Wishlist") : "Login to add to Wishlist"}
-                >
-                  {isWishlistLoading ? (
-                    <Loader2 className="h-5 w-5 animate-spin" />
-                  ) : (
-                    <Heart className={`h-5 w-5 transition-all ${isWishlisted ? 'fill-current scale-110' : ''}`} />
-                  )}
-                </Button>
-
-                {/* Share Button with Dropdown */}
-                {/* Share Button with Dropdown */}
-                <div className="relative">
-                  <Button
-                    size="lg"
-                    variant="outline"
-                    onClick={() => setShowShareMenu(!showShareMenu)}
-                    className="px-4 shrink-0 transition-all duration-300 rounded-full h-12 bg-gray-100 hover:bg-[#D4AF37] hover:text-secondary hover:border-[#D4AF37] text-gray-600 border-gray-200"
-                    title="Share this product"
-                  >
-                    <Share2 className="h-5 w-5" />
-                  </Button>
-                  {/* Share Dropdown */}
-                  {showShareMenu && (
-                    <>
-                      {/* Backdrop to close menu when clicking outside */}
-                      <div
-                        className="fixed inset-0 z-40"
-                        onClick={() => setShowShareMenu(false)}
-                      />
-                      <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 flex flex-col gap-1 bg-white border border-gray-200 rounded-lg shadow-lg p-2 min-w-[140px] z-50">
-                        <a
-                          href={`https://twitter.com/intent/tweet?text=${encodeURIComponent(product.name)}&url=${encodeURIComponent(typeof window !== 'undefined' ? window.location.href : '')}`}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="flex items-center gap-2 px-3 py-2 text-sm text-gray-700 hover:bg-gray-100 rounded-md transition-colors"
-                          onClick={() => setShowShareMenu(false)}
-                        >
-                          <svg className="h-4 w-4" viewBox="0 0 24 24" fill="currentColor"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z" /></svg>
-                          X (Twitter)
-                        </a>
-                        <a
-                          href={`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(typeof window !== 'undefined' ? window.location.href : '')}`}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="flex items-center gap-2 px-3 py-2 text-sm text-gray-700 hover:bg-gray-100 rounded-md transition-colors"
-                          onClick={() => setShowShareMenu(false)}
-                        >
-                          <svg className="h-4 w-4" viewBox="0 0 24 24" fill="currentColor"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z" /></svg>
-                          Facebook
-                        </a>
-                        <a
-                          href={`https://www.instagram.com/`}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="flex items-center gap-2 px-3 py-2 text-sm text-gray-700 hover:bg-gray-100 rounded-md transition-colors"
-                          onClick={() => setShowShareMenu(false)}
-                        >
-                          <svg className="h-4 w-4" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z" /></svg>
-                          Instagram
-                        </a>
-                      </div>
-                    </>
-                  )}
-                </div>
-              </div>
             </div>
 
             <Dialog open={isInquiryOpen} onOpenChange={setIsInquiryOpen}>

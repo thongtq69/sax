@@ -4,7 +4,7 @@ import dynamic from 'next/dynamic'
 import { useState } from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
-import { Phone, MapPin, Clock, Music, Heart, Mail, MessageCircle, Sparkles, ChevronRight } from 'lucide-react'
+import { MapPin, Clock, Music, Heart, Mail, MessageCircle, Sparkles, ChevronRight } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { useSiteSettings } from '@/contexts/SiteSettingsContext'
 
@@ -118,15 +118,22 @@ export function Footer() {
                 </p>
                 {settings.phone && (
                   <Link href={`https://wa.me/${settings.phone.replace(/[^0-9]/g, '')}`} target="_blank" rel="noopener noreferrer" className="flex items-center gap-0.5 hover:text-white transition-colors">
-                    <Phone className="h-2 w-2 text-[#58510D] flex-shrink-0" />
-                    <span className="text-[6px]">{settings.phone}</span>
+                    <WhatsAppIcon className="h-2 w-2 text-[#58510D] flex-shrink-0" />
+                    <span className="text-[6px]">WhatsApp Chat</span>
                   </Link>
                 )}
                 {settings.email && (
-                  <p className="flex items-center gap-0.5">
-                    <Mail className="h-2 w-2 text-[#58510D] flex-shrink-0" />
-                    <span className="text-[6px] break-all">{settings.email}</span>
-                  </p>
+                  <>
+                    <p className="flex items-center gap-0.5">
+                      <Mail className="h-2 w-2 text-[#58510D] flex-shrink-0" />
+                      <span className="text-[6px] break-all">{settings.email}</span>
+                    </p>
+                    <p>
+                      <Link href="/inquiry" className="text-[6px] hover:text-white transition-colors">
+                        Contact form
+                      </Link>
+                    </p>
+                  </>
                 )}
               </div>
             </div>
@@ -247,14 +254,20 @@ export function Footer() {
                 {settings.phone && (
                   <Link href={`https://wa.me/${settings.phone.replace(/[^0-9]/g, '')}`} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 hover:text-white transition-colors">
                     <Image src="/whatsapp.svg" alt="WhatsApp" width={24} height={24} className="w-6 h-6 object-contain flex-shrink-0 -ml-1" />
-                    <span>{settings.phone}</span>
+                    <span>WhatsApp Chat</span>
                   </Link>
                 )}
                 {settings.email && (
-                  <Link href={`mailto:${settings.email}`} className="flex items-center gap-2 hover:text-white transition-colors">
-                    <Mail className="h-4 w-4 text-[#58510D] flex-shrink-0" />
-                    <span className="truncate">{settings.email}</span>
-                  </Link>
+                  <>
+                    <Link href={`mailto:${settings.email}`} className="flex items-center gap-2 hover:text-white transition-colors">
+                      <Mail className="h-4 w-4 text-[#58510D] flex-shrink-0" />
+                      <span className="truncate">{settings.email}</span>
+                    </Link>
+                    <Link href="/inquiry" className="flex items-center gap-2 hover:text-white transition-colors">
+                      <MessageCircle className="h-4 w-4 text-[#58510D] flex-shrink-0" />
+                      <span>Contact form</span>
+                    </Link>
+                  </>
                 )}
               </div>
             </div>

@@ -357,6 +357,8 @@ model Brand {
   logo            String?  // Brand logo URL
   backgroundImage String?  // Hero banner for the brand page
   description     String?  // Brand overview for brand page and SEO
+  customHtml      String?  // Custom HTML block shown below brand hero
+  modelPageContent Json?   // Record<model-slug, html> for model page custom blocks
   metaTitle       String?  // Custom SEO title override
   metaDescription String?  // Custom SEO description override
   models          String[] @default([]) // Sub-brands/models (e.g., "Mark VI", "Serie III", "YAS-62")

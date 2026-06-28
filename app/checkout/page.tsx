@@ -6,6 +6,7 @@ import Image from 'next/image'
 import { useSearchParams } from 'next/navigation'
 import { useSession } from 'next-auth/react'
 import { useCartStore } from '@/lib/store/cart'
+import { useCartAvailability } from '@/hooks/use-cart-availability'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Separator } from '@/components/ui/separator'
@@ -44,6 +45,12 @@ function CheckoutContent() {
   const [paymentError, setPaymentError] = useState<string | null>(null)
   const items = useCartStore((state) => state.items)
   const subtotal = useCartStore((state) => state.getSubtotal())
+  const {
+    resultByItemId,
+    hasUnavailable,
+    isValidating: isValidatingCart,
+    error: cartAvailabilityError,
+  } = useCartAvailability(items)
 
   // Saved addresses
   const [savedAddresses, setSavedAddresses] = useState<SavedAddress[]>([])
@@ -289,6 +296,7 @@ function CheckoutContent() {
 
   const allFieldsFilled = shippingInfo.email && shippingInfo.firstName && shippingInfo.lastName &&
     shippingInfo.address1 && shippingInfo.city && shippingInfo.state && shippingInfo.zip && shippingInfo.phone
+  const canPay = Boolean(allFieldsFilled) && !isValidatingCart && !hasUnavailable && !cartAvailabilityError
 
   if (items.length === 0) {
     return (
@@ -323,6 +331,21 @@ function CheckoutContent() {
             >
               ✕
             </button>
+          </div>
+        )}
+
+        {(hasUnavailable || cartAvailabilityError) && (
+          <div className="mb-4 md:mb-6 p-3 md:p-4 bg-red-50 border border-red-200 rounded-lg flex items-start gap-2 md:gap-3">
+            <AlertCircle className="h-5 w-5 text-red-600 flex-shrink-0 mt-0.5" />
+            <div>
+              <p className="text-sm md:text-base font-semibold text-red-800">Cart needs review before checkout</p>
+              <p className="text-sm text-red-700">
+                {cartAvailabilityError || 'Some instruments are no longer available. Please remove them from your cart before paying.'}
+              </p>
+              <Link href="/cart" className="mt-2 inline-flex text-sm font-medium text-red-700 underline">
+                Review cart
+              </Link>
+            </div>
           </div>
         )}
 
@@ -513,16 +536,27 @@ function CheckoutContent() {
               <h2 className="text-xl font-semibold">Order Summary</h2>
               <div className="space-y-3 max-h-[200px] overflow-y-auto">
                 {items.map((item) => (
-                  <div key={item.id} className="flex gap-3 p-2 bg-gray-50 rounded-lg">
+                  (() => {
+                    const availability = resultByItemId.get(item.id)
+                    const unavailable = availability && !availability.available
+                    return (
+                  <div key={item.id} className={`flex gap-3 p-2 rounded-lg ${unavailable ? 'bg-red-50 border border-red-200' : 'bg-gray-50'}`}>
                     <div className="relative h-14 w-14 overflow-hidden rounded bg-white border">
                       <Image src={item.image} alt={item.name} fill className="object-cover" onError={(e) => { (e.target as HTMLImageElement).src = '/saxophone-icon.svg' }} />
                     </div>
                     <div className="flex-1 min-w-0">
                       <p className="text-sm font-medium truncate">{item.name}</p>
                       <p className="text-xs text-gray-500">${item.price.toLocaleString()} x {item.quantity}</p>
+                      {availability && (
+                        <p className={`text-xs font-medium ${availability.available ? 'text-green-600' : 'text-red-600'}`}>
+                          {availability.message}
+                        </p>
+                      )}
                     </div>
                     <p className="text-sm font-bold">${(item.price * item.quantity).toLocaleString()}</p>
                   </div>
+                    )
+                  })()
                 ))}
               </div>
               <Separator />
@@ -637,13 +671,20 @@ function CheckoutContent() {
                 </div>
               )}
 
+              {isValidatingCart && (
+                <div className="p-3 bg-blue-50 border border-blue-200 rounded-lg flex items-center gap-2">
+                  <Loader2 className="h-4 w-4 text-blue-600 animate-spin" />
+                  <span className="text-sm text-blue-700">Checking product availability...</span>
+                </div>
+              )}
+
               <PayPalStandardButton
                 shippingInfo={allFieldsFilled ? shippingInfo : null}
                 shippingCost={shippingCost}
                 discountAmount={discountAmount}
                 couponCode={appliedCoupon?.code}
                 onError={(error) => setPaymentError(error.message || 'Payment failed. Please try again.')}
-                disabled={!allFieldsFilled}
+                disabled={!canPay}
               />
 
               {/* PayPal.me Button - Temporarily hidden */}

@@ -27,6 +27,7 @@ export async function GET(request: NextRequest) {
                 ],
                 stockStatus: { not: 'archived' },
                 status: { not: 'draft' },
+                isVisible: { not: false },
             },
             include: {
                 category: {
@@ -90,6 +91,7 @@ export async function POST(request: NextRequest) {
             subBrand: { not: null },
             stockStatus: { not: 'archived' },
             status: { not: 'draft' },
+            isVisible: { not: false },
         }
 
         if (brand) {

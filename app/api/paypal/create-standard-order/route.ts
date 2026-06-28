@@ -27,10 +27,17 @@ export async function POST(request: NextRequest) {
     // Generate unique order number (Vietnam timezone format)
     const orderNumber = generateUniqueOrderNumber()
 
+    if (validItems.length !== items.length) {
+      return NextResponse.json(
+        { error: 'Invalid cart items' },
+        { status: 400 }
+      )
+    }
+
     const productIds = validItems.map((item: any) => item.productId || item.id)
     const products = await prisma.product.findMany({
       where: { id: { in: productIds } },
-      select: { id: true, name: true, stock: true, stockStatus: true, inStock: true },
+      select: { id: true, name: true, stock: true, stockStatus: true, inStock: true, isVisible: true, status: true },
     })
 
     const productMap = new Map(products.map((p) => [p.id, p]))
@@ -44,13 +51,14 @@ export async function POST(request: NextRequest) {
 
         const requestedQty = Math.max(1, parseInt(item.quantity) || 1)
         const stock = product.stock ?? 0
-        const soldOut = product.stockStatus === 'sold-out' || product.inStock === false || stock < requestedQty
+        const hidden = product.status === 'draft' || product.isVisible === false || product.stockStatus === 'archived'
+        const soldOut = product.stockStatus === 'sold-out' || product.inStock === false || (product.stockStatus !== 'pre-order' && stock < requestedQty)
 
-        if (soldOut) {
+        if (hidden || soldOut) {
           return {
             productId,
             name: product.name,
-            reason: 'Sold out',
+            reason: hidden ? 'Product is no longer available' : 'Sold out',
           }
         }
 

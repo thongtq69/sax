@@ -32,6 +32,8 @@ export async function GET() {
             where: {
                 id: { in: uniqueProductIds },
                 status: { not: 'draft' },
+                isVisible: { not: false },
+                stockStatus: { not: 'archived' },
             },
             select: {
                 id: true,
