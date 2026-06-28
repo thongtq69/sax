@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import { Settings as SettingsIcon, Save, Globe, Phone, Mail, Clock, Facebook, Youtube, Instagram, Twitter, CreditCard } from 'lucide-react'
+import { Settings as SettingsIcon, Save, Globe, Phone, Mail, Clock, Facebook, Youtube, Instagram, Twitter, CreditCard, Megaphone } from 'lucide-react'
 
 interface SocialLinks {
   facebook?: string
@@ -12,6 +12,12 @@ interface SocialLinks {
   instagram?: string
   twitter?: string
   tiktok?: string
+}
+
+interface TrackingPixels {
+  metaPixelId?: string
+  tiktokPixelId?: string
+  googleAdsId?: string
 }
 
 interface SiteSettings {
@@ -22,6 +28,7 @@ interface SiteSettings {
   email: string
   workingHours: string
   socialLinks: SocialLinks
+  trackingPixels?: TrackingPixels
   footerText: string
   copyrightText: string
   paypalReceiverEmail?: string
@@ -43,6 +50,9 @@ export default function SettingsPage() {
     instagram: '',
     twitter: '',
     tiktok: '',
+    metaPixelId: '',
+    tiktokPixelId: '',
+    googleAdsId: '',
     footerText: '',
     copyrightText: '',
     paypalReceiverEmail: '',
@@ -61,6 +71,7 @@ export default function SettingsPage() {
         const data = await response.json()
         setSettings(data)
         const socialLinks = data.socialLinks || {}
+        const trackingPixels = data.trackingPixels || {}
         setFormData({
           companyName: data.companyName || '',
           address: data.address || '',
@@ -72,6 +83,9 @@ export default function SettingsPage() {
           instagram: socialLinks.instagram || '',
           twitter: socialLinks.twitter || '',
           tiktok: socialLinks.tiktok || '',
+          metaPixelId: trackingPixels.metaPixelId || '',
+          tiktokPixelId: trackingPixels.tiktokPixelId || '',
+          googleAdsId: trackingPixels.googleAdsId || '',
           footerText: data.footerText || '',
           copyrightText: data.copyrightText || '',
           paypalReceiverEmail: data.paypalReceiverEmail || '',
@@ -108,6 +122,11 @@ export default function SettingsPage() {
           email: formData.email,
           workingHours: formData.workingHours,
           socialLinks: socialLinksData,
+          trackingPixels: {
+            metaPixelId: formData.metaPixelId.trim(),
+            tiktokPixelId: formData.tiktokPixelId.trim(),
+            googleAdsId: formData.googleAdsId.trim(),
+          },
           footerText: formData.footerText,
           copyrightText: formData.copyrightText,
           paypalReceiverEmail: formData.paypalReceiverEmail.trim(),
@@ -307,6 +326,49 @@ export default function SettingsPage() {
                 className="pl-10"
               />
             </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Advertising Pixels */}
+      <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+        <h2 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
+          <Megaphone className="h-5 w-5" />
+          Advertising Pixels
+        </h2>
+        <p className="text-sm text-gray-500 mb-4">
+          Paste only the pixel ID from each ads platform. Do not paste the full script tag.
+        </p>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div>
+            <Label htmlFor="metaPixelId">Meta Pixel ID</Label>
+            <Input
+              id="metaPixelId"
+              value={formData.metaPixelId}
+              onChange={(e) => setFormData({ ...formData, metaPixelId: e.target.value })}
+              placeholder="123456789012345"
+            />
+            <p className="text-xs text-gray-500 mt-1">Facebook / Instagram ads.</p>
+          </div>
+          <div>
+            <Label htmlFor="tiktokPixelId">TikTok Pixel ID</Label>
+            <Input
+              id="tiktokPixelId"
+              value={formData.tiktokPixelId}
+              onChange={(e) => setFormData({ ...formData, tiktokPixelId: e.target.value })}
+              placeholder="C0ABCDEF1234567890"
+            />
+            <p className="text-xs text-gray-500 mt-1">TikTok Ads Manager pixel.</p>
+          </div>
+          <div>
+            <Label htmlFor="googleAdsId">Google Ads / Google Tag ID</Label>
+            <Input
+              id="googleAdsId"
+              value={formData.googleAdsId}
+              onChange={(e) => setFormData({ ...formData, googleAdsId: e.target.value })}
+              placeholder="AW-123456789"
+            />
+            <p className="text-xs text-gray-500 mt-1">Supports AW-, G-, or GT- IDs.</p>
           </div>
         </div>
       </div>

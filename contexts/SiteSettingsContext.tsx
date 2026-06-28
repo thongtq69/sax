@@ -10,6 +10,12 @@ interface SocialLinks {
     tiktok?: string
 }
 
+interface TrackingPixels {
+    metaPixelId?: string
+    tiktokPixelId?: string
+    googleAdsId?: string
+}
+
 interface SiteSettings {
     companyName: string
     address: string
@@ -17,6 +23,7 @@ interface SiteSettings {
     email: string
     workingHours: string
     socialLinks: SocialLinks
+    trackingPixels: TrackingPixels
     footerText: string
     copyrightText: string
     paypalReceiverEmail: string
@@ -35,6 +42,7 @@ const defaultSettings: SiteSettings = {
         twitter: 'https://twitter.com',
         tiktok: 'https://tiktok.com/@jamessaxcorner',
     },
+    trackingPixels: {},
     footerText: '',
     copyrightText: '© 2024 James Sax Corner. All rights reserved.',
     paypalReceiverEmail: 'order@jamessaxcorner.com',
@@ -81,6 +89,11 @@ export function SiteSettingsProvider({ children }: { children: ReactNode }) {
                             twitter: data.socialLinks?.twitter || defaultSettings.socialLinks.twitter,
                             tiktok: data.socialLinks?.tiktok || defaultSettings.socialLinks.tiktok,
                         },
+                        trackingPixels: {
+                            metaPixelId: data.trackingPixels?.metaPixelId || '',
+                            tiktokPixelId: data.trackingPixels?.tiktokPixelId || '',
+                            googleAdsId: data.trackingPixels?.googleAdsId || '',
+                        },
                         footerText: data.footerText || defaultSettings.footerText,
                         copyrightText: data.copyrightText || defaultSettings.copyrightText,
                         paypalReceiverEmail: data.paypalReceiverEmail || defaultSettings.paypalReceiverEmail,
@@ -113,4 +126,4 @@ export function useSiteSettings() {
 }
 
 export { defaultSettings }
-export type { SiteSettings, SocialLinks }
+export type { SiteSettings, SocialLinks, TrackingPixels }

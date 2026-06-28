@@ -5,6 +5,7 @@ import { usePathname } from 'next/navigation'
 import { Header } from './Header'
 import { AnnouncementBar } from './AnnouncementBar'
 import { Footer } from './Footer'
+import { AdvertisingPixels } from './AdvertisingPixels'
 import { useNavigationLoading } from '@/hooks/use-navigation-loading'
 import { SiteSettingsProvider } from '@/contexts/SiteSettingsContext'
 import { WishlistProvider } from '@/contexts/WishlistContext'
@@ -30,6 +31,7 @@ export function SiteLayout({ children }: { children: React.ReactNode }) {
   return (
     <SiteSettingsProvider>
       <WishlistProvider>
+        <AdvertisingPixels />
         <Header />
         <AnnouncementBar />
         <main className="min-h-screen">{children}</main>

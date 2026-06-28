@@ -28,6 +28,7 @@ export async function GET() {
           email: '',
           workingHours: '24/7',
           socialLinks: defaultSocialLinks,
+          trackingPixels: {},
           footerText: '',
           copyrightText: '© 2024 James Sax Corner. All rights reserved.',
         },
@@ -55,6 +56,7 @@ export async function PUT(request: NextRequest) {
       email,
       workingHours,
       socialLinks,
+      trackingPixels,
       footerText,
       copyrightText,
       domesticShippingCost,
@@ -90,6 +92,18 @@ export async function PUT(request: NextRequest) {
       }
     }
 
+    const normalizedTrackingPixels = normalizeTrackingPixels(trackingPixels)
+    if (normalizedTrackingPixels.error) {
+      return NextResponse.json(
+        {
+          error: 'Pixel ID không hợp lệ',
+          message: normalizedTrackingPixels.error,
+          details: [normalizedTrackingPixels.error],
+        },
+        { status: 400 }
+      )
+    }
+
     // Get existing settings or create new
     let settings = await prisma.siteSettings.findFirst()
 
@@ -104,6 +118,7 @@ export async function PUT(request: NextRequest) {
           ...(email !== undefined && { email }),
           ...(workingHours !== undefined && { workingHours }),
           ...(socialLinks !== undefined && { socialLinks }),
+          ...(trackingPixels !== undefined && { trackingPixels: normalizedTrackingPixels.value }),
           ...(footerText !== undefined && { footerText }),
           ...(copyrightText !== undefined && { copyrightText }),
           ...(domesticShippingCost !== undefined && { domesticShippingCost }),
@@ -120,6 +135,7 @@ export async function PUT(request: NextRequest) {
           email: email || '',
           workingHours: workingHours || '24/7',
           socialLinks: socialLinks || {},
+          trackingPixels: normalizedTrackingPixels.value || {},
           footerText: footerText || '',
           copyrightText: copyrightText || '',
           domesticShippingCost: domesticShippingCost ?? 25,
@@ -136,4 +152,47 @@ export async function PUT(request: NextRequest) {
       { status: 500 }
     )
   }
+}
+
+function normalizeTrackingPixels(value: unknown): {
+  value?: {
+    metaPixelId?: string
+    tiktokPixelId?: string
+    googleAdsId?: string
+  }
+  error?: string
+} {
+  if (value === undefined) return {}
+  if (!value || typeof value !== 'object' || Array.isArray(value)) {
+    return { error: 'Tracking pixels must be an object.' }
+  }
+
+  const pixels = value as Record<string, unknown>
+  const metaPixelId = normalizeString(pixels.metaPixelId)
+  const tiktokPixelId = normalizeString(pixels.tiktokPixelId)
+  const googleAdsId = normalizeString(pixels.googleAdsId).toUpperCase()
+
+  if (metaPixelId && !/^\d{6,30}$/.test(metaPixelId)) {
+    return { error: 'Meta Pixel ID chỉ gồm chữ số. Vui lòng dán ID, không dán toàn bộ script.' }
+  }
+
+  if (tiktokPixelId && !/^[A-Za-z0-9]{8,80}$/.test(tiktokPixelId)) {
+    return { error: 'TikTok Pixel ID chỉ gồm chữ và số. Vui lòng dán ID, không dán toàn bộ script.' }
+  }
+
+  if (googleAdsId && !/^(AW|G|GT)-[A-Z0-9_-]{4,60}$/.test(googleAdsId)) {
+    return { error: 'Google Ads / Google tag ID phải có dạng AW-123456789, G-XXXX hoặc GT-XXXX.' }
+  }
+
+  return {
+    value: {
+      ...(metaPixelId && { metaPixelId }),
+      ...(tiktokPixelId && { tiktokPixelId }),
+      ...(googleAdsId && { googleAdsId }),
+    },
+  }
+}
+
+function normalizeString(value: unknown) {
+  return typeof value === 'string' ? value.trim() : ''
 }
