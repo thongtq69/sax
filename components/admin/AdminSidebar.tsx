@@ -25,6 +25,7 @@ import {
   Mail,
   Zap,
   Ticket,
+  Image as ImageIcon,
 } from 'lucide-react'
 
 interface AdminSidebarProps {
@@ -37,25 +38,28 @@ interface AdminSidebarProps {
 
 export const menuItems: { href: string; label: string; icon: any; exact?: boolean }[] = [
   { href: '/admin/analytics', label: 'Analytics', icon: BarChart3 },
-  { href: '/admin/products', label: 'Products', icon: Package },
-  { href: '/admin/brands', label: 'Brands', icon: Tag },
-  { href: '/admin/featured-collections', label: 'Featured Collections', icon: Star },
-  { href: '/admin/flash-sale', label: 'Flash Sale Setup', icon: Zap },
-  { href: '/admin/blog', label: 'Blog Posts', icon: FileText },
-  { href: '/admin/categories', label: 'Categories', icon: FolderTree },
   { href: '/admin/announcements', label: 'Announcement Bar', icon: Megaphone },
-  { href: '/admin/popup-ad', label: 'Popup Ads', icon: Star },
+  { href: '/admin/banners', label: 'Banners', icon: ImageIcon },
+  { href: '/admin/blog', label: 'Blog Posts', icon: FileText },
+  { href: '/admin/brands', label: 'Brands', icon: Tag },
+  { href: '/admin/categories', label: 'Categories', icon: FolderTree },
   { href: '/admin/coupons', label: 'Coupons & Vouchers', icon: Ticket },
   { href: '/admin/faqs', label: 'FAQs', icon: HelpCircle },
-  { href: '/admin/quick-faq', label: 'Quick FAQ (Product)', icon: CircleHelp },
-  { href: '/admin/inquiry-titles', label: 'Inquiry Titles', icon: MessageSquareText },
-  { href: '/admin/testimonials', label: 'Testimonials & Reviews', icon: MessageSquare },
+  { href: '/admin/featured-collections', label: 'Featured Collections', icon: Star },
+  { href: '/admin/flash-sale', label: 'Flash Sale Setup', icon: Zap },
   { href: '/admin/content', label: 'Homepage Content', icon: Home },
-  { href: '/admin/subscribers', label: 'Subscribers', icon: Mail },
+  { href: '/admin/inquiries', label: 'Inquiries', icon: MessageSquare },
+  { href: '/admin/inquiry-titles', label: 'Inquiry Titles', icon: MessageSquareText },
   { href: '/admin/orders', label: 'Orders', icon: ShoppingCart },
+  { href: '/admin/popup-ad', label: 'Popup Ads', icon: Star },
+  { href: '/admin/products', label: 'Products', icon: Package },
+  { href: '/admin/quick-faq', label: 'Quick FAQ (Product)', icon: CircleHelp },
+  { href: '/admin/reviews', label: 'Reviews', icon: Star },
   { href: '/admin/shipping', label: 'Shipping Zones', icon: Truck },
-  { href: '/admin/users', label: 'Users', icon: Users },
   { href: '/admin/settings', label: 'Site Settings', icon: Settings },
+  { href: '/admin/subscribers', label: 'Subscribers', icon: Mail },
+  { href: '/admin/testimonials', label: 'Testimonials', icon: MessageSquare },
+  { href: '/admin/users', label: 'Users', icon: Users },
 ]
 
 export default function AdminSidebar({

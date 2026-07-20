@@ -1,6 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { deductOrderStock } from '@/lib/order-stock'
+import { requireAdmin } from '@/lib/admin-auth'
+import { getSecureOrderPath } from '@/lib/guest-order'
+import { getBaseUrl } from '@/lib/seo'
 
 export const dynamic = 'force-dynamic'
 
@@ -27,6 +30,9 @@ async function enrichOrdersWithProducts(orders: any[]) {
 
 export async function GET(request: NextRequest) {
   try {
+    if (!(await requireAdmin())) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    }
     const { searchParams } = new URL(request.url)
     const id = searchParams.get('id')
     const identifier = searchParams.get('identifier') // orderNumber or _id
@@ -51,6 +57,7 @@ export async function GET(request: NextRequest) {
           user: {
             select: { id: true, name: true, email: true },
           },
+          invoices: { orderBy: { revision: 'desc' } },
         },
       })
 
@@ -116,6 +123,9 @@ export async function GET(request: NextRequest) {
 
 export async function PATCH(request: NextRequest) {
   try {
+    if (!(await requireAdmin())) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    }
     const { id, status, carrier, trackingNumber, notes } = await request.json()
 
     if (!id) {
@@ -188,7 +198,8 @@ export async function PATCH(request: NextRequest) {
       try {
         // Get customer email from multiple sources (priority order)
         const shippingAddress = existingOrder.shippingAddress as any
-        const customerEmail = existingOrder.user?.email || shippingAddress?.email || null
+        const billingAddress = existingOrder.billingAddress as any
+        const customerEmail = existingOrder.user?.email || shippingAddress?.email || billingAddress?.email || null
 
         if (customerEmail) {
           // Fetch product details for order items
@@ -243,6 +254,9 @@ export async function PATCH(request: NextRequest) {
               country: shippingAddress.country || '',
               phone: shippingAddress.phone || '',
             } : undefined,
+            secureOrderUrl: !existingOrder.userId && existingOrder.guestAccessToken
+              ? `${getBaseUrl()}${getSecureOrderPath(existingOrder.orderNumber || existingOrder.id, existingOrder.guestAccessToken)}`
+              : undefined,
           })
 
           console.log(`✅ Order confirmation email sent to ${customerEmail} for order ${existingOrder.orderNumber || existingOrder.id}`)
@@ -271,6 +285,9 @@ export async function PATCH(request: NextRequest) {
 
 export async function DELETE(request: NextRequest) {
   try {
+    if (!(await requireAdmin())) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    }
     const { searchParams } = new URL(request.url)
     const id = searchParams.get('id')
 

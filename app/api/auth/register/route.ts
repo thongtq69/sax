@@ -3,6 +3,7 @@ import { prisma } from "@/lib/prisma"
 import bcrypt from "bcryptjs"
 import crypto from "crypto"
 import { sendVerificationEmail } from "@/lib/email"
+import { claimGuestOrders } from "@/lib/claim-guest-orders"
 
 // Password validation: 8+ chars, uppercase, lowercase, number
 function validatePassword(password: string): { valid: boolean; message?: string } {
@@ -82,6 +83,7 @@ export async function POST(request: NextRequest) {
         role: "user",
       }
     })
+    await claimGuestOrders(user.id, user.email)
 
     // Generate OTP code (6 digits)
     const otp = Math.floor(100000 + Math.random() * 900000).toString()

@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
+import { calculateServerOrderPricing } from '@/lib/order-pricing'
 
 const PAYPAL_API_URL = process.env.PAYPAL_MODE === 'sandbox' 
   ? 'https://api-m.sandbox.paypal.com'
@@ -78,11 +79,11 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    // Calculate totals
-    const subtotal = items.reduce((sum: number, item: any) => sum + item.price * item.quantity, 0)
-    const shipping = subtotal > 500 ? 0 : 25
-    const tax = subtotal * 0.08
-    const total = subtotal + shipping + tax
+    const pricing = await calculateServerOrderPricing(items, shippingInfo?.country || 'US')
+    const subtotal = pricing.subtotal
+    const shipping = pricing.shipping
+    const tax = 0
+    const total = pricing.total
 
     const accessToken = await getAccessToken()
 
@@ -114,7 +115,7 @@ export async function POST(request: NextRequest) {
             tax_total: { currency_code: 'USD', value: tax.toFixed(2) },
           }
         },
-        items: items.map((item: any) => ({
+        items: pricing.items.map((item) => ({
           name: item.name.substring(0, 127),
           sku: item.sku || undefined,
           quantity: item.quantity.toString(),

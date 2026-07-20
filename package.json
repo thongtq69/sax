@@ -14,7 +14,8 @@
     "db:migrate": "prisma migrate dev",
     "db:seed": "tsx prisma/seed.ts",
     "db:studio": "prisma studio",
-    "seo:inspect": "tsx scripts/inspect-sitemap.ts"
+    "seo:inspect": "tsx scripts/inspect-sitemap.ts",
+    "verify:critical": "tsx scripts/verify-critical-fixes.ts"
   },
   "engines": {
     "node": ">=18.0.0"

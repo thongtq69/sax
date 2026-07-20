@@ -3,7 +3,7 @@
 import { useEffect, useMemo, useState } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
-import { ArrowLeft, ExternalLink, Loader2, Package, RefreshCw, Save, Truck } from 'lucide-react'
+import { ArrowLeft, ExternalLink, Loader2, Package, Printer, ReceiptText, RefreshCw, Save, Truck } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import {
@@ -41,6 +41,16 @@ interface Order {
   billingAddress: any
   items: OrderItem[]
   createdAt: string
+  invoices?: Invoice[]
+}
+
+interface Invoice {
+  id: string
+  invoiceNumber?: string | null
+  revision: number
+  status: 'draft' | 'finalized' | 'superseded'
+  snapshot: any
+  html?: string | null
 }
 
 const statuses = ['pending', 'paid', 'processing', 'shipped', 'delivered', 'cancelled']
@@ -55,6 +65,8 @@ export default function AdminOrderDetailPage({ params }: { params: { orderNumber
   const [carrier, setCarrier] = useState('')
   const [trackingNumber, setTrackingNumber] = useState('')
   const [notes, setNotes] = useState('')
+  const [invoiceBusy, setInvoiceBusy] = useState(false)
+  const [invoiceDraft, setInvoiceDraft] = useState('')
 
   const fetchOrder = async () => {
     setLoading(true)
@@ -70,6 +82,8 @@ export default function AdminOrderDetailPage({ params }: { params: { orderNumber
       setCarrier(data.order.shippingAddress?.carrier || '')
       setTrackingNumber(data.order.shippingAddress?.trackingNumber || '')
       setNotes(data.order.notes || '')
+      const currentInvoice = data.order.invoices?.[0]
+      setInvoiceDraft(currentInvoice ? JSON.stringify(currentInvoice.snapshot, null, 2) : '')
     } catch (error) {
       console.error('Error fetching order:', error)
       alert(error instanceof Error ? error.message : 'Failed to load order')
@@ -120,6 +134,46 @@ export default function AdminOrderDetailPage({ params }: { params: { orderNumber
       alert(error instanceof Error ? error.message : 'Failed to update order')
     } finally {
       setSaving(false)
+    }
+  }
+
+  const currentInvoice = order?.invoices?.[0]
+  const createInvoice = async (revision = false) => {
+    if (!order) return
+    setInvoiceBusy(true)
+    try {
+      const response = await fetch(`/api/admin/orders/${order.id}/invoice`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: revision ? 'revision' : 'create' }),
+      })
+      const data = await response.json()
+      if (!response.ok) throw new Error(data.error || 'Failed to create invoice')
+      await fetchOrder()
+    } catch (error: any) {
+      alert(error.message)
+    } finally {
+      setInvoiceBusy(false)
+    }
+  }
+
+  const updateInvoice = async (finalize = false) => {
+    if (!currentInvoice) return
+    setInvoiceBusy(true)
+    try {
+      const snapshot = JSON.parse(invoiceDraft)
+      const response = await fetch(`/api/admin/invoices/${currentInvoice.id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ snapshot, action: finalize ? 'finalize' : 'save' }),
+      })
+      const data = await response.json()
+      if (!response.ok) throw new Error(data.error || 'Failed to update invoice')
+      await fetchOrder()
+    } catch (error: any) {
+      alert(error instanceof SyntaxError ? 'Invoice draft contains invalid JSON.' : error.message)
+    } finally {
+      setInvoiceBusy(false)
     }
   }
 
@@ -240,6 +294,54 @@ export default function AdminOrderDetailPage({ params }: { params: { orderNumber
                 className="w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50 resize-y"
               />
             </div>
+          </section>
+
+          <section className="rounded-3xl border bg-white p-6 shadow-sm">
+            <div className="flex flex-wrap items-center justify-between gap-3">
+              <div className="flex items-center gap-2 text-lg font-semibold text-slate-900">
+                <ReceiptText className="h-5 w-5 text-primary" />
+                Invoice
+              </div>
+              {!currentInvoice && (
+                <Button onClick={() => createInvoice()} disabled={invoiceBusy || !['paid', 'processing', 'shipped', 'delivered'].includes(order.status)}>
+                  Generate Draft
+                </Button>
+              )}
+              {currentInvoice?.status === 'finalized' && (
+                <Button variant="outline" onClick={() => createInvoice(true)} disabled={invoiceBusy}>Create Revision</Button>
+              )}
+            </div>
+            {!['paid', 'processing', 'shipped', 'delivered'].includes(order.status) && !currentInvoice && (
+              <p className="mt-3 text-sm text-amber-700">Mark the order as paid before generating an invoice.</p>
+            )}
+            {currentInvoice?.status === 'draft' && (
+              <div className="mt-4 space-y-3">
+                <p className="text-sm text-gray-600">Edit the draft data below. Finalizing creates an immutable HTML invoice; later corrections require a revision.</p>
+                <textarea
+                  value={invoiceDraft}
+                  onChange={(event) => setInvoiceDraft(event.target.value)}
+                  rows={18}
+                  spellCheck={false}
+                  className="w-full rounded-lg border bg-slate-950 p-4 font-mono text-xs leading-5 text-slate-100"
+                />
+                <div className="flex gap-2">
+                  <Button variant="outline" onClick={() => updateInvoice(false)} disabled={invoiceBusy}>Save Draft</Button>
+                  <Button onClick={() => updateInvoice(true)} disabled={invoiceBusy}>Finalize Invoice</Button>
+                </div>
+              </div>
+            )}
+            {currentInvoice?.html && (
+              <div className="mt-4">
+                <div className="mb-3 flex items-center justify-between">
+                  <p className="font-medium">{currentInvoice.invoiceNumber}</p>
+                  <Button variant="outline" onClick={() => {
+                    const popup = window.open('', '_blank')
+                    if (popup) { popup.document.write(currentInvoice.html || ''); popup.document.close(); popup.print() }
+                  }}><Printer className="mr-2 h-4 w-4" /> Print / PDF</Button>
+                </div>
+                <iframe title="Finalized invoice" srcDoc={currentInvoice.html} className="h-[720px] w-full rounded-lg border" />
+              </div>
+            )}
           </section>
 
           <section className="rounded-3xl border bg-white p-6 shadow-sm">

@@ -10,6 +10,8 @@ import { useCartStore } from '@/lib/store/cart'
 function SuccessContent() {
   const searchParams = useSearchParams()
   const orderID = searchParams.get('orderID') || searchParams.get('orderId')
+  const secureOrderPath = searchParams.get('secureOrderPath')
+  const guestToken = secureOrderPath?.slice(secureOrderPath.lastIndexOf('-') + 1) || ''
   const clearCart = useCartStore((state) => state.clearCart)
   const [isPolling, setIsPolling] = useState(true)
   const [customerInfo, setCustomerInfo] = useState<any>(null)
@@ -28,7 +30,7 @@ function SuccessContent() {
     
     const pollForInfo = async () => {
       try {
-        const response = await fetch(`/api/paypal/get-transaction?orderId=${orderID}`)
+        const response = await fetch(`/api/paypal/get-transaction?orderId=${encodeURIComponent(orderID)}&token=${encodeURIComponent(guestToken)}`)
         const data = await response.json()
         
         if (data.hasInfo) {
@@ -56,7 +58,7 @@ function SuccessContent() {
     pollForInfo()
 
     return () => clearInterval(interval)
-  }, [orderID])
+  }, [orderID, guestToken])
 
   return (
     <div className="container mx-auto px-4 py-16">
@@ -123,6 +125,16 @@ function SuccessContent() {
 
         {/* Actions */}
         <div className="space-y-3">
+          {secureOrderPath && (
+            <div className="mb-5 rounded-lg border border-primary/30 bg-primary/5 p-4 text-left">
+              <h2 className="font-semibold text-secondary">Secure Your Order History</h2>
+              <p className="mt-1 text-sm text-gray-600">Use this private link to view live status, tracking and your finalized invoice without an account.</p>
+              <Button asChild variant="outline" className="mt-3 w-full">
+                <Link href={secureOrderPath}>Open Secure Order</Link>
+              </Button>
+              <p className="mt-3 text-xs text-gray-500">Create an account with the same email address and this order will be linked automatically.</p>
+            </div>
+          )}
           <Button asChild className="w-full h-12">
             <Link href="/shop" className="flex items-center justify-center gap-2">
               Continue Shopping

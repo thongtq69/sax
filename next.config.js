@@ -19,6 +19,8 @@ const nextConfig = {
   },
   
   images: {
+    loader: 'custom',
+    loaderFile: './lib/cloudinary-loader.ts',
     remotePatterns: [
       {
         protocol: 'https',
@@ -45,7 +47,6 @@ const nextConfig = {
         hostname: '**',
       },
     ],
-    unoptimized: false,
     dangerouslyAllowSVG: true,
     contentDispositionType: 'attachment',
     contentSecurityPolicy: "default-src 'self'; script-src 'none'; sandbox;",
@@ -75,6 +76,15 @@ const nextConfig = {
       {
         // Disallow indexing of admin, auth, account pages
         source: '/(admin|auth|account|checkout)/:path*',
+        headers: [
+          {
+            key: 'X-Robots-Tag',
+            value: 'noindex, nofollow',
+          },
+        ],
+      },
+      {
+        source: '/api/:path*',
         headers: [
           {
             key: 'X-Robots-Tag',

@@ -15,7 +15,7 @@ export default function TermsPage() {
       <div className="container mx-auto px-4 py-10 md:py-14 lg:py-16 max-w-4xl">
         <div className="prose prose-lg max-w-none">
           <h1>Terms of Service</h1>
-          <p className="text-gray-600">Last updated: {new Date().toLocaleDateString()}</p>
+          <p className="text-gray-600">Last updated: June 28, 2026</p>
 
           <h2>1. Acceptance of Terms</h2>
           <p>
@@ -24,7 +24,7 @@ export default function TermsPage() {
 
           <h2>2. Products and Services</h2>
           <p>
-            James Sax Corner specializes in professional-grade saxophones and wind instruments. All products are professionally maintained and prepared before shipping.
+            James Sax Corner specializes in professional-grade saxophones and wind instruments. Product photographs, serial numbers, descriptions and condition reports are prepared as accurately as reasonably possible. Used and vintage instruments may show the wear described on their listing.
           </p>
 
           <h2>3. Pricing and Payment</h2>
@@ -32,7 +32,7 @@ export default function TermsPage() {
             <li>All prices are listed in USD</li>
             <li>Payments are processed securely through PayPal</li>
             <li>Prices are subject to change without notice</li>
-            <li>Additional shipping and handling charges may apply</li>
+            <li>Applicable shipping, taxes, customs duties and import charges are the buyer&apos;s responsibility unless expressly stated otherwise</li>
           </ul>
 
           <h2>4. Shipping and Delivery</h2>
@@ -45,7 +45,7 @@ export default function TermsPage() {
 
           <h2>5. Returns and Exchanges</h2>
           <p>
-            Due to the complexity and high cost of international logistics, we do not accept returns. Every saxophone is professionally prepared and inspected before shipping to ensure quality.
+            All sales are final. Due to the nature, value and international logistics of these instruments, we do not accept returns or exchanges. An order cannot be cancelled after it has shipped. This does not limit any non-waivable rights available under applicable law.
           </p>
 
           <h2>6. Warranty</h2>
@@ -63,12 +63,17 @@ export default function TermsPage() {
             Your privacy is important to us. We collect and use personal information only as necessary to provide our services and process orders.
           </p>
 
-          <h2>9. Modifications</h2>
+          <h2>9. Severability</h2>
+          <p>
+            If any part of these terms is found unenforceable, the remaining provisions will continue in effect.
+          </p>
+
+          <h2>10. Modifications</h2>
           <p>
             We reserve the right to modify these terms at any time. Changes will be effective immediately upon posting on our website.
           </p>
 
-          <h2>10. Contact Information</h2>
+          <h2>11. Contact Information</h2>
           <p>
             For questions about these Terms of Service, please contact us at info@jamessaxcorner.com
           </p>

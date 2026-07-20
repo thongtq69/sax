@@ -404,7 +404,7 @@ export function Header() {
                       <Heart className="h-5 w-5 text-[#2c3e50]" />
                       <span className="text-[10px] font-medium text-[#2c3e50]">Wishlist</span>
                     </Link>
-                    {(session.user as any).role === 'ADMIN' ? (
+                    {(session.user as any).role === 'admin' ? (
                       <Link
                         href="/admin"
                         className="flex flex-col items-center gap-1 p-2 rounded-lg bg-primary/10 hover:bg-primary/20 transition-all"
@@ -428,7 +428,7 @@ export function Header() {
                   </div>
 
                   {/* Admin Logout (if admin) */}
-                  {(session.user as any).role === 'ADMIN' && (
+                  {(session.user as any).role === 'admin' && (
                     <button
                       onClick={() => {
                         setIsMobileMenuOpen(false)

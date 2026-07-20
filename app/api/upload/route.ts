@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { cloudinary } from '@/lib/cloudinary'
+import { requireAdmin } from '@/lib/admin-auth'
 
 // For App Router - set max duration for large file uploads
 export const maxDuration = 60 // 60 seconds timeout
@@ -8,6 +9,9 @@ export const dynamic = 'force-dynamic'
 // Upload image to Cloudinary
 export async function POST(request: NextRequest) {
   try {
+    if (!(await requireAdmin())) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    }
     // Check Cloudinary configuration first
     const config = cloudinary.config()
     console.log('Cloudinary config check:', { 
@@ -27,6 +31,9 @@ export async function POST(request: NextRequest) {
     const file = formData.get('file') as File | null
     const url = formData.get('url') as string | null
     const folder = (formData.get('folder') as string) || 'sax'
+    if (!/^sax(?:\/[a-z0-9/_-]+)?$/i.test(folder)) {
+      return NextResponse.json({ error: 'Invalid upload folder' }, { status: 400 })
+    }
 
     if (!file && !url) {
       return NextResponse.json(
@@ -84,6 +91,9 @@ export async function POST(request: NextRequest) {
 // Check Cloudinary configuration
 export async function GET() {
   try {
+    if (!(await requireAdmin())) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    }
     // Test Cloudinary connection by checking config
     const config = cloudinary.config()
     

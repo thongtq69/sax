@@ -4,6 +4,9 @@ export default middleware
 
 export const config = {
   matcher: [
+    '/api/admin/:path*',
+    '/api/orders/:path*',
+    '/api/upload/:path*',
     /*
      * Match all request paths except for the ones starting with:
      * - api (API routes)

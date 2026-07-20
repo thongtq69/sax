@@ -157,6 +157,7 @@ export default async function BrandPage({ params }: { params: { slug: string } }
         brandBackgroundImage={(brand as any).backgroundImage || null}
         brandDescription={brandDescription}
         brandCustomHtml={(brand as any).customHtml || null}
+        brandBottomHtml={(brand as any).bottomHtml || null}
         products={products}
         models={models}
       />

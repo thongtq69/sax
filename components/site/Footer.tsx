@@ -305,6 +305,8 @@ export function Footer() {
                 <li><Link href="/inquiry" className="hover:text-white transition-colors">Inquiry</Link></li>
                 <li><Link href="/account" className="hover:text-white transition-colors">Account</Link></li>
                 <li><Link href="/blog" className="hover:text-white transition-colors">Blog</Link></li>
+                <li><Link href="/terms" className="hover:text-white transition-colors">Terms of Service</Link></li>
+                <li><Link href="/privacy" className="hover:text-white transition-colors">Privacy Policy</Link></li>
                 <li>
                   <button onClick={() => setShowTestimonials(true)} className="hover:text-white transition-colors">
                     Testimonials

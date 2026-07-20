@@ -1,10 +1,18 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { cloudinary } from '@/lib/cloudinary'
+import { requireAdmin } from '@/lib/admin-auth'
 
 // Generate Cloudinary upload signature for direct client-side upload
 export async function POST(request: NextRequest) {
   try {
+    if (!(await requireAdmin())) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    }
+
     const { folder = 'sax/products' } = await request.json()
+    if (!/^sax\/[a-z0-9/_-]+$/i.test(folder)) {
+      return NextResponse.json({ error: 'Invalid upload folder' }, { status: 400 })
+    }
     
     const timestamp = Math.round(new Date().getTime() / 1000)
     
@@ -16,7 +24,7 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    // Generate signature for unsigned upload
+    // Generate a short-lived signature for a direct browser-to-Cloudinary upload.
     const signature = cloudinary.utils.api_sign_request(
       {
         timestamp,

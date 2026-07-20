@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
+import { auth } from '@/lib/auth'
 
 const PAYPAL_API_URL = process.env.PAYPAL_MODE === 'live' 
   ? 'https://api-m.paypal.com'
@@ -79,6 +80,7 @@ async function searchTransaction(accessToken: string, orderId: string) {
 export async function GET(request: NextRequest) {
   const { searchParams } = new URL(request.url)
   const orderId = searchParams.get('orderId')
+  const guestToken = searchParams.get('token')
 
   if (!orderId) {
     return NextResponse.json({ error: 'Order ID required' }, { status: 400 })
@@ -86,12 +88,23 @@ export async function GET(request: NextRequest) {
 
   try {
     // First check if order already has shipping info
-    const order = await prisma.order.findUnique({
-      where: { id: orderId },
+    const order = await prisma.order.findFirst({
+      where: {
+        OR: [
+          { orderNumber: orderId },
+          ...(/^[a-f0-9]{24}$/i.test(orderId) ? [{ id: orderId }] : []),
+        ],
+      },
     })
 
     if (!order) {
       return NextResponse.json({ error: 'Order not found' }, { status: 404 })
+    }
+    const session = await auth()
+    const canAccess = (order.userId && session?.user?.id === order.userId) ||
+      (!order.userId && order.guestAccessToken && guestToken?.toUpperCase() === order.guestAccessToken)
+    if (!canAccess) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
     const shippingAddress = order.shippingAddress as any
@@ -122,7 +135,7 @@ export async function GET(request: NextRequest) {
       })
     }
 
-    const result = await searchTransaction(accessToken, orderId)
+    const result = await searchTransaction(accessToken, order.orderNumber || order.id)
 
     if (result?.transaction_details?.length > 0) {
       const txn = result.transaction_details[0]
@@ -157,7 +170,7 @@ export async function GET(request: NextRequest) {
       // Update order with PayPal data
       if (paypalShipping.email || paypalShipping.address1) {
         await prisma.order.update({
-          where: { id: orderId },
+          where: { id: order.id },
           data: {
             shippingAddress: {
               ...shippingAddress,

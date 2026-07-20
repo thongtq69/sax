@@ -208,11 +208,33 @@ model Order {
   items       OrderItem[]
   shippingAddress Json?
   billingAddress  Json?
+  guestAccessToken String?
   notes       String?     // Admin-only internal note (e.g. off-platform payment channel)
+  invoices    Invoice[]
   createdAt   DateTime    @default(now())
   updatedAt   DateTime    @updatedAt
 
   @@index([userId])
+  @@index([status])
+  @@index([guestAccessToken])
+}
+
+model Invoice {
+  id                  String   @id @default(auto()) @map("_id") @db.ObjectId
+  orderId             String   @db.ObjectId
+  order               Order    @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  invoiceNumber       String?
+  revision            Int      @default(0)
+  status              String   @default("draft") // 'draft' | 'finalized' | 'superseded'
+  supersedesInvoiceId String?  @db.ObjectId
+  snapshot            Json
+  html                String?
+  finalizedAt         DateTime?
+  createdAt           DateTime @default(now())
+  updatedAt           DateTime @updatedAt
+
+  @@index([orderId])
+  @@index([invoiceNumber])
   @@index([status])
 }
 
@@ -359,6 +381,7 @@ model Brand {
   backgroundImage String?  // Hero banner for the brand page
   description     String?  // Brand overview for brand page and SEO
   customHtml      String?  // Custom HTML block shown below brand hero
+  bottomHtml      String?  // Custom HTML block shown below brand listings
   modelPageContent Json?   // Record<model-slug, html> for model page custom blocks
   metaTitle       String?  // Custom SEO title override
   metaDescription String?  // Custom SEO description override

@@ -10,6 +10,7 @@ import {
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
 import Image from 'next/image'
+import { menuItems } from '@/components/admin/AdminSidebar'
 
 interface DashboardStats {
   banners: number
@@ -24,6 +25,7 @@ interface DashboardStats {
   pendingOrders: number
   totalRevenue: number
   activeUsers: number
+  newCounts?: Record<string, number>
 }
 
 interface RecentOrder {
@@ -40,13 +42,18 @@ export default function AdminDashboard() {
   const [isLoading, setIsLoading] = useState(true)
 
   useEffect(() => {
+    const visitStartedAt = new Date().toISOString()
+    const previousVisit = localStorage.getItem('admin_dashboard_last_visit')
+    const since = previousVisit || new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString()
+
     async function fetchStats() {
       try {
-        const response = await fetch('/api/admin/stats')
+        const response = await fetch(`/api/admin/stats?since=${encodeURIComponent(since)}`)
         if (response.ok) {
           const data = await response.json()
           setStats(data.stats)
           setRecentOrders(data.recentOrders || [])
+          localStorage.setItem('admin_dashboard_last_visit', visitStartedAt)
         }
       } catch (error) {
         console.error('Error fetching stats:', error)
@@ -69,6 +76,7 @@ export default function AdminDashboard() {
       bgColor: 'bg-blue-500/10',
       textColor: 'text-blue-600',
       href: '/admin/products',
+      badge: stats?.newCounts?.products ? `${stats.newCounts.products} NEW` : undefined,
     },
     {
       title: 'Orders',
@@ -77,7 +85,9 @@ export default function AdminDashboard() {
       bgColor: 'bg-emerald-500/10',
       textColor: 'text-emerald-600',
       href: '/admin/orders',
-      badge: stats?.pendingOrders ? `${stats.pendingOrders} pending` : undefined,
+      badge: stats?.newCounts?.orders
+        ? `${stats.newCounts.orders} NEW`
+        : stats?.pendingOrders ? `${stats.pendingOrders} pending` : undefined,
     },
     {
       title: 'Blog Posts',
@@ -86,6 +96,7 @@ export default function AdminDashboard() {
       bgColor: 'bg-purple-500/10',
       textColor: 'text-purple-600',
       href: '/admin/blog',
+      badge: stats?.newCounts?.blogPosts ? `${stats.newCounts.blogPosts} NEW` : undefined,
     },
     {
       title: 'Inquiries',
@@ -94,6 +105,7 @@ export default function AdminDashboard() {
       bgColor: 'bg-amber-500/10',
       textColor: 'text-amber-600',
       href: '/admin/inquiries',
+      badge: stats?.newCounts?.inquiries ? `${stats.newCounts.inquiries} NEW` : undefined,
     },
   ]
 
@@ -106,6 +118,7 @@ export default function AdminDashboard() {
       textColor: 'text-pink-600',
       href: '/admin/banners',
       description: 'Homepage banners',
+      badge: stats?.newCounts?.banners ? `${stats.newCounts.banners} NEW` : undefined,
     },
     {
       title: 'FAQs',
@@ -115,6 +128,7 @@ export default function AdminDashboard() {
       textColor: 'text-cyan-600',
       href: '/admin/faqs',
       description: 'Frequently asked questions',
+      badge: stats?.newCounts?.faqs ? `${stats.newCounts.faqs} NEW` : undefined,
     },
     {
       title: 'Testimonials',
@@ -124,6 +138,7 @@ export default function AdminDashboard() {
       textColor: 'text-indigo-600',
       href: '/admin/testimonials',
       description: 'Customer reviews',
+      badge: stats?.newCounts?.testimonials ? `${stats.newCounts.testimonials} NEW` : undefined,
     },
     {
       title: 'Users',
@@ -133,6 +148,7 @@ export default function AdminDashboard() {
       textColor: 'text-orange-600',
       href: '/admin/users',
       description: 'Registered users',
+      badge: stats?.newCounts?.users ? `${stats.newCounts.users} NEW` : undefined,
     },
   ]
 
@@ -226,8 +242,15 @@ export default function AdminDashboard() {
             return (
               <Link key={card.title} href={card.href}>
                 <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-5 hover:shadow-md transition-all duration-200 cursor-pointer group h-full">
-                  <div className={`${card.bgColor} p-3 rounded-xl w-fit`}>
-                    <Icon className={`h-6 w-6 ${card.textColor}`} />
+                  <div className="flex items-start justify-between">
+                    <div className={`${card.bgColor} p-3 rounded-xl w-fit`}>
+                      <Icon className={`h-6 w-6 ${card.textColor}`} />
+                    </div>
+                    {card.badge && (
+                      <span className="rounded-full bg-red-50 px-2 py-1 text-xs font-semibold text-red-600">
+                        {card.badge}
+                      </span>
+                    )}
                   </div>
                   <div className="mt-4">
                     <p className="text-2xl font-bold text-gray-900">{card.value}</p>
@@ -245,6 +268,19 @@ export default function AdminDashboard() {
       <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-4 sm:p-6">
         <h2 className="text-base sm:text-lg font-semibold text-gray-900 mb-3 sm:mb-4">Quick Actions</h2>
         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-2 sm:gap-3">
+          {menuItems.map((item) => {
+            const Icon = item.icon
+            return (
+              <Link key={item.href} href={item.href}>
+                <Button className="w-full justify-start text-xs sm:text-sm h-9 sm:h-10 px-2 sm:px-4" variant="outline">
+                  <Icon className="h-3 w-3 sm:h-4 sm:w-4 mr-2 sm:mr-3 flex-shrink-0" />
+                  <span className="truncate">{item.label}</span>
+                </Button>
+              </Link>
+            )
+          })}
+        </div>
+        <div className="hidden">
           <Link href="/admin/analytics">
             <Button className="w-full justify-start text-xs sm:text-sm h-9 sm:h-10 px-2 sm:px-4 bg-primary/5 text-primary hover:bg-primary/10 border-primary/20" variant="outline">
               <BarChart3 className="h-3 w-3 sm:h-4 sm:w-4 mr-2 sm:mr-3 flex-shrink-0" />

@@ -22,15 +22,34 @@ export const authConfig: NextAuthConfig = {
             }
             return session
         },
-        authorized({ auth, request: { nextUrl } }) {
+        authorized({ auth, request }) {
+            const { nextUrl } = request
             const isLoggedIn = !!auth?.user
 
             // Define protected routes
+            const isAdminApi = nextUrl.pathname.startsWith('/api/admin')
+            const isSensitiveApi = isAdminApi ||
+                nextUrl.pathname.startsWith('/api/orders') ||
+                nextUrl.pathname.startsWith('/api/upload')
+
+            const publicAdminGetPrefixes = [
+                '/api/admin/testimonials',
+                '/api/admin/homepage-content',
+                '/api/admin/inquiry-titles',
+                '/api/admin/site-settings',
+                '/api/admin/faqs',
+                '/api/admin/quick-faq',
+            ]
+            const isPublicAdminRead = request.method === 'GET' && isAdminApi &&
+                publicAdminGetPrefixes.some((path) => nextUrl.pathname.startsWith(path))
+
             const isProtectedRoute = nextUrl.pathname.startsWith('/account') ||
-                nextUrl.pathname.startsWith('/admin')
+                nextUrl.pathname.startsWith('/admin') ||
+                (isSensitiveApi && !isPublicAdminRead)
 
             // Define admin routes
-            const isAdminRoute = nextUrl.pathname.startsWith('/admin')
+            const isAdminRoute = nextUrl.pathname.startsWith('/admin') ||
+                (isSensitiveApi && !isPublicAdminRead)
 
             // Define auth routes (login, register, etc.)
             const isAuthRoute = nextUrl.pathname.startsWith('/auth')
@@ -47,6 +66,9 @@ export const authConfig: NextAuthConfig = {
 
             // Redirect non-logged-in users from protected routes to login
             if (isProtectedRoute && !isLoggedIn) {
+                if (nextUrl.pathname.startsWith('/api/')) {
+                    return Response.json({ error: 'Unauthorized' }, { status: 401 })
+                }
                 const callbackUrl = nextUrl.pathname + nextUrl.search
                 return Response.redirect(
                     new URL(`/auth/login?callbackUrl=${encodeURIComponent(callbackUrl)}`, nextUrl)
@@ -57,6 +79,9 @@ export const authConfig: NextAuthConfig = {
             if (isAdminRoute && isLoggedIn) {
                 const userRole = (auth?.user as any)?.role
                 if (userRole !== 'admin') {
+                    if (nextUrl.pathname.startsWith('/api/')) {
+                        return Response.json({ error: 'Forbidden' }, { status: 403 })
+                    }
                     return Response.redirect(new URL('/auth/error?error=AccessDenied', nextUrl))
                 }
             }

@@ -61,6 +61,12 @@ function CheckoutContent() {
     email: '', firstName: '', lastName: '', address1: '', address2: '',
     city: '', state: '', zip: '', country: 'United States', phone: '',
   })
+  const [shippingSameAsBilling, setShippingSameAsBilling] = useState(true)
+  const [shipToInfo, setShipToInfo] = useState({
+    email: '', firstName: '', lastName: '', address1: '', address2: '',
+    city: '', state: '', zip: '', country: 'United States', phone: '',
+  })
+  const deliveryInfo = shippingSameAsBilling ? shippingInfo : shipToInfo
 
   // Coupon state
   const [availableCoupons, setAvailableCoupons] = useState<Coupon[]>([])
@@ -183,11 +189,11 @@ function CheckoutContent() {
   const [shippingMessage, setShippingMessage] = useState<string>('')
 
   const calculateShipping = async () => {
-    if (!shippingInfo.country) {
+    if (!deliveryInfo.country) {
       setShippingMessage('Please select a country')
       return
     }
-    if (!shippingInfo.zip.trim()) {
+    if (!deliveryInfo.zip.trim()) {
       setShippingMessage('Please enter a ZIP/Postal code')
       return
     }
@@ -196,8 +202,8 @@ function CheckoutContent() {
 
     try {
       // Get country code from country name
-      const country = getCountryByName(shippingInfo.country)
-      const countryCode = country?.code || shippingInfo.country
+      const country = getCountryByName(deliveryInfo.country)
+      const countryCode = country?.code || deliveryInfo.country
 
       // Prepare cart items with shipping cost info
       const cartItems = items.map(item => ({
@@ -233,7 +239,7 @@ function CheckoutContent() {
     } catch (error) {
       console.error('Error calculating shipping:', error)
       // Fallback to default shipping
-      const isVietnam = shippingInfo.country === 'Vietnam'
+      const isVietnam = deliveryInfo.country === 'Vietnam'
       if (isVietnam) {
         setShippingCost(25)
         setShippingMessage('Domestic shipping (Vietnam): $25')
@@ -248,7 +254,7 @@ function CheckoutContent() {
 
   // Auto-calculate shipping when country or zip changes
   useEffect(() => {
-    if (shippingInfo.country && shippingInfo.zip.length >= 3) {
+    if (deliveryInfo.country && deliveryInfo.zip.length >= 3) {
       const timer = setTimeout(() => {
         calculateShipping()
       }, 800)
@@ -257,7 +263,7 @@ function CheckoutContent() {
       setShippingCost(null)
       setShippingMessage('')
     }
-  }, [shippingInfo.country, shippingInfo.zip])
+  }, [deliveryInfo.country, deliveryInfo.zip])
 
   const shipping = shippingCost ?? 0 // No default shipping - will be calculated or shown in PayPal
   const tax = 0 // No tax
@@ -285,6 +291,9 @@ function CheckoutContent() {
       return newInfo
     })
   }
+  const handleShipToChange = (field: string, value: string) => {
+    setShipToInfo((previous) => ({ ...previous, [field]: value }))
+  }
 
   // Get states for selected country
   const availableStates = useMemo(() => {
@@ -294,8 +303,11 @@ function CheckoutContent() {
   // Check if country has states (for showing dropdown vs text input)
   const hasStates = availableStates.length > 0
 
-  const allFieldsFilled = shippingInfo.email && shippingInfo.firstName && shippingInfo.lastName &&
+  const billingFieldsFilled = shippingInfo.email && shippingInfo.firstName && shippingInfo.lastName &&
     shippingInfo.address1 && shippingInfo.city && shippingInfo.state && shippingInfo.zip && shippingInfo.phone
+  const shippingFieldsFilled = deliveryInfo.email && deliveryInfo.firstName && deliveryInfo.lastName &&
+    deliveryInfo.address1 && deliveryInfo.city && deliveryInfo.state && deliveryInfo.zip && deliveryInfo.phone
+  const allFieldsFilled = billingFieldsFilled && shippingFieldsFilled
   const canPay = Boolean(allFieldsFilled) && !isValidatingCart && !hasUnavailable && !cartAvailabilityError
 
   if (items.length === 0) {
@@ -354,7 +366,7 @@ function CheckoutContent() {
             <div className="bg-white rounded-xl border p-4 md:p-6">
               <div className="flex items-center gap-3 mb-6">
                 <Truck className="h-5 w-5 text-primary" />
-                <h2 className="text-xl font-semibold">Shipping Information</h2>
+                <h2 className="text-xl font-semibold">Billing Information</h2>
               </div>
 
               {/* Saved Address Selector */}
@@ -498,6 +510,43 @@ function CheckoutContent() {
                 <Input placeholder="Phone *" value={shippingInfo.phone} onChange={(e) => handleChange('phone', e.target.value)} />
               </div>
 
+              <label className="mt-6 flex cursor-pointer items-center gap-3 rounded-lg border bg-gray-50 p-4">
+                <input
+                  type="checkbox"
+                  checked={shippingSameAsBilling}
+                  onChange={(event) => setShippingSameAsBilling(event.target.checked)}
+                  className="h-4 w-4 rounded border-gray-300"
+                />
+                <span className="text-sm font-medium text-gray-800">Shipping address is the same as billing</span>
+              </label>
+
+              {!shippingSameAsBilling && (
+                <div className="mt-6 space-y-4 rounded-xl border border-primary/20 bg-primary/5 p-4">
+                  <h3 className="font-semibold text-secondary">Ship To</h3>
+                  <Input placeholder="Email *" value={shipToInfo.email} onChange={(e) => handleShipToChange('email', e.target.value)} />
+                  <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+                    <Input placeholder="First Name *" value={shipToInfo.firstName} onChange={(e) => handleShipToChange('firstName', e.target.value)} />
+                    <Input placeholder="Last Name *" value={shipToInfo.lastName} onChange={(e) => handleShipToChange('lastName', e.target.value)} />
+                  </div>
+                  <select
+                    value={shipToInfo.country}
+                    onChange={(e) => handleShipToChange('country', e.target.value)}
+                    className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+                  >
+                    <option value="">Select Country *</option>
+                    {countries.map((country) => <option key={country.code} value={country.name}>{country.name}</option>)}
+                  </select>
+                  <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+                    <Input placeholder="State/Province *" value={shipToInfo.state} onChange={(e) => handleShipToChange('state', e.target.value)} />
+                    <Input placeholder="City *" value={shipToInfo.city} onChange={(e) => handleShipToChange('city', e.target.value)} />
+                  </div>
+                  <Input placeholder="ZIP/Postal Code *" value={shipToInfo.zip} onChange={(e) => handleShipToChange('zip', e.target.value)} />
+                  <Input placeholder="Address *" value={shipToInfo.address1} onChange={(e) => handleShipToChange('address1', e.target.value)} />
+                  <Input placeholder="Apt, Suite (optional)" value={shipToInfo.address2} onChange={(e) => handleShipToChange('address2', e.target.value)} />
+                  <Input placeholder="Phone *" value={shipToInfo.phone} onChange={(e) => handleShipToChange('phone', e.target.value)} />
+                </div>
+              )}
+
               {/* Shipping Calculator */}
               <div className="mt-6 p-4 bg-gradient-to-r from-primary/5 to-amber-50 rounded-lg border border-primary/20">
                 <div className="flex items-center gap-2 mb-3">
@@ -509,7 +558,7 @@ function CheckoutContent() {
                     <div className="flex items-center gap-2">
                       <MapPin className="h-4 w-4 text-gray-400" />
                       <span className="text-sm text-gray-600">
-                        {shippingInfo.country ? `${shippingInfo.country}${shippingInfo.zip ? ` - ${shippingInfo.zip}` : ''}` : 'Select country above'}
+                        {deliveryInfo.country ? `${deliveryInfo.country}${deliveryInfo.zip ? ` - ${deliveryInfo.zip}` : ''}` : 'Select country above'}
                       </span>
                     </div>
                   </div>
@@ -517,7 +566,7 @@ function CheckoutContent() {
                     variant="outline"
                     size="sm"
                     onClick={calculateShipping}
-                    disabled={isCalculatingShipping || !shippingInfo.country || !shippingInfo.zip}
+                    disabled={isCalculatingShipping || !deliveryInfo.country || !deliveryInfo.zip}
                   >
                     {isCalculatingShipping ? (
                       <Loader2 className="h-4 w-4 animate-spin" />
@@ -667,7 +716,7 @@ function CheckoutContent() {
               {!allFieldsFilled && (
                 <div className="p-3 bg-amber-50 border border-amber-200 rounded-lg flex items-center gap-2">
                   <AlertCircle className="h-4 w-4 text-amber-600" />
-                  <span className="text-sm text-amber-700">Please fill in all shipping information to continue</span>
+                  <span className="text-sm text-amber-700">Please complete the billing and shipping information to continue</span>
                 </div>
               )}
 
@@ -679,7 +728,8 @@ function CheckoutContent() {
               )}
 
               <PayPalStandardButton
-                shippingInfo={allFieldsFilled ? shippingInfo : null}
+                billingInfo={billingFieldsFilled ? shippingInfo : null}
+                shippingInfo={allFieldsFilled ? deliveryInfo : null}
                 shippingCost={shippingCost}
                 discountAmount={discountAmount}
                 couponCode={appliedCoupon?.code}

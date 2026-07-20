@@ -6,6 +6,7 @@ import Credentials from "next-auth/providers/credentials"
 import { prisma } from "@/lib/prisma"
 import bcrypt from "bcryptjs"
 import type { NextAuthConfig } from "next-auth"
+import { claimGuestOrders } from "@/lib/claim-guest-orders"
 
 // Build providers array dynamically based on available credentials
 const providers: NextAuthConfig["providers"] = [
@@ -151,6 +152,7 @@ export const authConfig: NextAuthConfig = {
           where: { id: user.id },
           data: { emailVerified: new Date() }
         })
+        await claimGuestOrders(user.id!, user.email)
       } catch (error) {
         console.error("LinkAccount event error:", error)
       }

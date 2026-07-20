@@ -15,7 +15,7 @@ export default function PrivacyPage() {
       <div className="container mx-auto px-4 py-10 md:py-14 lg:py-16 max-w-4xl">
         <div className="prose prose-lg max-w-none">
           <h1>Privacy Policy</h1>
-          <p className="text-gray-600">Last updated: {new Date().toLocaleDateString()}</p>
+          <p className="text-gray-600">Last updated: July 19, 2026</p>
 
           <h2>1. Information We Collect</h2>
           <p>We collect information you provide directly to us, such as:</p>
@@ -48,7 +48,7 @@ export default function PrivacyPage() {
 
           <h2>4. Data Security</h2>
           <p>
-            We implement appropriate security measures to protect your personal information against unauthorized access, alteration, disclosure, or destruction.
+            We implement reasonable administrative and technical measures to protect personal information. No internet transmission or storage system can be guaranteed completely secure.
           </p>
 
           <h2>5. Cookies and Tracking</h2>
@@ -72,6 +72,9 @@ export default function PrivacyPage() {
             <li>Request deletion of your information</li>
             <li>Opt-out of marketing communications</li>
           </ul>
+          <p>
+            Requests may be subject to identity verification and applicable legal retention requirements.
+          </p>
 
           <h2>8. International Transfers</h2>
           <p>

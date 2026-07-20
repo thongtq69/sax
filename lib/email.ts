@@ -319,6 +319,7 @@ interface OrderEmailData {
   couponCode?: string
   shippingAddress?: ShippingAddress
   paymentMethod?: string
+  secureOrderUrl?: string
 }
 
 export async function sendOrderConfirmationEmail(data: OrderEmailData) {
@@ -333,6 +334,7 @@ export async function sendOrderConfirmationEmail(data: OrderEmailData) {
     total,
     discount,
     couponCode,
+    secureOrderUrl,
   } = data
 
   // Get instrument name (first item or list all)
@@ -345,11 +347,11 @@ export async function sendOrderConfirmationEmail(data: OrderEmailData) {
 
   // Build status link — customers log in and see live paid/shipped/delivered status.
   // Prefer the human-readable orderNumber so the URL matches what customers see in admin/UI.
-  const statusUrl = orderNumber
+  const statusUrl = secureOrderUrl || (orderNumber
     ? `${baseUrl}/account/orders/${orderNumber}`
     : orderId
       ? `${baseUrl}/account/orders/${orderId}`
-      : `${baseUrl}/account/orders`
+      : `${baseUrl}/account/orders`)
 
   const html = `
     <!DOCTYPE html>
@@ -403,6 +405,15 @@ export async function sendOrderConfirmationEmail(data: OrderEmailData) {
             <strong>Order Status:</strong> Order confirmed and in preparation
           </p>
         </div>
+
+        ${secureOrderUrl ? `
+        <div style="margin: 28px 0; padding: 20px; background: #f4f1df; border: 1px solid #b0a456; text-align: center;">
+          <strong>Secure Your Order History</strong>
+          <p style="margin: 8px 0 16px;">Use your private order link to view status, tracking and the finalized invoice without creating an account.</p>
+          <a href="${secureOrderUrl}" style="display:inline-block;background:#2f3f4f;color:#fff;padding:12px 20px;text-decoration:none;font-weight:bold;">Open Secure Order</a>
+          <p style="margin:12px 0 0;font-size:13px;">You can also create an account with this email address to keep future orders in one place.</p>
+        </div>
+        ` : ''}
         
         <div style="margin: 30px 0;">
           <p style="margin: 0 0 15px 0; font-size: 16px;">

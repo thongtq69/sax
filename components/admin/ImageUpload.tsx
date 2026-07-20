@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useRef, useCallback } from 'react'
+import { useState, useRef, useCallback, useEffect } from 'react'
 import Image from 'next/image'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -18,6 +18,7 @@ async function compressImage(file: File, maxSizeMB: number = CLOUDINARY_MAX_SIZE
     const canvas = document.createElement('canvas')
     const ctx = canvas.getContext('2d')
     
+    const objectUrl = URL.createObjectURL(file)
     img.onload = () => {
       let { width, height } = img
       
@@ -54,8 +55,10 @@ async function compressImage(file: File, maxSizeMB: number = CLOUDINARY_MAX_SIZE
               type: 'image/jpeg',
               lastModified: Date.now(),
             })
+            URL.revokeObjectURL(objectUrl)
             resolve(compressedFile)
           } else {
+            URL.revokeObjectURL(objectUrl)
             reject(new Error('Failed to compress image'))
           }
         },
@@ -64,8 +67,11 @@ async function compressImage(file: File, maxSizeMB: number = CLOUDINARY_MAX_SIZE
       )
     }
     
-    img.onerror = () => reject(new Error('Failed to load image'))
-    img.src = URL.createObjectURL(file)
+    img.onerror = () => {
+      URL.revokeObjectURL(objectUrl)
+      reject(new Error('Failed to load image'))
+    }
+    img.src = objectUrl
   })
 }
 
@@ -74,13 +80,15 @@ interface ImageUploadProps {
   onChange: (images: string[]) => void
   maxImages?: number
   folder?: string
+  onUploadingChange?: (uploading: boolean) => void
 }
 
 export function ImageUpload({ 
   images, 
   onChange, 
   maxImages = 999, // Unlimited by default
-  folder = 'sax/products'
+  folder = 'sax/products',
+  onUploadingChange,
 }: ImageUploadProps) {
   const [isUploading, setIsUploading] = useState(false)
   const [uploadMode, setUploadMode] = useState<'file' | 'url'>('file')
@@ -92,6 +100,7 @@ export function ImageUpload({
   const [currentFileIndex, setCurrentFileIndex] = useState<number>(0)
   const fileInputRef = useRef<HTMLInputElement>(null)
   const abortControllerRef = useRef<AbortController | null>(null)
+  const uploadInstanceId = useRef(`image-upload-${Math.random().toString(36).slice(2)}`)
   const isCancelledRef = useRef<boolean>(false)
   
   // Track uploaded images during async upload to avoid stale closure
@@ -101,12 +110,27 @@ export function ImageUpload({
   const [draggedIndex, setDraggedIndex] = useState<number | null>(null)
   const [dragOverIndex, setDragOverIndex] = useState<number | null>(null)
 
+  useEffect(() => {
+    onUploadingChange?.(isUploading)
+    window.dispatchEvent(new CustomEvent('admin-upload-state', {
+      detail: { id: uploadInstanceId.current, uploading: isUploading },
+    }))
+  }, [isUploading, onUploadingChange])
+
+  useEffect(() => () => {
+    abortControllerRef.current?.abort()
+    window.dispatchEvent(new CustomEvent('admin-upload-state', {
+      detail: { id: uploadInstanceId.current, uploading: false },
+    }))
+  }, [])
+
   // Cancel upload function
   const cancelUpload = useCallback(() => {
     isCancelledRef.current = true
     if (abortControllerRef.current) {
       abortControllerRef.current.abort()
     }
+    abortControllerRef.current = null
     setIsUploading(false)
     setUploadProgress(0)
     setStatusMessage('Upload cancelled')
@@ -116,12 +140,13 @@ export function ImageUpload({
   }, [])
 
   // Upload directly to Cloudinary (bypasses server body size limit)
-  const uploadToCloudinary = async (file: File): Promise<string> => {
+  const uploadToCloudinary = async (file: File, signal?: AbortSignal): Promise<string> => {
     // Get signature from our API
     const sigResponse = await fetch('/api/upload/signature', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ folder }),
+      signal,
     })
     
     if (!sigResponse.ok) {
@@ -143,6 +168,7 @@ export function ImageUpload({
       {
         method: 'POST',
         body: formData,
+        signal,
       }
     )
     
@@ -155,26 +181,7 @@ export function ImageUpload({
     return result.secure_url
   }
 
-  // Fallback: Upload via our server API (for smaller files or URL uploads)
-  const uploadViaServer = async (file: File) => {
-    const formData = new FormData()
-    formData.append('file', file)
-    formData.append('folder', folder)
-
-    const response = await fetch('/api/upload', {
-      method: 'POST',
-      body: formData,
-    })
-
-    if (!response.ok) {
-      const data = await response.json()
-      throw new Error(data.error || 'Upload failed')
-    }
-
-    return await response.json()
-  }
-
-  const uploadFromUrl = async (url: string) => {
+  const uploadFromUrl = async (url: string, signal?: AbortSignal) => {
     const formData = new FormData()
     formData.append('url', url)
     formData.append('folder', folder)
@@ -182,6 +189,7 @@ export function ImageUpload({
     const response = await fetch('/api/upload', {
       method: 'POST',
       body: formData,
+      signal,
     })
 
     if (!response.ok) {
@@ -195,6 +203,12 @@ export function ImageUpload({
   const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files
     if (!files || files.length === 0) return
+    const selectedFiles = Array.from(files).slice(0, Math.max(0, maxImages - images.length))
+    if (selectedFiles.some((file) => !file.type.startsWith('image/'))) {
+      setError('Only image files are allowed.')
+      return
+    }
+    if (selectedFiles.length === 0) return
 
     // Reset cancel flag
     isCancelledRef.current = false
@@ -207,13 +221,13 @@ export function ImageUpload({
     setError(null)
     setUploadProgress(0)
     setStatusMessage('')
-    setTotalFiles(files.length)
+    setTotalFiles(selectedFiles.length)
     setCurrentFileIndex(0)
 
     // Process uploads in background - don't block UI
     const processUploads = async () => {
       try {
-        const filesToUpload = files.length
+        const filesToUpload = selectedFiles.length
         
         for (let i = 0; i < filesToUpload; i++) {
           // Check if cancelled
@@ -221,7 +235,7 @@ export function ImageUpload({
             break
           }
           
-          let file = files[i]
+          let file = selectedFiles[i]
           setCurrentFileIndex(i + 1)
           setUploadProgress(Math.round((i / filesToUpload) * 100))
           setStatusMessage(`Processing ${i + 1}/${filesToUpload}...`)
@@ -245,14 +259,9 @@ export function ImageUpload({
           
           setStatusMessage(`Uploading ${i + 1}/${filesToUpload}...`)
           
-          // Use direct Cloudinary upload for files > 4MB
-          let url: string
-          if (file.size > 4 * 1024 * 1024) {
-            url = await uploadToCloudinary(file)
-          } else {
-            const result = await uploadViaServer(file)
-            url = result.url
-          }
+          // All files go directly to Cloudinary so Vercel never has to buffer
+          // image bytes and cannot time out midway through a product edit.
+          const url = await uploadToCloudinary(file, abortControllerRef.current?.signal)
           
           // Check if cancelled after upload
           if (isCancelledRef.current) {
@@ -273,6 +282,7 @@ export function ImageUpload({
           setError(err.message || 'Failed to upload images')
         }
       } finally {
+        abortControllerRef.current = null
         setIsUploading(false)
         setUploadProgress(0)
         setTotalFiles(0)
@@ -284,8 +294,7 @@ export function ImageUpload({
       }
     }
     
-    // Start upload process (non-blocking)
-    processUploads()
+    await processUploads()
   }
 
   const handleUrlSubmit = async () => {
@@ -295,12 +304,14 @@ export function ImageUpload({
     setError(null)
 
     try {
-      const result = await uploadFromUrl(urlInput.trim())
+      abortControllerRef.current = new AbortController()
+      const result = await uploadFromUrl(urlInput.trim(), abortControllerRef.current.signal)
       onChange([...images, result.url].slice(0, maxImages))
       setUrlInput('')
     } catch (err: any) {
       setError(err.message || 'Failed to upload from URL')
     } finally {
+      abortControllerRef.current = null
       setIsUploading(false)
     }
   }
@@ -376,7 +387,7 @@ export function ImageUpload({
   }
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-4" data-upload-control>
       {/* Upload Mode Toggle */}
       <div className="flex gap-2">
         <Button
@@ -598,25 +609,44 @@ interface SingleImageUploadProps {
   image: string | null
   onChange: (image: string | null) => void
   folder?: string
+  onUploadingChange?: (uploading: boolean) => void
 }
 
 export function SingleImageUpload({ 
   image, 
   onChange, 
-  folder = 'sax/images'
+  folder = 'sax/images',
+  onUploadingChange,
 }: SingleImageUploadProps) {
   const [isUploading, setIsUploading] = useState(false)
   const [uploadMode, setUploadMode] = useState<'file' | 'url'>('file')
   const [urlInput, setUrlInput] = useState('')
   const [error, setError] = useState<string | null>(null)
   const fileInputRef = useRef<HTMLInputElement>(null)
+  const abortControllerRef = useRef<AbortController | null>(null)
+  const uploadInstanceId = useRef(`single-image-upload-${Math.random().toString(36).slice(2)}`)
+
+  useEffect(() => {
+    onUploadingChange?.(isUploading)
+    window.dispatchEvent(new CustomEvent('admin-upload-state', {
+      detail: { id: uploadInstanceId.current, uploading: isUploading },
+    }))
+  }, [isUploading, onUploadingChange])
+
+  useEffect(() => () => {
+    abortControllerRef.current?.abort()
+    window.dispatchEvent(new CustomEvent('admin-upload-state', {
+      detail: { id: uploadInstanceId.current, uploading: false },
+    }))
+  }, [])
 
   // Upload directly to Cloudinary
-  const uploadToCloudinary = async (file: File): Promise<string> => {
+  const uploadToCloudinary = async (file: File, signal?: AbortSignal): Promise<string> => {
     const sigResponse = await fetch('/api/upload/signature', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ folder }),
+      signal,
     })
     
     if (!sigResponse.ok) {
@@ -637,6 +667,7 @@ export function SingleImageUpload({
       {
         method: 'POST',
         body: formData,
+        signal,
       }
     )
     
@@ -652,8 +683,13 @@ export function SingleImageUpload({
   const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     let file = e.target.files?.[0]
     if (!file) return
+    if (!file.type.startsWith('image/')) {
+      setError('Only image files are allowed.')
+      return
+    }
 
     setIsUploading(true)
+    abortControllerRef.current = new AbortController()
     setError(null)
 
     try {
@@ -667,33 +703,13 @@ export function SingleImageUpload({
         }
       }
       
-      // Use direct Cloudinary upload for large files
-      let url: string
-      if (file.size > 4 * 1024 * 1024) {
-        url = await uploadToCloudinary(file)
-      } else {
-        const formData = new FormData()
-        formData.append('file', file)
-        formData.append('folder', folder)
-
-        const response = await fetch('/api/upload', {
-          method: 'POST',
-          body: formData,
-        })
-
-        if (!response.ok) {
-          const data = await response.json()
-          throw new Error(data.error || 'Upload failed')
-        }
-
-        const result = await response.json()
-        url = result.url
-      }
+      const url = await uploadToCloudinary(file, abortControllerRef.current.signal)
       
       onChange(url)
     } catch (err: any) {
       setError(err.message || 'Failed to upload image')
     } finally {
+      abortControllerRef.current = null
       setIsUploading(false)
       if (fileInputRef.current) {
         fileInputRef.current.value = ''
@@ -733,7 +749,7 @@ export function SingleImageUpload({
   }
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-4" data-upload-control>
       {image ? (
         <div className="relative aspect-video max-w-md bg-gray-100 rounded-lg overflow-hidden group">
           <Image

@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
+import { getSecureOrderPath } from '@/lib/guest-order'
 
 // Handle PayPal return - both GET and POST
 // PayPal sometimes sends POST instead of GET when returning from payment
@@ -7,6 +8,7 @@ import { prisma } from '@/lib/prisma'
 
 export async function POST(request: NextRequest) {
   const url = new URL(request.url)
+  let secureOrderPath: string | null = null
   
   // Get form data if any
   try {
@@ -58,13 +60,22 @@ export async function POST(request: NextRequest) {
     // Update order with PayPal customer info if we have it
     if (orderId && (payerEmail || addressStreet)) {
       try {
-        const existingOrder = await prisma.order.findUnique({
-          where: { id: orderId },
+        const existingOrder = await prisma.order.findFirst({
+          where: {
+            OR: [
+              { orderNumber: orderId },
+              ...(/^[a-f0-9]{24}$/i.test(orderId) ? [{ id: orderId }] : []),
+            ],
+          },
         })
         
         if (existingOrder) {
           const existingShipping = existingOrder.shippingAddress as any || {}
           const existingBilling = existingOrder.billingAddress as any || {}
+          const expectedEmail = String(existingShipping.email || existingBilling.email || existingBilling.payerEmail || '').toLowerCase()
+          if (existingOrder.guestAccessToken && payerEmail && expectedEmail && payerEmail.toLowerCase() === expectedEmail) {
+            secureOrderPath = getSecureOrderPath(existingOrder.orderNumber || existingOrder.id, existingOrder.guestAccessToken)
+          }
           
           // Only update if we have new data from PayPal
           const updateData: any = {}
@@ -102,7 +113,7 @@ export async function POST(request: NextRequest) {
           
           if (Object.keys(updateData).length > 0) {
             await prisma.order.update({
-              where: { id: orderId },
+              where: { id: existingOrder.id },
               data: updateData,
             })
             console.log(`Order ${orderId} updated with PayPal return data`)
@@ -116,6 +127,7 @@ export async function POST(request: NextRequest) {
     // Redirect to success page with GET method
     const redirectUrl = new URL('/checkout/success', url.origin)
     redirectUrl.search = params.toString()
+    if (secureOrderPath) redirectUrl.searchParams.set('secureOrderPath', secureOrderPath)
     
     return NextResponse.redirect(redirectUrl, { status: 303 }) // 303 forces GET
   } catch {

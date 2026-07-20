@@ -9,6 +9,18 @@ import { Loader2 } from 'lucide-react'
 import { getCountryByName } from '@/lib/location-data'
 
 interface PayPalStandardButtonProps {
+  billingInfo?: {
+    email: string
+    firstName: string
+    lastName: string
+    address1: string
+    address2: string
+    city: string
+    state: string
+    zip: string
+    country: string
+    phone: string
+  } | null
   shippingInfo: {
     email: string
     firstName: string
@@ -28,7 +40,7 @@ interface PayPalStandardButtonProps {
   disabled?: boolean
 }
 
-export function PayPalStandardButton({ shippingInfo, shippingCost, discountAmount, couponCode, onError, disabled }: PayPalStandardButtonProps) {
+export function PayPalStandardButton({ billingInfo, shippingInfo, shippingCost, discountAmount, couponCode, onError, disabled }: PayPalStandardButtonProps) {
   const [isLoading, setIsLoading] = useState(false)
   const { data: session } = useSession()
   const items = useCartStore((state) => state.items)
@@ -72,11 +84,9 @@ export function PayPalStandardButton({ shippingInfo, shippingCost, discountAmoun
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           items,
+          billingInfo,
           shippingInfo,
-          total,
-          discount,
           couponCode: couponCode || null,
-          userId: session?.user?.id || null, // Include userId if logged in
         }),
       })
 
@@ -85,7 +95,7 @@ export function PayPalStandardButton({ shippingInfo, shippingCost, discountAmoun
         throw new Error(error.error || 'Failed to create order')
       }
 
-      const { orderId } = await response.json()
+      const { orderId, payment } = await response.json()
       console.log('Order created:', orderId)
 
       // Create and submit PayPal form
@@ -103,7 +113,7 @@ export function PayPalStandardButton({ shippingInfo, shippingCost, discountAmoun
         currency_code: 'USD',
 
         // Shipping cost (shown separately in PayPal)
-        shipping_1: shipping.toFixed(2),
+        shipping_1: Number(payment.shipping).toFixed(2),
 
         // Tax (shown separately in PayPal)
         tax_cart: tax.toFixed(2),
@@ -118,7 +128,7 @@ export function PayPalStandardButton({ shippingInfo, shippingCost, discountAmoun
         notify_url: `${baseUrl}/api/paypal/ipn`,
 
         // Discount
-        discount_amount_cart: discount.toFixed(2),
+        discount_amount_cart: Number(payment.discount).toFixed(2),
 
         // Settings
         rm: '2', // Return method: 2 = POST (API route will handle and redirect)
@@ -131,7 +141,7 @@ export function PayPalStandardButton({ shippingInfo, shippingCost, discountAmoun
 
       // Add each cart item with detailed info
       // PayPal _cart uses item_name_X, amount_X, quantity_X format
-      items.forEach((item, index) => {
+      payment.items.forEach((item: any, index: number) => {
         const itemNum = index + 1
         // Product name with details (brand, model, condition if available)
         let itemName = item.name

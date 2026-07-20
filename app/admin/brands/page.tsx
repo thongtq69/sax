@@ -15,7 +15,7 @@ import { Plus, Edit, Trash2, Loader2, Tag, Search, GripVertical } from 'lucide-r
 import Image from 'next/image'
 import { SingleImageUpload } from '@/components/admin/ImageUpload'
 import { getBrandDescriptionTemplate } from '@/lib/brand-description'
-import { RichTextEditor } from '@/components/admin/RichTextEditor'
+import { HtmlSectionEditor } from '@/components/admin/HtmlSectionEditor'
 
 interface Brand {
   id: string
@@ -25,6 +25,7 @@ interface Brand {
   backgroundImage: string | null
   description: string | null
   customHtml: string | null
+  bottomHtml: string | null
   modelPageContent?: Record<string, string> | null
   metaTitle: string | null
   metaDescription: string | null
@@ -48,6 +49,7 @@ export default function BrandsManagement() {
     backgroundImage: null as string | null,
     description: '',
     customHtml: '',
+    bottomHtml: '',
     modelPageContent: {} as Record<string, string>,
     metaTitle: '',
     metaDescription: '',
@@ -107,6 +109,7 @@ export default function BrandsManagement() {
         backgroundImage: brand.backgroundImage,
         description: brand.description || '',
         customHtml: brand.customHtml || '',
+        bottomHtml: brand.bottomHtml || '',
         modelPageContent: brand.modelPageContent || {},
         metaTitle: brand.metaTitle || '',
         metaDescription: brand.metaDescription || '',
@@ -122,6 +125,7 @@ export default function BrandsManagement() {
         backgroundImage: null,
         description: '',
         customHtml: '',
+        bottomHtml: '',
         modelPageContent: {},
         metaTitle: '',
         metaDescription: '',
@@ -365,13 +369,27 @@ export default function BrandsManagement() {
               <p className="text-xs text-gray-500 mb-2">
                 Shown below the brand hero and before the product section.
               </p>
-              <div className="border rounded-md overflow-hidden">
-                <RichTextEditor
-                  content={formData.customHtml}
+              <div>
+                <HtmlSectionEditor
+                  value={formData.customHtml}
                   onChange={(customHtml) => setFormData({ ...formData, customHtml })}
                   placeholder="Add custom content for this brand page..."
                 />
               </div>
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Brand Page Bottom HTML Section (Optional)
+              </label>
+              <p className="text-xs text-gray-500 mb-2">
+                Shown below all product listings and above the site footer.
+              </p>
+              <HtmlSectionEditor
+                value={formData.bottomHtml}
+                onChange={(bottomHtml) => setFormData({ ...formData, bottomHtml })}
+                placeholder="Add bottom content, guides, links or SEO copy..."
+              />
             </div>
 
             <div>
@@ -511,8 +529,8 @@ export default function BrandsManagement() {
                         <div className="bg-gray-50 px-3 py-2 text-sm font-semibold text-gray-800 border-b">
                           {model}
                         </div>
-                        <RichTextEditor
-                          content={formData.modelPageContent[key] || ''}
+                        <HtmlSectionEditor
+                          value={formData.modelPageContent[key] || ''}
                           onChange={(html) => {
                             setFormData({
                               ...formData,

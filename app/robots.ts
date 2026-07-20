@@ -16,7 +16,6 @@ export default function robots(): MetadataRoute.Robots {
           '/account/',
           '/checkout/',
           '/cart',
-          '/_next/',
           '/private/',
           '/search',
           // Blanket `/*?*` was blocking valuable landing pages like

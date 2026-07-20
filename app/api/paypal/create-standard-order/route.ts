@@ -1,6 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { generateUniqueOrderNumber } from '@/lib/order-utils'
+import { auth } from '@/lib/auth'
+import { calculateServerOrderPricing } from '@/lib/order-pricing'
+import { generateGuestAccessToken, getSecureOrderPath } from '@/lib/guest-order'
 
 export const dynamic = 'force-dynamic'
 
@@ -8,7 +11,7 @@ export const dynamic = 'force-dynamic'
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json()
-    const { items, shippingInfo, total, discount, couponCode, userId } = body
+    const { items, shippingInfo, billingInfo, couponCode } = body
 
     if (!items || items.length === 0) {
       return NextResponse.json(
@@ -17,75 +20,28 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    // Validate and filter items with valid productId
-    const validItems = items.filter((item: any) => {
-      // Check if productId exists and is a valid MongoDB ObjectID (24 hex characters)
-      const productId = item.productId || item.id
-      return productId && /^[a-f\d]{24}$/i.test(productId)
-    })
+    const address = shippingInfo || billingInfo
+    if (!address?.email || !address?.zip || !address?.phone || !address?.country) {
+      return NextResponse.json({ error: 'Complete billing and shipping information is required' }, { status: 400 })
+    }
 
-    // Generate unique order number (Vietnam timezone format)
     const orderNumber = generateUniqueOrderNumber()
-
-    if (validItems.length !== items.length) {
-      return NextResponse.json(
-        { error: 'Invalid cart items' },
-        { status: 400 }
-      )
-    }
-
-    const productIds = validItems.map((item: any) => item.productId || item.id)
-    const products = await prisma.product.findMany({
-      where: { id: { in: productIds } },
-      select: { id: true, name: true, stock: true, stockStatus: true, inStock: true, isVisible: true, status: true },
-    })
-
-    const productMap = new Map(products.map((p) => [p.id, p]))
-    const unavailable = validItems
-      .map((item: any) => {
-        const productId = item.productId || item.id
-        const product = productMap.get(productId)
-        if (!product) {
-          return { productId, reason: 'Product not found' }
-        }
-
-        const requestedQty = Math.max(1, parseInt(item.quantity) || 1)
-        const stock = product.stock ?? 0
-        const hidden = product.status === 'draft' || product.isVisible === false || product.stockStatus === 'archived'
-        const soldOut = product.stockStatus === 'sold-out' || product.inStock === false || (product.stockStatus !== 'pre-order' && stock < requestedQty)
-
-        if (hidden || soldOut) {
-          return {
-            productId,
-            name: product.name,
-            reason: hidden ? 'Product is no longer available' : 'Sold out',
-          }
-        }
-
-        return null
-      })
-      .filter(Boolean)
-
-    if (unavailable.length > 0) {
-      return NextResponse.json(
-        {
-          error: 'Some products are no longer available',
-          unavailable,
-        },
-        { status: 409 }
-      )
-    }
+    const pricing = await calculateServerOrderPricing(items, address.country, couponCode)
+    const session = await auth()
+    const authenticatedUserId = session?.user?.id || null
+    const guestAccessToken = authenticatedUserId ? null : generateGuestAccessToken()
 
     // Create order in database with pending status
     const order = await prisma.order.create({
       data: {
         orderNumber,
         status: 'pending',
-        total: total,
-        discount: discount || 0,
-        couponCode: couponCode || null,
-        // Link to user if logged in
-        ...(userId && { userId }),
+        total: pricing.total,
+        discount: pricing.discount,
+        couponCode: pricing.couponCode,
+        ...(authenticatedUserId && { userId: authenticatedUserId }),
+        guestAccessToken,
+        billingAddress: billingInfo || address,
         shippingAddress: shippingInfo ? {
           email: shippingInfo.email,
           firstName: shippingInfo.firstName,
@@ -99,10 +55,10 @@ export async function POST(request: NextRequest) {
           phone: shippingInfo.phone,
         } : null,
         // Only create order items if we have valid product IDs
-        ...(validItems.length > 0 && {
+        ...(pricing.items.length > 0 && {
           items: {
-            create: validItems.map((item: any) => ({
-              productId: item.productId || item.id,
+            create: pricing.items.map((item) => ({
+              productId: item.productId,
               quantity: item.quantity,
               price: item.price,
             })),
@@ -113,6 +69,8 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json({
       orderId: order.orderNumber, // Return orderNumber instead of id
+      secureOrderPath: guestAccessToken ? getSecureOrderPath(order.orderNumber || order.id, guestAccessToken) : null,
+      payment: pricing,
       message: 'Order created successfully',
     })
   } catch (error: any) {

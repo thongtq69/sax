@@ -118,6 +118,7 @@ export default function ProductForm({
   const [newTemplateContent, setNewTemplateContent] = useState('')
   const [newTemplateType, setNewTemplateType] = useState<'header' | 'footer'>('header')
   const [isSaving, setIsSaving] = useState(false)
+  const [isUploadingImages, setIsUploadingImages] = useState(false)
   const [savingMode, setSavingMode] = useState<'draft' | 'publish' | null>(null)
   const [restoredFromAutosave, setRestoredFromAutosave] = useState(false)
 
@@ -389,6 +390,11 @@ export default function ProductForm({
   }
 
   const handleSave = async (status: 'draft' | 'published') => {
+    if (isUploadingImages) {
+      alert('Please wait until all images finish uploading before saving.')
+      setActiveTab('images')
+      return
+    }
     if (status === 'published') {
       // Light validation for publish
       if (!formData.name?.trim()) {
@@ -443,7 +449,7 @@ export default function ProductForm({
   }
 
   const handleCancel = () => {
-    if (isSaving) return
+    if (isSaving || isUploadingImages) return
     if (
       window.confirm(
         'Are you sure you want to cancel? Unsaved changes will be lost (autosaved draft will be kept for 24h).'
@@ -461,7 +467,7 @@ export default function ProductForm({
       <div className="sticky top-0 z-30 -mx-4 lg:-mx-6 px-4 lg:px-6 py-3 bg-white border-b border-gray-200 shadow-sm flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
         <div className="flex items-center gap-3 min-w-0">
           <Link href="/admin/products">
-            <Button variant="ghost" size="sm" disabled={isSaving}>
+            <Button variant="ghost" size="sm" disabled={isSaving || isUploadingImages}>
               <ArrowLeft className="h-4 w-4 mr-1" />
               Back
             </Button>
@@ -489,7 +495,7 @@ export default function ProductForm({
           <Button
             variant="outline"
             onClick={handleCancel}
-            disabled={isSaving}
+            disabled={isSaving || isUploadingImages}
             className="flex-1 sm:flex-none"
           >
             Cancel
@@ -497,7 +503,7 @@ export default function ProductForm({
           <Button
             variant="outline"
             onClick={() => handleSave('draft')}
-            disabled={isSaving}
+            disabled={isSaving || isUploadingImages}
             className="flex-1 sm:flex-none"
           >
             {savingMode === 'draft' ? (
@@ -509,7 +515,7 @@ export default function ProductForm({
           </Button>
           <Button
             onClick={() => handleSave('published')}
-            disabled={isSaving}
+            disabled={isSaving || isUploadingImages}
             className="flex-1 sm:flex-none"
           >
             {savingMode === 'publish' ? (
@@ -521,6 +527,12 @@ export default function ProductForm({
           </Button>
         </div>
       </div>
+
+      {isUploadingImages && (
+        <div className="rounded-md border border-blue-200 bg-blue-50 px-4 py-3 text-sm text-blue-900">
+          Images are still uploading to Cloudinary. Save and navigation are temporarily disabled.
+        </div>
+      )}
 
       {/* Autosave hint */}
       <div className="flex items-center gap-2 text-xs text-gray-500 px-1">
@@ -899,6 +911,7 @@ export default function ProductForm({
               images={formData.images || []}
               onChange={(images) => setFormData((prev) => ({ ...prev, images }))}
               folder="sax/products"
+              onUploadingChange={setIsUploadingImages}
             />
           </div>
         </TabsContent>

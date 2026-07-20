@@ -1,7 +1,8 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { usePathname, useRouter } from 'next/navigation'
+import { signOut, useSession } from 'next-auth/react'
 import { Button } from '@/components/ui/button'
 import { Menu, X, Bell, Search, ArrowLeft } from 'lucide-react'
 import { Input } from '@/components/ui/input'
@@ -12,29 +13,40 @@ export default function AdminLayout({
 }: {
   children: React.ReactNode
 }) {
-  const [isAuthenticated, setIsAuthenticated] = useState(false)
-  const [isLoading, setIsLoading] = useState(true)
   const [sidebarOpen, setSidebarOpen] = useState(false)
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false)
+  const [activeUploads, setActiveUploads] = useState(0)
+  const activeUploadIds = useRef(new Set<string>())
   const pathname = usePathname()
   const router = useRouter()
+  const { status } = useSession()
 
   useEffect(() => {
-    const auth = localStorage.getItem('admin_authenticated')
-    if (auth === 'true') {
-      setIsAuthenticated(true)
-    } else if (pathname !== '/admin/login') {
-      router.push('/admin/login')
+    const handleUploadState = (event: Event) => {
+      const { id, uploading } = (event as CustomEvent<{ id: string; uploading: boolean }>).detail
+      if (uploading) activeUploadIds.current.add(id)
+      else activeUploadIds.current.delete(id)
+      setActiveUploads(activeUploadIds.current.size)
     }
-    setIsLoading(false)
-  }, [pathname, router])
+    const preventUnload = (event: BeforeUnloadEvent) => {
+      if (activeUploadIds.current.size) {
+        event.preventDefault()
+        event.returnValue = ''
+      }
+    }
+    window.addEventListener('admin-upload-state', handleUploadState)
+    window.addEventListener('beforeunload', preventUnload)
+    return () => {
+      window.removeEventListener('admin-upload-state', handleUploadState)
+      window.removeEventListener('beforeunload', preventUnload)
+    }
+  }, [])
 
-  const handleLogout = () => {
-    localStorage.removeItem('admin_authenticated')
-    router.push('/admin/login')
+  const handleLogout = async () => {
+    await signOut({ callbackUrl: '/auth/login' })
   }
 
-  if (isLoading) {
+  if (status === 'loading') {
     return (
       <div className="flex items-center justify-center min-h-screen bg-gray-50">
         <div className="text-center">
@@ -45,11 +57,7 @@ export default function AdminLayout({
     )
   }
 
-  if (pathname === '/admin/login') {
-    return <>{children}</>
-  }
-
-  if (!isAuthenticated) {
+  if (status === 'unauthenticated') {
     return null
   }
 
@@ -140,7 +148,24 @@ export default function AdminLayout({
           </header>
 
           {/* Page Content */}
-          <div className="mx-auto w-full max-w-7xl p-4 lg:p-6">
+          <div
+            className="mx-auto w-full max-w-7xl p-4 lg:p-6"
+            onClickCapture={(event) => {
+              if (!activeUploads) return
+              const target = event.target as HTMLElement
+              if (target.closest('[data-upload-control]')) return
+              if (target.closest('button,a')) {
+                event.preventDefault()
+                event.stopPropagation()
+                alert('Please wait until the image upload finishes before saving or leaving this page.')
+              }
+            }}
+          >
+            {activeUploads > 0 && (
+              <div className="sticky top-16 z-40 mb-4 rounded-md border border-blue-200 bg-blue-50 px-4 py-3 text-sm font-medium text-blue-900 shadow-sm">
+                Uploading {activeUploads} image {activeUploads === 1 ? 'task' : 'tasks'} to Cloudinary. Save and navigation are locked until complete.
+              </div>
+            )}
             {children}
           </div>
         </main>

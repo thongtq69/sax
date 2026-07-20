@@ -3,6 +3,10 @@ import { prisma } from '@/lib/prisma'
 import { generateUniqueOrderNumber } from '@/lib/order-utils'
 import { sendOrderConfirmationEmail } from '@/lib/email'
 import { deductOrderStock } from '@/lib/order-stock'
+import { auth } from '@/lib/auth'
+import { calculateServerOrderPricing } from '@/lib/order-pricing'
+import { generateGuestAccessToken, getSecureOrderPath } from '@/lib/guest-order'
+import { getBaseUrl } from '@/lib/seo'
 
 const PAYPAL_API_URL = process.env.PAYPAL_MODE === 'sandbox' 
   ? 'https://api-m.sandbox.paypal.com'
@@ -29,7 +33,7 @@ async function getAccessToken() {
 
 export async function POST(request: NextRequest) {
   try {
-    const { orderID, items, shippingInfo, shippingCost, userId } = await request.json()
+    const { orderID, items, shippingInfo } = await request.json()
 
     const accessToken = await getAccessToken()
 
@@ -53,12 +57,6 @@ export async function POST(request: NextRequest) {
     const paypalShipping = captureData.purchase_units?.[0]?.shipping
     const paypalAddress = paypalShipping?.address
     const paypalName = paypalShipping?.name?.full_name
-
-    // Calculate totals - use provided shipping cost or default
-    const subtotal = items.reduce((sum: number, item: any) => sum + item.price * item.quantity, 0)
-    const shipping = shippingCost ?? (subtotal > 500 ? 0 : 25)
-    const tax = subtotal * 0.08
-    const total = subtotal + shipping + tax
 
     // Determine final shipping address - prefer user-provided, fallback to PayPal
     let finalShippingAddress = null
@@ -95,6 +93,20 @@ export async function POST(request: NextRequest) {
       }
     }
 
+    const pricing = await calculateServerOrderPricing(items, finalShippingAddress?.country || 'US')
+    const subtotal = pricing.subtotal
+    const shipping = pricing.shipping
+    const tax = 0
+    const total = pricing.total
+    const capturedTotal = Number(captureData.purchase_units?.[0]?.payments?.captures?.[0]?.amount?.value || 0)
+    if (Math.abs(capturedTotal - total) > 0.01) {
+      console.error('Captured PayPal amount does not match server price', { capturedTotal, total, orderID })
+      return NextResponse.json({ error: 'Payment amount does not match the current order price. Please contact support.' }, { status: 409 })
+    }
+    const session = await auth()
+    const authenticatedUserId = session?.user?.id || null
+    const guestAccessToken = authenticatedUserId ? null : generateGuestAccessToken()
+
     // Generate unique order number (Vietnam timezone format)
     const orderNumber = generateUniqueOrderNumber()
 
@@ -105,7 +117,8 @@ export async function POST(request: NextRequest) {
         status: 'paid',
         total: total,
         // Link to user if logged in
-        ...(userId && { userId }),
+        ...(authenticatedUserId && { userId: authenticatedUserId }),
+        guestAccessToken,
         shippingAddress: finalShippingAddress,
         billingAddress: {
           paypalOrderId: captureData.id,
@@ -123,7 +136,7 @@ export async function POST(request: NextRequest) {
           } : null,
         },
         items: {
-          create: items.map((item: any) => ({
+          create: pricing.items.map((item) => ({
             productId: item.productId,
             quantity: item.quantity,
             price: item.price,
@@ -156,7 +169,7 @@ export async function POST(request: NextRequest) {
 
       if (customerEmail) {
         // Fetch product details for email
-        const productIds = items.map((item: any) => item.productId)
+        const productIds = pricing.items.map((item) => item.productId)
         const products = await prisma.product.findMany({
           where: { id: { in: productIds } },
           select: { id: true, name: true, sku: true, images: true }
@@ -164,7 +177,7 @@ export async function POST(request: NextRequest) {
 
         const productMap = new Map(products.map(p => [p.id, p]))
 
-        const emailItems = items.map((item: any) => {
+        const emailItems = pricing.items.map((item) => {
           const product = productMap.get(item.productId)
           return {
             name: product?.name || item.name || 'Product',
@@ -195,7 +208,10 @@ export async function POST(request: NextRequest) {
             zip: finalShippingAddress.zip,
             country: finalShippingAddress.country,
             phone: finalShippingAddress.phone,
-          } : undefined
+          } : undefined,
+          secureOrderUrl: guestAccessToken
+            ? `${getBaseUrl()}${getSecureOrderPath(order.orderNumber!, guestAccessToken)}`
+            : undefined,
         })
 
         console.log('Order confirmation email sent to:', customerEmail)

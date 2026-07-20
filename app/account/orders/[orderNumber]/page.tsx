@@ -30,6 +30,11 @@ export default async function AccountOrderDetailPage({ params }: { params: { ord
     },
     include: {
       items: true,
+      invoices: {
+        where: { status: 'finalized' },
+        orderBy: { revision: 'desc' },
+        take: 1,
+      },
     },
   })
 
@@ -113,6 +118,16 @@ export default async function AccountOrderDetailPage({ params }: { params: { ord
                   })}
                 </div>
               </section>
+
+              {order.invoices[0]?.html && (
+                <section className="rounded-2xl border bg-white p-6 shadow-sm">
+                  <div className="mb-4 flex items-center justify-between">
+                    <h2 className="text-lg font-semibold text-slate-900">Invoice {order.invoices[0].invoiceNumber}</h2>
+                    <span className="text-xs text-slate-500">Use your browser&apos;s Print command to save a PDF.</span>
+                  </div>
+                  <iframe title="Invoice" srcDoc={order.invoices[0].html} className="h-[800px] w-full rounded-lg border" />
+                </section>
+              )}
             </div>
 
             <div className="space-y-6">

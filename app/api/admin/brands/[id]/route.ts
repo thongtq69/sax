@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { auth } from '@/lib/auth'
 import { getBrandDescriptionTemplate } from '@/lib/brand-description'
+import { sanitizeEditableHtml } from '@/lib/sanitize-html'
 
 // GET single brand
 export async function GET(
@@ -38,7 +39,7 @@ export async function PUT(
 
     const { id } = await params
     const body = await request.json()
-    const { name, logo, backgroundImage, description, customHtml, modelPageContent, metaTitle, metaDescription, models, isActive, order } = body
+    const { name, logo, backgroundImage, description, customHtml, bottomHtml, modelPageContent, metaTitle, metaDescription, models, isActive, order } = body
 
     if (!name?.trim()) {
       return NextResponse.json({ error: 'Brand name is required' }, { status: 400 })
@@ -80,8 +81,11 @@ export async function PUT(
         logo: logo || null,
         backgroundImage: backgroundImage || null,
         description: finalDescription,
-        customHtml: (typeof customHtml === 'string' && customHtml.trim()) || null,
-        modelPageContent: modelPageContent && typeof modelPageContent === 'object' ? modelPageContent : {},
+        customHtml: sanitizeEditableHtml(customHtml),
+        bottomHtml: sanitizeEditableHtml(bottomHtml),
+        modelPageContent: modelPageContent && typeof modelPageContent === 'object'
+          ? Object.fromEntries(Object.entries(modelPageContent).map(([key, html]) => [key, sanitizeEditableHtml(html) || '']))
+          : {},
         metaTitle: (typeof metaTitle === 'string' && metaTitle.trim()) || null,
         metaDescription: (typeof metaDescription === 'string' && metaDescription.trim()) || null,
         models: models || [],
