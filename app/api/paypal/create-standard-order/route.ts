@@ -4,6 +4,7 @@ import { generateUniqueOrderNumber } from '@/lib/order-utils'
 import { auth } from '@/lib/auth'
 import { calculateServerOrderPricing } from '@/lib/order-pricing'
 import { generateGuestAccessToken, getSecureOrderPath } from '@/lib/guest-order'
+import { normalizeOrderAddress } from '@/lib/order-address'
 
 export const dynamic = 'force-dynamic'
 
@@ -20,7 +21,7 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    const address = shippingInfo || billingInfo
+    const address = normalizeOrderAddress(shippingInfo || billingInfo)
     if (!address?.email || !address?.zip || !address?.phone || !address?.country) {
       return NextResponse.json({ error: 'Complete billing and shipping information is required' }, { status: 400 })
     }
@@ -41,19 +42,8 @@ export async function POST(request: NextRequest) {
         couponCode: pricing.couponCode,
         ...(authenticatedUserId && { userId: authenticatedUserId }),
         guestAccessToken,
-        billingAddress: billingInfo || address,
-        shippingAddress: shippingInfo ? {
-          email: shippingInfo.email,
-          firstName: shippingInfo.firstName,
-          lastName: shippingInfo.lastName,
-          address1: shippingInfo.address1,
-          address2: shippingInfo.address2,
-          city: shippingInfo.city,
-          state: shippingInfo.state,
-          zip: shippingInfo.zip,
-          country: shippingInfo.country,
-          phone: shippingInfo.phone,
-        } : null,
+        billingAddress: normalizeOrderAddress(billingInfo || address),
+        shippingAddress: shippingInfo ? normalizeOrderAddress(shippingInfo) : null,
         // Only create order items if we have valid product IDs
         ...(pricing.items.length > 0 && {
           items: {

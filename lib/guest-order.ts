@@ -1,7 +1,9 @@
 import { randomBytes } from 'crypto'
 
 export function generateGuestAccessToken() {
-  return randomBytes(4).toString('hex').toUpperCase()
+  // 128 bits prevents order URLs from being guessed. Existing 8-character
+  // tokens remain readable for backwards compatibility in the page route.
+  return randomBytes(16).toString('hex').toUpperCase()
 }
 
 export function getGuestVerificationCode(address: any) {

@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useState, use } from 'react';
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { ArrowLeft, ExternalLink, Loader2, Package, Printer, ReceiptText, RefreshCw, Save, Truck } from 'lucide-react'
@@ -56,7 +56,8 @@ interface Invoice {
 const statuses = ['pending', 'paid', 'processing', 'shipped', 'delivered', 'cancelled']
 const carriers = ['fedex', 'ups', 'dhl']
 
-export default function AdminOrderDetailPage({ params }: { params: { orderNumber: string } }) {
+export default function AdminOrderDetailPage(props: { params: Promise<{ orderNumber: string }> }) {
+  const params = use(props.params);
   const router = useRouter()
   const [order, setOrder] = useState<Order | null>(null)
   const [loading, setLoading] = useState(true)

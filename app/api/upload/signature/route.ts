@@ -29,6 +29,8 @@ export async function POST(request: NextRequest) {
       {
         timestamp,
         folder,
+        overwrite: false,
+        unique_filename: true,
       },
       config.api_secret
     )
@@ -39,6 +41,8 @@ export async function POST(request: NextRequest) {
       cloudName: config.cloud_name,
       apiKey: config.api_key,
       folder,
+      overwrite: false,
+      uniqueFilename: true,
     })
   } catch (error: any) {
     console.error('Signature generation error:', error)

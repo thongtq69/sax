@@ -1,15 +1,18 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { generateSlug, getProductSerialFromSpecs, normalizeSerialNumber } from '@/lib/slug-utils'
+import { requireAdmin } from '@/lib/admin-auth'
+import { normalizeProductImages, ProductImageValidationError } from '@/lib/product-images'
 
 export const dynamic = 'force-dynamic'
 
 // GET /api/products/[id] - Get a single product
-export async function GET(
-  request: NextRequest,
-  { params }: { params: { id: string } }
-) {
+export async function GET(request: NextRequest, props: { params: Promise<{ id: string }> }) {
+  const params = await props.params;
   try {
+    if (!(await requireAdmin())) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    }
     const product = await prisma.product.findUnique({
       where: { id: params.id },
       include: {
@@ -36,11 +39,12 @@ export async function GET(
 }
 
 // PUT /api/products/[id] - Update a product
-export async function PUT(
-  request: NextRequest,
-  { params }: { params: { id: string } }
-) {
+export async function PUT(request: NextRequest, props: { params: Promise<{ id: string }> }) {
+  const params = await props.params;
   try {
+    if (!(await requireAdmin())) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    }
     const body = await request.json()
     const {
       name,
@@ -134,7 +138,7 @@ export async function PUT(
     if (shippingCost !== undefined) updateData.shippingCost = shippingCost ? parseFloat(shippingCost) : null
     if (categoryId) updateData.categoryId = categoryId
     if (subcategoryId !== undefined) updateData.subcategoryId = subcategoryId || null
-    if (images !== undefined) updateData.images = images || []
+    if (images !== undefined) updateData.images = normalizeProductImages(images)
     if (videoUrls !== undefined) updateData.videoUrls = videoUrls || []
     if (badge !== undefined) updateData.badge = badge || null
     if (inStock !== undefined) updateData.inStock = inStock
@@ -201,6 +205,9 @@ export async function PUT(
     return NextResponse.json(product)
   } catch (error: any) {
     console.error('Error updating product:', error)
+    if (error instanceof ProductImageValidationError) {
+      return NextResponse.json({ error: error.message }, { status: 400 })
+    }
     if (error.code === 'P2025') {
       return NextResponse.json(
         {
@@ -231,11 +238,12 @@ export async function PUT(
 }
 
 // DELETE /api/products/[id] - Delete a product
-export async function DELETE(
-  request: NextRequest,
-  { params }: { params: { id: string } }
-) {
+export async function DELETE(request: NextRequest, props: { params: Promise<{ id: string }> }) {
+  const params = await props.params;
   try {
+    if (!(await requireAdmin())) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    }
     await prisma.product.delete({
       where: { id: params.id },
     })

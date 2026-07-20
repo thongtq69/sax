@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { generateSlug, getProductSerialFromSpecs, normalizeSerialNumber } from '@/lib/slug-utils'
+import { requireAdmin } from '@/lib/admin-auth'
+import { normalizeProductImages, ProductImageValidationError } from '@/lib/product-images'
 
 // Public GET responses can cache briefly at the edge. Admin-style calls
 // pass showHidden/showArchived and always send fresh auth cookies so the
@@ -11,6 +13,13 @@ export const revalidate = 60
 export async function GET(request: NextRequest) {
   try {
     const searchParams = request.nextUrl.searchParams
+    const requestsAdminData = searchParams.get('showArchived') === 'true'
+      || searchParams.get('showHidden') === 'true'
+      || searchParams.get('showDrafts') === 'true'
+      || searchParams.has('status')
+    if (requestsAdminData && !(await requireAdmin())) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    }
     const category = searchParams.get('category')
     const subcategory = searchParams.get('subcategory')
     const brand = searchParams.get('brand')
@@ -159,6 +168,9 @@ export async function GET(request: NextRequest) {
 // POST /api/products - Create a new product
 export async function POST(request: NextRequest) {
   try {
+    if (!(await requireAdmin())) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    }
     const body = await request.json()
     const {
       name,
@@ -257,7 +269,7 @@ export async function POST(request: NextRequest) {
         shippingCost: shippingCost ? parseFloat(shippingCost) : null,
         categoryId: finalCategoryId,
         subcategoryId: subcategoryId || null,
-        images: images || [],
+        images: normalizeProductImages(images),
         videoUrls: videoUrls || (videoUrl ? [videoUrl] : []),
         badge: badge || null,
         inStock: inStock !== undefined ? inStock : true,
@@ -285,6 +297,9 @@ export async function POST(request: NextRequest) {
     return NextResponse.json(product, { status: 201 })
   } catch (error: any) {
     console.error('Error creating product:', error)
+    if (error instanceof ProductImageValidationError) {
+      return NextResponse.json({ error: error.message }, { status: 400 })
+    }
     if (error.code === 'P2002') {
       const field = error.meta?.target?.[0] || 'field'
       return NextResponse.json(

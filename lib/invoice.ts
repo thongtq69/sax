@@ -1,3 +1,5 @@
+import { getBillingAddress, normalizeOrderAddress } from './order-address'
+
 const esc = (value: unknown) => String(value ?? '')
   .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
   .replace(/"/g, '&quot;').replace(/'/g, '&#039;')
@@ -21,8 +23,9 @@ export function buildInvoiceSnapshot(order: any) {
   const subtotal = order.items.reduce((sum: number, item: any) => sum + item.price * item.quantity, 0)
   const discount = order.discount || 0
   const shipping = Math.max(0, order.total + discount - subtotal)
-  const billTo = order.billingAddress || order.shippingAddress || {}
-  const shipTo = order.shippingAddress && !sameAddress(billTo, order.shippingAddress) ? order.shippingAddress : null
+  const billTo = getBillingAddress(order.billingAddress, order.shippingAddress)
+  const normalizedShipping = normalizeOrderAddress(order.shippingAddress)
+  const shipTo = order.shippingAddress && !sameAddress(billTo, normalizedShipping) ? normalizedShipping : null
 
   return {
     seller: {

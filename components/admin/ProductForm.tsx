@@ -119,6 +119,7 @@ export default function ProductForm({
   const [newTemplateType, setNewTemplateType] = useState<'header' | 'footer'>('header')
   const [isSaving, setIsSaving] = useState(false)
   const [isUploadingImages, setIsUploadingImages] = useState(false)
+  const [imageSaveState, setImageSaveState] = useState<'idle' | 'saving' | 'saved' | 'error'>('idle')
   const [savingMode, setSavingMode] = useState<'draft' | 'publish' | null>(null)
   const [restoredFromAutosave, setRestoredFromAutosave] = useState(false)
 
@@ -227,6 +228,43 @@ export default function ProductForm({
   }, [initialData, categories])
 
   const [formData, setFormData] = useState<FormState>(buildInitialState)
+  const currentImagesRef = useRef<string[]>(formData.images || [])
+  const persistedImagesRef = useRef(JSON.stringify(formData.images || []))
+  const imagePersistenceBusyRef = useRef(false)
+
+  useEffect(() => {
+    currentImagesRef.current = formData.images || []
+  }, [formData.images])
+
+  // Product images are valuable content, so edits persist shortly after an
+  // upload/reorder/removal completes instead of waiting for the full form save.
+  useEffect(() => {
+    if (!isEditing || !productId || isUploadingImages || isSaving) return
+    const currentSnapshot = JSON.stringify(currentImagesRef.current)
+    if (currentSnapshot === persistedImagesRef.current) return
+
+    const timer = window.setTimeout(async () => {
+      if (imagePersistenceBusyRef.current) return
+      imagePersistenceBusyRef.current = true
+      setImageSaveState('saving')
+      try {
+        while (persistedImagesRef.current !== JSON.stringify(currentImagesRef.current)) {
+          const imagesToSave = [...currentImagesRef.current]
+          const snapshot = JSON.stringify(imagesToSave)
+          await updateProduct(productId, { images: imagesToSave })
+          persistedImagesRef.current = snapshot
+        }
+        setImageSaveState('saved')
+      } catch (error) {
+        console.error('Could not auto-save product images:', error)
+        setImageSaveState('error')
+      } finally {
+        imagePersistenceBusyRef.current = false
+      }
+    }, 600)
+
+    return () => window.clearTimeout(timer)
+  }, [formData.images, isEditing, isSaving, isUploadingImages, productId])
 
   // Parse description into header/body/footer once on mount
   useEffect(() => {
@@ -531,6 +569,18 @@ export default function ProductForm({
       {isUploadingImages && (
         <div className="rounded-md border border-blue-200 bg-blue-50 px-4 py-3 text-sm text-blue-900">
           Images are still uploading to Cloudinary. Save and navigation are temporarily disabled.
+        </div>
+      )}
+
+      {!isUploadingImages && imageSaveState !== 'idle' && (
+        <div className={`rounded-md border px-4 py-2 text-sm ${
+          imageSaveState === 'error'
+            ? 'border-red-200 bg-red-50 text-red-800'
+            : 'border-emerald-200 bg-emerald-50 text-emerald-800'
+        }`}>
+          {imageSaveState === 'saving' && 'Saving product images...'}
+          {imageSaveState === 'saved' && 'Product images saved automatically.'}
+          {imageSaveState === 'error' && 'Automatic image save failed. Click Update to retry saving the full product.'}
         </div>
       )}
 
@@ -909,7 +959,11 @@ export default function ProductForm({
             </p>
             <ImageUpload
               images={formData.images || []}
-              onChange={(images) => setFormData((prev) => ({ ...prev, images }))}
+              onChange={(images) => {
+                currentImagesRef.current = images
+                setImageSaveState('idle')
+                setFormData((prev) => ({ ...prev, images }))
+              }}
               folder="sax/products"
               onUploadingChange={setIsUploadingImages}
             />

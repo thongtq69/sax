@@ -1,4 +1,6 @@
-import nodemailer from "nodemailer"
+// Keep the application mail transport on the patched Nodemailer release.
+// The alias avoids falsely satisfying Auth.js's optional v7 peer dependency.
+import nodemailer from "mailer"
 import { emailBannerBase64 } from "./email-banner-base64"
 
 const isZoho = process.env.SMTP_HOST?.includes('zoho')

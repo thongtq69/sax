@@ -21,11 +21,6 @@ export function PromoCarousel({ promos = [] }: PromoCarouselProps) {
     const [currentSlide, setCurrentSlide] = useState(0);
     const [isPaused, setIsPaused] = useState(false);
     const [isAnimating, setIsAnimating] = useState(false);
-    // If no promos, show empty state
-    if (promos.length === 0) {
-        return null;
-    }
-
     const nextSlide = useCallback(() => {
         if (isAnimating || promos.length === 0) return;
         setIsAnimating(true);
@@ -45,6 +40,13 @@ export function PromoCarousel({ promos = [] }: PromoCarouselProps) {
         const interval = setInterval(nextSlide, 4000);
         return () => clearInterval(interval);
     }, [isPaused, nextSlide, promos.length]);
+
+    useEffect(() => {
+        if (currentSlide >= promos.length && promos.length > 0) setCurrentSlide(0)
+    }, [currentSlide, promos.length])
+
+    // Hooks must run consistently even while the async promo list is empty.
+    if (promos.length === 0) return null;
 
     const slide = promos[currentSlide];
 

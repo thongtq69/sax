@@ -5,11 +5,12 @@ import { extractSkuFromParam, getProductUrl } from '@/lib/api'
 // This page redirects Serial-based URLs to canonical product URLs
 // Canonical format: /item/product-name-Serial
 
-export default async function ProductBySerialPage({
-  params,
-}: {
-  params: { serial: string }
-}) {
+export default async function ProductBySerialPage(
+  props: {
+    params: Promise<{ serial: string }>
+  }
+) {
+  const params = await props.params;
   try {
     // Extract Serial from param
     const serial = extractSkuFromParam(params.serial)

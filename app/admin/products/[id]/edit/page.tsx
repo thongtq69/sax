@@ -76,7 +76,8 @@ async function getFormData(idOrSku: string) {
   }
 }
 
-export default async function EditProductPage({ params }: { params: { id: string } }) {
+export default async function EditProductPage(props: { params: Promise<{ id: string }> }) {
+  const params = await props.params;
   const data = await getFormData(params.id)
   if (!data) notFound()
 

@@ -6,10 +6,11 @@ import { SocialLoginButtons } from '@/components/auth/SocialLoginButtons'
 import { LogIn } from 'lucide-react'
 
 interface LoginPageProps {
-  searchParams: { callbackUrl?: string }
+  searchParams: Promise<{ callbackUrl?: string }>
 }
 
-export default function LoginPage({ searchParams }: LoginPageProps) {
+export default async function LoginPage(props: LoginPageProps) {
+  const searchParams = await props.searchParams;
   const { callbackUrl } = searchParams
 
   return (

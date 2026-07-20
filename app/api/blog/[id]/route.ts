@@ -4,10 +4,8 @@ import { prisma } from '@/lib/prisma'
 export const dynamic = 'force-dynamic'
 
 // GET /api/blog/[id] - Get a single blog post
-export async function GET(
-  request: NextRequest,
-  { params }: { params: { id: string } }
-) {
+export async function GET(request: NextRequest, props: { params: Promise<{ id: string }> }) {
+  const params = await props.params;
   try {
     const post = await prisma.blogPost.findUnique({
       where: { id: params.id },
@@ -31,10 +29,8 @@ export async function GET(
 }
 
 // PUT /api/blog/[id] - Update a blog post
-export async function PUT(
-  request: NextRequest,
-  { params }: { params: { id: string } }
-) {
+export async function PUT(request: NextRequest, props: { params: Promise<{ id: string }> }) {
+  const params = await props.params;
   try {
     const body = await request.json()
     const { title, slug, excerpt, content, date, author, categories, image, readTime, status, scheduledAt } = body
@@ -101,10 +97,8 @@ export async function PUT(
 }
 
 // DELETE /api/blog/[id] - Delete a blog post
-export async function DELETE(
-  request: NextRequest,
-  { params }: { params: { id: string } }
-) {
+export async function DELETE(request: NextRequest, props: { params: Promise<{ id: string }> }) {
+  const params = await props.params;
   try {
     await prisma.blogPost.delete({
       where: { id: params.id },

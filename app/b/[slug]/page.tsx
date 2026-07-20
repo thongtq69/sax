@@ -42,7 +42,8 @@ async function getBrandData(slug: string) {
   return { brand, apiProducts }
 }
 
-export async function generateMetadata({ params }: { params: { slug: string } }): Promise<Metadata> {
+export async function generateMetadata(props: { params: Promise<{ slug: string }> }): Promise<Metadata> {
+  const params = await props.params;
   const data = await getBrandData(params.slug)
 
   if (!data) {
@@ -81,7 +82,8 @@ export async function generateMetadata({ params }: { params: { slug: string } })
   }
 }
 
-export default async function BrandPage({ params }: { params: { slug: string } }) {
+export default async function BrandPage(props: { params: Promise<{ slug: string }> }) {
+  const params = await props.params;
   // Enforce the -saxophones suffix URL rule via redirect
   if (!params.slug.endsWith('-saxophones')) {
     redirect(`/b/${params.slug}-saxophones`)

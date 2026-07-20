@@ -2,8 +2,25 @@ import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { getGuestVerificationCode } from '@/lib/guest-order'
 import { getOrderTrackingMeta } from '@/lib/order-utils'
+import { getVerificationAddress } from '@/lib/order-address'
+import { timingSafeEqual } from 'crypto'
 
 export const dynamic = 'force-dynamic'
+
+const WINDOW_MS = 15 * 60 * 1000
+const MAX_ATTEMPTS = 8
+type Attempt = { count: number; resetAt: number }
+const globalForGuestVerification = globalThis as typeof globalThis & {
+  guestVerificationAttempts?: Map<string, Attempt>
+}
+const attempts = globalForGuestVerification.guestVerificationAttempts ?? new Map<string, Attempt>()
+globalForGuestVerification.guestVerificationAttempts = attempts
+
+function isEqual(left: string, right: string) {
+  const a = Buffer.from(left)
+  const b = Buffer.from(right)
+  return a.length === b.length && timingSafeEqual(a, b)
+}
 
 export async function POST(request: NextRequest) {
   try {
@@ -12,10 +29,39 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Missing verification information' }, { status: 400 })
     }
 
+    const normalizedToken = String(token).replace(/\s+/g, '').toUpperCase()
+    if (!/^(?:[A-F0-9]{8}|[A-F0-9]{32})$/.test(normalizedToken)) {
+      return NextResponse.json({ error: 'The order link or verification code is incorrect' }, { status: 401 })
+    }
+
+    const forwardedFor = request.headers.get('x-forwarded-for')?.split(',')[0]?.trim() || 'unknown'
+    const attemptKey = `${forwardedFor}:${String(orderNumber)}:${normalizedToken}`
+    const now = Date.now()
+    if (attempts.size > 5_000) {
+      for (const [key, value] of attempts) {
+        if (value.resetAt <= now) attempts.delete(key)
+      }
+      while (attempts.size > 5_000) {
+        const oldestKey = attempts.keys().next().value
+        if (!oldestKey) break
+        attempts.delete(oldestKey)
+      }
+    }
+    const currentAttempt = attempts.get(attemptKey)
+    if (currentAttempt && currentAttempt.resetAt > now && currentAttempt.count >= MAX_ATTEMPTS) {
+      return NextResponse.json(
+        { error: 'Too many verification attempts. Please wait 15 minutes and try again.' },
+        { status: 429, headers: { 'Retry-After': '900' } },
+      )
+    }
+    if (!currentAttempt || currentAttempt.resetAt <= now) {
+      attempts.set(attemptKey, { count: 0, resetAt: now + WINDOW_MS })
+    }
+
     const order = await prisma.order.findFirst({
       where: {
         orderNumber: String(orderNumber),
-        guestAccessToken: String(token).toUpperCase(),
+        guestAccessToken: normalizedToken,
       },
       include: {
         items: true,
@@ -26,10 +72,16 @@ export async function POST(request: NextRequest) {
         },
       },
     })
-    const address = (order?.billingAddress || order?.shippingAddress) as any
-    if (!order || getGuestVerificationCode(address) !== String(code).replace(/\s+/g, '').toUpperCase()) {
+    const address = getVerificationAddress(order?.billingAddress, order?.shippingAddress)
+    const expectedCode = getGuestVerificationCode(address)
+    const suppliedCode = String(code).replace(/\s+/g, '').toUpperCase()
+    if (!order || !isEqual(expectedCode, suppliedCode)) {
+      const entry = attempts.get(attemptKey) || { count: 0, resetAt: now + WINDOW_MS }
+      entry.count += 1
+      attempts.set(attemptKey, entry)
       return NextResponse.json({ error: 'The order link or verification code is incorrect' }, { status: 401 })
     }
+    attempts.delete(attemptKey)
 
     const products = await prisma.product.findMany({
       where: { id: { in: order.items.map((item) => item.productId) } },

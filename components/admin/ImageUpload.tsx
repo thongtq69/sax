@@ -4,7 +4,7 @@ import { useState, useRef, useCallback, useEffect } from 'react'
 import Image from 'next/image'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
-import { Upload, Link as LinkIcon, X, Loader2, ImageIcon, Plus, XCircle, GripVertical } from 'lucide-react'
+import { Upload, Link as LinkIcon, X, Loader2, ImageIcon, XCircle, GripVertical } from 'lucide-react'
 
 // Max file size for Cloudinary free plan (10MB limit)
 // Files larger than this will be auto-compressed before upload
@@ -103,8 +103,9 @@ export function ImageUpload({
   const uploadInstanceId = useRef(`image-upload-${Math.random().toString(36).slice(2)}`)
   const isCancelledRef = useRef<boolean>(false)
   
-  // Track uploaded images during async upload to avoid stale closure
-  const uploadedImagesRef = useRef<string[]>([])
+  // Always keep the latest list locally so sequential async uploads cannot
+  // overwrite a newer reorder/remove/change with a stale React closure.
+  const latestImagesRef = useRef<string[]>(images)
   
   // Drag and drop state
   const [draggedIndex, setDraggedIndex] = useState<number | null>(null)
@@ -116,6 +117,16 @@ export function ImageUpload({
       detail: { id: uploadInstanceId.current, uploading: isUploading },
     }))
   }, [isUploading, onUploadingChange])
+
+  useEffect(() => {
+    latestImagesRef.current = images
+  }, [images])
+
+  const emitImages = useCallback((nextImages: string[]) => {
+    const normalized = Array.from(new Set(nextImages.map((url) => url.trim()).filter(Boolean))).slice(0, maxImages)
+    latestImagesRef.current = normalized
+    onChange(normalized)
+  }, [maxImages, onChange])
 
   useEffect(() => () => {
     abortControllerRef.current?.abort()
@@ -162,6 +173,8 @@ export function ImageUpload({
     formData.append('timestamp', timestamp.toString())
     formData.append('api_key', apiKey)
     formData.append('folder', uploadFolder)
+    formData.append('overwrite', 'false')
+    formData.append('unique_filename', 'true')
     
     const uploadResponse = await fetch(
       `https://api.cloudinary.com/v1_1/${cloudName}/image/upload`,
@@ -200,10 +213,9 @@ export function ImageUpload({
     return await response.json()
   }
 
-  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const files = e.target.files
+  const handleFiles = async (files: FileList | File[]) => {
     if (!files || files.length === 0) return
-    const selectedFiles = Array.from(files).slice(0, Math.max(0, maxImages - images.length))
+    const selectedFiles = Array.from(files).slice(0, Math.max(0, maxImages - latestImagesRef.current.length))
     if (selectedFiles.some((file) => !file.type.startsWith('image/'))) {
       setError('Only image files are allowed.')
       return
@@ -215,8 +227,6 @@ export function ImageUpload({
     abortControllerRef.current = new AbortController()
     
     // Initialize ref with current images at start of upload
-    uploadedImagesRef.current = [...images]
-    
     setIsUploading(true)
     setError(null)
     setUploadProgress(0)
@@ -269,8 +279,7 @@ export function ImageUpload({
           }
           
           // Add to ref and call onChange with accumulated images
-          uploadedImagesRef.current = [...uploadedImagesRef.current, url]
-          onChange(uploadedImagesRef.current.slice(0, maxImages))
+          emitImages([...latestImagesRef.current, url])
         }
         
         if (!isCancelledRef.current) {
@@ -297,6 +306,10 @@ export function ImageUpload({
     await processUploads()
   }
 
+  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files) await handleFiles(e.target.files)
+  }
+
   const handleUrlSubmit = async () => {
     if (!urlInput.trim()) return
 
@@ -306,7 +319,7 @@ export function ImageUpload({
     try {
       abortControllerRef.current = new AbortController()
       const result = await uploadFromUrl(urlInput.trim(), abortControllerRef.current.signal)
-      onChange([...images, result.url].slice(0, maxImages))
+      emitImages([...latestImagesRef.current, result.url])
       setUrlInput('')
     } catch (err: any) {
       setError(err.message || 'Failed to upload from URL')
@@ -316,24 +329,17 @@ export function ImageUpload({
     }
   }
 
-  const handleAddUrlDirectly = () => {
-    if (!urlInput.trim()) return
-    // Add URL directly without uploading to Cloudinary
-    onChange([...images, urlInput.trim()].slice(0, maxImages))
-    setUrlInput('')
-  }
-
   const removeImage = (index: number) => {
-    onChange(images.filter((_, i) => i !== index))
+    emitImages(latestImagesRef.current.filter((_, i) => i !== index))
   }
 
   const moveImage = (index: number, direction: 'left' | 'right') => {
-    const newImages = [...images]
+    const newImages = [...latestImagesRef.current]
     const targetIndex = direction === 'left' ? index - 1 : index + 1
-    if (targetIndex < 0 || targetIndex >= images.length) return
+    if (targetIndex < 0 || targetIndex >= newImages.length) return
     
     [newImages[index], newImages[targetIndex]] = [newImages[targetIndex], newImages[index]]
-    onChange(newImages)
+    emitImages(newImages)
   }
 
   // Drag and drop handlers
@@ -377,10 +383,10 @@ export function ImageUpload({
       return
     }
 
-    const newImages = [...images]
+    const newImages = [...latestImagesRef.current]
     const [draggedImage] = newImages.splice(dragIndex, 1)
     newImages.splice(dropIndex, 0, draggedImage)
-    onChange(newImages)
+    emitImages(newImages)
     
     setDraggedIndex(null)
     setDragOverIndex(null)
@@ -420,6 +426,16 @@ export function ImageUpload({
                 : 'border-gray-300 hover:border-primary cursor-pointer'
             }`}
             onClick={() => !isUploading && fileInputRef.current?.click()}
+            onDragOver={(event) => {
+              event.preventDefault()
+              event.dataTransfer.dropEffect = 'copy'
+            }}
+            onDrop={(event) => {
+              event.preventDefault()
+              if (!isUploading && event.dataTransfer.files.length) {
+                void handleFiles(event.dataTransfer.files)
+              }
+            }}
           >
             <input
               ref={fileInputRef}
@@ -495,18 +511,9 @@ export function ImageUpload({
                 <Upload className="h-4 w-4" />
               )}
             </Button>
-            <Button
-              type="button"
-              variant="outline"
-              onClick={handleAddUrlDirectly}
-              disabled={!urlInput.trim()}
-              title="Add URL directly without uploading to Cloudinary"
-            >
-              <Plus className="h-4 w-4" />
-            </Button>
           </div>
           <p className="text-xs text-gray-500">
-            Click upload button to save to Cloudinary, or + to use URL directly
+            The image is copied to Cloudinary so it remains available even if the source URL changes.
           </p>
         </div>
       )}
@@ -661,6 +668,8 @@ export function SingleImageUpload({
     formData.append('timestamp', timestamp.toString())
     formData.append('api_key', apiKey)
     formData.append('folder', uploadFolder)
+    formData.append('overwrite', 'false')
+    formData.append('unique_filename', 'true')
     
     const uploadResponse = await fetch(
       `https://api.cloudinary.com/v1_1/${cloudName}/image/upload`,

@@ -9,11 +9,12 @@ import { getBaseUrl } from '@/lib/seo';
 
 export const revalidate = 300 // Revalidate every 5 minutes
 
-export default async function BlogPostPage({
-    params,
-}: {
-    params: { slug: string };
-}) {
+export default async function BlogPostPage(
+    props: {
+        params: Promise<{ slug: string }>;
+    }
+) {
+    const params = await props.params;
     const post = await prisma.blogPost.findUnique({
         where: { slug: params.slug },
     })
@@ -88,7 +89,6 @@ export default async function BlogPostPage({
             {/* Structured Data for SEO */}
             <StructuredData data={articleSchema} />
             <StructuredData data={breadcrumbSchema} />
-
             {/* Hero Section */}
             <section className="relative bg-secondary py-12 overflow-hidden">
                 {/* Pattern */}
@@ -145,7 +145,6 @@ export default async function BlogPostPage({
                     </div>
                 </div>
             </section>
-
             {/* Main Content */}
             <section className="py-12">
                 <div className="container mx-auto px-4">

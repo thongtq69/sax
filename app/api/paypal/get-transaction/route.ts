@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { auth } from '@/lib/auth'
+import { mergeOrderAddress } from '@/lib/order-address'
 
 const PAYPAL_API_URL = process.env.PAYPAL_MODE === 'live' 
   ? 'https://api-m.paypal.com'
@@ -169,25 +170,25 @@ export async function GET(request: NextRequest) {
 
       // Update order with PayPal data
       if (paypalShipping.email || paypalShipping.address1) {
+        const mergedShipping = mergeOrderAddress(shippingAddress, paypalShipping)
+        const mergedBilling = {
+          ...(billingAddress || {}),
+          ...mergeOrderAddress(billingAddress, mergedShipping),
+          ...paypalBilling,
+        }
         await prisma.order.update({
           where: { id: order.id },
           data: {
-            shippingAddress: {
-              ...shippingAddress,
-              ...paypalShipping,
-            },
-            billingAddress: {
-              ...billingAddress,
-              ...paypalBilling,
-            },
+            shippingAddress: mergedShipping,
+            billingAddress: mergedBilling,
           },
         })
 
         return NextResponse.json({
           success: true,
           hasInfo: true,
-          shippingAddress: { ...shippingAddress, ...paypalShipping },
-          billingAddress: { ...billingAddress, ...paypalBilling },
+          shippingAddress: mergedShipping,
+          billingAddress: mergedBilling,
           source: 'paypal_api',
         })
       }

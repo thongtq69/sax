@@ -7,7 +7,8 @@ import { getProductUrl } from '@/lib/api'
 import { getOrderTrackingMeta } from '@/lib/order-utils'
 import { OrderReviewForm } from '@/components/account/OrderReviewForm'
 
-export default async function AccountOrderDetailPage({ params }: { params: { orderNumber: string } }) {
+export default async function AccountOrderDetailPage(props: { params: Promise<{ orderNumber: string }> }) {
+  const params = await props.params;
   const session = await auth()
 
   if (!session?.user?.id) {

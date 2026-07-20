@@ -7,6 +7,13 @@ export const config = {
     '/api/admin/:path*',
     '/api/orders/:path*',
     '/api/upload/:path*',
+    '/api/products/:path*',
+    '/api/categories/:path*',
+    '/api/subcategories/:path*',
+    '/api/blog/:path*',
+    '/api/promos/:path*',
+    '/api/models/:path*',
+    '/api/test/:path*',
     /*
      * Match all request paths except for the ones starting with:
      * - api (API routes)

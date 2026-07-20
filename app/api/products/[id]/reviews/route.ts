@@ -3,10 +3,8 @@ import { prisma } from '@/lib/prisma'
 import { auth } from '@/lib/auth'
 
 // GET /api/products/[id]/reviews - Get reviews for a product
-export async function GET(
-  request: NextRequest,
-  { params }: { params: { id: string } }
-) {
+export async function GET(request: NextRequest, props: { params: Promise<{ id: string }> }) {
+  const params = await props.params;
   try {
     const reviews = await prisma.review.findMany({
       where: { productId: params.id },
@@ -24,10 +22,8 @@ export async function GET(
 }
 
 // POST /api/products/[id]/reviews - Create a new review
-export async function POST(
-  request: NextRequest,
-  { params }: { params: { id: string } }
-) {
+export async function POST(request: NextRequest, props: { params: Promise<{ id: string }> }) {
+  const params = await props.params;
   try {
     const session = await auth()
     if (!session?.user?.id) {

@@ -7,6 +7,7 @@ import { auth } from '@/lib/auth'
 import { calculateServerOrderPricing } from '@/lib/order-pricing'
 import { generateGuestAccessToken, getSecureOrderPath } from '@/lib/guest-order'
 import { getBaseUrl } from '@/lib/seo'
+import { mergeOrderAddress, normalizeOrderAddress } from '@/lib/order-address'
 
 const PAYPAL_API_URL = process.env.PAYPAL_MODE === 'sandbox' 
   ? 'https://api-m.sandbox.paypal.com'
@@ -59,26 +60,15 @@ export async function POST(request: NextRequest) {
     const paypalName = paypalShipping?.name?.full_name
 
     // Determine final shipping address - prefer user-provided, fallback to PayPal
-    let finalShippingAddress = null
+    let finalShippingAddress: Record<string, any> | null = null
     
     if (shippingInfo && shippingInfo.firstName) {
       // Use user-provided shipping info
-      finalShippingAddress = {
-        email: shippingInfo.email,
-        firstName: shippingInfo.firstName,
-        lastName: shippingInfo.lastName,
-        address1: shippingInfo.address1,
-        address2: shippingInfo.address2 || '',
-        city: shippingInfo.city,
-        state: shippingInfo.state,
-        zip: shippingInfo.zip,
-        country: shippingInfo.country || 'United States',
-        phone: shippingInfo.phone,
-      }
+      finalShippingAddress = normalizeOrderAddress(shippingInfo)
     } else if (paypalAddress) {
       // Use PayPal shipping address
       const nameParts = paypalName?.split(' ') || ['', '']
-      finalShippingAddress = {
+      finalShippingAddress = normalizeOrderAddress({
         email: captureData.payer?.email_address || '',
         firstName: nameParts[0] || '',
         lastName: nameParts.slice(1).join(' ') || '',
@@ -89,8 +79,8 @@ export async function POST(request: NextRequest) {
         zip: paypalAddress.postal_code || '',
         country: paypalAddress.country_code || 'US',
         phone: '',
-        source: 'paypal', // Mark that this came from PayPal
-      }
+      })
+      finalShippingAddress.source = 'paypal'
     }
 
     const pricing = await calculateServerOrderPricing(items, finalShippingAddress?.country || 'US')
@@ -121,6 +111,11 @@ export async function POST(request: NextRequest) {
         guestAccessToken,
         shippingAddress: finalShippingAddress,
         billingAddress: {
+          ...mergeOrderAddress({
+            email: captureData.payer?.email_address,
+            firstName: captureData.payer?.name?.given_name,
+            lastName: captureData.payer?.name?.surname,
+          }, finalShippingAddress),
           paypalOrderId: captureData.id,
           paypalPayerId: captureData.payer?.payer_id,
           paypalEmail: captureData.payer?.email_address,

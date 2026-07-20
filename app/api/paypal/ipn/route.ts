@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { sendOrderConfirmationEmail } from '@/lib/email'
 import { deductOrderStock } from '@/lib/order-stock'
+import { mergeOrderAddress } from '@/lib/order-address'
 
 export const dynamic = 'force-dynamic'
 
@@ -257,8 +258,16 @@ export async function POST(request: NextRequest) {
         }
       }
       
-      // Store billing/payment info
+      // Preserve the checkout billing address. PayPal metadata is additive and
+      // must never replace ZIP/phone fields used by invoices and guest access.
+      const existingBilling = existingOrder.billingAddress as any || {}
+      const billingAddress = mergeOrderAddress(
+        existingBilling,
+        updateData.shippingAddress || existingOrder.shippingAddress || paypalShippingAddress,
+      )
       updateData.billingAddress = {
+        ...existingBilling,
+        ...billingAddress,
         ...paypalPayerInfo,
         ...paymentDetails,
       }

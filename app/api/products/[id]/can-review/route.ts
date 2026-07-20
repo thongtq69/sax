@@ -5,10 +5,8 @@ import { auth } from '@/lib/auth'
 // GET /api/products/[id]/can-review
 // Returns whether the current user can submit a review for this product
 // (i.e., logged in, purchased it, and hasn't reviewed it yet).
-export async function GET(
-  _request: NextRequest,
-  { params }: { params: { id: string } }
-) {
+export async function GET(_request: NextRequest, props: { params: Promise<{ id: string }> }) {
+  const params = await props.params;
   try {
     const session = await auth()
     if (!session?.user?.id) {

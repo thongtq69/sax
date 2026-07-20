@@ -4,10 +4,8 @@ import { prisma } from '@/lib/prisma'
 export const dynamic = 'force-dynamic'
 
 // GET /api/promos/[id] - Get a single promo banner
-export async function GET(
-  request: NextRequest,
-  { params }: { params: { id: string } }
-) {
+export async function GET(request: NextRequest, props: { params: Promise<{ id: string }> }) {
+  const params = await props.params;
   try {
     const promo = await prisma.promoBanner.findUnique({
       where: { id: params.id },
@@ -31,10 +29,8 @@ export async function GET(
 }
 
 // PUT /api/promos/[id] - Update a promo banner
-export async function PUT(
-  request: NextRequest,
-  { params }: { params: { id: string } }
-) {
+export async function PUT(request: NextRequest, props: { params: Promise<{ id: string }> }) {
+  const params = await props.params;
   try {
     const body = await request.json()
     const { title, description, image, ctaText, ctaLink } = body
@@ -67,10 +63,8 @@ export async function PUT(
 }
 
 // DELETE /api/promos/[id] - Delete a promo banner
-export async function DELETE(
-  request: NextRequest,
-  { params }: { params: { id: string } }
-) {
+export async function DELETE(request: NextRequest, props: { params: Promise<{ id: string }> }) {
+  const params = await props.params;
   try {
     await prisma.promoBanner.delete({
       where: { id: params.id },

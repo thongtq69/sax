@@ -45,10 +45,20 @@ export async function POST(request: NextRequest) {
     let uploadResult
 
     if (url) {
+      let remoteUrl: URL
+      try {
+        remoteUrl = new URL(url)
+      } catch {
+        return NextResponse.json({ error: 'Invalid image URL' }, { status: 400 })
+      }
+      if (!['http:', 'https:'].includes(remoteUrl.protocol)) {
+        return NextResponse.json({ error: 'Only HTTP(S) image URLs are allowed' }, { status: 400 })
+      }
       // Upload from URL
-      uploadResult = await cloudinary.uploader.upload(url, {
+      uploadResult = await cloudinary.uploader.upload(remoteUrl.toString(), {
         folder,
-        overwrite: true,
+        overwrite: false,
+        unique_filename: true,
         resource_type: 'image',
       })
     } else if (file) {
@@ -59,7 +69,8 @@ export async function POST(request: NextRequest) {
 
       uploadResult = await cloudinary.uploader.upload(base64, {
         folder,
-        overwrite: true,
+        overwrite: false,
+        unique_filename: true,
         resource_type: 'image',
       })
     }

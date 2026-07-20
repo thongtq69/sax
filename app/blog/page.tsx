@@ -10,10 +10,11 @@ import { transformBlogPost } from '@/lib/api';
 export const revalidate = 300 // Revalidate every 5 minutes
 
 interface BlogPageProps {
-    searchParams: { page?: string; category?: string };
+    searchParams: Promise<{ page?: string; category?: string }>;
 }
 
-export default async function BlogPage({ searchParams }: BlogPageProps) {
+export default async function BlogPage(props: BlogPageProps) {
+    const searchParams = await props.searchParams;
     const currentPage = parseInt(searchParams?.page || '1', 10);
     const categoryFilter = searchParams?.category;
     const itemsPerPage = 6;

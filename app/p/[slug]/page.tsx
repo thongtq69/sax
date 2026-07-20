@@ -23,8 +23,8 @@ function formatTitleToken(token: string, isFirst: boolean): string {
     // Hyphenated model code: letters-digits ("yts-62", "yas-875ex")
     if (/^[a-z]+-[a-z0-9]+$/i.test(token)) {
         return token.replace(/^([a-z]+)-([a-z0-9]+)$/i, (_, letters: string, rest: string) => {
-            return `${letters.toUpperCase()}-${/^\d/.test(rest) ? rest.toUpperCase() : rest.toUpperCase()}`
-        })
+            return `${letters.toUpperCase()}-${/^\d/.test(rest) ? rest.toUpperCase() : rest.toUpperCase()}`;
+        });
     }
 
     // Compact alphanumeric model code with both letters and digits ("wo20", "62m")
@@ -145,11 +145,12 @@ async function findModelProductsBySlug(slug: string) {
     return legacyMatches
 }
 
-export async function generateMetadata({
-    params,
-}: {
-    params: { slug: string }
-}): Promise<Metadata> {
+export async function generateMetadata(
+    props: {
+        params: Promise<{ slug: string }>
+    }
+): Promise<Metadata> {
+    const params = await props.params;
     const sampleProducts = await findModelProductsBySlug(params.slug)
     const sampleProduct = sampleProducts.length > 0 ? sampleProducts[0] : null
 
@@ -214,11 +215,12 @@ export async function generateMetadata({
     }
 }
 
-export default async function ModelPage({
-    params,
-}: {
-    params: { slug: string }
-}) {
+export default async function ModelPage(
+    props: {
+        params: Promise<{ slug: string }>
+    }
+) {
+    const params = await props.params;
     const apiProducts = await findModelProductsBySlug(params.slug)
 
     if (apiProducts.length === 0) {
@@ -293,7 +295,7 @@ export default async function ModelPage({
 
         return formatModelDisplayName(
             `${displayBrand} ${name} ${subcategoryName} Saxophone`.replace(/\s+/g, ' ').trim()
-        )
+        );
     }
 
     const fullModelName = getFullModelName()

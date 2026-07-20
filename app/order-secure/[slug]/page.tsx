@@ -15,6 +15,7 @@ export default async function SecureOrderPage({ params }: { params: Promise<{ sl
   if (separator < 1) notFound()
   const orderNumber = decodeURIComponent(slug.slice(0, separator))
   const token = decodeURIComponent(slug.slice(separator + 1)).toUpperCase()
-  if (!/^[A-F0-9]{8}$/.test(token)) notFound()
+  // Accept legacy 32-bit links while issuing 128-bit tokens for all new orders.
+  if (!/^(?:[A-F0-9]{8}|[A-F0-9]{32})$/.test(token)) notFound()
   return <SecureOrderViewer orderNumber={orderNumber} token={token} />
 }

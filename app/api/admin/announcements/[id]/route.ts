@@ -2,10 +2,8 @@ import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 
 // GET single announcement
-export async function GET(
-  request: NextRequest,
-  { params }: { params: { id: string } }
-) {
+export async function GET(request: NextRequest, props: { params: Promise<{ id: string }> }) {
+  const params = await props.params;
   try {
     const announcement = await prisma.announcement.findUnique({
       where: { id: params.id },
@@ -23,10 +21,8 @@ export async function GET(
 }
 
 // PUT update announcement
-export async function PUT(
-  request: NextRequest,
-  { params }: { params: { id: string } }
-) {
+export async function PUT(request: NextRequest, props: { params: Promise<{ id: string }> }) {
+  const params = await props.params;
   try {
     const body = await request.json()
     const { title, description, ctaText, ctaLink, order, isActive } = body
@@ -51,10 +47,8 @@ export async function PUT(
 }
 
 // DELETE announcement
-export async function DELETE(
-  request: NextRequest,
-  { params }: { params: { id: string } }
-) {
+export async function DELETE(request: NextRequest, props: { params: Promise<{ id: string }> }) {
+  const params = await props.params;
   try {
     await prisma.announcement.delete({
       where: { id: params.id },

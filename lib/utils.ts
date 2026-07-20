@@ -12,13 +12,18 @@ export function getImageUrl(url: string): string {
   if (!url) return '';
   
   // If it's already a local/proxy URL, return as is
-  if (url.startsWith('/') || url.includes('/api/image-proxy')) {
+  if (url.startsWith('/')) {
     return url;
   }
-  
-  // If it's a Reverb image, use proxy
-  if (url.includes('reverb.com') || url.includes('rvb-img.reverb.com') || url.includes('img.reverb.com')) {
-    return `/api/image-proxy?url=${encodeURIComponent(url)}`;
+
+  try {
+    const parsed = new URL(url)
+    const approvedHosts = new Set(['rvb-img.reverb.com', 'img.reverb.com', 'images.reverb.com'])
+    if (parsed.protocol === 'https:' && approvedHosts.has(parsed.hostname.toLowerCase())) {
+      return `/api/image-proxy?url=${encodeURIComponent(parsed.toString())}`;
+    }
+  } catch {
+    return ''
   }
   
   // Otherwise return original URL

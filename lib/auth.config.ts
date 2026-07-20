@@ -28,9 +28,28 @@ export const authConfig: NextAuthConfig = {
 
             // Define protected routes
             const isAdminApi = nextUrl.pathname.startsWith('/api/admin')
+            const adminContentPrefixes = [
+                '/api/categories',
+                '/api/subcategories',
+                '/api/blog',
+                '/api/promos',
+                '/api/models',
+            ]
+            const isProductAdminMutation = (
+                request.method === 'POST' && nextUrl.pathname === '/api/products'
+            ) || (
+                ['PUT', 'PATCH', 'DELETE'].includes(request.method)
+                && /^\/api\/products\/[^/]+$/.test(nextUrl.pathname)
+            )
+            const isAdminContentMutation = request.method !== 'GET' && (
+                isProductAdminMutation
+                || adminContentPrefixes.some((path) => nextUrl.pathname.startsWith(path))
+            )
             const isSensitiveApi = isAdminApi ||
                 nextUrl.pathname.startsWith('/api/orders') ||
-                nextUrl.pathname.startsWith('/api/upload')
+                nextUrl.pathname.startsWith('/api/upload') ||
+                nextUrl.pathname.startsWith('/api/test') ||
+                isAdminContentMutation
 
             const publicAdminGetPrefixes = [
                 '/api/admin/testimonials',

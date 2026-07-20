@@ -121,11 +121,12 @@ async function findProductByItemParam(param: string, includeCategoryOnly = false
   return null
 }
 
-export async function generateMetadata({
-  params,
-}: {
-  params: { slug: string }
-}): Promise<Metadata> {
+export async function generateMetadata(
+  props: {
+    params: Promise<{ slug: string }>
+  }
+): Promise<Metadata> {
+  const params = await props.params;
   try {
     const apiProduct = await findProductByItemParam(params.slug, true)
 
@@ -223,11 +224,12 @@ export async function generateMetadata({
   }
 }
 
-export default async function ProductPage({
-  params,
-}: {
-  params: { slug: string }
-}) {
+export default async function ProductPage(
+  props: {
+    params: Promise<{ slug: string }>
+  }
+) {
+  const params = await props.params;
   const apiProduct = await findProductByItemParam(params.slug)
 
   if (!apiProduct) {
@@ -275,7 +277,6 @@ export default async function ProductPage({
           }] : [])
         ]
       }} />
-
       {/* Breadcrumbs */}
       <div className="bg-muted/30 border-b">
         <div className="container mx-auto px-4 py-2 md:py-3 lg:py-4">
@@ -303,10 +304,9 @@ export default async function ProductPage({
           </nav>
         </div>
       </div>
-
       <div className="container mx-auto px-4 py-2 md:py-6 lg:py-8">
         <ProductDetailClient product={product} />
       </div>
     </div>
-  )
+  );
 }
