@@ -84,6 +84,16 @@ const nextConfig = {
         ],
       },
       {
+        // Guest order links contain private customer/order information.
+        source: '/order-secure/:path*',
+        headers: [
+          {
+            key: 'X-Robots-Tag',
+            value: 'noindex, nofollow, noarchive',
+          },
+        ],
+      },
+      {
         source: '/api/:path*',
         headers: [
           {
