@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server"
 import { prisma } from "@/lib/prisma"
 import { sendWelcomeEmail } from "@/lib/email"
+import { claimGuestOrders } from "@/lib/claim-guest-orders"
 
 export async function POST(request: NextRequest) {
   try {
@@ -36,14 +37,25 @@ export async function POST(request: NextRequest) {
     // Get user info for welcome email
     const user = await prisma.user.findUnique({
       where: { email: email.toLowerCase() },
-      select: { name: true }
+      select: { id: true, name: true, email: true }
     })
+
+    if (!user) {
+      return NextResponse.json(
+        { success: false, message: "Account not found" },
+        { status: 404 }
+      )
+    }
 
     // Update user email verification status
     await prisma.user.update({
       where: { email: email.toLowerCase() },
       data: { emailVerified: new Date() }
     })
+
+    // Email ownership is proven only after OTP verification. Claiming here
+    // prevents someone registering another person's address to view orders.
+    await claimGuestOrders(user.id, user.email)
 
     // Delete used verification token
     await prisma.verificationToken.delete({

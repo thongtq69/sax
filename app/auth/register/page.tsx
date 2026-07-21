@@ -4,7 +4,12 @@ import { RegisterForm } from '@/components/auth/RegisterForm'
 import { SocialLoginButtons } from '@/components/auth/SocialLoginButtons'
 import { UserPlus } from 'lucide-react'
 
-export default function RegisterPage() {
+export default async function RegisterPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ callbackUrl?: string; email?: string }>
+}) {
+  const { callbackUrl, email } = await searchParams
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center p-4">
       <div className="max-w-md w-full bg-white rounded-lg shadow-lg p-8">
@@ -29,18 +34,18 @@ export default function RegisterPage() {
         </div>
 
         {/* Register Form */}
-        <RegisterForm />
+        <RegisterForm callbackUrl={callbackUrl} initialEmail={email} />
 
         {/* Social Login */}
         <div className="mt-6">
-          <SocialLoginButtons />
+          <SocialLoginButtons callbackUrl={callbackUrl} />
         </div>
 
         {/* Footer Links */}
         <div className="mt-8 text-center space-y-2">
           <p className="text-sm text-gray-600">
             Already have an account?{' '}
-            <Link href="/auth/login" className="text-blue-600 hover:text-blue-500 font-medium">
+            <Link href={callbackUrl ? `/auth/login?callbackUrl=${encodeURIComponent(callbackUrl)}` : '/auth/login'} className="text-blue-600 hover:text-blue-500 font-medium">
               Sign in
             </Link>
           </p>

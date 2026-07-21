@@ -3,6 +3,7 @@ import { prisma } from '@/lib/prisma'
 import { auth } from '@/lib/auth'
 import { getBrandDescriptionTemplate } from '@/lib/brand-description'
 import { sanitizeEditableHtml } from '@/lib/sanitize-html'
+import { normalizeModels } from '@/lib/models'
 
 // GET single brand
 export async function GET(
@@ -19,7 +20,7 @@ export async function GET(
       return NextResponse.json({ error: 'Brand not found' }, { status: 404 })
     }
 
-    return NextResponse.json(brand)
+    return NextResponse.json({ ...brand, models: normalizeModels(brand.models) })
   } catch (error) {
     console.error('Error fetching brand:', error)
     return NextResponse.json({ error: 'Failed to fetch brand' }, { status: 500 })
@@ -88,7 +89,7 @@ export async function PUT(
           : {},
         metaTitle: (typeof metaTitle === 'string' && metaTitle.trim()) || null,
         metaDescription: (typeof metaDescription === 'string' && metaDescription.trim()) || null,
-        models: models || [],
+        models: normalizeModels(models),
         isActive: isActive ?? true,
         order: order ?? 0
       }

@@ -139,6 +139,14 @@ export default function AdminOrderDetailPage(props: { params: Promise<{ orderNum
   }
 
   const currentInvoice = order?.invoices?.[0]
+  const invoiceSnapshot = useMemo(() => {
+    try { return JSON.parse(invoiceDraft || '{}') }
+    catch { return null }
+  }, [invoiceDraft])
+  const updateInvoiceField = (field: string, value: unknown) => {
+    if (!invoiceSnapshot) return
+    setInvoiceDraft(JSON.stringify({ ...invoiceSnapshot, [field]: value }, null, 2))
+  }
   const createInvoice = async (revision = false) => {
     if (!order) return
     setInvoiceBusy(true)
@@ -318,6 +326,29 @@ export default function AdminOrderDetailPage(props: { params: Promise<{ orderNum
             {currentInvoice?.status === 'draft' && (
               <div className="mt-4 space-y-3">
                 <p className="text-sm text-gray-600">Edit the draft data below. Finalizing creates an immutable HTML invoice; later corrections require a revision.</p>
+                <div className="grid gap-4 rounded-xl border bg-amber-50/50 p-4 md:grid-cols-2">
+                  <div>
+                    <label className="mb-2 block text-sm font-medium text-slate-700">Payment Method</label>
+                    <Input
+                      value={invoiceSnapshot?.paymentMethod || 'PayPal'}
+                      onChange={(event) => updateInvoiceField('paymentMethod', event.target.value)}
+                      placeholder="PayPal or Bank Transfer"
+                      disabled={!invoiceSnapshot}
+                    />
+                  </div>
+                  <div>
+                    <label className="mb-2 block text-sm font-medium text-slate-700">Deposit ($)</label>
+                    <Input
+                      type="number"
+                      min="0"
+                      step="0.01"
+                      value={Number(invoiceSnapshot?.deposit || 0)}
+                      onChange={(event) => updateInvoiceField('deposit', Math.max(0, Number(event.target.value) || 0))}
+                      disabled={!invoiceSnapshot}
+                    />
+                    <p className="mt-1 text-xs text-slate-500">Defaults to $0.00 and is deducted from Total Due.</p>
+                  </div>
+                </div>
                 <textarea
                   value={invoiceDraft}
                   onChange={(event) => setInvoiceDraft(event.target.value)}

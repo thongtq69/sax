@@ -2,8 +2,9 @@ import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { getGuestVerificationCode } from '@/lib/guest-order'
 import { getOrderTrackingMeta } from '@/lib/order-utils'
-import { getVerificationAddress } from '@/lib/order-address'
+import { getVerificationAddress, normalizeOrderAddress } from '@/lib/order-address'
 import { timingSafeEqual } from 'crypto'
+import { renderInvoiceRecord, getOrderPaymentMethod } from '@/lib/invoice'
 
 export const dynamic = 'force-dynamic'
 
@@ -85,29 +86,42 @@ export async function POST(request: NextRequest) {
 
     const products = await prisma.product.findMany({
       where: { id: { in: order.items.map((item) => item.productId) } },
-      select: { id: true, name: true, sku: true, images: true },
+      select: { id: true, name: true, sku: true, images: true, slug: true, specs: true },
     })
     const productMap = new Map(products.map((product) => [product.id, product]))
-    const shippingAddress = order.shippingAddress as any
+    const shippingAddress = normalizeOrderAddress(order.shippingAddress)
+    const billingAddress = normalizeOrderAddress(order.billingAddress)
+    const subtotal = order.items.reduce((sum, item) => sum + item.price * item.quantity, 0)
+    const discount = order.discount || 0
+    const shipping = Math.max(0, order.total + discount - subtotal)
 
     return NextResponse.json({
       order: {
         orderNumber: order.orderNumber,
         status: order.status,
         total: order.total,
-        discount: order.discount || 0,
+        subtotal,
+        shipping,
+        discount,
+        couponCode: order.couponCode,
+        paymentMethod: getOrderPaymentMethod(order),
         createdAt: order.createdAt,
-        billingAddress: order.billingAddress,
-        shippingAddress: order.shippingAddress,
+        billingAddress,
+        shippingAddress,
         tracking: getOrderTrackingMeta(shippingAddress),
         items: order.items.map((item) => ({
           ...item,
           name: productMap.get(item.productId)?.name || 'Product',
           sku: productMap.get(item.productId)?.sku || 'N/A',
           image: productMap.get(item.productId)?.images?.[0] || null,
+          slug: productMap.get(item.productId)?.slug || null,
+          specs: productMap.get(item.productId)?.specs || null,
         })),
         invoice: order.invoices[0]
-          ? { invoiceNumber: order.invoices[0].invoiceNumber, html: order.invoices[0].html }
+          ? {
+              invoiceNumber: order.invoices[0].invoiceNumber,
+              html: renderInvoiceRecord(order.invoices[0], order),
+            }
           : null,
       },
     })

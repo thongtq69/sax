@@ -3,6 +3,7 @@ import { prisma } from '@/lib/prisma'
 import { auth } from '@/lib/auth'
 import { getBrandDescriptionTemplate } from '@/lib/brand-description'
 import { sanitizeEditableHtml } from '@/lib/sanitize-html'
+import { normalizeModels } from '@/lib/models'
 
 // GET all brands
 export async function GET() {
@@ -13,7 +14,7 @@ export async function GET() {
         { name: 'asc' }
       ]
     })
-    return NextResponse.json(brands)
+    return NextResponse.json(brands.map((brand) => ({ ...brand, models: normalizeModels(brand.models) })))
   } catch (error) {
     console.error('Error fetching brands:', error)
     return NextResponse.json({ error: 'Failed to fetch brands' }, { status: 500 })
@@ -72,7 +73,7 @@ export async function POST(request: NextRequest) {
           : {},
         metaTitle: (typeof metaTitle === 'string' && metaTitle.trim()) || null,
         metaDescription: (typeof metaDescription === 'string' && metaDescription.trim()) || null,
-        models: models || [],
+        models: normalizeModels(models),
         isActive,
         order
       }

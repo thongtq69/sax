@@ -164,7 +164,7 @@ export function LoginForm({ callbackUrl }: LoginFormProps) {
       <div className="text-center">
         <p className="text-sm text-gray-600">
           Don't have an account?{' '}
-          <Link href="/auth/register" className="text-blue-600 hover:text-blue-500 font-medium">
+          <Link href={callbackUrl ? `/auth/register?callbackUrl=${encodeURIComponent(callbackUrl)}` : '/auth/register'} className="text-blue-600 hover:text-blue-500 font-medium">
             Sign up
           </Link>
         </p>

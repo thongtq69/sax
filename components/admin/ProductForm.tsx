@@ -29,6 +29,7 @@ import {
   FileText,
 } from 'lucide-react'
 import { ImageUpload } from '@/components/admin/ImageUpload'
+import { normalizeModels } from '@/lib/models'
 
 type CategoryShape = {
   id: string
@@ -692,7 +693,7 @@ export default function ProductForm({
               <label className="block text-sm font-medium text-gray-700 mb-2">Model</label>
               {(() => {
                 const selectedBrand = brands.find((b) => b.name === formData.brand)
-                const brandModels = selectedBrand?.models || []
+                const brandModels = normalizeModels(selectedBrand?.models)
                 return (
                   <>
                     {brandModels.length > 0 && (

@@ -14,6 +14,7 @@ export default function VerifyOTPContent() {
   const searchParams = useSearchParams()
   const router = useRouter()
   const email = searchParams.get("email")
+  const callbackUrl = searchParams.get("callbackUrl")
   
   const [otp, setOtp] = useState(["", "", "", "", "", ""])
   const [isVerifying, setIsVerifying] = useState(false)
@@ -90,7 +91,9 @@ export default function VerifyOTPContent() {
       if (data.success) {
         setMessage({ type: "success", text: data.message })
         setTimeout(() => {
-          router.push("/auth/login?verified=true")
+          const params = new URLSearchParams({ verified: 'true' })
+          if (callbackUrl) params.set('callbackUrl', callbackUrl)
+          router.push(`/auth/login?${params.toString()}`)
         }, 2000)
       } else {
         setMessage({ type: "error", text: data.message })

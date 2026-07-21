@@ -92,9 +92,21 @@ export const authConfig: NextAuthConfig = {
   callbacks: {
     async signIn({ user, account }) {
       try {
-        // Allow OAuth sign-in
-        if (account?.provider !== "credentials") {
-          return true
+        // A successful credentials login proves ownership of the existing
+        // verified account, so guest purchases made with that email can be attached.
+        if (user.id && user.email) {
+          if (account?.provider === "credentials") {
+            const verifiedUser = await prisma.user.findUnique({
+              where: { id: user.id },
+              select: { emailVerified: true },
+            })
+            if (verifiedUser?.emailVerified) {
+              await claimGuestOrders(user.id, user.email)
+            }
+          } else {
+            // OAuth providers verify ownership of the returned email address.
+            await claimGuestOrders(user.id, user.email)
+          }
         }
         return true
       } catch (error) {

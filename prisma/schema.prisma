@@ -209,6 +209,8 @@ model Order {
   shippingAddress Json?
   billingAddress  Json?
   guestAccessToken String?
+  confirmationEmailClaimedAt DateTime?
+  confirmationEmailSentAt DateTime?
   notes       String?     // Admin-only internal note (e.g. off-platform payment channel)
   invoices    Invoice[]
   createdAt   DateTime    @default(now())

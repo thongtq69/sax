@@ -2,8 +2,8 @@ import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { deductOrderStock } from '@/lib/order-stock'
 import { requireAdmin } from '@/lib/admin-auth'
-import { getSecureOrderPath } from '@/lib/guest-order'
-import { getBaseUrl } from '@/lib/seo'
+import { sendOrderConfirmationOnce } from '@/lib/order-confirmation'
+import { renderInvoiceRecord } from '@/lib/invoice'
 
 export const dynamic = 'force-dynamic'
 
@@ -20,6 +20,9 @@ async function enrichOrdersWithProducts(orders: any[]) {
 
   return orders.map(order => ({
     ...order,
+    invoices: order.invoices?.map((invoice: any) => invoice.status === 'finalized'
+      ? { ...invoice, html: renderInvoiceRecord(invoice, order) }
+      : invoice),
     items: order.items.map((item: any) => ({
       ...item,
       productSku: productMap.get(item.productId)?.sku || 'N/A',
@@ -196,73 +199,8 @@ export async function PATCH(request: NextRequest) {
     // Send order confirmation email when status changes to "paid"
     if (status === 'paid' && existingOrder.status !== 'paid') {
       try {
-        // Get customer email from multiple sources (priority order)
-        const shippingAddress = existingOrder.shippingAddress as any
-        const billingAddress = existingOrder.billingAddress as any
-        const customerEmail = existingOrder.user?.email || shippingAddress?.email || billingAddress?.email || null
-
-        if (customerEmail) {
-          // Fetch product details for order items
-          const productIds = existingOrder.items.map(item => item.productId)
-          const products = await prisma.product.findMany({
-            where: { id: { in: productIds } },
-            select: { id: true, name: true, sku: true },
-          })
-
-          const productMap = new Map(products.map(p => [p.id, p]))
-
-          // Prepare email data
-          const { sendOrderConfirmationEmail } = await import('@/lib/email')
-
-          // For email: show full payment amount (including shipping)
-          // Customer paid $30 total, so show $30 in email
-          const subtotal = existingOrder.items.reduce((sum, item) => sum + (item.price * item.quantity), 0)
-          const shipping = Math.max(0, existingOrder.total + (existingOrder.discount || 0) - subtotal)
-          const tax = 0
-          const totalForEmail = existingOrder.total // Full amount customer paid
-
-          await sendOrderConfirmationEmail({
-            orderId: existingOrder.id,
-            orderNumber: existingOrder.orderNumber || existingOrder.id,
-            customerEmail,
-            customerName: shippingAddress?.firstName
-              ? `${shippingAddress.firstName} ${shippingAddress.lastName || ''}`.trim()
-              : existingOrder.user?.name || 'Valued Customer',
-            items: existingOrder.items.map(item => {
-              const product = productMap.get(item.productId)
-              return {
-                name: product?.name || 'Product',
-                sku: product?.sku || 'N/A',
-                quantity: item.quantity,
-                price: item.price,
-              }
-            }),
-            subtotal,
-            shipping,
-            tax,
-            total: totalForEmail, // Show full payment amount in email
-            discount: existingOrder.discount || 0,
-            couponCode: existingOrder.couponCode || undefined,
-            shippingAddress: shippingAddress ? {
-              firstName: shippingAddress.firstName || '',
-              lastName: shippingAddress.lastName || '',
-              address1: shippingAddress.address1 || '',
-              address2: shippingAddress.address2 || '',
-              city: shippingAddress.city || '',
-              state: shippingAddress.state || '',
-              zip: shippingAddress.zip || '',
-              country: shippingAddress.country || '',
-              phone: shippingAddress.phone || '',
-            } : undefined,
-            secureOrderUrl: !existingOrder.userId && existingOrder.guestAccessToken
-              ? `${getBaseUrl()}${getSecureOrderPath(existingOrder.orderNumber || existingOrder.id, existingOrder.guestAccessToken)}`
-              : undefined,
-          })
-
-          console.log(`✅ Order confirmation email sent to ${customerEmail} for order ${existingOrder.orderNumber || existingOrder.id}`)
-        } else {
-          console.warn(`⚠️ No email found for order ${existingOrder.orderNumber || existingOrder.id}`)
-        }
+        const emailResult = await sendOrderConfirmationOnce(existingOrder.id)
+        console.log(`Order confirmation result for ${existingOrder.orderNumber || existingOrder.id}:`, emailResult)
       } catch (emailError) {
         console.error('Error sending order confirmation email:', emailError)
         // Don't fail the status update if email fails

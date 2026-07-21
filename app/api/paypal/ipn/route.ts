@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
-import { sendOrderConfirmationEmail } from '@/lib/email'
+import { sendOrderConfirmationOnce } from '@/lib/order-confirmation'
 import { deductOrderStock } from '@/lib/order-stock'
 import { mergeOrderAddress } from '@/lib/order-address'
 
@@ -247,7 +247,10 @@ export async function POST(request: NextRequest) {
           // Merge with existing if any
           ...(existingOrder.shippingAddress as object || {}),
           // PayPal data takes priority for these fields
-          email: payerEmail || (existingOrder.shippingAddress as any)?.email || '',
+          // Keep the checkout shipping recipient. The PayPal payer/billing
+          // email is stored separately so confirmation can reach both people.
+          email: (existingOrder.shippingAddress as any)?.email || payerEmail || '',
+          paypalEmail: payerEmail || '',
           name: addressName || `${payerFirstName || ''} ${payerLastName || ''}`.trim() || (existingOrder.shippingAddress as any)?.name || '',
           address1: addressStreet || (existingOrder.shippingAddress as any)?.address1 || '',
           city: addressCity || (existingOrder.shippingAddress as any)?.city || '',
@@ -295,70 +298,12 @@ export async function POST(request: NextRequest) {
         txnId,
       })
 
-      // Send order confirmation email when payment is completed
-      if (paymentStatus === 'Completed') {
+      // Only the first transition to paid may claim the confirmation email.
+      // The sender itself also uses an atomic claim to handle concurrent IPNs.
+      if (paymentStatus === 'Completed' && existingOrder.status !== 'paid') {
         try {
-          // Determine customer email: prefer user account email, then shipping email, then PayPal email
-          const customerEmail = existingOrder.user?.email 
-            || (existingOrder.shippingAddress as any)?.email 
-            || payerEmail
-
-          const customerName = existingOrder.user?.name 
-            || (existingOrder.shippingAddress as any)?.name
-            || `${payerFirstName || ''} ${payerLastName || ''}`.trim()
-            || 'Valued Customer'
-
-          if (customerEmail) {
-            // Fetch product details for email
-            const productIds = existingOrder.items.map((item: any) => item.productId)
-            const products = await prisma.product.findMany({
-              where: { id: { in: productIds } },
-              select: { id: true, name: true, sku: true, images: true }
-            })
-            const productMap = new Map(products.map(p => [p.id, p]))
-
-            const emailItems = existingOrder.items.map((item: any) => {
-              const product = productMap.get(item.productId)
-              return {
-                name: product?.name || 'Product',
-                sku: product?.sku || '',
-                quantity: item.quantity,
-                price: item.price,
-                image: product?.images?.[0] || undefined
-              }
-            })
-
-            const shippingAddr = updateData.shippingAddress || existingOrder.shippingAddress as any
-
-            await sendOrderConfirmationEmail({
-              orderId: existingOrder.id,
-              orderNumber: existingOrder.orderNumber || existingOrder.id,
-              customerEmail,
-              customerName,
-              items: emailItems,
-              subtotal: existingOrder.items.reduce((sum: number, item: any) => sum + (item.price * item.quantity), 0),
-              shipping: parseFloat(mcShipping || '0'),
-              tax: parseFloat(tax || '0'),
-              total: existingOrder.total,
-              discount: existingOrder.discount || 0,
-              couponCode: existingOrder.couponCode || undefined,
-              shippingAddress: shippingAddr ? {
-                firstName: shippingAddr.firstName || payerFirstName || '',
-                lastName: shippingAddr.lastName || payerLastName || '',
-                address1: shippingAddr.address1 || addressStreet || '',
-                address2: shippingAddr.address2 || '',
-                city: shippingAddr.city || addressCity || '',
-                state: shippingAddr.state || addressState || '',
-                zip: shippingAddr.zip || addressZip || '',
-                country: shippingAddr.country || addressCountry || '',
-                phone: shippingAddr.phone || contactPhone || '',
-              } : undefined
-            })
-
-            console.log('Order confirmation email sent to:', customerEmail)
-          } else {
-            console.log('No customer email found for order confirmation')
-          }
+          const emailResult = await sendOrderConfirmationOnce(existingOrder.id)
+          console.log('Order confirmation result:', emailResult)
         } catch (emailError) {
           console.error('Failed to send order confirmation email:', emailError)
         }

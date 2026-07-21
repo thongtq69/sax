@@ -4,6 +4,7 @@ import { buildInvoiceSnapshot, renderInvoiceHtml } from '../lib/invoice'
 import { getVerificationAddress } from '../lib/order-address'
 import { normalizeProductImages, ProductImageValidationError } from '../lib/product-images'
 import { getImageUrl } from '../lib/utils'
+import { normalizeModels } from '../lib/models'
 
 const clean = sanitizeEditableHtml(
   '<style>.x{color:red}</style><div class="x" onclick="bad()">OK</div><script>alert(1)</script>',
@@ -52,13 +53,46 @@ try {
 }
 
 const invoice = renderInvoiceHtml(
-  { seller: { name: 'James' }, billTo: { firstName: 'A' }, items: [], subtotal: 0, shipping: 0, total: 0 },
+  {
+    seller: { name: 'James' },
+    billTo: { firstName: 'A' },
+    items: [{ description: 'Test Saxophone', sku: 'SKU-1', quantity: 1, unitPrice: 100, amount: 100 }],
+    subtotal: 100,
+    discount: 10,
+    shipping: 20,
+    deposit: 25,
+    total: 110,
+  },
   'INV-1',
   '1',
   new Date('2026-01-01'),
 )
-if (!invoice.includes('INV-1') || !invoice.includes('BILL TO')) {
+if (
+  !invoice.includes('INV-1')
+  || !invoice.includes('BILL TO')
+  || !invoice.includes('SKU: SKU-1')
+  || !invoice.includes('Discount')
+  || !invoice.includes('Deposit')
+  || !invoice.includes('$85.00')
+  || !invoice.includes('This invoice is electronically generated; no physical signature is required for validity.')
+  || invoice.includes('permanent snapshot')
+) {
   throw new Error('Invoice rendering regression')
+}
+
+const zeroAdjustmentInvoice = renderInvoiceHtml(
+  { items: [], subtotal: 0, shipping: 0, discount: 0, deposit: 0 },
+  'INV-ZERO',
+  'ZERO',
+  new Date('2026-01-01'),
+)
+if (zeroAdjustmentInvoice.includes('-0.00')) {
+  throw new Error('Invoice zero adjustment rendering regression')
+}
+
+const models = normalizeModels([' s-902 ', 'A-991', 'a-991', 'A-900u', 'A-900'])
+if (models.join('|') !== 'A-900|A-900u|A-991|s-902') {
+  throw new Error(`Model sorting/deduplication regression: ${models.join('|')}`)
 }
 
 console.log('Critical fix verification passed.')

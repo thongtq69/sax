@@ -30,7 +30,7 @@ export async function POST(request: NextRequest) {
     const pricing = await calculateServerOrderPricing(items, address.country, couponCode)
     const session = await auth()
     const authenticatedUserId = session?.user?.id || null
-    const guestAccessToken = authenticatedUserId ? null : generateGuestAccessToken()
+    const guestAccessToken = generateGuestAccessToken()
 
     // Create order in database with pending status
     const order = await prisma.order.create({

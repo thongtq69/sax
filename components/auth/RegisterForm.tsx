@@ -10,11 +10,13 @@ import { Eye, EyeOff, Loader2, User, Mail, Lock, CheckCircle, XCircle } from 'lu
 
 interface RegisterFormProps {
   onSuccess?: () => void
+  callbackUrl?: string
+  initialEmail?: string
 }
 
-export function RegisterForm({ onSuccess }: RegisterFormProps) {
+export function RegisterForm({ onSuccess, callbackUrl, initialEmail = '' }: RegisterFormProps) {
   const [name, setName] = useState('')
-  const [email, setEmail] = useState('')
+  const [email, setEmail] = useState(initialEmail)
   const [password, setPassword] = useState('')
   const [confirmPassword, setConfirmPassword] = useState('')
   const [showPassword, setShowPassword] = useState(false)
@@ -81,7 +83,9 @@ export function RegisterForm({ onSuccess }: RegisterFormProps) {
         onSuccess?.()
         // Redirect to OTP verification page
         setTimeout(() => {
-          router.push(`/auth/verify-otp?email=${encodeURIComponent(data.email)}`)
+          const params = new URLSearchParams({ email: data.email })
+          if (callbackUrl) params.set('callbackUrl', callbackUrl)
+          router.push(`/auth/verify-otp?${params.toString()}`)
         }, 2000)
       } else {
         setError(data.message)

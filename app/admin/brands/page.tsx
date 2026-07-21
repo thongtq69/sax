@@ -11,11 +11,12 @@ import {
   DialogTitle,
   DialogFooter,
 } from '@/components/ui/dialog'
-import { Plus, Edit, Trash2, Loader2, Tag, Search, GripVertical } from 'lucide-react'
+import { Plus, Edit, Trash2, Loader2, Tag, Search } from 'lucide-react'
 import Image from 'next/image'
 import { SingleImageUpload } from '@/components/admin/ImageUpload'
 import { getBrandDescriptionTemplate } from '@/lib/brand-description'
 import { HtmlSectionEditor } from '@/components/admin/HtmlSectionEditor'
+import { hasModel, normalizeModels } from '@/lib/models'
 
 interface Brand {
   id: string
@@ -58,6 +59,7 @@ export default function BrandsManagement() {
     order: 0
   })
   const [newModel, setNewModel] = useState('')
+  const [modelError, setModelError] = useState('')
 
   const getModelContentKey = (model: string) => {
     return model
@@ -91,7 +93,7 @@ export default function BrandsManagement() {
       const response = await fetch('/api/admin/brands')
       if (response.ok) {
         const data = await response.json()
-        setBrands(data)
+        setBrands(data.map((brand: Brand) => ({ ...brand, models: normalizeModels(brand.models) })))
       }
     } catch (error) {
       console.error('Error fetching brands:', error)
@@ -113,7 +115,7 @@ export default function BrandsManagement() {
         modelPageContent: brand.modelPageContent || {},
         metaTitle: brand.metaTitle || '',
         metaDescription: brand.metaDescription || '',
-        models: brand.models || [],
+        models: normalizeModels(brand.models),
         isActive: brand.isActive,
         order: brand.order
       })
@@ -135,7 +137,20 @@ export default function BrandsManagement() {
       })
     }
     setNewModel('')
+    setModelError('')
     setIsDialogOpen(true)
+  }
+
+  const addModel = () => {
+    const candidate = newModel.trim().replace(/\s+/g, ' ')
+    if (!candidate) return
+    if (hasModel(formData.models, candidate)) {
+      setModelError('This model already exists. Model names are matched without case differences.')
+      return
+    }
+    setFormData({ ...formData, models: normalizeModels([...formData.models, candidate]) })
+    setNewModel('')
+    setModelError('')
   }
 
   const handleSave = async () => {
@@ -153,7 +168,7 @@ export default function BrandsManagement() {
       const response = await fetch(url, {
         method: editingBrand ? 'PUT' : 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(formData)
+        body: JSON.stringify({ ...formData, models: normalizeModels(formData.models) })
       })
 
       if (!response.ok) {
@@ -287,6 +302,7 @@ export default function BrandsManagement() {
                   <Button
                     variant="ghost"
                     size="sm"
+                    aria-label={`Edit ${brand.name}`}
                     onClick={() => handleOpenDialog(brand)}
                   >
                     <Edit className="h-4 w-4" />
@@ -294,6 +310,7 @@ export default function BrandsManagement() {
                   <Button
                     variant="ghost"
                     size="sm"
+                    aria-label={`Delete ${brand.name}`}
                     onClick={() => handleDelete(brand)}
                     className="text-red-600 hover:text-red-700 hover:bg-red-50"
                   >
@@ -465,7 +482,7 @@ export default function BrandsManagement() {
                         onClick={() => {
                           const newModels = [...formData.models]
                           newModels.splice(index, 1)
-                          setFormData({ ...formData, models: newModels })
+                          setFormData({ ...formData, models: normalizeModels(newModels) })
                         }}
                         className="text-primary/60 hover:text-red-500 ml-1"
                       >
@@ -480,18 +497,12 @@ export default function BrandsManagement() {
               <div className="flex gap-2">
                 <Input
                   value={newModel}
-                  onChange={(e) => setNewModel(e.target.value)}
+                  onChange={(e) => { setNewModel(e.target.value); setModelError('') }}
                   placeholder="Enter model name..."
                   onKeyDown={(e) => {
                     if (e.key === 'Enter' && newModel.trim()) {
                       e.preventDefault()
-                      if (!formData.models.includes(newModel.trim())) {
-                        setFormData({
-                          ...formData,
-                          models: [...formData.models, newModel.trim()]
-                        })
-                      }
-                      setNewModel('')
+                      addModel()
                     }
                   }}
                 />
@@ -499,18 +510,13 @@ export default function BrandsManagement() {
                   type="button"
                   variant="outline"
                   onClick={() => {
-                    if (newModel.trim() && !formData.models.includes(newModel.trim())) {
-                      setFormData({
-                        ...formData,
-                        models: [...formData.models, newModel.trim()]
-                      })
-                      setNewModel('')
-                    }
+                    addModel()
                   }}
                 >
                   <Plus className="h-4 w-4" />
                 </Button>
               </div>
+              {modelError && <p className="mt-2 text-sm text-red-600">{modelError}</p>}
             </div>
 
             {formData.models.length > 0 && (

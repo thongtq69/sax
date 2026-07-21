@@ -6,6 +6,8 @@ import { prisma } from '@/lib/prisma'
 import { getProductUrl } from '@/lib/api'
 import { getOrderTrackingMeta } from '@/lib/order-utils'
 import { OrderReviewForm } from '@/components/account/OrderReviewForm'
+import { InvoiceFrame } from '@/components/order/InvoiceFrame'
+import { renderInvoiceRecord } from '@/lib/invoice'
 
 export default async function AccountOrderDetailPage(props: { params: Promise<{ orderNumber: string }> }) {
   const params = await props.params;
@@ -54,6 +56,7 @@ export default async function AccountOrderDetailPage(props: { params: Promise<{ 
   const subtotal = order.items.reduce((sum, item) => sum + item.price * item.quantity, 0)
   const discount = order.discount || 0
   const shipping = Math.max(0, order.total + discount - subtotal)
+  const invoiceHtml = order.invoices[0] ? renderInvoiceRecord(order.invoices[0], order) : null
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -120,14 +123,11 @@ export default async function AccountOrderDetailPage(props: { params: Promise<{ 
                 </div>
               </section>
 
-              {order.invoices[0]?.html && (
-                <section className="rounded-2xl border bg-white p-6 shadow-sm">
-                  <div className="mb-4 flex items-center justify-between">
-                    <h2 className="text-lg font-semibold text-slate-900">Invoice {order.invoices[0].invoiceNumber}</h2>
-                    <span className="text-xs text-slate-500">Use your browser&apos;s Print command to save a PDF.</span>
-                  </div>
-                  <iframe title="Invoice" srcDoc={order.invoices[0].html} className="h-[800px] w-full rounded-lg border" />
-                </section>
+              {invoiceHtml && (
+                <InvoiceFrame
+                  html={invoiceHtml}
+                  invoiceNumber={order.invoices[0].invoiceNumber || `INV-${order.orderNumber || order.id}`}
+                />
               )}
             </div>
 

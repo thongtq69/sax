@@ -3,7 +3,7 @@
 import { useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
-import { CheckCircle, Package, Mail, ArrowRight, Clock, Loader2 } from 'lucide-react'
+import { CheckCircle, ArrowRight, Clock, Loader2 } from 'lucide-react'
 import { Suspense, useEffect, useState } from 'react'
 import { useCartStore } from '@/lib/store/cart'
 
@@ -127,10 +127,10 @@ function SuccessContent() {
         <div className="space-y-3">
           {secureOrderPath && (
             <div className="mb-5 rounded-lg border border-primary/30 bg-primary/5 p-4 text-left">
-              <h2 className="font-semibold text-secondary">Secure Your Order History</h2>
+              <h2 className="font-semibold text-secondary">Secure Order Link</h2>
               <p className="mt-1 text-sm text-gray-600">Use this private link to view live status, tracking and your finalized invoice without an account.</p>
               <Button asChild variant="outline" className="mt-3 w-full">
-                <Link href={secureOrderPath}>Open Secure Order</Link>
+                <Link href={secureOrderPath}>View Secure Order</Link>
               </Button>
               <p className="mt-3 text-xs text-gray-500">Create an account with the same email address and this order will be linked automatically.</p>
             </div>

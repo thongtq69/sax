@@ -103,7 +103,7 @@ export async function GET(request: NextRequest) {
     }
     const session = await auth()
     const canAccess = (order.userId && session?.user?.id === order.userId) ||
-      (!order.userId && order.guestAccessToken && guestToken?.toUpperCase() === order.guestAccessToken)
+      (order.guestAccessToken && guestToken?.toUpperCase() === order.guestAccessToken)
     if (!canAccess) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }

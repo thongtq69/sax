@@ -72,8 +72,13 @@ export async function POST(request: NextRequest) {
         if (existingOrder) {
           const existingShipping = existingOrder.shippingAddress as any || {}
           const existingBilling = existingOrder.billingAddress as any || {}
-          const expectedEmail = String(existingShipping.email || existingBilling.email || existingBilling.payerEmail || '').toLowerCase()
-          if (existingOrder.guestAccessToken && payerEmail && expectedEmail && payerEmail.toLowerCase() === expectedEmail) {
+          const expectedEmails = new Set([
+            existingShipping.email,
+            existingBilling.email,
+            existingBilling.payerEmail,
+            existingBilling.paypalEmail,
+          ].map((email) => String(email || '').trim().toLowerCase()).filter(Boolean))
+          if (existingOrder.guestAccessToken && payerEmail && expectedEmails.has(payerEmail.toLowerCase())) {
             secureOrderPath = getSecureOrderPath(existingOrder.orderNumber || existingOrder.id, existingOrder.guestAccessToken)
           }
           

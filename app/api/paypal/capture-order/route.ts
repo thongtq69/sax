@@ -1,12 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { generateUniqueOrderNumber } from '@/lib/order-utils'
-import { sendOrderConfirmationEmail } from '@/lib/email'
+import { sendOrderConfirmationOnce } from '@/lib/order-confirmation'
 import { deductOrderStock } from '@/lib/order-stock'
 import { auth } from '@/lib/auth'
 import { calculateServerOrderPricing } from '@/lib/order-pricing'
-import { generateGuestAccessToken, getSecureOrderPath } from '@/lib/guest-order'
-import { getBaseUrl } from '@/lib/seo'
+import { generateGuestAccessToken } from '@/lib/guest-order'
 import { mergeOrderAddress, normalizeOrderAddress } from '@/lib/order-address'
 
 const PAYPAL_API_URL = process.env.PAYPAL_MODE === 'sandbox' 
@@ -84,9 +83,6 @@ export async function POST(request: NextRequest) {
     }
 
     const pricing = await calculateServerOrderPricing(items, finalShippingAddress?.country || 'US')
-    const subtotal = pricing.subtotal
-    const shipping = pricing.shipping
-    const tax = 0
     const total = pricing.total
     const capturedTotal = Number(captureData.purchase_units?.[0]?.payments?.captures?.[0]?.amount?.value || 0)
     if (Math.abs(capturedTotal - total) > 0.01) {
@@ -95,7 +91,7 @@ export async function POST(request: NextRequest) {
     }
     const session = await auth()
     const authenticatedUserId = session?.user?.id || null
-    const guestAccessToken = authenticatedUserId ? null : generateGuestAccessToken()
+    const guestAccessToken = generateGuestAccessToken()
 
     // Generate unique order number (Vietnam timezone format)
     const orderNumber = generateUniqueOrderNumber()
@@ -155,62 +151,10 @@ export async function POST(request: NextRequest) {
       console.error('Failed to deduct stock after capture:', stockError)
     }
 
-    // Send order confirmation email
+    // A single idempotent sender handles all recipients and PayPal retries.
     try {
-      const customerEmail = finalShippingAddress?.email || captureData.payer?.email_address
-      const customerName = finalShippingAddress 
-        ? `${finalShippingAddress.firstName} ${finalShippingAddress.lastName}`
-        : `${captureData.payer?.name?.given_name || ''} ${captureData.payer?.name?.surname || ''}`.trim()
-
-      if (customerEmail) {
-        // Fetch product details for email
-        const productIds = pricing.items.map((item) => item.productId)
-        const products = await prisma.product.findMany({
-          where: { id: { in: productIds } },
-          select: { id: true, name: true, sku: true, images: true }
-        })
-
-        const productMap = new Map(products.map(p => [p.id, p]))
-
-        const emailItems = pricing.items.map((item) => {
-          const product = productMap.get(item.productId)
-          return {
-            name: product?.name || item.name || 'Product',
-            sku: product?.sku || item.sku || '',
-            quantity: item.quantity,
-            price: item.price,
-            image: product?.images?.[0] || undefined
-          }
-        })
-
-        await sendOrderConfirmationEmail({
-          orderId: order.id,
-          orderNumber: order.orderNumber!,
-          customerEmail,
-          customerName: customerName || 'Valued Customer',
-          items: emailItems,
-          subtotal,
-          shipping,
-          tax,
-          total,
-          shippingAddress: finalShippingAddress ? {
-            firstName: finalShippingAddress.firstName,
-            lastName: finalShippingAddress.lastName,
-            address1: finalShippingAddress.address1,
-            address2: finalShippingAddress.address2,
-            city: finalShippingAddress.city,
-            state: finalShippingAddress.state,
-            zip: finalShippingAddress.zip,
-            country: finalShippingAddress.country,
-            phone: finalShippingAddress.phone,
-          } : undefined,
-          secureOrderUrl: guestAccessToken
-            ? `${getBaseUrl()}${getSecureOrderPath(order.orderNumber!, guestAccessToken)}`
-            : undefined,
-        })
-
-        console.log('Order confirmation email sent to:', customerEmail)
-      }
+      const emailResult = await sendOrderConfirmationOnce(order.id)
+      console.log('Order confirmation result:', emailResult)
     } catch (emailError) {
       // Don't fail the order if email fails
       console.error('Failed to send order confirmation email:', emailError)

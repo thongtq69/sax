@@ -310,8 +310,8 @@ interface ShippingAddress {
 interface OrderEmailData {
   orderId?: string
   orderNumber: string
-  customerEmail: string
-  customerName: string
+  customerEmail: string | string[]
+  customerName: string | string[]
   items: OrderItem[]
   subtotal: number
   shipping: number
@@ -339,6 +339,20 @@ export async function sendOrderConfirmationEmail(data: OrderEmailData) {
     secureOrderUrl,
   } = data
 
+  const customerEmails = Array.from(new Set(
+    (Array.isArray(customerEmail) ? customerEmail : [customerEmail])
+      .map((email) => email.trim().toLowerCase())
+      .filter(Boolean),
+  ))
+  const customerNames = Array.from(new Set(
+    (Array.isArray(customerName) ? customerName : [customerName])
+      .map((name) => name.trim())
+      .filter(Boolean),
+  ))
+  const salutation = customerNames.length > 0
+    ? customerNames.join(customerNames.length === 2 ? ' and ' : ', ')
+    : 'Valued Customer'
+
   // Get instrument name (first item or list all)
   const instrumentName = items.length === 1
     ? items[0].name
@@ -347,8 +361,8 @@ export async function sendOrderConfirmationEmail(data: OrderEmailData) {
   // Calculate price (subtotal without shipping)
   const price = subtotal
 
-  // Build status link — customers log in and see live paid/shipped/delivered status.
-  // Prefer the human-readable orderNumber so the URL matches what customers see in admin/UI.
+  // New orders use the private secure URL. The account URL remains a
+  // compatibility fallback for legacy test callers.
   const statusUrl = secureOrderUrl || (orderNumber
     ? `${baseUrl}/account/orders/${orderNumber}`
     : orderId
@@ -368,7 +382,7 @@ export async function sendOrderConfirmationEmail(data: OrderEmailData) {
       
       <div style="padding: 30px 40px;">
         <p style="margin: 0 0 20px 0; font-size: 16px;">
-          Dear ${customerName},
+          Dear ${salutation},
         </p>
         
         <p style="margin: 0 0 25px 0; font-size: 16px;">
@@ -381,7 +395,7 @@ export async function sendOrderConfirmationEmail(data: OrderEmailData) {
         
         <div style="margin: 25px 0; font-size: 16px;">
           <p style="margin: 0 0 10px 0;">
-            <strong>Order Number:</strong> #${orderNumber} — <a href="${statusUrl}" style="color: #1a365d; font-weight: bold; text-decoration: underline;">Click here to view details</a>
+            <strong>Order Number:</strong> #${orderNumber} — <a href="${statusUrl}" style="color: #1a365d; font-weight: bold; text-decoration: underline;">Secure Order Link</a>
           </p>
           <p style="margin: 0 0 10px 0;">
             <strong>Instrument:</strong> ${instrumentName}
@@ -410,10 +424,10 @@ export async function sendOrderConfirmationEmail(data: OrderEmailData) {
 
         ${secureOrderUrl ? `
         <div style="margin: 28px 0; padding: 20px; background: #f4f1df; border: 1px solid #b0a456; text-align: center;">
-          <strong>Secure Your Order History</strong>
-          <p style="margin: 8px 0 16px;">Use your private order link to view status, tracking and the finalized invoice without creating an account.</p>
-          <a href="${secureOrderUrl}" style="display:inline-block;background:#2f3f4f;color:#fff;padding:12px 20px;text-decoration:none;font-weight:bold;">Open Secure Order</a>
-          <p style="margin:12px 0 0;font-size:13px;">You can also create an account with this email address to keep future orders in one place.</p>
+          <strong>Secure Order Link</strong>
+          <p style="margin: 8px 0 16px;">Use this private link to view your complete order, live status, tracking and finalized invoice without logging in.</p>
+          <a href="${secureOrderUrl}" style="display:inline-block;background:#2f3f4f;color:#fff;padding:12px 20px;text-decoration:none;font-weight:bold;">View Secure Order</a>
+          <p style="margin:12px 0 0;font-size:13px;">For easier access, use the same email address to <a href="${baseUrl}/auth/login?callbackUrl=${encodeURIComponent(`/account/orders/${orderNumber}`)}" style="color:#1a365d;font-weight:bold;">Log in</a> or <a href="${baseUrl}/auth/register?callbackUrl=${encodeURIComponent(`/account/orders/${orderNumber}`)}" style="color:#1a365d;font-weight:bold;">Sign up</a>. Your order will appear automatically after the email address is verified.</p>
         </div>
         ` : ''}
         
@@ -463,7 +477,7 @@ export async function sendOrderConfirmationEmail(data: OrderEmailData) {
 
   await orderTransporter.sendMail({
     from: `"James Sax Corner" <${orderFromEmail}>`,
-    to: customerEmail,
+    to: customerEmails,
     subject: `Order #${orderNumber} – James Sax Corner Order Confirmation`,
     html,
     attachments: getEmailAttachments(),
