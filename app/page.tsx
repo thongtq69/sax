@@ -245,6 +245,7 @@ export default async function HomePage() {
           <span>Baritone Saxophones</span>
           <a href="/shop">All Instruments</a>
           <a href="/about">About Us</a>
+          <a href="/testimonials">Customer Testimonials</a>
           <a href="/blog">Saxophone Blog</a>
           <a href="/contact">Contact Us</a>
         </nav>

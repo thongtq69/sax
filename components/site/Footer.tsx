@@ -1,18 +1,10 @@
 'use client'
 
-import dynamic from 'next/dynamic'
-import { useState } from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
 import { MapPin, Clock, Music, Heart, Mail, MessageCircle, Sparkles, ChevronRight } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { useSiteSettings } from '@/contexts/SiteSettingsContext'
-
-// Lazy load TestimonialsPopup - only when user clicks
-const TestimonialsPopup = dynamic(
-  () => import('./TestimonialsPopup').then(m => m.TestimonialsPopup),
-  { ssr: false }
-)
 
 // WhatsApp icon component
 const WhatsAppIcon = ({ className, style }: { className?: string; style?: React.CSSProperties }) => (
@@ -55,7 +47,6 @@ const TikTokIcon = ({ className, style }: { className?: string; style?: React.CS
 )
 
 export function Footer() {
-  const [showTestimonials, setShowTestimonials] = useState(false)
   const settings = useSiteSettings()
 
   // Build social links array from shared context
@@ -175,8 +166,8 @@ export function Footer() {
                 <p><Link href="/account" className="hover:text-white transition-colors">Account</Link></p>
                 <p><Link href="/blog" className="hover:text-white transition-colors">Blog</Link></p>
                 <p>
-                  <button
-                    onClick={() => setShowTestimonials(true)}
+                  <Link
+                    href="/testimonials"
                     className="hover:text-white transition-colors text-left"
                     style={{
                       fontSize: 'inherit',
@@ -189,7 +180,7 @@ export function Footer() {
                     }}
                   >
                     Testimonials
-                  </button>
+                  </Link>
                 </p>
               </div>
             </div>
@@ -308,9 +299,9 @@ export function Footer() {
                 <li><Link href="/terms" className="hover:text-white transition-colors">Terms of Service</Link></li>
                 <li><Link href="/privacy" className="hover:text-white transition-colors">Privacy Policy</Link></li>
                 <li>
-                  <button onClick={() => setShowTestimonials(true)} className="hover:text-white transition-colors">
+                  <Link href="/testimonials" className="hover:text-white transition-colors">
                     Testimonials
-                  </button>
+                  </Link>
                 </li>
               </ul>
             </div>
@@ -346,8 +337,6 @@ export function Footer() {
           </div>
         </div>
       </div>
-
-      <TestimonialsPopup isOpen={showTestimonials} onClose={() => setShowTestimonials(false)} />
     </footer>
   )
 }

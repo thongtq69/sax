@@ -18,11 +18,6 @@ const MiniCartDrawer = dynamic(
   () => import('@/components/cart/MiniCartDrawer').then(m => m.MiniCartDrawer),
   { ssr: false }
 )
-const TestimonialsPopup = dynamic(
-  () => import('./TestimonialsPopup').then(m => m.TestimonialsPopup),
-  { ssr: false }
-)
-
 // Social Media Icons
 const FacebookIcon = ({ className }: { className?: string }) => (
   <svg viewBox="0 0 24 24" className={className} fill="currentColor">
@@ -78,7 +73,6 @@ export function Header() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
   const [isSearchOpen, setIsSearchOpen] = useState(false)
   const [isCartOpen, setIsCartOpen] = useState(false)
-  const [isTestimonialsOpen, setIsTestimonialsOpen] = useState(false)
   const [cartBounce, setCartBounce] = useState(false)
   const [isMounted, setIsMounted] = useState(false)
   const lastScrollY = useRef(0)
@@ -212,13 +206,13 @@ export function Header() {
                   About Us
                   <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-[#2c3e50] transition-all duration-300 group-hover/nav:w-full" />
                 </Link>
-                <button
-                  onClick={() => setIsTestimonialsOpen(true)}
+                <Link
+                  href="/testimonials"
                   className="text-[#2c3e50] hover:text-[#1a252f] transition-all duration-300 relative group/nav font-body"
                 >
                   Testimonials
                   <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-[#2c3e50] transition-all duration-300 group-hover/nav:w-full" />
-                </button>
+                </Link>
                 <Link href="/blog" className="text-[#2c3e50] hover:text-[#1a252f] transition-all duration-300 relative group/nav font-body">
                   Blog
                   <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-[#2c3e50] transition-all duration-300 group-hover/nav:w-full" />
@@ -463,15 +457,13 @@ export function Header() {
                 >
                   About Us
                 </Link>
-                <button
-                  onClick={() => {
-                    setIsMobileMenuOpen(false)
-                    setIsTestimonialsOpen(true)
-                  }}
+                <Link
+                  href="/testimonials"
+                  onClick={() => setIsMobileMenuOpen(false)}
                   className="flex items-center text-[#2c3e50] font-medium py-1.5 text-sm font-body"
                 >
                   Testimonials
-                </button>
+                </Link>
                 <Link
                   href="/blog"
                   className="flex items-center text-[#2c3e50] font-medium py-1.5 text-sm font-body"
@@ -510,8 +502,6 @@ export function Header() {
       {/* Cart Drawer */}
       <MiniCartDrawer open={isCartOpen} onOpenChange={setIsCartOpen} />
 
-      {/* Testimonials Popup */}
-      <TestimonialsPopup isOpen={isTestimonialsOpen} onClose={() => setIsTestimonialsOpen(false)} />
     </>
   )
 }
