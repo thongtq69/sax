@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { calculateServerOrderPricing } from '@/lib/order-pricing'
+import { normalizeShippingCountry } from '@/lib/shipping-country'
 
 const PAYPAL_API_URL = process.env.PAYPAL_MODE === 'sandbox' 
   ? 'https://api-m.sandbox.paypal.com'
@@ -79,22 +80,31 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    const pricing = await calculateServerOrderPricing(items, shippingInfo?.country || 'US')
+    const countryCode = normalizeShippingCountry(shippingInfo?.country)
+    const hasShippingInfo = Boolean(
+      shippingInfo?.firstName &&
+      shippingInfo?.lastName &&
+      shippingInfo?.address1 &&
+      shippingInfo?.city &&
+      shippingInfo?.state &&
+      shippingInfo?.zip &&
+      /^[A-Z]{2}$/.test(countryCode)
+    )
+
+    if (!hasShippingInfo) {
+      return NextResponse.json(
+        { error: 'Complete shipping information with a valid country is required' },
+        { status: 400 },
+      )
+    }
+
+    const pricing = await calculateServerOrderPricing(items, countryCode)
     const subtotal = pricing.subtotal
     const shipping = pricing.shipping
     const tax = 0
     const total = pricing.total
 
     const accessToken = await getAccessToken()
-
-    // Check if user provided shipping info
-    const hasShippingInfo = shippingInfo && 
-      shippingInfo.firstName && 
-      shippingInfo.lastName && 
-      shippingInfo.address1 && 
-      shippingInfo.city && 
-      shippingInfo.state && 
-      shippingInfo.zip
 
     const orderData: any = {
       intent: 'CAPTURE',
@@ -135,7 +145,7 @@ export async function POST(request: NextRequest) {
           admin_area_2: shippingInfo.city,
           admin_area_1: shippingInfo.state,
           postal_code: shippingInfo.zip,
-          country_code: 'US',
+          country_code: countryCode,
         }
       }
     }

@@ -238,15 +238,10 @@ function CheckoutContent() {
       }
     } catch (error) {
       console.error('Error calculating shipping:', error)
-      // Fallback to default shipping
-      const isVietnam = deliveryInfo.country === 'Vietnam'
-      if (isVietnam) {
-        setShippingCost(25)
-        setShippingMessage('Domestic shipping (Vietnam): $25')
-      } else {
-        setShippingCost(200)
-        setShippingMessage('International shipping: $200')
-      }
+      // Never guess a shipping rate. The configured server rate is authoritative,
+      // so payment remains disabled until the calculation succeeds.
+      setShippingCost(null)
+      setShippingMessage('Unable to calculate shipping. Please check your address and try again.')
     } finally {
       setIsCalculatingShipping(false)
     }
@@ -255,6 +250,9 @@ function CheckoutContent() {
   // Auto-calculate shipping when country or zip changes
   useEffect(() => {
     if (deliveryInfo.country && deliveryInfo.zip.length >= 3) {
+      // Invalidate the previous address rate immediately during the debounce.
+      setShippingCost(null)
+      setShippingMessage('Calculating shipping...')
       const timer = setTimeout(() => {
         calculateShipping()
       }, 800)
@@ -308,7 +306,8 @@ function CheckoutContent() {
   const shippingFieldsFilled = deliveryInfo.email && deliveryInfo.firstName && deliveryInfo.lastName &&
     deliveryInfo.address1 && deliveryInfo.city && deliveryInfo.state && deliveryInfo.zip && deliveryInfo.phone
   const allFieldsFilled = billingFieldsFilled && shippingFieldsFilled
-  const canPay = Boolean(allFieldsFilled) && !isValidatingCart && !hasUnavailable && !cartAvailabilityError
+  const canPay = Boolean(allFieldsFilled) && shippingCost !== null && !isCalculatingShipping &&
+    !isValidatingCart && !hasUnavailable && !cartAvailabilityError
 
   if (items.length === 0) {
     return (
