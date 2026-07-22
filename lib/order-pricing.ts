@@ -1,4 +1,5 @@
 import { prisma } from '@/lib/prisma'
+import { findShippingZone, normalizeShippingCountry } from '@/lib/shipping-country'
 
 type RequestedItem = { productId?: string; id?: string; quantity?: number }
 
@@ -48,14 +49,12 @@ export async function calculateServerOrderPricing(
     prisma.homepageContent.findUnique({ where: { sectionKey: 'rewards-vouchers' } }),
   ])
 
-  const countryCode = country.toUpperCase() === 'VIETNAM' ? 'VN' : country.toUpperCase()
+  const countryCode = normalizeShippingCountry(country)
   let shipping = 0
   if (countryCode === 'VN') {
     shipping = settings?.domesticShippingCost ?? 25
   } else {
-    const zone = zones.find((entry) => entry.countries.some((value) =>
-      value.toUpperCase() === countryCode || value.toLowerCase() === country.toLowerCase(),
-    )) || zones.find((entry) => entry.isDefault)
+    const zone = findShippingZone(zones, countryCode)
     const base = zone?.shippingCost ?? 200
     const productRates = items.map((item) => item.shippingCost || 0).filter(Boolean)
     shipping = productRates.length ? Math.max(base, ...productRates) : base

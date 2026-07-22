@@ -15,6 +15,7 @@
     "db:seed": "tsx prisma/seed.ts",
     "db:studio": "prisma studio",
     "seo:inspect": "tsx scripts/inspect-sitemap.ts",
+    "verify:shipping": "tsx scripts/verify-shipping-country.ts",
     "verify:critical": "tsx scripts/verify-critical-fixes.ts"
   },
   "engines": {
