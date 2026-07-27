@@ -10,6 +10,16 @@ import { Upload, Link as LinkIcon, X, Loader2, ImageIcon, XCircle, GripVertical 
 // Files larger than this will be auto-compressed before upload
 const MAX_FILE_SIZE = 10 * 1024 * 1024
 const CLOUDINARY_MAX_SIZE_MB = 9 // Target 9MB to stay safely under 10MB limit
+const MAX_PRODUCT_IMAGES = 100
+
+async function getUploadError(response: Response, fallback: string): Promise<string> {
+  try {
+    const data = await response.json()
+    return data?.error?.message || data?.error || data?.message || fallback
+  } catch {
+    return fallback
+  }
+}
 
 // Compress image if it's too large for Cloudinary
 async function compressImage(file: File, maxSizeMB: number = CLOUDINARY_MAX_SIZE_MB): Promise<File> {
@@ -86,7 +96,7 @@ interface ImageUploadProps {
 export function ImageUpload({ 
   images, 
   onChange, 
-  maxImages = 999, // Unlimited by default
+  maxImages = MAX_PRODUCT_IMAGES,
   folder = 'sax/products',
   onUploadingChange,
 }: ImageUploadProps) {
@@ -161,7 +171,7 @@ export function ImageUpload({
     })
     
     if (!sigResponse.ok) {
-      throw new Error('Failed to get upload signature')
+      throw new Error(await getUploadError(sigResponse, 'Failed to get upload signature'))
     }
     
     const { signature, timestamp, cloudName, apiKey, folder: uploadFolder } = await sigResponse.json()
@@ -186,8 +196,7 @@ export function ImageUpload({
     )
     
     if (!uploadResponse.ok) {
-      const errorData = await uploadResponse.json()
-      throw new Error(errorData.error?.message || 'Upload failed')
+      throw new Error(await getUploadError(uploadResponse, 'Upload failed'))
     }
     
     const result = await uploadResponse.json()
@@ -206,8 +215,7 @@ export function ImageUpload({
     })
 
     if (!response.ok) {
-      const data = await response.json()
-      throw new Error(data.error || 'Upload failed')
+      throw new Error(await getUploadError(response, 'Upload failed'))
     }
 
     return await response.json()
@@ -215,7 +223,16 @@ export function ImageUpload({
 
   const handleFiles = async (files: FileList | File[]) => {
     if (!files || files.length === 0) return
-    const selectedFiles = Array.from(files).slice(0, Math.max(0, maxImages - latestImagesRef.current.length))
+    const selectedFiles = Array.from(files)
+    const remainingSlots = Math.max(0, maxImages - latestImagesRef.current.length)
+    if (selectedFiles.length > remainingSlots) {
+      setError(
+        remainingSlots > 0
+          ? `You can upload ${remainingSlots} more image${remainingSlots === 1 ? '' : 's'} (maximum ${maxImages}).`
+          : `This product already has the maximum of ${maxImages} images.`,
+      )
+      return
+    }
     if (selectedFiles.some((file) => !file.type.startsWith('image/'))) {
       setError('Only image files are allowed.')
       return
@@ -312,6 +329,10 @@ export function ImageUpload({
 
   const handleUrlSubmit = async () => {
     if (!urlInput.trim()) return
+    if (latestImagesRef.current.length >= maxImages) {
+      setError(`This product already has the maximum of ${maxImages} images.`)
+      return
+    }
 
     setIsUploading(true)
     setError(null)
@@ -604,7 +625,7 @@ export function ImageUpload({
 
       {/* Image count */}
       <p className="text-sm text-gray-500">
-        {images.length} {maxImages < 999 ? `/ ${maxImages}` : ''} images
+        {images.length} / {maxImages} images
       </p>
     </div>
   )
@@ -657,7 +678,7 @@ export function SingleImageUpload({
     })
     
     if (!sigResponse.ok) {
-      throw new Error('Failed to get upload signature')
+      throw new Error(await getUploadError(sigResponse, 'Failed to get upload signature'))
     }
     
     const { signature, timestamp, cloudName, apiKey, folder: uploadFolder } = await sigResponse.json()
@@ -681,8 +702,7 @@ export function SingleImageUpload({
     )
     
     if (!uploadResponse.ok) {
-      const errorData = await uploadResponse.json()
-      throw new Error(errorData.error?.message || 'Upload failed')
+      throw new Error(await getUploadError(uploadResponse, 'Upload failed'))
     }
     
     const result = await uploadResponse.json()

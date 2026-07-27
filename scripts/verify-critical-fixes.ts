@@ -5,6 +5,8 @@ import { getVerificationAddress } from '../lib/order-address'
 import { normalizeProductImages, ProductImageValidationError } from '../lib/product-images'
 import { getImageUrl } from '../lib/utils'
 import { normalizeModels } from '../lib/models'
+import { resolveConfiguredModel } from '../lib/model-page'
+import { readFileSync } from 'node:fs'
 
 const clean = sanitizeEditableHtml(
   '<style>.x{color:red}</style><div class="x" onclick="bad()">OK</div><script>alert(1)</script>',
@@ -93,6 +95,57 @@ if (zeroAdjustmentInvoice.includes('-0.00')) {
 const models = normalizeModels([' s-902 ', 'A-991', 'a-991', 'A-900u', 'A-900'])
 if (models.join('|') !== 'A-900|A-900u|A-991|s-902') {
   throw new Error(`Model sorting/deduplication regression: ${models.join('|')}`)
+}
+
+const configuredBrands = [
+  {
+    name: 'Yamaha',
+    slug: 'yamaha',
+    models: ['YTS-62', 'YTS-62III'],
+    modelPageContent: { 'yts-62': '<p>YTS-62 intro</p>' },
+  },
+  {
+    name: 'Yanagisawa',
+    slug: 'yanagisawa',
+    models: ['A-900', 'A-900u', 'S-902'],
+    modelPageContent: { 's-902': '<p>S-902 intro</p>' },
+  },
+]
+const yts62 = resolveConfiguredModel(
+  'yamaha-yts-62-tenor-saxophone',
+  configuredBrands,
+  'Yamaha',
+)
+if (yts62?.modelKey !== 'yts-62' || !yts62.customHtml?.includes('YTS-62 intro')) {
+  throw new Error('Configured model intro resolution regression')
+}
+const emptyS902 = resolveConfiguredModel('yanagisawa-s-902-soprano-saxophone', configuredBrands)
+if (emptyS902?.modelKey !== 's-902' || !emptyS902.customHtml?.includes('S-902 intro')) {
+  throw new Error('No-listing model intro resolution regression')
+}
+const a900u = resolveConfiguredModel('yanagisawa-a-900u-alto-saxophone', configuredBrands)
+if (a900u?.modelKey !== 'a-900u') {
+  throw new Error('Longest model slug resolution regression')
+}
+
+const layoutSource = readFileSync('app/layout.tsx', 'utf8')
+if (!layoutSource.includes('G-SBZR8BXZLV') || layoutSource.includes('G-MRHKG8MELS')) {
+  throw new Error('Customer-owned Google Analytics configuration regression')
+}
+
+const modelPageSource = readFileSync('components/model/ModelPageClient.tsx', 'utf8')
+if (!modelPageSource.includes('text-2xl font-bold text-red-600">SOLD OUT')) {
+  throw new Error('Featured sold-out rendering regression')
+}
+
+const globalCss = readFileSync('app/globals.css', 'utf8')
+if (!globalCss.includes('.model-custom-content .jsc-intro') || !globalCss.includes('max-width: none !important')) {
+  throw new Error('Full-width model HTML layout regression')
+}
+
+const imageUploadSource = readFileSync('components/admin/ImageUpload.tsx', 'utf8')
+if (!imageUploadSource.includes('const MAX_PRODUCT_IMAGES = 100') || imageUploadSource.includes('maxImages = 999')) {
+  throw new Error('Product image upload limit regression')
 }
 
 console.log('Critical fix verification passed.')

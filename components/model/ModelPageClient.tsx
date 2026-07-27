@@ -186,9 +186,11 @@ export function ModelPageClient({ data, brandSlug, modelSlug }: ModelPageClientP
 
     const jumpLinks = [
         { href: '#listings', label: 'Listings' },
-        { href: '#product-details', label: 'Product Details' },
-        { href: '#price-guide', label: 'Price Guide' },
-        { href: '#reviews-section', label: 'Reviews' },
+        ...(data.totalListings > 0 ? [
+            { href: '#product-details', label: 'Product Details' },
+            { href: '#price-guide', label: 'Price Guide' },
+            { href: '#reviews-section', label: 'Reviews' },
+        ] : []),
     ]
 
     return (
@@ -252,6 +254,7 @@ export function ModelPageClient({ data, brandSlug, modelSlug }: ModelPageClientP
                         </div>
 
                         {/* Price Guide Badge */}
+                        {data.totalListings > 0 && (
                         <div className="flex-shrink-0 border border-border bg-card p-4 md:p-5 text-center min-w-[200px]">
                             <div className="inline-flex items-center gap-1.5 bg-primary/10 text-primary px-3 py-1 text-xs font-semibold uppercase tracking-wider mb-2">
                                 <TrendingUp className="h-3 w-3" />
@@ -281,6 +284,7 @@ export function ModelPageClient({ data, brandSlug, modelSlug }: ModelPageClientP
                                 </div>
                             )}
                         </div>
+                        )}
                     </div>
                 </div>
             </div>
@@ -341,6 +345,7 @@ export function ModelPageClient({ data, brandSlug, modelSlug }: ModelPageClientP
                     <CompareSection products={compareProducts} onClear={clearCompare} />
                 </section>
 
+                {data.totalListings > 0 && (
                 <section id="product-details" className="scroll-mt-24 mt-12 pt-6 border-t">
                     <DetailsSection
                         brand={data.brand}
@@ -351,17 +356,20 @@ export function ModelPageClient({ data, brandSlug, modelSlug }: ModelPageClientP
                         totalListings={data.totalListings}
                     />
                 </section>
+                )}
 
+                {data.totalListings > 0 && (
                 <section id="price-guide" className="scroll-mt-24 mt-12 pt-6 border-t">
                     <PriceGuideSection
-                        brand={data.brand}
                         model={data.model}
                         stats={priceGuideStats}
                         selectedFilter={priceConditionFilter}
                         onSelectFilter={setPriceConditionFilter}
                     />
                 </section>
+                )}
 
+                {data.totalListings > 0 && (
                 <section id="reviews-section" className="scroll-mt-24 mt-12 pt-6 border-t">
                     <ReviewsTab
                         avgRating={data.avgRating}
@@ -369,6 +377,7 @@ export function ModelPageClient({ data, brandSlug, modelSlug }: ModelPageClientP
                         reviewTargetProductId={data.products[0]?.id || null}
                     />
                 </section>
+                )}
 
                 <section className="mt-12 pt-6 border-t">
                     <SimilarProductsSection
@@ -501,7 +510,7 @@ function ListingsTab({
                 </div>
             )}
 
-            {products.length === 0 && (
+            {products.length === 0 && totalListings === 0 && (
                 <div className="text-center py-16">
                     <Package className="h-16 w-16 text-muted-foreground/30 mx-auto mb-4" />
                     <p className="text-lg text-muted-foreground">No listings found for this model</p>
@@ -794,10 +803,16 @@ function FeaturedListing({
                     <p className="text-sm text-muted-foreground mt-2 line-clamp-3">{product.description}</p>
 
                     <div className="mt-4 flex items-center gap-4 flex-wrap">
-                        <p className="text-2xl font-bold text-secondary">${product.price.toLocaleString()}</p>
-                        {product.shippingCost && product.shippingCost > 0 ? (
-                            <p className="text-sm text-muted-foreground">+ ${product.shippingCost.toLocaleString()} shipping</p>
-                        ) : null}
+                        {isSoldOut ? (
+                            <p className="text-2xl font-bold text-red-600">SOLD OUT</p>
+                        ) : (
+                            <>
+                                <p className="text-2xl font-bold text-secondary">${product.price.toLocaleString()}</p>
+                                {product.shippingCost && product.shippingCost > 0 ? (
+                                    <p className="text-sm text-muted-foreground">+ ${product.shippingCost.toLocaleString()} shipping</p>
+                                ) : null}
+                            </>
+                        )}
                     </div>
 
                     <div className="mt-4 flex flex-wrap gap-2">
@@ -905,12 +920,12 @@ function DetailsSection({ brand, model, specs, categories, products, totalListin
                     {galleryImages.length > 0 ? (
                         <>
                             <div className="aspect-square border border-border overflow-hidden bg-muted/20 mb-3">
-                                <Image src={galleryImages[0]} alt={`${brand} ${model}`} width={800} height={800} className="w-full h-full object-cover" />
+                                <Image src={galleryImages[0]} alt={model} width={800} height={800} className="w-full h-full object-cover" />
                             </div>
                             <div className="grid grid-cols-4 gap-2">
                                 {galleryImages.slice(1, 5).map((img, idx) => (
                                     <div key={img} className="aspect-square border border-border overflow-hidden bg-muted/20">
-                                        <Image src={img} alt={`${brand} ${model} image ${idx + 2}`} width={200} height={200} className="w-full h-full object-cover" />
+                                        <Image src={img} alt={`${model} image ${idx + 2}`} width={200} height={200} className="w-full h-full object-cover" />
                                     </div>
                                 ))}
                             </div>
@@ -950,13 +965,11 @@ function SpecRow({ label, value }: { label: string; value: string }) {
 }
 
 function PriceGuideSection({
-    brand,
     model,
     stats,
     selectedFilter,
     onSelectFilter,
 }: {
-    brand: string
     model: string
     stats: { min: number; median: number; max: number; sample: number }
     selectedFilter: PriceConditionFilter
@@ -977,7 +990,7 @@ function PriceGuideSection({
             <h2 className="text-2xl font-bold text-secondary mb-4">Price Guide</h2>
             <div className="border border-border bg-white p-4 md:p-5">
                 <p className="text-sm text-muted-foreground mb-4">
-                    Estimated value for {brand} {model} based on available listings.
+                    Estimated value for {model} based on available listings.
                 </p>
 
                 <div className="flex flex-wrap gap-2 mb-5">

@@ -93,11 +93,11 @@ export default function RootLayout({
         <SessionProvider>
           <SiteLayout>{children}</SiteLayout>
         </SessionProvider>
-        {(process.env.NEXT_PUBLIC_GA_ID || 'G-MRHKG8MELS') && (
+        {(process.env.NEXT_PUBLIC_GA_ID || 'G-SBZR8BXZLV') && (
           <>
             <script
               async
-              src={`https://www.googletagmanager.com/gtag/js?id=${process.env.NEXT_PUBLIC_GA_ID || 'G-MRHKG8MELS'}`}
+              src={`https://www.googletagmanager.com/gtag/js?id=${process.env.NEXT_PUBLIC_GA_ID || 'G-SBZR8BXZLV'}`}
             />
             <script
               dangerouslySetInnerHTML={{
@@ -105,7 +105,7 @@ export default function RootLayout({
                   window.dataLayer = window.dataLayer || [];
                   function gtag(){dataLayer.push(arguments);}
                   gtag('js', new Date());
-                  gtag('config', '${process.env.NEXT_PUBLIC_GA_ID || 'G-MRHKG8MELS'}', {
+                  gtag('config', '${process.env.NEXT_PUBLIC_GA_ID || 'G-SBZR8BXZLV'}', {
                     page_path: window.location.pathname,
                   });
                 `,

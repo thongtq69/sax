@@ -9,7 +9,7 @@
 | 🟠 Sitemap lastmod kẹt ở `2026-03-15` | Code sửa sitemap chưa deploy | ⚠️ Cần deploy commit `9b7738c` và `36152f4` lên Vercel |
 | 🟡 Title/meta cũ vẫn đang live | "Professional Wind Instruments" (không tối ưu SEO cho saxophone) | ⚠️ Cần deploy — đã sửa trong code |
 | ✅ GSC verification meta tag | `_P7lYBUK9Gz8XYecWbXTg_pX3uoY4ZBU_jF6jgcqcC4` | OK |
-| ✅ GA4 tracking | `G-MRHKG8MELS` | OK |
+| ✅ GA4 tracking | `G-SBZR8BXZLV` | OK |
 
 ---
 

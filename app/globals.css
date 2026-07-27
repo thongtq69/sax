@@ -5280,3 +5280,27 @@
     display: none;
   }
 }
+
+/* Admin-authored brand/model introductions should use the full content column.
+   Older saved templates include an inline max-width: 780px on .jsc-intro, so
+   these scoped !important rules intentionally override only those page blocks. */
+.brand-custom-content .jsc-intro,
+.model-custom-content .jsc-intro {
+  width: 100% !important;
+  max-width: none !important;
+}
+
+.brand-custom-content,
+.model-custom-content {
+  overflow-wrap: anywhere;
+}
+
+.brand-custom-content img,
+.model-custom-content img,
+.brand-custom-content iframe,
+.model-custom-content iframe,
+.brand-custom-content video,
+.model-custom-content video {
+  max-width: 100% !important;
+  height: auto;
+}

@@ -6,6 +6,7 @@ import { generateSlug } from '@/lib/slug-utils'
 import { ModelPageClient } from '@/components/model/ModelPageClient'
 import { StructuredData } from '@/components/seo/StructuredData'
 import { buildCanonicalUrl, getBaseUrl } from '@/lib/seo'
+import { inferSaxophoneCategory, resolveConfiguredModel } from '@/lib/model-page'
 
 export const revalidate = 300
 
@@ -145,6 +146,21 @@ async function findModelProductsBySlug(slug: string) {
     return legacyMatches
 }
 
+async function getConfiguredModelContext(slug: string, preferredBrand?: string | null) {
+    const brands = await prisma.brand.findMany({
+        where: { isActive: true },
+        select: {
+            name: true,
+            slug: true,
+            logo: true,
+            models: true,
+            modelPageContent: true,
+        },
+    })
+
+    return resolveConfiguredModel(slug, brands, preferredBrand)
+}
+
 export async function generateMetadata(
     props: {
         params: Promise<{ slug: string }>
@@ -153,11 +169,12 @@ export async function generateMetadata(
     const params = await props.params;
     const sampleProducts = await findModelProductsBySlug(params.slug)
     const sampleProduct = sampleProducts.length > 0 ? sampleProducts[0] : null
+    const configuredModel = await getConfiguredModelContext(params.slug, sampleProduct?.brand)
 
     const modelName = decodeURIComponent(params.slug).replace(/-/g, ' ')
-    const displayBrand = sampleProduct?.brand || ''
-    const displayModel = sampleProduct?.subBrand || modelName
-    const subcategory = sampleProduct?.subcategory?.name || ''
+    const displayBrand = configuredModel?.brand.name || sampleProduct?.brand || ''
+    const displayModel = configuredModel?.model || sampleProduct?.subBrand || modelName
+    const subcategory = sampleProduct?.subcategory?.name || inferSaxophoneCategory(params.slug)
 
     // Clean up model name
     let name = displayModel
@@ -222,17 +239,18 @@ export default async function ModelPage(
 ) {
     const params = await props.params;
     const apiProducts = await findModelProductsBySlug(params.slug)
+    const configuredModel = await getConfiguredModelContext(params.slug, apiProducts[0]?.brand)
 
-    if (apiProducts.length === 0) {
+    if (apiProducts.length === 0 && !configuredModel) {
         notFound()
     }
 
     const products = apiProducts.map(transformProduct)
-    const displayBrand = apiProducts[0].brand
+    const displayBrand = configuredModel?.brand.name || apiProducts[0]?.brand || ''
     const brandSlug = generateSlug(displayBrand)
     const modelName = decodeURIComponent(params.slug).replace(/-/g, ' ')
-    const displayModel = apiProducts[0].subBrand || modelName
-    const subcategoryName = apiProducts[0]?.subcategory?.name || ''
+    const displayModel = configuredModel?.model || apiProducts[0]?.subBrand || modelName
+    const subcategoryName = apiProducts[0]?.subcategory?.name || inferSaxophoneCategory(params.slug)
 
     // Calculate stats
     const prices = products.map(p => p.price).filter(p => p > 0)
@@ -248,15 +266,12 @@ export default async function ModelPage(
         : 0
     const totalReviews = allReviews.length
 
-    const representativeImage = products.find(p => p.images?.length > 0)?.images[0] || null
-    const subcategories = [...new Set(apiProducts.map(p => p.subcategory?.name).filter((n): n is string => !!n))]
-    const brandRecord = await prisma.brand.findFirst({
-        where: { name: { equals: displayBrand, mode: 'insensitive' } },
-        select: { modelPageContent: true },
-    })
-    const modelPageContent = ((brandRecord?.modelPageContent as Record<string, string> | null) || {})
-    const modelContentKey = generateSlug(displayModel)
-    const customHtml = modelPageContent[modelContentKey] || modelPageContent[params.slug] || null
+    const representativeImage = products.find(p => p.images?.length > 0)?.images[0] || configuredModel?.brand.logo || null
+    const subcategories = [...new Set([
+        ...apiProducts.map(p => p.subcategory?.name).filter((n): n is string => !!n),
+        ...(subcategoryName ? [subcategoryName] : []),
+    ])]
+    const customHtml = configuredModel?.customHtml || null
 
     const allSpecs: Record<string, Set<string>> = {}
     products.forEach(p => {
@@ -365,7 +380,7 @@ export default async function ModelPage(
     return (
         <div className="min-h-screen">
             <StructuredData data={breadcrumbSchema} />
-            <StructuredData data={productGroupSchema} />
+            {products.length > 0 && <StructuredData data={productGroupSchema} />}
             <ModelPageClient data={modelData} brandSlug={brandSlug} modelSlug={params.slug} />
         </div>
     )
