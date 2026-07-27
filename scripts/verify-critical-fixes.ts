@@ -107,8 +107,11 @@ const configuredBrands = [
   {
     name: 'Yanagisawa',
     slug: 'yanagisawa',
-    models: ['A-900', 'A-900u', 'S-902'],
-    modelPageContent: { 's-902': '<p>S-902 intro</p>' },
+    models: ['A-900', 'A-900u', 'A-902', 'S-902'],
+    modelPageContent: {
+      'a-902': '<p>A-902 alto intro</p>',
+      's-902': '<p>S-902 soprano intro</p>',
+    },
   },
 ]
 const yts62 = resolveConfiguredModel(
@@ -120,8 +123,12 @@ if (yts62?.modelKey !== 'yts-62' || !yts62.customHtml?.includes('YTS-62 intro'))
   throw new Error('Configured model intro resolution regression')
 }
 const emptyS902 = resolveConfiguredModel('yanagisawa-s-902-soprano-saxophone', configuredBrands)
-if (emptyS902?.modelKey !== 's-902' || !emptyS902.customHtml?.includes('S-902 intro')) {
+if (emptyS902?.modelKey !== 's-902' || !emptyS902.customHtml?.includes('S-902 soprano intro')) {
   throw new Error('No-listing model intro resolution regression')
+}
+const emptyA902 = resolveConfiguredModel('yanagisawa-a-902-alto-saxophone', configuredBrands)
+if (emptyA902?.modelKey !== 'a-902' || !emptyA902.customHtml?.includes('A-902 alto intro')) {
+  throw new Error('A-902 no-listing model intro resolution regression')
 }
 const a900u = resolveConfiguredModel('yanagisawa-a-900u-alto-saxophone', configuredBrands)
 if (a900u?.modelKey !== 'a-900u') {
