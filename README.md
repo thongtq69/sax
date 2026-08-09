@@ -2,6 +2,8 @@
 
 E-commerce web app for **James Sax Corner** (jamessaxcorner.com) — a premium new & used saxophone retailer (Yamaha, Yanagisawa, Selmer, and more) based in Hanoi, Vietnam, selling primarily to the US market. Built with Next.js 15 (App Router), Prisma + MongoDB, NextAuth, PayPal, and Cloudinary.
 
+## Architecture
+See `docs/architecture.md` for the full system diagram before making structural changes.
 ## Tech Stack
 
 - **Framework:** Next.js 15 (App Router), React 18, TypeScript
